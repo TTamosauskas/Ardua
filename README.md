@@ -36,4 +36,6 @@ node --check assets/js/ardua.js
 node tests/validate-static.js
 ```
 
-A campanha inclui uma sequência de rp-process na superfície de uma estrela de nêutrons em acreção, com fases individuais de Cobre a Telúrio, alternando H ionizável e prótons livres, waiting points, competição `(γ,p)` e o ciclo terminal Sn–Sb–Te.
+## Campanha rp-process
+
+Após **Acreção extrema**, a superfície da estrela de nêutrons entra em uma sequência de rp-process com fases individuais de **Cobre a Telúrio**. A campanha alterna Hidrogênio ionizável e prótons livres, usa estados instáveis com β⁺, competição `(γ,p)`, Barreira de Coulomb, os waiting points `⁶⁴Ge`, `⁶⁸Se` e `⁷²Kr`, e termina com o ciclo **Sn–Sb–Te**.
