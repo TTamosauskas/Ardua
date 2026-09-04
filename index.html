@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#070b18"/>
+<title>Ardua — Astrofísica Nuclear</title>
+<link rel="stylesheet" href="assets/css/ardua.css"/>
+
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="phase-card"><small id="branchLabel">Nascimento da primeira estrela</small><strong id="phaseTitle">Nebulosa</strong><span id="phaseMeta">Novo elemento: Hélio</span></div>
+    <button class="map-btn" id="menuOpenBtn">Menu</button>
+  </div>
+
+  <div class="objective" id="objective"><strong class="goal-line" id="goalText">Crie 10 átomos de Hélio — 0/10</strong><span class="formula-line" id="formulaText">Hidrogênio + Hidrogênio → Hélio</span></div>
+  <div class="stage-progress"><span id="stageProgressLabel">ATIVIDADE</span><div class="progress-track"><div id="stageProgress"></div></div><span id="stageProgressText">0/0</span></div>
+
+  <div class="star-shell">
+    <div class="star-board" id="starBoard">
+      <div class="star-core" id="starCore"></div>
+      <div class="stellar-zones" id="stellarZones" aria-hidden="true"></div>
+      <div class="electron-mesh" id="electronMesh" aria-hidden="true"></div>
+      <div class="primordial-layer" id="primordialLayer"></div>
+      <button class="singularity" id="singularityBtn" aria-label="Iniciar o Big Bang"></button>
+      <div class="remnant-layer" id="remnantLayer">
+        <div class="beam-spinner" id="beamSpinner"></div>
+        <div class="accretion-disk" id="accretionDisk"></div>
+        <button class="remnant-core" id="remnantCore" aria-label="Remanescente compacto"></button>
+      </div>
+      <div class="rings"><div class="ring r0"></div><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+      <div class="cells" id="cells"></div>
+      <div class="lines" id="lines"></div>
+      <div class="pieces" id="pieces"></div>
+      <div class="cosmic-rays" id="cosmicRays"></div>
+      <div class="neutrons" id="neutrons"></div>
+      <div class="fx" id="fx"></div>
+      <div class="explosion" id="explosion"></div>
+      <button class="center-action stage-end" id="phaseEndBtn">ESPALHAR<br>POEIRA ESTELAR</button>
+      <div class="event-tooltip" id="eventTooltip" role="dialog" aria-live="assertive" aria-hidden="true">
+        <strong id="eventTooltipTitle"></strong><p id="eventTooltipText"></p><button type="button" id="eventTooltipBtn">CONTINUAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel" id="infoPanel" aria-live="polite">
+    <div class="info-tile particle" id="infoTile"><span class="info-z" id="infoZ">COSMOLOGIA</span><strong class="info-symbol" id="infoSymbol">∞</strong><span class="info-name" id="infoName">Singularidade</span><span class="info-mass" id="infoMass">estado inicial · limite</span></div>
+    <div class="info-copy"><div class="info-context" id="infoContext">Toque em uma peça para explorar</div><div class="info-fact" id="infoFact">Representa o limite em que nossos modelos clássicos deixam de descrever o Universo.</div><div class="info-recipes-title">Receitas descobertas</div><div class="info-recipes" id="infoRecipes"></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="ambient-banner" id="ambientBanner"><span class="ak" id="ambientKicker"></span><strong id="ambientTitle"></strong><small id="ambientText"></small></div>
+
+<div class="modal" id="menuModal"><div class="card">
+  <div class="eyebrow">Modo de teste</div><h2>Fases</h2><p>Todas as fases estão liberadas nesta versão para facilitar o balanceamento.</p>
+  <div class="phase-menu" id="phaseMenu"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-section"><h3>Reações descobertas</h3><div class="reaction-catalog" id="reactionCatalog"></div><div class="catalog-detail reaction-detail" id="reactionDetail"><strong>Reações cumulativas</strong><span>Uma reação aprendida continua disponível quando o ambiente atual alcança as condições físicas necessárias.</span><p>O objetivo da fase permanece principal; reações antigas são opcionais.</p></div><h3 style="margin-top:13px">Capturas de prótons</h3><div class="reaction-catalog" id="protonCaptureCatalog"></div><div class="catalog-detail reaction-detail" id="protonCaptureDetail"><strong>Captura p</strong><span>Desbloqueada depois da fase de Captura de Prótons.</span><p>Selecione um próton livre e depois um núcleo. A carga do núcleo e o ambiente controlam a dificuldade da aproximação.</p></div></div>
+  <div class="menu-sep"></div>
+  <div class="menu-section"><h3>Elementos</h3><div class="catalog" id="catalog"></div><div class="catalog-detail" id="catalogDetail"><strong>Catálogo</strong><span>Toque em um elemento.</span><p>Origem e processo aparecem aqui sem interromper a partida.</p></div></div>
+  <button class="big" id="closeMenu">Voltar</button>
+</div></div>
+
+<div class="stellar-intro" id="stellarIntro" aria-modal="true" role="dialog">
+  <div class="stellar-card">
+    <div class="intro-kicker" id="introKicker">Fase estelar</div>
+    <h2 id="introTitle">NEBULOSA</h2>
+    <p class="intro-sub" id="introSub">Onde uma estrela começa</p>
+    <p class="intro-line" id="introLine">Concentre a matéria para prosseguir</p>
+    <div class="stellar-portrait" aria-hidden="true"><div class="stellar-art nebula" id="stellarArt"></div></div>
+    <button class="stellar-start" id="stellarStartBtn">COMEÇAR</button>
+  </div>
+</div>
+
+<script src="assets/js/ardua.js"></script>
+
+</body>
+</html>
