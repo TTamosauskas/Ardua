@@ -1,0 +1,35 @@
+name: Assemble Ardua rp-process engine
+
+on:
+  push:
+    paths:
+      - 'rp-parts/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reconstruct and validate engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat rp-parts/*.part | base64 -d > /tmp/ardua-rp.xz
+          xz -dc /tmp/ardua-rp.xz > assets/js/ardua.js
+          echo '12e5972dacabc16daa63fc1e7659dd4d747be9f11b0947b229a7eee7c2bada78  assets/js/ardua.js' | sha256sum -c -
+          node --check assets/js/ardua.js
+          node tests/validate-static.js
+      - name: Commit clean engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf rp-parts .github/workflows/rp-assemble.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add rp-process campaign from Cu to Te'
+          git push
