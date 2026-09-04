@@ -2,11 +2,9 @@
 
 **Ardua** é um jogo casual e educativo de astrofísica nuclear executado diretamente no navegador.
 
-## Jogar online
+Jogue online: https://ttamosauskas.github.io/Ardua/
 
-A versão publicada fica em: https://ttamosauskas.github.io/Ardua/
-
-## Executar localmente
+## Executar
 
 Abra `index.html` em um navegador moderno. O jogo permanece inteiramente estático: sem servidor, build, framework ou dependências de runtime.
 
@@ -24,8 +22,18 @@ Depois acesse `http://localhost:8000`.
 - `assets/css/ardua.css` — interface, animações e apresentação visual.
 - `assets/js/ardua.js` — dados nucleares, fases, estado, regras, interação e renderização.
 - `docs/ARCHITECTURE.md` — visão técnica e convenções de manutenção.
-- `.github/workflows/pages.yml` — publicação automática da `main` no GitHub Pages.
 
 ## Princípios técnicos
 
 O projeto privilegia portabilidade e baixo atrito: JavaScript e CSS nativos, caminhos relativos e zero etapa de compilação. Mudanças de conteúdo e regras devem preservar a capacidade de abrir o jogo diretamente por `index.html`.
+
+## Validação
+
+A validação de estrutura pode ser executada sem instalar dependências:
+
+```bash
+node --check assets/js/ardua.js
+node tests/validate-static.js
+```
+
+A campanha inclui uma sequência de rp-process na superfície de uma estrela de nêutrons em acreção, com fases individuais de Cobre a Telúrio, alternando H ionizável e prótons livres, waiting points, competição `(γ,p)` e o ciclo terminal Sn–Sb–Te.
