@@ -30,3 +30,21 @@ O próximo passo saudável, quando houver testes automatizados de gameplay, é s
 ## Limpeza realizada
 
 A migração removeu funções sem qualquer referência no código atual, um alias constante sem uso, comentários históricos de versões antigas e um fragmento CSS órfão remanescente de uma animação antiga. Nenhuma dependência externa foi adicionada.
+
+## Famílias de mecânicas nucleares
+
+O motor trata a progressão como templates reutilizáveis orientados por dados. Isso permite que elementos intermediários tenham fases próprias sem duplicar lógica de interface.
+
+- **Fusão** — receitas de dois ou três núcleos, com condições de temperatura e Barreira de Coulomb.
+- **Captura de prótons** — prótons livres podem tunelar a barreira e produzir estados proton-rich.
+- **rp-process** — campanha em explosão de raios X com fases individuais de Cu a Te. Os templates incluem captura simples, captura em cadeia agregada, ionização `H → p + e⁻`, β⁺, waiting points, competição `(γ,p)` e ciclo terminal Sn–Sb–Te.
+- **Processo-s** — captura de nêutrons seguida de β−; picos, ramificações e passagens agregadas usam diferentes quantidades de captura.
+- **Processo-r** — tempestade de nêutrons seguida de cascatas β−/freeze-out, com metas específicas para terras raras, terceiro pico e actinídeos.
+
+As fases rp são definidas em `RP_PROCESS_STEPS` e convertidas para fases por `rpPhaseFromStep`. Isótopos são mostrados explicitamente quando têm papel pedagógico claro, como ⁶⁴Ge, ⁶⁸Se e ⁷²Kr. Passagens intermediárias são identificadas como redes agregadas em vez de atribuir uma única reação fictícia à abundância total de um elemento.
+
+O rp-process foi colocado depois de **Acreção extrema** e antes de **Limite de estabilidade**, representando a queima termonuclear de material H/He-rich na superfície de uma estrela de nêutrons. O bloco termina em Telúrio; elementos mais pesados continuam nas famílias de processo-s e processo-r já presentes na campanha.
+
+## Testes estáticos
+
+`tests/validate-static.js` verifica a presença e a ordem das 24 fases rp, os waiting points, o ciclo Sn–Sb–Te, as duas formas de combustível (H e p) e as referências estáticas do `index.html`. `node --check assets/js/ardua.js` continua sendo a validação sintática mínima do motor.
