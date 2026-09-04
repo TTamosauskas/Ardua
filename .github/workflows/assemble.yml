@@ -21,7 +21,7 @@ jobs:
         run: |
           mkdir -p assets/css assets/js
           cat source-parts/css/*.b64 | tr -d '\n' | base64 --decode | gzip -dc > assets/css/ardua.css
-          cat source-parts/js/*.b64 | tr -d '\n' | base64 --decode | gzip -dc > assets/js/ardua.js
+          cat source-parts/js/*.b64 | tr -d '\n' | base64 --decode | xz -dc > assets/js/ardua.js
           node --check assets/js/ardua.js
           test -s assets/css/ardua.css
       - name: Commit assembled repository
