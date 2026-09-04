@@ -18,7 +18,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat rp-parts/*.part | base64 -d > /tmp/ardua-rp.xz
+          cat \
+            rp-parts/000.part \
+            rp-parts/001.part \
+            rp-parts/002.part \
+            rp-parts/01.part \
+            rp-parts/02.part \
+            rp-parts/03.part \
+            rp-parts/04.part \
+            rp-parts/05.part \
+            rp-parts/06.part \
+            rp-parts/07.part \
+            rp-parts/08.part \
+            rp-parts/09.part \
+            | base64 -d > /tmp/ardua-rp.xz
           xz -dc /tmp/ardua-rp.xz > assets/js/ardua.js
           echo '12e5972dacabc16daa63fc1e7659dd4d747be9f11b0947b229a7eee7c2bada78  assets/js/ardua.js' | sha256sum -c -
           node --check assets/js/ardua.js
