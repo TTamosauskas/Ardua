@@ -1,0 +1,21 @@
+const fs=require('fs');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const engine=fs.readFileSync(path.join(root,'assets/js/ardua.js'),'utf8');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+function ok(cond,msg){if(!cond)throw new Error(msg);console.log('✓',msg)}
+const ids=[...engine.matchAll(/id:'(rp_[a-z]+)'/g)].map(m=>m[1]);
+ok(ids.length===24,'24 fases próprias do rp-process');
+ok(new Set(ids).size===24,'IDs das fases rp são únicos');
+const expected=['rp_cu','rp_zn','rp_ga','rp_ge','rp_as','rp_se','rp_br','rp_kr','rp_rb','rp_sr','rp_y','rp_zr','rp_nb','rp_mo','rp_tc','rp_ru','rp_rh','rp_pd','rp_ag','rp_cd','rp_in','rp_sn','rp_sb','rp_te'];
+ok(expected.every(id=>ids.includes(id)),'sequência Cu→Te está completa');
+ok(engine.includes("productMass:64")&&engine.includes('⁶⁴Ge'),'waiting point ⁶⁴Ge está explícito');
+ok(engine.includes("productMass:68")&&engine.includes('⁶⁸Se'),'waiting point ⁶⁸Se está explícito');
+ok(engine.includes("productMass:72")&&engine.includes('⁷²Kr'),'waiting point ⁷²Kr está explícito');
+ok(engine.includes("mode:'rpCycle'")&&engine.includes('Sn ↔ Sb ↔ Te'),'ciclo terminal Sn–Sb–Te está configurado');
+ok(engine.includes("fuel:'H'")&&engine.includes("fuel:'p'"),'há fases com H ionizável e com prótons livres');
+ok(engine.includes('ionizeRpHydrogen')&&engine.includes('H → p + e⁻'),'ionização de Hidrogênio está implementada');
+ok(engine.includes('rpPhotoReturns++')&&engine.includes('photodisintegration'),'competição (γ,p) está implementada');
+ok(engine.includes("rpWaitDecays>=1")&&engine.includes("rpCyclesObserved>=1"),'waiting point e ciclo exigem observação antes de concluir');
+ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
+console.log('\nValidação estática do Ardua concluída.');
