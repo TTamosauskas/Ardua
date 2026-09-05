@@ -28,6 +28,15 @@
 .giant-agb{margin:24px auto 9px;border-color:rgba(255,214,132,.32);color:#fff0cb;box-shadow:0 0 18px rgba(255,176,74,.07)}
 .giant-after{padding-top:4px}
 
+/* Keep both stellar forks visibly connected to their precursor phase. */
+.giant-branches>.branch-fork-node,.supergiant-branches>.branch-fork-node{width:18px;height:18px;margin-bottom:25px;border-width:2px;background:#081727;box-shadow:0 0 8px #fff,0 0 26px rgba(112,222,255,.82)}
+.campaign-link.giant-link.branch-fork,.campaign-link.sg-link.branch-fork{stroke-width:2.7;opacity:.96}
+.campaign-link.giant-link.branch,.campaign-link.sg-link.branch{opacity:.9}
+
+/* Primordial choice spheres stay smaller than the brown dwarf sphere at every breakpoint. */
+.sphere-tritium{--sphere-size:46px}
+.sphere-helium{--sphere-size:52px}
+
 .giant-route{position:relative;isolation:isolate;min-height:190px}
 .giant-route::before{content:"";position:absolute;z-index:0;pointer-events:none;width:clamp(170px,29vw,250px);height:clamp(135px,22vw,205px);left:-145px;top:45px;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.11;filter:saturate(.86) contrast(1.06);mask-image:radial-gradient(ellipse at center,#000 0 38%,rgba(0,0,0,.68) 60%,transparent 82%)}
 .giant-route[data-branch-panel="red"]::before{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/nebulae/planetary/NGC%206891.jpg");opacity:.12}
@@ -40,4 +49,6 @@
  .giant-red{--sphere-size:80px}.giant-yellow{--sphere-size:68px}.giant-blue{--sphere-size:62px}.giant-white{--sphere-size:56px}
  .giant-branches .branch-choice strong{font-size:7px;letter-spacing:.04em;max-width:80px}
  .giant-route::before{width:150px;height:122px;left:-68px;opacity:.08}
+ .sphere-tritium{--sphere-size:34px}.sphere-helium{--sphere-size:38px}
 }
+@media(max-width:390px){.sphere-tritium{--sphere-size:30px}.sphere-helium{--sphere-size:34px}}
