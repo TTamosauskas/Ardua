@@ -32,5 +32,9 @@ ok(engine.includes("neutronPulseSize")&&engine.includes("spawnNeutronBatch")&&en
 ok(engine.includes("rStorm")&&engine.includes("rWave")&&engine.includes("neutronStormsObserved"),'processo-r possui tempestades e ondas de nêutrons');
 ok(engine.includes("rFreezeout")&&engine.includes("FREEZE-OUT")&&engine.includes("neutronFreezeouts"),'freeze-out do processo-r está implementado como etapa própria');
 ok(engine.includes("p.neutronBetaPending&&neutronGameplay(s).pattern!=='branch'"),'núcleos aguardando β− bloqueiam recaptura fora de ramificações');
+ok(engine.includes("COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8})"),'Barreira de Coulomb usa 0/0/50/60/80% por camada');
+ok(engine.includes("if(s.id==='coulomb_intro')return ring<=2?0:1"),'tutorial mantém Barreira de Coulomb determinística: anéis 0–2 livres e 3–4 bloqueados');
+ok(engine.includes("COULOMB_EXEMPT_SYMS=new Set(['H','D','T'])"),'H, Deutério e Trítio permanecem isentos da Barreira de Coulomb');
+ok(engine.includes('coulombRollBlocks(blockedCell,s,blockedPiece.sym)')&&engine.includes('coulombRollBlocks(cell,s,target.sym)'),'fusão e captura de prótons usam a chance radial da Barreira de Coulomb');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
 console.log('\nValidação estática do Ardua concluída.');
