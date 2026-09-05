@@ -1,0 +1,34 @@
+name: Apply single-objective ingredient rule
+
+on:
+  push:
+    paths:
+      - '.github/workflows/single-objective.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Patch and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/apply-single-objective.py
+          node --check assets/js/ardua.js
+          node tests/validate-static.js
+      - name: Commit clean implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm tools/apply-single-objective.py .github/workflows/single-objective.yml
+          rmdir tools 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Enforce one direct precursor per phase'
+          git push
