@@ -1,14 +1,16 @@
-/* Ardua — Big Bang is the first required campaign action. */
+/* Ardua — Big Bang is the opening ritual for every campaign session. */
 (()=>{
 'use strict';
-const C=window.ARDUA_CAMPAIGN,map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail'),detail=document.getElementById('mapDetail');
+const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail'),detail=document.getElementById('mapDetail');
 if(!C||!map||!trail||!detail)return;
 const root=map.querySelector('.singularity-map'),rootSection=root?.closest('.cosmos-root'),label=rootSection?.querySelector('.singularity-map-label');
 if(!root||!rootSection)return;
 const EXPLOSION_MS=4600;
-let started=false;
+const loadState=C.getState();
+const firstCosmicRun=!loadState.introduced;
+const resumeActive=loadState.activeId&&loadState.activeId!=='bigbang'?loadState.activeId:'primordial_d';
+let started=false,finished=false;
 
-function introduced(){return C.editor||!!C.getState().introduced}
 function ensurePrompt(){
  let prompt=rootSection.querySelector('.bigbang-start-prompt');
  if(!prompt){prompt=document.createElement('div');prompt.className='bigbang-start-prompt';rootSection.appendChild(prompt)}
@@ -17,13 +19,14 @@ function ensurePrompt(){
  if(label)label.hidden=true;
 }
 function setOpeningState(){
- if(introduced()){
+ if(C.editor){
   document.documentElement.classList.remove('ardua-awaiting-bigbang');
   map.classList.remove('awaiting-bigbang','bigbang-expanding');
   map.classList.add('bigbang-complete');
   if(label)label.hidden=false;
   return;
  }
+ if(finished)return;
  ensurePrompt();
  document.documentElement.classList.add('ardua-awaiting-bigbang');
  map.classList.add('awaiting-bigbang');
@@ -48,15 +51,27 @@ function makeBurst(){
  }
  rootSection.appendChild(scene);setTimeout(()=>scene.remove(),EXPLOSION_MS+900);
 }
+function nextPhaseId(){
+ const st=C.getState(),done=new Set(st.completed||[]),active=st.activeId;
+ if(active&&active!=='bigbang'&&!done.has(active)&&C.isUnlocked(active))return active;
+ const next=(G?.runtimeOrder||[]).find(id=>id!=='bigbang'&&!done.has(id)&&C.isUnlocked(id));
+ return next||resumeActive||'primordial_d';
+}
+function visiblePhaseNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||null}
 function showNextPhase(){
- const node=map.querySelector('.phase-node[data-phase="primordial_d"]'),title=node?.querySelector('strong')?.textContent?.trim()||'Forme Deutério';
- detail.innerHTML=`<div class="detail-kicker">PRÓXIMA FASE</div><h3>${title}</h3><p>O Universo primordial está em expansão. Inicie a primeira etapa jogável da nucleossíntese.</p><div class="detail-actions"><button type="button" data-detail-close>Fechar</button><button type="button" class="primary" data-launch="primordial_d">Explorar</button></div>`;
+ const id=nextPhaseId(),node=visiblePhaseNode(id),title=node?.querySelector('strong')?.textContent?.trim()||window.ARDUA_PHASE_NAMES?.[id]||id;
+ const text=id==='primordial_d'?'O Universo primordial está em expansão. Inicie a primeira etapa jogável da nucleossíntese.':'A campanha está pronta para continuar a partir desta etapa disponível.';
+ detail.innerHTML=`<div class="detail-kicker">PRÓXIMA FASE</div><h3>${title}</h3><p>${text}</p><div class="detail-actions"><button type="button" data-detail-close>Fechar</button><button type="button" class="primary" data-launch="${id}">Explorar</button></div>`;
  detail.classList.add('show');
  setTimeout(()=>node?.scrollIntoView({block:'center',behavior:'smooth'}),120);
 }
 function finishBigBang(){
- C.setIntroduced(true);C.setActive('primordial_d');C.markCompleted('bigbang');
- root.setAttribute('data-state','completed');
+ if(firstCosmicRun){
+  C.setIntroduced(true);C.setActive('primordial_d');C.markCompleted('bigbang');
+ }else{
+  const done=new Set(C.getState().completed||[]);if(!done.has('bigbang'))C.markCompleted('bigbang');C.setActive(resumeActive);
+ }
+ finished=true;root.setAttribute('data-state','completed');
  document.documentElement.classList.remove('ardua-awaiting-bigbang');
  map.classList.remove('awaiting-bigbang','bigbang-expanding');
  map.classList.add('bigbang-complete','bigbang-revealing','trail-revealed');
@@ -67,7 +82,7 @@ function finishBigBang(){
  setTimeout(showNextPhase,720);
 }
 function beginBigBang(e){
- if(introduced()||started)return;
+ if(C.editor||started||finished)return;
  started=true;e.preventDefault();e.stopImmediatePropagation();
  window.ARDUA_MUSIC?.play?.();window.ARDUA_MUSIC?.sync?.();
  detail.classList.remove('show');
