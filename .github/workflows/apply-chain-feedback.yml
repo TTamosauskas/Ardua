@@ -38,6 +38,11 @@ jobs:
                       break
               print(f'part{i}: overlap={overlap}')
               merged += chunk[overlap:]
+          bad = '];", new_record = """function recordFlow'
+          good = '];"""\nnew_record = """function recordFlow'
+          if merged.count(bad) != 1:
+              raise SystemExit(f'recordFlow boundary: expected 1 malformed delimiter, found {merged.count(bad)}')
+          merged = merged.replace(bad, good, 1)
           Path('/tmp/chain-feedback.py').write_text(merged)
           PY
           python .github/chain-feedback-fix.py
