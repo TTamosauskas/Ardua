@@ -21,6 +21,7 @@ const PHENOMENA=[
  {key:'phenomenon:supernova',glyph:'✦',title:'Supernova',group:'Eventos cósmicos',text:'Uma explosão estelar dispersa matéria enriquecida.',infer:['final_collapse']},
  {key:'phenomenon:neutronStar',glyph:'NS',title:'Estrela de Nêutrons',group:'Eventos cósmicos',text:'Remanescente compacto sustentado por matéria extremamente densa.',infer:['neutron_star']},
  {key:'phenomenon:blackHole',glyph:'●',title:'Buraco Negro',group:'Eventos cósmicos',text:'Colapso extremo com formação de um horizonte de eventos.',infer:['black_hole']},
+ {key:'phenomenon:hawkingRadiation',glyph:'hν',title:'Radiação Hawking',group:'Fenômenos',text:'Efeito quântico extremamente tênue associado ao horizonte de eventos de um buraco negro.'},
  {key:'phenomenon:plannedChain',glyph:'×',title:'Cadeia planejada',group:'Domínio',text:'Uma continuação nuclear já estava geometricamente preparada antes da reação inicial.'}
 ];
 

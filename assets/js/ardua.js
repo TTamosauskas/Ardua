@@ -438,7 +438,7 @@ const PHASES=[
  {id:'accretion',branch:'A estrela recebe nova matéria',title:'Acreção extrema',meta:'Matéria nova chega continuamente pela periferia',new:'Fe',mode:'accretion',target:6,visual:'accretion',fill:12,feedCap:14,endEvent:'postTransition',endLabel:'INICIAR<br>rp-PROCESS',menuTag:'ACREÇÃO'},
  ...RP_PROCESS_PHASES,
  {id:'stability',branch:'Massa crítica',title:'Limite de estabilidade',meta:'A acreção parou; matéria residual ainda orbita o núcleo',new:'Fe',mode:'collapseFinal',target:1,visual:'collapseFinal',fill:10,endEvent:'postTransition',endLabel:'FORMAR<br>BURACO NEGRO',menuTag:'COLAPSO'},
- {id:'black_hole',branch:'Colapso gravitacional',title:'Buraco negro',meta:'Engula toda a matéria que restou ao redor',new:'Fe',mode:'blackhole',target:6,visual:'blackHole',fill:6,endEvent:'finale',endLabel:'CONCLUIR<br>CICLO CÓSMICO',menuTag:'HORIZONTE'}];
+ {id:'black_hole',branch:'Colapso gravitacional',title:'Buraco negro',meta:'Buraco Negro + Átomo → Acreção',new:'Fe',mode:'blackhole',target:6,visual:'blackHole',fill:6,endEvent:'finale',endLabel:'CONCLUIR<br>CICLO CÓSMICO',menuTag:'HORIZONTE'}];
 
 function installReactionAtlasPhases(phases){
  for(const sp of ATLAS_REACTIONS.filter(x=>x.existingPhaseId)){
@@ -657,7 +657,7 @@ const STELLAR_POPUPS={
  accretion:{kicker:'Acreção extrema',title:'ESTRELA DE NÊUTRONS',sub:'O remanescente continua ganhando massa',line:'Em um sistema binário, matéria capturada de uma companheira pode formar um disco de acreção e aumentar a massa da estrela de nêutrons.'},
  rpProcess:{kicker:'Explosão termonuclear de raios X',title:'rp-PROCESS',sub:'Capturas rápidas de prótons em matéria acrecionada',line:'Hidrogênio e Hélio acumulados na superfície de uma estrela de nêutrons podem alimentar uma sequência de capturas de prótons e decaimentos β⁺. A campanha termina no ciclo Sn–Sb–Te.',art:'accretion'},
  stability:{kicker:'Massa crítica',title:'LIMITE DE ESTABILIDADE',sub:'A pressão interna já quase perde para a gravidade',line:'O limite máximo depende da física da matéria ultradensa. Acima dele, o remanescente pode colapsar para um buraco negro.'},
- blackHole:{kicker:'Colapso gravitacional',title:'BURACO NEGRO',sub:'A gravidade cria um horizonte de eventos',line:'O centro permanece escuro; a matéria ao redor pode formar um disco de acreção extremamente quente e luminoso antes de cruzar o horizonte.'}
+ blackHole:{kicker:'Colapso gravitacional',title:'BURACO NEGRO',sub:'Buraco Negro + Átomo → Acreção',line:'Selecione o Buraco Negro e um átomo. A matéria espirala para dentro, aquece e pode emitir radiação de alta energia antes de atravessar o horizonte.'}
 };
 function stellarKeyForPhase(s=phase()){
  if(s.mode==='opening'||s.id==='bigbang')return 'bigBang';
@@ -1062,7 +1062,7 @@ function desiredFill(){
   return Math.max(Math.min(6,count),Math.min(count,Math.round(count*ratio)));
 }
 
-const state={phaseIndex:0,board:Array(coords.length).fill(null),pieces:new Map(),nextId:1,selected:[],created:{},discovered:new Set(),locked:false,fusionInProgress:false,neutrons:new Map(),nextN:1,neutronTimer:null,neutronTick:null,accretionTimer:null,phaseDone:false,popupOpen:false,popupKind:null,lastStellarKey:null,lessonResolver:null,productLessons:new Set(),ignited:false,phaseMilestoneAnnounced:false,crushed:0,absorbed:0,postInitialMatter:0,collapseMatterSnapshot:null,crushTimer:null,crushId:null,coreHoldTimer:null,suppressTapId:null,suppressTapUntil:0,nuclearRound:0,primordialParticles:new Map(),nextPrimordialId:1,primordialSelected:null,primordialDriftTimer:null,particleDrag:null,freeSelected:[],primordialTransfer:null,bigBangStarted:false,bigBangColorized:false,cosmicRays:new Map(),nextCosmicId:1,cosmicTimer:null,selectedCosmic:null,selectedNeutron:null,explosiveHits:0,decayFound:new Set(),postHoldLearned:false,radioactiveProofDone:false,readyToAdvance:false,flow:0,flowMilestones:new Set(),contextRecipeKey:null,stratificationCoreGroup:null,protonCaptureUnlocked:false,protonCaptures:0,protonCaptureProducts:{},protonCaptureAttempts:{},rpIonized:0,rpPhotoReturns:0,rpCyclesObserved:0,rpWaitDecays:0,neutronSourceActivations:0,neutronPulsesObserved:0,neutronBranchesObserved:0,neutronBetaWaits:0,neutronFreezeouts:0,neutronStormsObserved:0,fusionAttempts:{},atlasProgress:0,atlasAttempts:{},atlasBarrierPassed:{},atlasPhaseTooltipSeen:false,coulombRepulsions:0,neutronBirths:0,neutronCaptureUnlocked:false,primordialDByProton:0,primordialDByNeutron:0,infoSelection:null,tooltipOpen:false,tooltipResolver:null,tooltipRestoreLock:false,rewardDiscoveries:new Set(),rewardAchievements:new Set(),signatureSeen:new Set(),rewardBannerTimer:null,rewardBannerToken:0,rewardLastShownAt:0,rewardPending:null,rewardPhaseComplete:false,chainCalloutTimer:null,chainCalloutRoot:null,preparedChainRoots:{},nextMatterOrigin:1,objectiveLineages:new Set(),objectiveMotifSelection:null,objectiveMotifActive:false,objectiveMotifRun:0};
+const state={phaseIndex:0,board:Array(coords.length).fill(null),pieces:new Map(),nextId:1,selected:[],created:{},discovered:new Set(),locked:false,fusionInProgress:false,neutrons:new Map(),nextN:1,neutronTimer:null,neutronTick:null,accretionTimer:null,phaseDone:false,popupOpen:false,popupKind:null,lastStellarKey:null,lessonResolver:null,productLessons:new Set(),ignited:false,phaseMilestoneAnnounced:false,crushed:0,absorbed:0,postInitialMatter:0,collapseMatterSnapshot:null,crushTimer:null,crushId:null,coreHoldTimer:null,suppressTapId:null,suppressTapUntil:0,nuclearRound:0,primordialParticles:new Map(),nextPrimordialId:1,primordialSelected:null,primordialDriftTimer:null,particleDrag:null,freeSelected:[],primordialTransfer:null,bigBangStarted:false,bigBangColorized:false,cosmicRays:new Map(),nextCosmicId:1,cosmicTimer:null,selectedCosmic:null,selectedNeutron:null,explosiveHits:0,decayFound:new Set(),postHoldLearned:false,blackHoleSelected:false,radioactiveProofDone:false,readyToAdvance:false,flow:0,flowMilestones:new Set(),contextRecipeKey:null,stratificationCoreGroup:null,protonCaptureUnlocked:false,protonCaptures:0,protonCaptureProducts:{},protonCaptureAttempts:{},rpIonized:0,rpPhotoReturns:0,rpCyclesObserved:0,rpWaitDecays:0,neutronSourceActivations:0,neutronPulsesObserved:0,neutronBranchesObserved:0,neutronBetaWaits:0,neutronFreezeouts:0,neutronStormsObserved:0,fusionAttempts:{},atlasProgress:0,atlasAttempts:{},atlasBarrierPassed:{},atlasPhaseTooltipSeen:false,coulombRepulsions:0,neutronBirths:0,neutronCaptureUnlocked:false,primordialDByProton:0,primordialDByNeutron:0,infoSelection:null,tooltipOpen:false,tooltipResolver:null,tooltipRestoreLock:false,rewardDiscoveries:new Set(),rewardAchievements:new Set(),signatureSeen:new Set(),rewardBannerTimer:null,rewardBannerToken:0,rewardLastShownAt:0,rewardPending:null,rewardPhaseComplete:false,chainCalloutTimer:null,chainCalloutRoot:null,preparedChainRoots:{},nextMatterOrigin:1,objectiveLineages:new Set(),objectiveMotifSelection:null,objectiveMotifActive:false,objectiveMotifRun:0};
 const $=id=>document.getElementById(id);
 const dom={star:$('starBoard'),core:$('starCore'),cells:$('cells'),pieces:$('pieces'),neutrons:$('neutrons'),lines:$('lines'),fx:$('fx'),objective:$('objective'),toast:$('toast'),ambient:$('ambientBanner'),remnant:$('remnantLayer'),remnantCore:$('remnantCore'),primordial:$('primordialLayer'),zones:$('stellarZones'),electronMesh:$('electronMesh'),singularity:$('singularityBtn'),cosmic:$('cosmicRays')};
 function buildElectronMesh(){
@@ -1116,6 +1116,7 @@ const DISCOVERY_ATLAS=Object.freeze([
  {key:'phenomenon:supernova',kind:'phenomenon',glyph:'✦',title:'Supernova',group:'Eventos cósmicos',text:'Uma explosão estelar dispersa matéria enriquecida.'},
  {key:'phenomenon:neutronStar',kind:'phenomenon',glyph:'NS',title:'Estrela de Nêutrons',group:'Eventos cósmicos',text:'Remanescente compacto sustentado por matéria extremamente densa.'},
  {key:'phenomenon:blackHole',kind:'phenomenon',glyph:'●',title:'Buraco Negro',group:'Eventos cósmicos',text:'Colapso extremo com formação de um horizonte de eventos.'},
+ {key:'phenomenon:hawkingRadiation',kind:'phenomenon',glyph:'hν',title:'Radiação Hawking',group:'Fenômenos',text:'Efeito quântico extremamente tênue associado ao horizonte de eventos de um buraco negro.'},
  {key:'phenomenon:plannedChain',kind:'phenomenon',glyph:'×',title:'Cadeia planejada',group:'Domínio',text:'Uma continuação nuclear já estava geometricamente preparada antes da reação inicial.'}
 ]);
 const MICRO_REWARDS=Object.freeze({
@@ -2318,15 +2319,15 @@ function renderPieces(){
    el.addEventListener('click',ev=>{ev.stopPropagation();if(state.suppressTapId===id&&performance.now()<state.suppressTapUntil)return;tapAtom(id)});
    // Toque curto continua sendo click normal; o hold só observa a duração.
    // As rotinas de hold concluído já usam suppressTapId para absorver o click posterior.
-   el.addEventListener('pointerdown',ev=>{if(['neutronize','neutron','guidedDecay','decayGarden'].includes(phase().mode)||isPostAtomMode()){ev.stopPropagation();beginCrushHold(id,el,ev)}});
+   el.addEventListener('pointerdown',ev=>{if(['neutronize','neutron','guidedDecay','decayGarden'].includes(phase().mode)||(isPostAtomMode()&&phase().mode!=='blackhole')){ev.stopPropagation();beginCrushHold(id,el,ev)}});
    el.addEventListener('pointerup',()=>cancelCrushHold(id));el.addEventListener('pointercancel',()=>cancelCrushHold(id));el.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')cancelCrushHold(id)});
-   if(!window.PointerEvent){let touchHeld=false;el.addEventListener('touchstart',ev=>{if(['neutronize','neutron','guidedDecay','decayGarden'].includes(phase().mode)||isPostAtomMode()){touchHeld=true;beginCrushHold(id,el,ev)}},{passive:true});el.addEventListener('touchend',()=>{const wasHolding=state.crushId===id;cancelCrushHold(id);if(touchHeld&&wasHolding&&!(state.suppressTapId===id&&performance.now()<state.suppressTapUntil))setTimeout(()=>tapAtom(id),0);touchHeld=false},{passive:true});el.addEventListener('touchcancel',()=>{touchHeld=false;cancelCrushHold(id)},{passive:true})}
+   if(!window.PointerEvent){let touchHeld=false;el.addEventListener('touchstart',ev=>{if(['neutronize','neutron','guidedDecay','decayGarden'].includes(phase().mode)||(isPostAtomMode()&&phase().mode!=='blackhole')){touchHeld=true;beginCrushHold(id,el,ev)}},{passive:true});el.addEventListener('touchend',()=>{const wasHolding=state.crushId===id;cancelCrushHold(id);if(touchHeld&&wasHolding&&!(state.suppressTapId===id&&performance.now()<state.suppressTapUntil))setTimeout(()=>tapAtom(id),0);touchHeld=false},{passive:true});el.addEventListener('touchcancel',()=>{touchHeld=false;cancelCrushHold(id)},{passive:true})}
    dom.pieces.appendChild(el)
   }
   const e=E[p.sym],s=phase(),cap=(s.mode==='neutron'&&neutronEligible(p,s)&&p.captures>0)?`<span class="cap">n ${p.captures}/${s.captures}</span>`:'';
   el.style.background=elementStyle(p.sym);const shownSym=pieceDisplaySymbol(p);el.style.setProperty('--symScale',pieceSymbolScale(p,shownSym));el.innerHTML=`<span class="sym">${shownSym}</span>${cap}`;
-  const selectedPrimordialParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedFree=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,primordialParticleTarget=primordial&&p.free&&selectedPrimordialParticle&&(!!primordialMixedReaction(p.sym,selectedPrimordialParticle.kind)||(selectedPrimordialParticle.kind==='e'&&pieceCanBindElectron(p))),primordialPieceTarget=primordial&&p.free&&selectedFree&&selectedFree.id!==p.id&&primordialPossiblePieceRecipes([selectedFree.sym,p.sym]).length>0,selected=primordial?state.freeSelected.includes(id):state.selected.includes(p.cell),neutronPartner=s.mode==='neutron'&&state.selectedNeutron!==null&&(neutronEligible(p,s)||universalNeutronCaptureEligible(p)),particleTarget=['spallation','neutrino','gamma'].includes(s.mode)&&state.selectedCosmic!==null&&particleTargets(s).includes(p.sym),stellarProtonTarget=!primordial&&selectedPrimordialParticle?.kind==='p'&&((stellarProtonRecipe(s)&&p.sym==='H')||(protonCaptureAvailable(s)&&!!protonCaptureRoute(p,s))),decayReady=(s.mode==='decayGarden'&&p.decayTrack&&p.decayIndex<p.decayTrack.length-1)||(s.mode==='guidedDecay'&&!!guidedTransitionFor(p,s))||(s.id==='co'&&p.sym==='FeU'&&p.radioactiveReady);
-  const partner=(!primordial&&candidates.has(p.cell))||primordialParticleTarget||primordialPieceTarget||neutronPartner||particleTarget||stellarProtonTarget;
+  const selectedPrimordialParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedFree=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,primordialParticleTarget=primordial&&p.free&&selectedPrimordialParticle&&(!!primordialMixedReaction(p.sym,selectedPrimordialParticle.kind)||(selectedPrimordialParticle.kind==='e'&&pieceCanBindElectron(p))),primordialPieceTarget=primordial&&p.free&&selectedFree&&selectedFree.id!==p.id&&primordialPossiblePieceRecipes([selectedFree.sym,p.sym]).length>0,selected=primordial?state.freeSelected.includes(id):state.selected.includes(p.cell),neutronPartner=s.mode==='neutron'&&state.selectedNeutron!==null&&(neutronEligible(p,s)||universalNeutronCaptureEligible(p)),particleTarget=['spallation','neutrino','gamma'].includes(s.mode)&&state.selectedCosmic!==null&&particleTargets(s).includes(p.sym),stellarProtonTarget=!primordial&&selectedPrimordialParticle?.kind==='p'&&((stellarProtonRecipe(s)&&p.sym==='H')||(protonCaptureAvailable(s)&&!!protonCaptureRoute(p,s))),blackHoleTarget=s.mode==='blackhole'&&state.blackHoleSelected&&!selected,decayReady=(s.mode==='decayGarden'&&p.decayTrack&&p.decayIndex<p.decayTrack.length-1)||(s.mode==='guidedDecay'&&!!guidedTransitionFor(p,s))||(s.id==='co'&&p.sym==='FeU'&&p.radioactiveReady);
+  const partner=(!primordial&&candidates.has(p.cell))||primordialParticleTarget||primordialPieceTarget||neutronPartner||particleTarget||stellarProtonTarget||blackHoleTarget;
   const matterClass=p.matterState==='atom'?' atomic-piece':' nucleus-piece';
   el.className='atom'+matterClass+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=p.x+'px';el.style.top=p.y+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
  });existing.forEach(el=>el.remove())
@@ -2597,7 +2598,7 @@ function objectiveProgress(s=phase()){
    if(g.requiresFreezeout)parts.push(state.neutronFreezeouts>=1?1:0);
    return combine(parts);
  }
- if(s.mode==='blackhole'){const initial=Math.max(1,state.postInitialMatter||state.pieces.size||1);return ratio(Math.max(0,initial-state.pieces.size),initial)}
+ if(s.mode==='blackhole')return ratio(state.absorbed,s.target);
  if(isPostMode(s))return ratio(state.absorbed,s.target);
  if(isPrimordial(s)&&s.mode!=='opening')return ratio(primordialGoalCount(s),s.target);
  if(s.mode==='rpProcess'){
@@ -2817,7 +2818,7 @@ function conciseRecipeLine(s=phase()){
  if(s.mode==='pulsar')return 'matéria → rotação';
  if(s.mode==='accretion')return 'matéria → acreção';
  if(s.mode==='collapseFinal')return 'massa crítica → colapso';
- if(s.mode==='blackhole')return 'matéria → horizonte';
+ if(s.mode==='blackhole')return 'Buraco Negro + Átomo → Acreção';
  if(s.mode==='fusion'){
    const target=phaseFusionRecipes(s).slice().reverse()[0]||phaseFusionRecipe(s),action=nextExecutableFusionToward(target,s);
    if(action?.kind==='fusion'&&action.recipe===FUSIONS.D&&protonAssistedDReady(s))return 'H + próton → ²H';
@@ -2864,7 +2865,7 @@ function updateObjective(){
  if(s.mode==='pulsar'){$('goalText').textContent=`Incorpore ${s.target} núcleos — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.mode==='accretion'){$('goalText').textContent=`Alimente o remanescente — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.mode==='collapseFinal'){$('goalText').textContent='Supere o limite de estabilidade';setFormula(conciseRecipeLine(s));return}
- if(s.mode==='blackhole'){$('goalText').textContent=`Matéria restante — ${state.pieces.size}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='blackhole'){$('goalText').textContent=`Atraia ${s.target} átomos ao Buraco Negro — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  const made=state.created[s.new]||0;
  if(s.uniqueMatterObjective){$('goalText').textContent=`Observe ${s.target} formações independentes de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.id==='brown'){$('goalText').textContent=`Queime ${s.target} núcleos de Deutério — ${state.created.He3||0}/${s.target}`;setFormula(conciseRecipeLine(s));return}
@@ -2892,6 +2893,8 @@ function renderRemnant(){
  if(s.mode==='accretion'||s.mode==='rpProcess')layer.classList.add('accretion');
  if(s.mode==='collapseFinal')layer.classList.add('collapse-final');
  if(s.mode==='blackhole')layer.classList.add('black-hole');
+ dom.remnantCore?.classList.toggle('blackhole-selected',s.mode==='blackhole'&&state.blackHoleSelected);
+ if(s.mode==='blackhole')dom.remnantCore?.setAttribute('aria-label',state.blackHoleSelected?'Buraco Negro selecionado; escolha um átomo':'Selecionar Buraco Negro');
  const progress=Math.max(0,Math.min(1,state.absorbed/Math.max(1,s.target||1)));
  if(s.mode==='pulsar'){const period=2.45-(2.02*progress);layer.style.setProperty('--beamPeriod',`${period.toFixed(2)}s`)}
  else if(s.mode==='accretion'){layer.style.setProperty('--beamPeriod',`${Math.max(.34,.72-progress*.25).toFixed(2)}s`)}
@@ -2951,7 +2954,7 @@ function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)r
    if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;
    return tapExplosiveTarget(id);
  }
- if(s.mode==='whiteCompact'){if(handleFusionTap(p))return;invalid(p.cell);return}if(isPrimordial(s)&&s.mode!=='opening')return tapFreeAtom(id);const cell=p.cell;if(s.mode==='collapseFinal'){toast('A matéria já está em órbita extrema. Segure o núcleo central.');return}if(isPostAtomMode(s)){if(state.postHoldLearned)return completePostAbsorb(id);toast(s.mode==='blackhole'?'Segure a primeira matéria por 1 s; depois, toques simples atravessam o horizonte.':'Segure o primeiro núcleo por 1 s; depois, use toques simples.');return}if(s.mode==='neutronize'){toast('Mantenha o átomo pressionado por 1 segundo.');return}
+ if(s.mode==='whiteCompact'){if(handleFusionTap(p))return;invalid(p.cell);return}if(isPrimordial(s)&&s.mode!=='opening')return tapFreeAtom(id);const cell=p.cell;if(s.mode==='collapseFinal'){toast('A matéria já está em órbita extrema. Segure o núcleo central.');return}if(s.mode==='blackhole'){if(state.selected.includes(cell)){state.selected=[];render();return}if(!state.blackHoleSelected){state.selected=[cell];tone(248,.05,'sine',.025);toast('Átomo selecionado · toque no Buraco Negro.');render();return}return completeBlackHoleAccretion(id)}if(isPostAtomMode(s)){if(state.postHoldLearned)return completePostAbsorb(id);toast('Segure o primeiro núcleo por 1 s; depois, use toques simples.');return}if(s.mode==='neutronize'){toast('Mantenha o átomo pressionado por 1 segundo.');return}
  if(s.id==='he_red'&&p.sym==='H'){
    state.selected=state.selected[0]===cell?[]:[cell];state.primordialSelected=null;tone(320,.04);render();return
  }
@@ -2974,9 +2977,10 @@ function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)r
 }
 function beginCrushHold(id,el,ev){
   const s=phase(),p=state.pieces.get(id);
-  if((!['neutronize','neutron','guidedDecay','decayGarden'].includes(s.mode)&&!isPostAtomMode(s))||state.locked||state.phaseDone||!p)return;
+  const postHoldMode=isPostAtomMode(s)&&s.mode!=='blackhole';
+  if((!['neutronize','neutron','guidedDecay','decayGarden'].includes(s.mode)&&!postHoldMode)||state.locked||state.phaseDone||!p)return;
   focusPieceInfo(p);ev?.stopPropagation?.();
-  if(state.crushTimer)return;if(isPostAtomMode(s)&&state.postHoldLearned)return;
+  if(state.crushTimer)return;if(postHoldMode&&state.postHoldLearned)return;
   if(s.mode==='guidedDecay'&&!guidedTransitionFor(p,s))return;
   if(s.mode==='decayGarden'&&(!p.decayTrack||(p.decayIndex||0)>=p.decayTrack.length-1))return;
   if(s.id==='co'&&s.manualDecay&&!p.radioactiveReady)return;
@@ -2986,7 +2990,7 @@ function beginCrushHold(id,el,ev){
   try{el.setPointerCapture?.(ev?.pointerId)}catch(e){}
   el.classList.add('crush-hold');
   tone(115,.12,'sine',.018);
-  state.crushTimer=setTimeout(()=>s.mode==='decayGarden'?completeGardenDecayHold(id):s.mode==='guidedDecay'||(s.id==='co'&&p.radioactiveReady)?completeGuidedDecay(id):isPostAtomMode()?completePostAbsorb(id):completeCrush(id),1000);
+  state.crushTimer=setTimeout(()=>s.mode==='decayGarden'?completeGardenDecayHold(id):s.mode==='guidedDecay'||(s.id==='co'&&p.radioactiveReady)?completeGuidedDecay(id):postHoldMode?completePostAbsorb(id):completeCrush(id),1000);
 }
 function cancelCrushHold(id){
   if(state.crushId!==id)return;
@@ -3006,6 +3010,7 @@ const PRODUCT_LESSONS={
  neutrino:{title:'NEUTRINO (νₑ)',text:'Neutrinos têm carga elétrica nula e interagem muito fracamente com a matéria, escapando com facilidade do ambiente.'},
  antineutrino:{title:'ANTINEUTRINO (ν̄ₑ)',text:'O antineutrino eletrônico acompanha processos β− e escapa quase sem interagir com a matéria.'},
  gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia é liberado.'},
+ hawking:{title:'RADIAÇÃO HAWKING',text:'O γ visto durante a acreção representa radiação produzida pela matéria aquecida antes do horizonte. A Radiação Hawking é um efeito quântico distinto, emitido pelo horizonte em intensidade extremamente pequena para buracos negros astrofísicos.'},
  coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'},
  waitingPoint:{title:'PONTO DE ESPERA',text:'Alguns núcleos proton-rich desaceleram o rp-process. Continue fazendo ações nucleares: o núcleo pode sofrer β⁺ enquanto a rede procura outra rota.'},
  photodisintegration:{title:'FOTODESINTEGRAÇÃO (γ,p)',text:'Em radiação muito intensa, um fóton pode devolver o próton recém-capturado. A matéria permanece disponível para outra tentativa.'},
@@ -3145,7 +3150,7 @@ async function completePostAbsorb(id){
  state.crushTimer=null;state.crushId=null;
  const s=phase(),p=state.pieces.get(id),el=dom.pieces.querySelector(`[data-id="${id}"]`);
  if(el)el.classList.remove('crush-hold');
- if(!isPostAtomMode(s)||state.locked||state.phaseDone||!p)return;
+ if(!isPostAtomMode(s)||s.mode==='blackhole'||state.locked||state.phaseDone||!p)return;
  const {x,y,cell}=p,c=starSize()/2;
  state.suppressTapId=id;state.suppressTapUntil=performance.now()+800;
  if(el){el.style.transition='left .36s cubic-bezier(.2,.75,.25,1),top .36s cubic-bezier(.2,.75,.25,1),transform .36s ease,opacity .36s ease';el.style.left=c+'px';el.style.top=c+'px';el.style.transform='translate(-50%,-50%) scale(.08)';el.style.opacity='0'}
@@ -3165,8 +3170,30 @@ async function completePostAbsorb(id){
  save();render();checkComplete();if(s.mode==='accretion'&&!state.phaseDone)setTimeout(spawnAccretionMatter,180);
 }
 
+function emitHawkingQuantum(x,y){
+ const d=document.createElement('div');d.className='hawking-quantum';d.textContent='hν';d.style.left=x+'px';d.style.top=y+'px';dom.fx.appendChild(d);const a=Math.random()*Math.PI*2,dist=starSize()*.34,anim=d.animate([{transform:'translate(-50%,-50%) scale(.45)',opacity:0},{offset:.18,transform:'translate(-50%,-50%) scale(1)',opacity:.88},{transform:`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(.55)`,opacity:0}],{duration:1050,easing:'cubic-bezier(.18,.72,.22,1)',fill:'forwards'});setTimeout(()=>d.remove(),1150);return anim
+}
+function blackHoleSpiral(el,x,y,c){
+ if(!el?.animate)return Promise.resolve();const dx=x-c,dy=y-c,startR=Math.max(18,Math.hypot(dx,dy)),base=Math.atan2(dy,dx),frames=[];
+ for(let i=0;i<=10;i++){const t=i/10,a=base+t*Math.PI*3.2,r=startR*Math.pow(1-t,1.18),px=c+Math.cos(a)*r,py=c+Math.sin(a)*r;frames.push({left:`${px}px`,top:`${py}px`,transform:`translate(-50%,-50%) scale(${Math.max(.06,1-t*.94)})`,opacity:Math.max(.04,1-t*.82),filter:`brightness(${1+t*.7})`})}
+ const anim=el.animate(frames,{duration:920,easing:'cubic-bezier(.12,.72,.18,1)',fill:'forwards'});return new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;resolve()};anim.onfinish=finish;setTimeout(finish,1040)})
+}
+function selectBlackHoleCore(){
+ const s=phase();if(s.mode!=='blackhole'||state.locked||state.phaseDone)return;state.blackHoleSelected=!state.blackHoleSelected;tone(state.blackHoleSelected?118:92,.08,'sine',.025);vibrate(7);
+ if(state.blackHoleSelected&&state.selected.length){const cell=state.selected[0],id=state.board[cell];if(id&&state.pieces.has(id)){state.selected=[];render();setTimeout(()=>completeBlackHoleAccretion(id),60);return}}
+ toast(state.blackHoleSelected?'Buraco Negro selecionado · escolha um átomo.':'Seleção do Buraco Negro liberada.');render()
+}
+async function completeBlackHoleAccretion(id){
+ const s=phase(),p=state.pieces.get(id),el=dom.pieces.querySelector(`[data-id="${id}"]`);if(s.mode!=='blackhole'||state.locked||state.phaseDone||!p)return;
+ state.locked=true;state.blackHoleSelected=false;state.selected=[];const {x,y,cell}=p,c=starSize()/2;el?.classList.add('blackhole-accreting');captureTag(x,y,'ACREÇÃO');tone(146,.09,'sine',.026);setTimeout(()=>tone(196,.09,'sine',.025),150);setTimeout(()=>tone(247,.10,'triangle',.024),300);setTimeout(()=>tone(330,.12,'triangle',.022),455);vibrate([8,12,10]);
+ const gammaPromise=(async()=>{await wait(430);return emitGamma(c,c,true)})();await blackHoleSpiral(el,x,y,c);
+ if(cell!==null&&cell!==undefined&&state.board[cell]===id)state.board[cell]=null;state.pieces.delete(id);state.absorbed++;recordFlow(1);burst(c,c);captureTag(c,c,'HORIZONTE');announce('ACREÇÃO','MATÉRIA CAPTURADA',`${state.absorbed}/${s.target} átomos atraídos`);save();render();await gammaPromise;
+ const firstHawking=!state.rewardDiscoveries.has('phenomenon:hawkingRadiation');if(firstHawking){registerRewardDiscovery('phenomenon:hawkingRadiation',{title:'RADIAÇÃO HAWKING',text:'Efeito quântico extremamente tênue associado ao horizonte de eventos.',silent:true});emitHawkingQuantum(c,c);await wait(220);await teachProductOnce('hawking',c,c)}
+ state.locked=false;render();checkComplete()
+}
+
 function beginCoreHold(ev){
- const s=phase();if(s.mode!=='collapseFinal'||state.locked||state.phaseDone||state.coreHoldTimer)return;
+ const s=phase();if(s.mode==='blackhole'){ev.preventDefault?.();ev.stopPropagation?.();selectBlackHoleCore();return}if(s.mode!=='collapseFinal'||state.locked||state.phaseDone||state.coreHoldTimer)return;
  ev.preventDefault?.();ev.stopPropagation?.();
  try{dom.remnantCore.setPointerCapture?.(ev.pointerId)}catch(e){}
  dom.remnantCore.classList.add('core-hold');dom.star.classList.add('core-collapsing');tone(82,.34,'sawtooth',.032);vibrate([18,28,18]);
@@ -3626,7 +3653,7 @@ function objectiveSatisfied(s=phase()){
  if(s.mode==='neutron'){
    const made=state.created[s.new]||0,g=neutronGameplay(s);if(made<s.target)return false;if(g.requiresSource&&state.neutronSourceActivations<1)return false;if(g.requiresBranch&&state.neutronBranchesObserved<1)return false;if(g.requiresFreezeout&&state.neutronFreezeouts<1)return false;return true;
  }
- if(s.mode==='blackhole')return state.postInitialMatter>0&&state.pieces.size===0;
+ if(s.mode==='blackhole')return state.absorbed>=s.target;
  if(isPostMode(s))return state.absorbed>=s.target;
  if(isPrimordial(s)&&s.mode!=='opening')return primordialGoalCount(s)>=s.target;
  if(s.mode==='rpProcess'){const step=rpStep(s),made=state.created[s.new]||0;if(step?.pattern==='waiting')return made>=s.target&&state.rpWaitDecays>=1;if(step?.pattern==='cycle')return made>=s.target&&state.rpCyclesObserved>=1;return made>=s.target}
@@ -3646,7 +3673,7 @@ function checkComplete(){
  else if(s.mode==='pulsar')announce('OBJETIVO CONCLUÍDO','PULSAR ACELERADO','O feixe atingiu o marco da fase; você pode continuar alimentando-o.');
  else if(s.mode==='accretion')announce('OBJETIVO CONCLUÍDO','ACREÇÃO SUFICIENTE','Continue observando a matéria chegar ou prossiga para o limite.');
  else if(s.mode==='collapseFinal')announce('OBJETIVO CONCLUÍDO','LIMITE SUPERADO','O colapso está pronto para prosseguir.');
- else if(s.mode==='blackhole')announce('OBJETIVO CONCLUÍDO','HORIZONTE ALIMENTADO','O espaço local foi limpo; conclua o ciclo quando quiser.');
+ else if(s.mode==='blackhole')announce('OBJETIVO CONCLUÍDO','BURACO NEGRO ALIMENTADO',`${state.absorbed} átomos completaram a acreção; conclua o ciclo quando quiser.`);
  else if(s.mode==='neutronize')announce('OBJETIVO CONCLUÍDO','MATÉRIA NEUTRON-RICA','Continue experimentando ou libere a onda de choque quando quiser.');
  else if(s.mode==='rpProcess')announce('OBJETIVO CONCLUÍDO',E[s.new].name.toUpperCase(),rpStep(s)?.pattern==='cycle'?'O ciclo Sn–Sb–Te marca o limite desta campanha de capturas rápidas de prótons.':'Continue capturando prótons ou prossiga para o próximo marco do rp-process.');
  else if(s.mode==='guidedDecay')announce('OBJETIVO CONCLUÍDO',E[s.new].name.toUpperCase(),'A cadeia permanece disponível enquanto houver núcleos históricos para transformar.');
@@ -3725,7 +3752,7 @@ function endPhaseAction(){
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()
 }
 function advancePhase(){const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}
-function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render()}
+function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.blackHoleSelected=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render()}
 function modalPrimaryLine(s=phase()){
  if(s.mode==='reactionExplore')return atlasSymbolicLine(s);
  if(s.mode==='opening')return 'Universo quente e denso → expansão';
@@ -3764,7 +3791,7 @@ function modalPrimaryLine(s=phase()){
  if(s.mode==='pulsar')return 'Acreção + rotação → Pulsar mais rápido';
  if(s.mode==='accretion')return 'Matéria em queda → remanescente mais massivo';
  if(s.mode==='collapseFinal')return 'Massa crítica → colapso gravitacional';
- if(s.mode==='blackhole')return 'Colapso extremo → Buraco Negro';
+ if(s.mode==='blackhole')return 'Buraco Negro + Átomo → Acreção';
  if(s.mode==='fusion'){
    const r=phaseFusionRecipe(s);if(r)return fusionLabel(r);
  }
@@ -3810,7 +3837,7 @@ function modalSecondaryLine(s=phase()){
  if(s.mode==='pulsar')return 'Incorpore matéria e acelere os feixes';
  if(s.mode==='accretion')return 'Alimente o remanescente com nova matéria';
  if(s.mode==='collapseFinal')return 'Supere o limite de estabilidade';
- if(s.mode==='blackhole')return 'Faça a matéria atravessar o horizonte';
+ if(s.mode==='blackhole')return 'Selecione o Buraco Negro e depois selecione um átomo';
  if(s.new&&E[s.new])return `Produza ${E[s.new].name} usando o que já aprendeu`;
  return 'Explore o fenômeno e prossiga quando concluir';
 }

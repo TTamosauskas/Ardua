@@ -370,3 +370,12 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 @keyframes convectionChoicePulse{from{filter:brightness(.98)}to{filter:brightness(1.13)}}@keyframes convectionPathPulse{from{filter:brightness(.98)}to{filter:brightness(1.18)}}
 .convection-energy,.convection-gamma-release{position:absolute;z-index:68;pointer-events:none;transform:translate(-50%,-50%) scale(1);font-weight:950;transition:left .72s cubic-bezier(.18,.72,.22,1),top .72s cubic-bezier(.18,.72,.22,1),opacity .72s ease,transform .72s ease;text-shadow:0 0 10px currentColor,0 0 22px currentColor}.convection-energy.light{font-size:13px;color:#ffe8ae}.convection-gamma-release{font-size:22px;color:#e9fbff;text-shadow:0 0 9px #fff,0 0 22px rgba(127,219,255,.95)}
 @media(max-width:430px){.convection-core-trigger{width:calc(var(--cellSize)*.80);height:calc(var(--cellSize)*.80)}.convection-glyph{font-size:calc(var(--cellSize)*.43)}}
+
+
+/* Black-hole selection accretion */
+.remnant-layer.black-hole{z-index:16}
+.remnant-layer.black-hole .remnant-core{pointer-events:auto;cursor:pointer;touch-action:manipulation;z-index:18}
+.remnant-layer.black-hole .remnant-core.blackhole-selected{border-color:rgba(121,237,255,.92);box-shadow:0 0 0 12px rgba(0,0,0,.62),0 0 0 19px rgba(106,232,255,.20),0 0 34px rgba(123,235,255,.88),0 0 82px rgba(85,160,255,.55),0 0 128px rgba(255,173,68,.20);animation:blackHoleSelectedPulse .78s ease-in-out infinite alternate}
+@keyframes blackHoleSelectedPulse{from{transform:translate(-50%,-50%) scale(.96);filter:brightness(.92)}to{transform:translate(-50%,-50%) scale(1.045);filter:brightness(1.18)}}
+.atom.blackhole-accreting{z-index:34;pointer-events:none!important;will-change:left,top,transform,opacity,filter;transition:none!important;outline-color:rgba(255,214,102,.75);box-shadow:0 0 26px rgba(255,188,70,.72),0 0 52px rgba(129,180,255,.32)}
+.hawking-quantum{position:absolute;z-index:72;pointer-events:none;transform:translate(-50%,-50%);font-size:10px;font-weight:900;color:#dff9ff;text-shadow:0 0 8px #fff,0 0 18px rgba(111,221,255,.92);will-change:transform,opacity}
