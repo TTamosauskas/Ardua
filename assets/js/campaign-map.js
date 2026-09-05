@@ -79,10 +79,11 @@ function sphereImage(key){
  const im=G.images[key];return im?` style="background-image:url('${im.url.replace(/'/g,'%27')}')"`:'';
 }
 function branchSphere(group,key,label,visual='',imageKey=''){
- return `<button type="button" class="branch-choice ${branchVisualState(group,key)} ${visual}" data-branch-group="${group}" data-branch-open="${key}" aria-pressed="false"><span class="branch-sphere-art"${sphereImage(imageKey)}></span><strong>${label}</strong></button>`;
+ return `<button type="button" class="branch-choice ${branchVisualState(group,key)} ${visual}" data-branch-group="${group}" data-branch-open="${key}" aria-pressed="false" aria-expanded="false"><span class="branch-sphere-art"${sphereImage(imageKey)}></span><strong>${label}</strong></button>`;
 }
 function branchCluster(group,choices,extra=''){
  return `<section class="branch-cluster ${extra}" data-branch-group="${group}">
+  <span class="branch-fork-node" data-branch-fork="${group}" aria-hidden="true"></span>
   <div class="branch-spheres">${choices.map(c=>branchSphere(group,c.key,c.label,c.visual||'',c.image||'')).join('')}</div>
   <div class="branch-panels">${choices.map(c=>`<div class="branch-panel" data-branch-group="${group}" data-branch-panel="${c.key}" hidden>${c.content}</div>`).join('')}</div>
  </section>`;
@@ -104,10 +105,10 @@ function buildMap(){
   {key:'remnant',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:`${flow(['neutron_star'])}${neutron}`}
  ],'supernova-branches');
  const stellar=branchCluster('stellar',[
-  {key:'sub',label:'Massa muito baixa',visual:'sphere-brown',image:'brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
+  {key:'sub',label:'Anã marrom',visual:'sphere-brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
   {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${structural('Evolução de longa vida')}${flow(['white'])}`},
   {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
-  {key:'high',label:'Alta massa',visual:'sphere-blue',image:'supernova',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${portal('Processo-s fraco',G.sequences.weakS,false,'weak-s')}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
+  {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${portal('Processo-s fraco',G.sequences.weakS,false,'weak-s')}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
  ],'stellar-branches');
  host.innerHTML=`<div class="campaign-shell" id="campaignShell">
  <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha</span></div><div class="campaign-mode-chip">${editor?'Editor':'Campanha'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar</button></div></header>
@@ -121,18 +122,22 @@ function buildMap(){
     ${flow(['primordial_d'])}
     ${structural('Universo primordial')}
     ${primordial}
-    <div class="convergence" data-junction="primordial-he4">Hélio-4</div>
-    ${flow(G.sequences.atomic)}
-    ${structural('Era Atômica')}
-    <div class="stellar-birth" data-junction="stellar-birth"><i></i><strong>Nascimento das estrelas</strong></div>
-    ${ambientImage('birth','birth-bg')}
+    <div class="branch-after" data-after-group="primordial" hidden>
+     <div class="convergence" data-junction="primordial-he4">Hélio-4</div>
+     ${flow(G.sequences.atomic)}
+     ${structural('Era Atômica')}
+     <div class="stellar-birth" data-junction="stellar-birth"><i></i><strong>Nascimento das estrelas</strong></div>
+     ${ambientImage('birth','birth-bg')}
+     ${stellar}
+     <div class="branch-after" data-after-group="stellar" hidden>
+      <section class="cycle-grid">
+       <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos')}${flow(G.sequences.interstellar)}</article>
+       <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
+      </section>
+      <div class="cycle-arrow">Ciclo cósmico</div>
+     </div>
+    </div>
    </section>
-   ${stellar}
-   <section class="cycle-grid">
-    <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos')}${flow(G.sequences.interstellar)}</article>
-    <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
-   </section>
-   <div class="cycle-arrow">Ciclo cósmico</div>
   </div>
  </main></div>
  <aside class="map-detail" id="mapDetail" aria-live="polite"></aside>`;
@@ -142,21 +147,43 @@ const map=buildMap(),detail=$('mapDetail'),closeBtn=$('campaignClose'),dataBtn=$
 
 function isVisible(el){return !!el&&el.getClientRects().length>0}
 function byPhase(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(isVisible)||null}
-function branchSphereEl(group,key){return map.querySelector(`.branch-cluster[data-branch-group="${group}"] .branch-choice[data-branch-open="${key}"]`)}
-function branchPanel(group,key){return map.querySelector(`.branch-cluster[data-branch-group="${group}"] .branch-panel[data-branch-panel="${key}"]`)}
+function branchClusterEl(group){return [...map.querySelectorAll(`.branch-cluster[data-branch-group="${group}"]`)].find(isVisible)||map.querySelector(`.branch-cluster[data-branch-group="${group}"]`)}
+function branchSphereEl(group,key){const cluster=branchClusterEl(group);return cluster?.querySelector(`.branch-choice[data-branch-open="${key}"]`)||null}
+function branchPanel(group,key){const cluster=branchClusterEl(group);return cluster?.querySelector(`.branch-panel[data-branch-panel="${key}"]`)||null}
+function branchForkEl(group){const cluster=branchClusterEl(group);return cluster?.querySelector(`.branch-fork-node[data-branch-fork="${group}"]`)||null}
 function activeBranch(group){return branchSelection[group]||null}
+function syncBranchAfter(group){
+ const selected=!!activeBranch(group);
+ map.querySelectorAll(`.branch-after[data-after-group="${group}"]`).forEach(el=>{el.hidden=!selected});
+}
 
 function activateBranch(group,key,scroll=false){
- const cluster=map.querySelector(`.branch-cluster[data-branch-group="${group}"]`);if(!cluster)return;
+ const cluster=branchClusterEl(group);if(!cluster)return;
  branchSelection[group]=key;
  cluster.querySelectorAll(':scope > .branch-spheres > .branch-choice').forEach(btn=>{
-  const active=btn.dataset.branchOpen===key;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',active?'true':'false');
+  const active=btn.dataset.branchOpen===key;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',active?'true':'false');btn.setAttribute('aria-expanded',active?'true':'false');
  });
  cluster.querySelectorAll(':scope > .branch-panels > .branch-panel').forEach(panel=>{panel.hidden=panel.dataset.branchPanel!==key});
- scheduleLinks();
+ syncBranchAfter(group);scheduleLinks();
  if(scroll)setTimeout(()=>branchPanel(group,key)?.scrollIntoView({block:'nearest',behavior:'smooth'}),40);
 }
 
+function inferAncestorBranches(){
+ const st=C.getState(),done=new Set(st.completed),active=st.activeId;
+ if(!branchSelection.primordial){
+  if(BRANCH_MEMBERS.primordial.tritium.includes(active))branchSelection.primordial='tritium';
+  else if(BRANCH_MEMBERS.primordial.helium3.includes(active))branchSelection.primordial='helium3';
+  else if(done.has(tail('primordial_he3d')))branchSelection.primordial='helium3';
+  else if(done.has(tail('primordial_td')))branchSelection.primordial='tritium';
+ }
+ if(!branchSelection.stellar){
+  if(active==='white')branchSelection.stellar=done.has('bi')?'mid':'low';
+  else if(stellarHighMembers.includes(active)||done.has('final_collapse'))branchSelection.stellar='high';
+  else if(BRANCH_MEMBERS.stellar.mid.includes(active)||done.has('bi'))branchSelection.stellar='mid';
+  else if(BRANCH_MEMBERS.stellar.low.includes(active)||done.has('he_red'))branchSelection.stellar='low';
+  else if(BRANCH_MEMBERS.stellar.sub.includes(active)||done.has('brown'))branchSelection.stellar='sub';
+ }
+}
 function syncBranchesToActive(){
  const active=C.getState().activeId,done=new Set(C.getState().completed);
  if(active==='white')branchSelection.stellar=done.has('bi')?'mid':'low';
@@ -164,7 +191,9 @@ function syncBranchesToActive(){
   const found=Object.entries(branches).find(([,members])=>members.includes(active));
   if(found)branchSelection[group]=found[0];
  }
+ inferAncestorBranches();
  for(const [group,key] of Object.entries(branchSelection))activateBranch(group,key,false);
+ for(const group of ['primordial','stellar','supernova','neutron'])syncBranchAfter(group);
 }
 function refreshBranchStates(){
  map.querySelectorAll('.branch-choice').forEach(btn=>{
@@ -175,7 +204,7 @@ function refreshBranchStates(){
 function syncPortals(){
  const active=C.getState().activeId;
  for(const [key,members] of Object.entries(PORTAL_MEMBERS)){
-  const d=map.querySelector(`[data-portal="${key}"]`);if(d&&members.includes(active))d.open=true;
+  const d=[...map.querySelectorAll(`[data-portal="${key}"]`)].find(isVisible);if(d&&members.includes(active))d.open=true;
  }
 }
 function refresh(){
@@ -213,12 +242,13 @@ function addPath(from,to,cls='main',bend=.5){
 }
 function connectIds(ids,cls='main'){for(let i=1;i<ids.length;i++)addPath(byPhase(ids[i-1]),byPhase(ids[i]),cls)}
 function connectTrail(ids,cls='main'){connectIds(expanded(ids),cls)}
-function portalSummary(key){const el=map.querySelector(`[data-portal="${key}"] > summary`);return isVisible(el)?el:null}
+function portalSummary(key){const el=[...map.querySelectorAll(`[data-portal="${key}"] > summary`)].find(isVisible);return el||null}
 function portalFirst(key){return [...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)].find(isVisible)||null}
 function portalLast(key){const xs=[...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)].filter(isVisible);return xs[xs.length-1]||null}
 function connectBranchJunction(from,group,classes={}){
- const cluster=map.querySelector(`.branch-cluster[data-branch-group="${group}"]`);if(!isVisible(cluster))return;
- cluster.querySelectorAll(':scope > .branch-spheres > .branch-choice').forEach(btn=>addPath(from,btn,`branch ${classes[btn.dataset.branchOpen]||group}`,.42));
+ const cluster=branchClusterEl(group),fork=branchForkEl(group);if(!isVisible(cluster)||!isVisible(fork))return;
+ addPath(from,fork,`branch-fork ${group}`,.46);
+ cluster.querySelectorAll(':scope > .branch-spheres > .branch-choice').forEach(btn=>addPath(fork,btn,`branch ${classes[btn.dataset.branchOpen]||group}`,.38));
 }
 function connectActiveSphere(group,firstId,cls){
  const key=activeBranch(group),sphere=key?branchSphereEl(group,key):null,target=firstId?byPhase(firstId):null;
@@ -249,7 +279,7 @@ function drawHigh(){
    if(map.querySelector('[data-portal="rp"]')?.open){addPath(rpPortal,portalFirst('rp'),'compact');connectTrail(G.sequences.rp,'compact')}
   }
   if(n==='r'){
-   const sphere=branchSphereEl('neutron','r'),binary=map.querySelector('.binary-junction'),kilo=map.querySelector('.kilonova-junction'),rPortal=portalSummary('r');
+   const sphere=branchSphereEl('neutron','r'),binary=[...map.querySelectorAll('.binary-junction')].find(isVisible),kilo=[...map.querySelectorAll('.kilonova-junction')].find(isVisible),rPortal=portalSummary('r');
    addPath(sphere,binary,'r',.35);addPath(binary,kilo,'r');addPath(kilo,rPortal,'r');
    if(map.querySelector('[data-portal="r"]')?.open){addPath(rPortal,portalFirst('r'),'r');connectTrail(G.sequences.r,'r');addPath(portalLast('r'),byPhase('decay_pa'),'radio',.55)}else addPath(rPortal,byPhase('decay_pa'),'radio',.55);
   }
@@ -266,7 +296,7 @@ function drawLinks(){
  if(p==='helium3'){connectActiveSphere('primordial','primordial_he3','primordial');connectTrail(G.sequences.primordialRight,'primordial');addPath(byPhase(tail('primordial_he3d')),byPhase('primordial_li'),'primordial')}
  connectTrail(G.sequences.atomic,'primordial');
 
- const birth=map.querySelector('[data-junction="stellar-birth"]');addPath(byPhase(tail('atomic_li')),birth,'birth');
+ const birth=[...map.querySelectorAll('[data-junction="stellar-birth"]')].find(isVisible);addPath(byPhase(tail('atomic_li')),birth,'birth');
  connectBranchJunction(birth,'stellar',{sub:'sub',low:'low',mid:'mid',high:'high'});
  const s=activeBranch('stellar');
  if(s==='sub'){connectActiveSphere('stellar','brown','sub');connectTrail(G.sequences.brown,'sub')}
