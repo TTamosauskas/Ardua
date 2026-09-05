@@ -37,3 +37,5 @@ jobs:
           git add assets/js/ardua.js assets/css/ardua.css
           git commit -m "Polish phase recipes and cumulative reactions [skip ci]"
           git push
+
+# retry after helper syntax correction
