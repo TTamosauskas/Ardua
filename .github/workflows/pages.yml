@@ -1,4 +1,4 @@
-name: Deploy Ardua to GitHub Pages
+name: Inspect fusion tap handler
 
 on:
   push:
@@ -7,28 +7,20 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  inspect:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+      - name: Print handler
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          const a=s.indexOf('function handleFusionTap(p)');
+          const b=s.indexOf('\nfunction beginCrushHold',a);
+          if(a<0||b<0) throw new Error('handler bounds not found');
+          console.log(s.slice(a,b));
+          NODE
