@@ -124,8 +124,8 @@ function suppressLegacyShortcut(from,to){const d=lineD(from,to,.5);if(!d)return;
 function drawLines(){
  clearTimeout(lineTimer);lineTimer=0;links.querySelectorAll('.sg-link').forEach(p=>p.remove());
  if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
- const cluster=superCluster(),hub=superHub(),f=fork();if(!visible(cluster)||!visible(hub)||!visible(f))return;
- addLine(nodeById(A.tail(S.precursor)),hub,'high',.48);addLine(hub,f,'branch-fork supergiant',.5);
+ const cluster=superCluster(),f=fork();if(!visible(cluster)||!visible(f))return;
+ addLine(nodeById(A.tail(S.precursor)),f,'branch-fork supergiant',.52);
  for(const key of S.routeOrder)addLine(f,superSphere(key),`branch ${S.routeClasses[key]}`,.38);
  const selected=cluster.querySelector(':scope > .branch-spheres > .branch-choice.selected')?.dataset.branchOpen;if(!selected)return;
  const first=S.routes[selected][0],last=routeTail(selected);
