@@ -52,3 +52,18 @@ O rp-process foi colocado depois de **Acreção extrema** e antes de **Limite de
 ### Economia de ingredientes
 
 Cada fase de produção deve oferecer exatamente uma oportunidade direta para o objetivo. Precursores pesados não são repostos automaticamente depois de consumidos. O motor usa matéria-base e rotas históricas já aprendidas para reconstruir novas sementes: no rp-process, Fe → Co → Ni inicia a cadeia cumulativa; nos processos weak-s, AGB-s e r, Ferro alimenta rotas agregadas de reconstrução antes das transições já aprendidas.
+
+## Variação das fases de captura de nêutrons
+
+As fases de processo-s e processo-r compartilham o gesto central de selecionar um núcleo e capturar nêutrons, mas recebem padrões de gameplay declarativos por `configureNeutronGameplay`:
+
+- `drizzle` mantém um fluxo lento e contínuo;
+- `source13` e `source22` colocam uma fonte isotópica e Hélio adjacente para liberar um pulso por `¹³C(α,n)` ou `²²Ne(α,n)`;
+- `betaWait` cria um intermediário que precisa aguardar rodadas nucleares antes de β−;
+- `branch` permite escolher entre nova captura e esperar β−;
+- `shell` exige exposição acumulada antes de atravessar uma região de baixa captura;
+- `pulse` e `pulseStrong` entregam nêutrons em ondas determinísticas;
+- `rStorm` e `rWave` transformam o processo-r em nuvens densas de nêutrons;
+- `rFreezeout` interrompe a tempestade antes da cascata β−, destacando o freeze-out.
+
+Esses padrões preservam a regra de uma única semente direta por fase. Fontes de nêutrons são combustível, não precursores do elemento-alvo, e o motor repõe apenas matéria-base quando a cadeia precisa ser reconstruída.
