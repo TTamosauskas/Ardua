@@ -11,7 +11,7 @@ function bootstrapPhaseLauncher(){
  const opener=$('menuOpenBtn'),modal=$('menuModal');if(!opener||!modal)return;
  opener.click();
  phaseButtons=[...document.querySelectorAll('#phaseMenu .phase-jump')];
- phaseButtons.forEach((b,i)=>{const id=G.runtimeOrder[i];if(!id)return;b.dataset.phaseId=id;phaseMeta[id]={branch:b.querySelector('small')?.textContent||'',title:b.querySelector('strong')?.textContent||id}});
+ phaseButtons.forEach((b,i)=>{const id=G.runtimeOrder[i];if(!id)return;b.dataset.phaseId=id;phaseMeta[id]={branch:b.querySelector('small')?.textContent||'',title:window.ARDUA_PHASE_NAMES?.[id]||b.querySelector('strong')?.textContent||id}});
  modal.classList.remove('show');
  if(phaseButtons.length!==G.runtimeOrder.length)console.warn(`Ardua map: ${phaseButtons.length}/${G.runtimeOrder.length} runtime phases mapped.`);
 }
@@ -61,7 +61,7 @@ function phaseState(id){
  return parents.some(p=>done.has(p))?'revealed':'locked';
 }
 function stateLabel(state){return{current:'Fase atual',completed:'Concluída',available:'Disponível',revealed:'Revelada',locked:'Bloqueada'}[state]||state}
-function node(id,extra=''){return `<button type="button" class="phase-node ${phaseState(id)} ${extra}" data-phase="${id}"><strong>${phaseMeta[id]?.title||id}</strong></button>`}
+function node(id,extra=''){const title=window.ARDUA_PHASE_NAMES?.[id]||phaseMeta[id]?.title||id;return `<button type="button" class="phase-node ${phaseState(id)} ${extra}" data-phase="${id}"><strong>${title}</strong></button>`}
 function flow(ids,cls=''){return `<div class="cosmos-flow ${cls}">${expanded(ids).map(id=>node(id)).join('')}</div>`}
 function structural(title,extra=''){return `<div class="epoch-label ${extra}"><strong>${title}</strong></div>`}
 function ambientImage(key,cls=''){const im=G.images[key];return im?`<img class="phenomenon-bg ${cls}" loading="lazy" referrerpolicy="no-referrer" src="${im.url}" alt="" aria-hidden="true">`:''}

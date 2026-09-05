@@ -173,6 +173,7 @@ body.bigbang-phase .info-recipe{border-color:rgba(35,51,76,.15);background:rgba(
 @keyframes primordialFade{0%{filter:brightness(1)}50%{filter:brightness(1.7)}100%{filter:brightness(.75)}}
 .primordial-layer{position:absolute;inset:0;z-index:16;pointer-events:none}
 .primordial-layer.active{pointer-events:none}
+.primordial-particle.particle-reserve,.neutron.particle-reserve{opacity:0!important;visibility:hidden!important;pointer-events:none!important;z-index:-1!important}
 .cosmic-rays{position:absolute;inset:0;z-index:34;pointer-events:none;overflow:visible}
 .cosmic-ray{position:absolute;width:34px;height:34px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.8);background:radial-gradient(circle at 34% 28%,#fff 0 13%,#8fdcff 20%,#3f7de5 55%,#172d73 100%);box-shadow:0 0 10px rgba(151,220,255,.95),0 0 25px rgba(84,145,255,.64);color:#fff;font-size:20px;font-weight:950;display:grid;place-items:center;pointer-events:auto;cursor:pointer;touch-action:none;transition:transform .16s ease,box-shadow .16s ease,opacity .2s ease;z-index:2}
 .cosmic-ray::before{content:"";position:absolute;right:82%;top:50%;width:62px;height:7px;transform:translateY(-50%);border-radius:999px;background:linear-gradient(90deg,transparent,rgba(101,180,255,.16),rgba(195,236,255,.92));filter:blur(.2px);z-index:-1}
