@@ -1,0 +1,29 @@
+name: Apply radial Coulomb barrier rule
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/coulomb-rule.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply validated Coulomb patch
+        run: |
+          python .github/coulomb-patch.py
+          node --check assets/js/ardua.js
+          node tests/validate-static.js
+      - name: Commit clean implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/coulomb-patch.py .github/workflows/coulomb-rule.yml
+          git add assets/js/ardua.js tests/validate-static.js README.md docs/ARCHITECTURE.md .github
+          git commit -m "Refine Coulomb barrier by stellar layer"
+          git push
