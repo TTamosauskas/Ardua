@@ -68,6 +68,8 @@ Ao selecionar o primeiro reagente de um par objetivo que pode ser completado naq
 
 Cada receita usa um motivo determinístico, de modo que a mesma reação mantém sua identidade sonora. Produtos estáveis usam uma tríade mais resolvida, enquanto produtos instáveis recebem uma relação suspensa. Se a Barreira de Coulomb bloquear a tentativa, as duas notas de seleção permanecem válidas, mas a terceira nota e o acorde não ocorrem; a combinação fica silenciosamente rearmada para uma nova tentativa. Na fase de Berílio-8, matéria reciclada não recebe a cerimônia porque não acrescenta novo crédito ao objetivo. Durante o Reaction Motif, o áudio adaptativo e banners secundários cedem prioridade à reação principal, e `prefers-reduced-motion` reduz o deslocamento visual sem remover a informação sonora.
 
+As notas do Reaction Motif usam ganho reforçado e um harmônico uma oitava acima para permanecerem audíveis também em alto-falantes pequenos. O produto real da grade é renderizado por baixo da cerimônia e mantido invisível até o instante final; quando a apresentação central termina, ela revela o núcleo já colocado na célula definitiva, evitando uma segunda animação de transformação ao retornar ao tabuleiro.
+
 ## Recompensa, descobertas e direção estética
 
 O feedback de jogo é coordenado globalmente por um diretor de recompensas: reações comuns permanecem discretas, eventos importantes recebem partículas e áudio adicionais, cascatas ganham escalada audiovisual e marcos científicos podem assumir uma apresentação de assinatura. O texto de `CADEIA NUCLEAR`, `TEMPESTADE-r`, `CADEIA DE PRÓTONS` e equivalentes usa um único callout atualizado durante a sequência e permanece legível por cerca de 1,85 s após o último elo, evitando empilhamento de mensagens.
