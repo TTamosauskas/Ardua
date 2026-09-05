@@ -48,6 +48,12 @@ A Receita Recomendada acompanha essa reconstrução e aponta para a próxima rea
 
 O processo-s e o processo-r usam variações relaxantes da mesma mecânica central: fluxo lento, fontes `¹³C(α,n)`/`²²Ne(α,n)`, pulsos térmicos, espera β−, ramificações, cascas mágicas por exposição e tempestades-r com freeze-out. As fases continuam sem game over e mantêm uma única semente direta do objetivo; as demais precisam ser reconstruídas pelo jogador.
 
+## Feedback e cascatas causais
+
+Toda transformação que contribui para o fluxo da fase produz feedback global de reação e alimenta uma Ressonância Estelar visual temporária. Quando a geometria e uma rota nuclear já aprendida permitem, o produto pode iniciar uma continuação física curta: fusão com um vizinho compatível, captura de nêutron alinhada à trajetória no processo-r, nova captura de próton próximo no rp-process ou reciclagem de um produto energético por uma receita estelar válida.
+
+As cascatas nunca substituem a ação principal do jogador. O primeiro elo automático recebe 25% do crédito normal de `flow`, o segundo 10% e os seguintes 0%; o bônus total de uma mesma cascata não pode ultrapassar 10% do `flowTarget`. Ao cumprir o objetivo científico, fases baseadas em `flow` recebem no máximo um piso de 75% de progresso, preservando o último quarto para interação manual. Barreira de Coulomb, waiting points, instabilidade nuclear e compatibilidade ambiental continuam valendo normalmente durante continuidades automáticas.
+
 ## Ritmo e progresso das fases
 
 A barra existente usa o rótulo **PROGRESSO** e acompanha o `flowTarget` da fase; o objetivo científico permanece separado no texto superior. As classes internas de balanceamento são `quick` (60–90 s), `short` (90–150 s), `standard` (150–210 s), `long` (210–255 s) e `epic` (255–300 s). Essas janelas são metas de design, sem cronômetro ou derrota por tempo.
