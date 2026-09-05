@@ -36,5 +36,6 @@ ok(engine.includes("COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.
 ok(engine.includes("if(s.id==='coulomb_intro')return ring<=2?0:1"),'tutorial mantém Barreira de Coulomb determinística: anéis 0–2 livres e 3–4 bloqueados');
 ok(engine.includes("COULOMB_EXEMPT_SYMS=new Set(['H','D','T'])"),'H, Deutério e Trítio permanecem isentos da Barreira de Coulomb');
 ok(engine.includes('coulombRollBlocks(blockedCell,s,blockedPiece.sym)')&&engine.includes('coulombRollBlocks(cell,s,target.sym)'),'fusão e captura de prótons usam a chance radial da Barreira de Coulomb');
+ok(engine.includes("coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'}"),'tooltip da Barreira de Coulomb usa sempre a mensagem didática fixa');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
 console.log('\nValidação estática do Ardua concluída.');
