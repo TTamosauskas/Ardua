@@ -31,6 +31,7 @@ O próximo passo saudável, quando houver testes automatizados de gameplay, é s
 
 A migração removeu funções sem qualquer referência no código atual, um alias constante sem uso, comentários históricos de versões antigas e um fragmento CSS órfão remanescente de uma animação antiga. Nenhuma dependência externa foi adicionada.
 
+
 ## Famílias de mecânicas nucleares
 
 O motor trata a progressão como templates reutilizáveis orientados por dados. Isso permite que elementos intermediários tenham fases próprias sem duplicar lógica de interface.
@@ -53,6 +54,7 @@ O rp-process foi colocado depois de **Acreção extrema** e antes de **Limite de
 
 Cada fase de produção deve oferecer exatamente uma oportunidade direta para o objetivo. Precursores pesados não são repostos automaticamente depois de consumidos. O motor usa matéria-base e rotas históricas já aprendidas para reconstruir novas sementes: no rp-process, Fe → Co → Ni inicia a cadeia cumulativa; nos processos weak-s, AGB-s e r, Ferro alimenta rotas agregadas de reconstrução antes das transições já aprendidas.
 
+
 ## Variação das fases de captura de nêutrons
 
 As fases de processo-s e processo-r compartilham o gesto central de selecionar um núcleo e capturar nêutrons, mas recebem padrões de gameplay declarativos por `configureNeutronGameplay`:
@@ -67,3 +69,8 @@ As fases de processo-s e processo-r compartilham o gesto central de selecionar u
 - `rFreezeout` interrompe a tempestade antes da cascata β−, destacando o freeze-out.
 
 Esses padrões preservam a regra de uma única semente direta por fase. Fontes de nêutrons são combustível, não precursores do elemento-alvo, e o motor repõe apenas matéria-base quando a cadeia precisa ser reconstruída.
+
+
+### Barreira de Coulomb radial
+
+A Barreira de Coulomb é uma abstração de gameplay dependente da posição radial. Fora do tutorial, núcleo e camada 1 têm 0% de bloqueio; camada 2, 50%; camada 3, 60%; camada 4, 80%. H, Deutério e Trítio permanecem isentos. Na fase `coulomb_intro`, a regra é deliberadamente determinística: anéis 0–2 permitem a reação e anéis 3–4 sempre bloqueiam, para ensinar de forma causal que mover o núcleo para regiões internas remove a barreira naquele tutorial. A tabela de porcentagens posterior é uma regra de jogo para representar qualitativamente o aumento da dificuldade de reações carregadas em regiões externas mais frias, e não uma taxa nuclear literal.
