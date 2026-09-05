@@ -1,0 +1,123 @@
+/* Ardua — additional cosmic atmosphere for the campaign map. */
+
+/* Motto beneath the title. */
+.campaign-brand strong::after{
+  content:"per ardua sed astra";
+  display:block;
+  margin-top:3px;
+  color:rgba(205,220,235,.68);
+  font-size:7px;
+  font-weight:500;
+  letter-spacing:.28em;
+  line-height:1.25;
+  text-transform:lowercase;
+  text-shadow:none;
+}
+
+/* Hot primordial glow: Big Bang -> atomic era. */
+.primordial-zone{position:relative;isolation:isolate}
+.primordial-zone::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  top:-30px;
+  left:50%;
+  width:min(760px,96vw);
+  height:560px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 50% 26%,rgba(255,70,55,.32) 0%,rgba(222,45,37,.19) 28%,rgba(143,25,31,.10) 48%,rgba(35,9,20,.035) 62%,transparent 76%);
+  filter:blur(16px);
+  opacity:.92;
+}
+
+/* Astronomical images stay atmospheric and outside the trail itself. */
+.stellar-branches .branch-panel{isolation:isolate}
+.stellar-branches .branch-panel::before,
+.stellar-branches .branch-panel::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  width:clamp(175px,31vw,285px);
+  height:clamp(145px,24vw,230px);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:cover;
+  opacity:.14;
+  filter:saturate(.86) contrast(1.08);
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0 36%,rgba(0,0,0,.82) 52%,rgba(0,0,0,.3) 68%,transparent 82%);
+  mask-image:radial-gradient(ellipse at center,#000 0 36%,rgba(0,0,0,.82) 52%,rgba(0,0,0,.3) 68%,transparent 82%);
+}
+.stellar-branches .branch-panel::before{left:-155px;top:72px;transform:rotate(-3deg)}
+.stellar-branches .branch-panel::after{right:-155px;top:250px;transform:rotate(3deg)}
+
+/* Brown dwarf: formation environment complements the existing brown-dwarf illustration. */
+.stellar-branches .branch-panel[data-branch-panel="sub"]::before{
+  background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/12/STScI-01HFCAHP1B0GCDNQGD8W25N33G.png?crop=faces%2Cfocalpoint&fit=clip&h=5978&w=3788");
+  opacity:.12;
+  top:15px;
+}
+.stellar-branches .branch-panel[data-branch-panel="sub"]::after{
+  background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/outreach/migrated/2018/STScI-01FKNW7RYF6SWRQEF8CQRYQ4M4.png?crop=faces%2Cfocalpoint&fit=clip&h=2550&w=4534");
+  opacity:.16;
+  top:135px;
+}
+
+/* Red dwarf / low mass. */
+.stellar-branches .branch-panel[data-branch-panel="low"]::before{
+  background-image:url("https://photojournal.jpl.nasa.gov/jpeg/PIA21473.jpg");
+  opacity:.18;
+  top:28px;
+}
+.stellar-branches .branch-panel[data-branch-panel="low"]::after{
+  background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/12/STScI-01HFCAHP1B0GCDNQGD8W25N33G.png?crop=faces%2Cfocalpoint&fit=clip&h=5978&w=3788");
+  opacity:.10;
+  top:175px;
+}
+
+/* Intermediate mass: evolved-star / planetary-nebula context plus stellar nursery. */
+.stellar-branches .branch-panel[data-branch-panel="mid"]::before{
+  background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/nebulae/planetary/NGC%206891.jpg");
+  opacity:.17;
+  top:58px;
+}
+.stellar-branches .branch-panel[data-branch-panel="mid"]::after{
+  background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/12/STScI-01HFCAHP1B0GCDNQGD8W25N33G.png?crop=faces%2Cfocalpoint&fit=clip&h=5978&w=3788");
+  opacity:.095;
+  top:340px;
+}
+
+/* High mass: massive young cluster complements the supernova imagery already present in this branch. */
+.stellar-branches .branch-panel[data-branch-panel="high"]::before{
+  background-image:url("https://cdn.esahubble.org/archives/images/screen/potm2409a.jpg");
+  opacity:.16;
+  top:70px;
+}
+.stellar-branches .branch-panel[data-branch-panel="high"]::after{
+  background-image:url("https://science.nasa.gov/wp-content/uploads/2023/10/crab-nebula-webb-and-hubble-comparison.jpg");
+  opacity:.13;
+  top:460px;
+}
+
+@media(max-width:700px){
+  .campaign-brand strong::after{font-size:6px;letter-spacing:.22em;margin-top:2px}
+  .primordial-zone::before{top:-8px;width:100vw;height:480px;filter:blur(13px)}
+  .stellar-branches .branch-panel::before,
+  .stellar-branches .branch-panel::after{
+    width:175px;
+    height:145px;
+    opacity:.10;
+  }
+  .stellar-branches .branch-panel::before{left:-72px}
+  .stellar-branches .branch-panel::after{right:-72px}
+  .stellar-branches .branch-panel[data-branch-panel="low"]::before{opacity:.14}
+  .stellar-branches .branch-panel[data-branch-panel="mid"]::before{opacity:.13}
+  .stellar-branches .branch-panel[data-branch-panel="high"]::before{opacity:.12}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .primordial-zone::before{filter:blur(12px)}
+}
