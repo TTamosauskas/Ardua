@@ -387,3 +387,7 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .formula-line strong{font-weight:950;color:#fff;text-shadow:0 0 9px rgba(255,255,255,.22)}
 .formula-line.recipe-intro-flash{animation:recipeIntroFlash .62s ease-in-out 2}
 @keyframes recipeIntroFlash{0%,100%{opacity:1;transform:scale(1);text-shadow:none}45%{opacity:.42;transform:scale(.985);text-shadow:0 0 5px rgba(255,213,126,.1)}55%{opacity:1;transform:scale(1.035);text-shadow:0 0 18px rgba(255,213,126,.82)}}
+
+/* Stellar proton visual parity with free neutrons */
+.star-board:not(.primordial-mode) .primordial-particle.proton{width:22px;height:22px;font-size:13px;opacity:.62}
+.star-board:not(.primordial-mode) .primordial-particle.proton.candidate,.star-board:not(.primordial-mode) .primordial-particle.proton.selected{opacity:1}
