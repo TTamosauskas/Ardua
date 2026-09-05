@@ -1,0 +1,59 @@
+from pathlib import Path
+
+
+def once(text, old, new, label):
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f"{label}: expected 1 occurrence, found {count}")
+    return text.replace(old, new, 1)
+
+js_path = Path('assets/js/ardua.js')
+css_path = Path('assets/css/ardua.css')
+js = js_path.read_text()
+css = css_path.read_text()
+
+chain_system = r'''// Recompensa global e eventos encadeados. Reações manuais mantêm seu flow normal;
+// consequências automáticas recebem crédito decrescente e limitado, enquanto o
+// espetáculo audiovisual pode crescer livremente sem encurtar demais a fase.
+const CHAIN_AUTO_FLOW_FACTORS=Object.freeze([.25,.10,0]);
+const CHAIN_MAX_PROGRESS_BONUS=.10;
+const CHAIN_OBJECTIVE_PROGRESS_FLOOR=.75;
+const CHAIN_MAX_AUTO_DEPTH=3;
+const CHAIN_EVENT_WINDOW_MS=2200;
+let chainEventSeq=0,chainResonanceTimer=null;
+function chainKindForPhase(s=phase()){
+ if(s.mode==='neutron')return s.rprocess?'r':'neutron';
+ if(s.mode==='rpProcess'||s.mode==='protonCapture')return'proton';
+ if(s.mode==='gamma')return'gamma';
+ if(s.mode==='guidedDecay'||s.mode==='decayGarden')return'decay';
+ if(s.mode==='accretion'||s.mode==='blackhole')return'accretion';
+ if(s.mode==='pulsar')return'rotation';
+ if(s.mode==='neutronize'||s.mode==='collapseFinal')return'collapse';
+ if(s.mode==='fusion'||isPrimordial(s)||s.mode==='whiteCompact')return'nuclear';
+ return'reaction';
+}
+function chainEventTitle(kind){return kind==='r'?'TEMPESTADE-r':kind==='neutron'?'CASCATA DE NÊUTRONS':kind==='proton'?'CADEIA DE PRÓTONS':kind==='gamma'?'RECICLAGEM NUCLEAR':kind==='decay'?'CASCATA DE DECAIMENTOS':kind==='accretion'?'ACREÇÃO':kind==='rotation'?'ROTAÇÃO':kind==='collapse'?'COLAPSO':kind==='nuclear'?'CADEIA NUCLEAR':'CASCATA'}
+function resetChainFeedback(){
+ state.chainEvent={id:0,kind:'',step:0,lastAt:0};state.chainAutoContext=null;state.cascadeBonusFlow=0;state.resonance=0;
+ if(chainResonanceTimer){clearInterval(chainResonanceTimer);chainResonanceTimer=null}
+ document.documentElement.style.setProperty('--resonanceGlow','0');dom.star?.classList.remove('chain-resonance','reaction-reward','reaction-reward-strong');
+}
+function applyReactionResonance(){const level=Math.max(0,Math.min(1,Number(state.resonance||0)));document.documentElement.style.setProperty('--resonanceGlow',level.toFixed(2));dom.star?.classList.toggle('chain-resonance',level>.035)}
+function bumpReactionResonance(amount=.12){
+ state.resonance=Math.min(1,Number(state.resonance||0)+Math.max(0,amount));applyReactionResonance();
+ if(chainResonanceTimer)return;chainResonanceTimer=setInterval(()=>{state.resonance=Math.max(0,Number(state.resonance||0)-.055);applyReactionResonance();if(state.resonance<=0){clearInterval(chainResonanceTimer);chainResonanceTimer=null}},520);
+}
+function flashReactionReward(strength=1){
+ if(!dom.star)return;const cls=strength>=3?'reaction-reward-strong':'reaction-reward';dom.star.classList.remove('reaction-reward','reaction-reward-strong');void dom.star.offsetWidth;dom.star.classList.add(cls);setTimeout(()=>dom.star?.classList.remove(cls),strength>=3?520:330);
+}
+function reactionFeedback({kind=null,x=null,y=null,step=1,automatic=false,label=null}={}){
+ const k=kind||chainKindForPhase(),n=Math.max(1,Number(step)||1);bumpReactionResonance(.10+Math.min(.30,(n-1)*.065));flashReactionReward(n);
+ if(Number.isFinite(x)&&Number.isFinite(y)&&label)captureTag(x,y,label);
+ if(n>1){if(Number.isFinite(x)&&Number.isFinite(y))captureTag(x,y,`${chainEventTitle(k)} ×${n}`);const notes=[720,840,960,1080,1200],freq=notes[Math.min(notes.length-1,n-2)];tone(freq,.075,n>=4?'triangle':'sine',Math.min(.038,.018+n*.004));if(n>=4)vibrate(n>=6?[8,16,12,20,14]:[7,12,9]);if(n===4||n===6)announce(chainEventTitle(k),`CADEIA ×${n}`,automatic?'Produtos da reação anterior alimentaram novos eventos.':'Sequência física reconhecida.')}
+}
+function startChainEvent(kind=chainKindForPhase(),x=null,y=null){const id=++chainEventSeq;state.chainEvent={id,kind,step:1,lastAt:performance.now(),x,y};return id}
+function primeChainEvent(rootId,kind,x=null,y=null){state.chainEvent={id:rootId||++chainEventSeq,kind:kind||chainKindForPhase(),step:1,lastAt:performance.now(),x,y};return state.chainEvent.id}
+function extendChainEvent(rootId,kind,x=null,y=null){
+ const now=performance.now(),k=kind||chainKindForPhase();let ev=state.chainEvent;
+ if(!ev||ev.id!==rootId||now-(ev.lastAt||0)>CHAIN_EVENT_WINDOW_MS)ev={id:rootId||++chainEventSeq,kind:k,step:1,lastAt:now};
+ ev.kind=k;ev.step=Math

@@ -1,0 +1,38 @@
+name: Apply reaction feedback and cascades
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-chain-feedback.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct validated migration helper
+        shell: bash
+        run: |
+          cat .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 > /tmp/chain-feedback.py
+          python .github/chain-feedback-fix.py
+          python -m py_compile /tmp/chain-feedback.py
+      - name: Apply reaction feedback migration
+        run: python /tmp/chain-feedback.py
+      - name: Validate engine
+        run: |
+          node --check assets/js/ardua.js
+          node tests/validate-static.js
+      - name: Commit clean result
+        shell: bash
+        run: |
+          rm .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 .github/chain-feedback-fix.py .github/workflows/apply-chain-feedback.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/js/ardua.js assets/css/ardua.css .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 .github/chain-feedback-fix.py .github/workflows/apply-chain-feedback.yml
+          git commit -m 'Add reaction feedback and causal cascades'
+          git push

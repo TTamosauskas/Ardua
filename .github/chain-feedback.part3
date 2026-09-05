@@ -1,0 +1,36 @@
+hainRoot,emitted);renderPieces();renderNeutrons();"""
+js = once(js, old_source, new_source, "neutron source cascade")
+
+old_batch = "function spawnNeutronBatch(count,{storm=false}={}){let made=0;for(let i=0;i<count;i++)if(spawnNeutron())made++;if(made){state.neutronPulsesObserved++;if(storm)state.neutronStormsObserved++;renderNeutrons()}return made}"
+new_batch = "function spawnNeutronBatch(count,{storm=false,cascade=false,rootId=null}={}){const root=rootId||startChainEvent(storm?'r':'neutron'),ids=[];let made=0;for(let i=0;i<count;i++){const id=spawnNeutron(root);if(id){made++;ids.push(id)}}if(made){state.neutronPulsesObserved++;if(storm)state.neutronStormsObserved++;renderNeutrons();if(storm||cascade)scheduleNeutronCascade(root,ids,{storm})}return made}"
+js = once(js, old_batch, new_batch, "neutron batch roots")
+
+old_spawn = "function spawnNeutron(i{\n const s=phase();if(s.mode!=='neutron'||state.phaseDone||state.popupOpen)return false;\n const size=starSize(),c=size/2,a=Math.random()*Math.PI*2,r=size*.46,id=state.nextN++,x=c+Math.cos(a)*r,y=c+Math.sin(a)*r,speed=.9+Math.random()*.65;\n state.neutrons.set(id,{id,x,y,vx:-Math.cos(a)*speed+(Math.random()-.5)*.35,vy:-Math.sin(a)*speed+(Math.random()-.5)*.35,generated:false});renderNeutrons();return true\n}"
+new_spawn = "function spawnNeutron(chainRoot=null){\n const s=phase();if(s.mode!=='neutron'||state.phaseDone||state.popupOpen)return false;\n const size=starSize(),c=size/2,a=Math.random()*Math.PI*2,r=size*.46,id=state.nextN++,x=c+Math.cos(a)*r,y=c+Math.sin(a)*r,speed=.9+Math.random()*.65;\n state.neutrons.set(id,{id,x,y,vx:-Math.cos(a)*speed+(Math.random()-.5)*.35,vy:-Math.sin(a)*speed+(Math.random()-.5)*.35,generated:false,chainRoot});renderNeutrons();return id\n}"
+js = once(js, old_spawn, new_spawn, "spawn neutron provenance")
+
+old_generated = """function spawnGeneratedNeutron(x,y){
+  if(!['neutronize','neutron'].includes(phase().mode))return;
+  const id=state.nextN++,a=Math.random()*Math.PI*2,speed=1.0+Math.random()*.8;
+  state.neutrons.set(id,{id,x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,generated:true});
+  renderNeutrons();
+}"""
+new_generated = """function spawnGeneratedNeutron(x,y,chainRoot=null){
+  if(!['neutronize','neutron'].includes(phase().mode))return false;
+  const id=state.nextN++,a=Math.random()*Math.PI*2,speed=1.0+Math.random()*.8;
+  state.neutrons.set(id,{id,x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,generated:true,chainRoot});
+  renderNeutrons();return id;
+}"""
+js = once(js, old_generated, new_generated, "generated neutron provenance")
+
+# Proton captures: automatic continuation only uses nearby free protons and still
+# passes through the existing Coulomb / waiting-point logic.
+old_route = "const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombRollBlocks(cell,s,target.sym);state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;"
+new_route = "const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombRollBlocks(cell,s,target.sym),autoCtx=state.chainAutoContext,chainRoot=autoCtx?.rootId||startChainEvent('proton',target.x,target.y),chainDepth=autoCtx?.depth||1;state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;"
+js = once(js, old_route, new_route, "proton chain root")
+
+old_partial = """captureTag(target.x,target.y,`p ${target.rpProgress}/${route.chainCaptures}`);await emitGamma(target.x,target.y);recordFlow(1);await afterNuclearAction({advanceRound:true,protectedPieceIds:[target.id]});ensureProtonCaptureFuel(rpStep(s)?.fuel==='p'?4:1);state.selected=[];state.locked=false;render();return"""
+new_partial = """captureTag(target.x,target.y,`p ${target.rpProgress}/${route.chainCaptures}`);await emitGamma(target.x,target.y);recordFlow(1,{kind:'proton',rootId:chainRoot,x:target.x,y:target.y});target.chainRoot=chainRoot;target.chainDepth=chainDepth;await afterNuclearAction({advanceRound:true,protectedPieceIds:[target.id]});ensureProtonCaptureFuel(rpStep(s)?.fuel==='p'?4:1);state.selected=[];state.locked=false;render();scheduleAutoProtonCascade(target.id,chainRoot,chainDepth);return"""
+js = once(js, old_partial, new_partial, "rp partial cascade")
+
+js = once(js, "if(s.mode==='rpProcess'){state.created[route.out]=(state.created[route.out]||0)+1;recordFlow(route.pattern==='waiting'?3:2)}", "if(s.mode==='rpProcess'){state.created[route.out]=(state.created[route.out]||0)+1;recordFlow(route.pattern==='waiting'?3:2,{kind:'proton',rootId:chainRoot,x:target.x,y:target.y})}", "rp fin
