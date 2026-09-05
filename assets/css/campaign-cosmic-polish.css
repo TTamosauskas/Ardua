@@ -14,7 +14,7 @@
   text-shadow:none;
 }
 
-/* Hot primordial glow: Big Bang -> atomic era. */
+/* Hot primordial glow: Big Bang -> final atomic-era phase. */
 .primordial-zone{position:relative;isolation:isolate}
 .primordial-zone::before{
   content:"";
@@ -24,13 +24,44 @@
   top:-30px;
   left:50%;
   width:min(760px,96vw);
-  height:560px;
+  height:600px;
   transform:translateX(-50%);
   border-radius:50%;
   background:
-    radial-gradient(ellipse at 50% 26%,rgba(255,70,55,.32) 0%,rgba(222,45,37,.19) 28%,rgba(143,25,31,.10) 48%,rgba(35,9,20,.035) 62%,transparent 76%);
+    radial-gradient(ellipse at 50% 26%,rgba(255,70,55,.32) 0%,rgba(222,45,37,.19) 28%,rgba(143,25,31,.10) 48%,rgba(35,9,20,.035) 62%,transparent 78%);
   filter:blur(16px);
   opacity:.92;
+}
+.primordial-zone>.branch-after[data-after-group="primordial"]{isolation:isolate}
+.primordial-zone>.branch-after[data-after-group="primordial"]::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  top:-120px;
+  left:50%;
+  width:min(700px,94vw);
+  height:520px;
+  transform:translateX(-50%);
+  border-radius:48%;
+  background:radial-gradient(ellipse at 50% 34%,rgba(205,42,38,.19) 0%,rgba(157,28,35,.12) 34%,rgba(86,19,29,.055) 57%,transparent 78%);
+  filter:blur(18px);
+  opacity:.88;
+}
+.atomic-era-flow{position:relative;isolation:isolate}
+.atomic-era-flow::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  left:50%;
+  top:-70px;
+  width:min(610px,90vw);
+  height:calc(100% + 130px);
+  transform:translateX(-50%);
+  border-radius:48%;
+  background:radial-gradient(ellipse at 50% 52%,rgba(175,35,37,.14) 0%,rgba(113,23,31,.075) 48%,transparent 78%);
+  filter:blur(15px);
 }
 
 /* Astronomical images stay atmospheric and outside the trail itself. */
@@ -104,7 +135,9 @@
 
 @media(max-width:700px){
   .campaign-brand strong::after{font-size:6px;letter-spacing:.22em;margin-top:2px}
-  .primordial-zone::before{top:-8px;width:100vw;height:480px;filter:blur(13px)}
+  .primordial-zone::before{top:-8px;width:100vw;height:540px;filter:blur(13px)}
+  .primordial-zone>.branch-after[data-after-group="primordial"]::before{top:-105px;width:100vw;height:470px;filter:blur(15px)}
+  .atomic-era-flow::before{top:-55px;width:96vw;height:calc(100% + 105px);filter:blur(13px)}
   .stellar-branches .branch-panel::before,
   .stellar-branches .branch-panel::after{
     width:175px;
@@ -120,4 +153,5 @@
 
 @media(prefers-reduced-motion:reduce){
   .primordial-zone::before{filter:blur(12px)}
+  .primordial-zone>.branch-after[data-after-group="primordial"]::before,.atomic-era-flow::before{filter:blur(12px)}
 }
