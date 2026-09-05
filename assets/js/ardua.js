@@ -2308,7 +2308,43 @@ function scheduleAutoProtonCascade(pieceId,rootId,depth=1){
  if(depth>=CHAIN_MAX_AUTO_DEPTH)return;setTimeout(async()=>{if(state.phaseDone||state.readyToAdvance||state.locked||state.selected.length||state.primordialSelected!==null)return;const target=state.pieces.get(pieceId),s=phase();if(!target||pieceIsUnstable(target)||!protonCaptureRoute(target,s))return;const nearby=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting).map(q=>({q,d:Math.hypot(q.x-target.x,q.y-target.y)})).filter(x=>x.d<=starSize()*.24).sort((a,b)=>a.d-b.d)[0];if(!nearby)return;const ctx={rootId,depth:depth+1,kind:'proton',x:target.x,y:target.y,creditUsed:false,feedbackUsed:false};state.chainAutoContext=ctx;state.selected=[target.cell];try{await attemptProtonCapture(target.cell,nearby.q.id)}finally{if(state.chainAutoContext===ctx)state.chainAutoContext=null}},260);
 }
 
-function currentProgress(){const s=phase();if(s.mode==='opening')return 0;if(s.id==='brown')return Math.min(100,((state.created.He3||0)/brownBurnLimit())*100);if(s.mode==='whiteCompact'){const info=whiteCounts(s);return Math.min(100,((Math.min(info.c,info.targetC)+Math.min(info.o,info.targetO))/Math.max(1,info.targetC+info.targetO))*100)}return Math.min(100,(state.flow/Math.max(1,s.flowTarget||1))*100)}
+function objectiveProgress(s=phase()){
+ const done=objectiveSatisfied(s);if(done)return 1;
+ const ratio=(n,d)=>Math.max(0,Math.min(.99,Number(n||0)/Math.max(1,Number(d||1))));
+ const combine=parts=>Math.max(0,Math.min(.99,parts.reduce((sum,v)=>sum+Math.max(0,Math.min(1,Number(v)||0)),0)/Math.max(1,parts.length)));
+ if(s.mode==='opening')return 0;
+ if(s.mode==='reactionExplore')return ratio(state.atlasProgress,s.target);
+ if(s.mode==='decayGarden')return ratio(decayDiscoveryCount(s),s.target);
+ if(s.mode==='whiteCompact'){const info=whiteCounts(s);return ratio(Math.min(info.c,info.targetC)+Math.min(info.o,info.targetO),info.targetC+info.targetO)}
+ if(s.mode==='neutronize')return ratio(state.crushed,s.target);
+ if(s.mode==='neutron'){
+   const g=neutronGameplay(s),parts=[ratio(state.created[s.new]||0,s.target)];
+   if(s.id==='tc'||s.id==='pm')parts.push(state.radioactiveProofDone?1:0);
+   if(g.requiresSource)parts.push(state.neutronSourceActivations>=1?1:0);
+   if(g.requiresBranch)parts.push(state.neutronBranchesObserved>=1?1:0);
+   if(g.requiresFreezeout)parts.push(state.neutronFreezeouts>=1?1:0);
+   return combine(parts);
+ }
+ if(s.mode==='blackhole'){const initial=Math.max(1,state.postInitialMatter||state.pieces.size||1);return ratio(Math.max(0,initial-state.pieces.size),initial)}
+ if(isPostMode(s))return ratio(state.absorbed,s.target);
+ if(isPrimordial(s)&&s.mode!=='opening')return ratio(primordialGoalCount(s),s.target);
+ if(s.mode==='rpProcess'){
+   const step=rpStep(s),parts=[ratio(state.created[s.new]||0,s.target)];
+   if(step?.pattern==='waiting')parts.push(state.rpWaitDecays>=1?1:0);
+   if(step?.pattern==='cycle')parts.push(state.rpCyclesObserved>=1?1:0);
+   return combine(parts);
+ }
+ if(s.mode==='protonCapture')return ratio(state.protonCaptures,s.target);
+ if(s.id==='brown')return ratio(state.created.He3||0,brownBurnLimit());
+ return ratio(state.created[s.new]||0,s.target);
+}
+function currentProgress(){
+ const s=phase();if(s.mode==='opening')return 0;
+ const objective=objectiveProgress(s);
+ if(s.id==='brown'||s.mode==='whiteCompact'||Number(s.flowTarget||0)<=0)return objective*100;
+ const flow=Math.max(0,Math.min(1,state.flow/Math.max(1,s.flowTarget||1)));
+ return Math.min(objective,flow)*100;
+}
 function recordFlow(points=1,feedback=null){
  const s=phase();if(s.mode==='opening'||state.phaseDone)return;
  const ctx=state.chainAutoContext;let award=Math.max(0,Number(points)||0);if(ctx){if(!ctx.creditUsed){award=cascadeFlowAward(award,ctx,s);ctx.creditUsed=true}else award=0}
@@ -2525,7 +2561,7 @@ function updateHUD(){
  $('stageProgress').style.width=p+'%';
  if(s.id==='brown')$('stageProgressText').textContent=`${state.created.He3||0}/${brownBurnLimit()}`;
  else if(s.mode==='whiteCompact'){const w=whiteCounts(s);$('stageProgressText').textContent=`C ${Math.min(w.c,w.targetC)}/${w.targetC} · O ${Math.min(w.o,w.targetO)}/${w.targetO}`}
- else $('stageProgressText').textContent=flowTarget?`${Math.round(p)}%`:'';
+ else {const shown=state.readyToAdvance?100:Math.min(99,Math.floor(p));$('stageProgressText').textContent=flowTarget?`${shown}%`:'';}
  $('stageProgressLabel').textContent=s.id==='brown'?(state.readyToAdvance?'RESERVATÓRIO ESGOTADO':'QUEIMA DE DEUTÉRIO'):(state.readyToAdvance?'CONCLUÍDA':'PROGRESSO');
  const progressEl=document.querySelector('.stage-progress');progressEl.classList.toggle('ready',state.readyToAdvance);progressEl.style.visibility=s.mode==='opening'?'hidden':'visible';
  $('phaseEndBtn').innerHTML=s.endLabel||'ESPALHAR<br>POEIRA ESTELAR';updateObjective();applyVisual();applyRewardProgressVisuals();renderInfoPanel()

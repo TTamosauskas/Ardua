@@ -52,4 +52,7 @@ ok(html.includes('id="discoveryAtlas"')&&html.includes('Atlas de descobertas'),'
 const css=fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8');
 ok(css.includes('.chain-callout')&&css.includes('.reward-progress-aura')&&css.includes('.reward-spark'),'hierarquia visual inclui callout, aura persistente e partículas contidas');
 ok(css.includes('@media(prefers-reduced-motion:reduce)'),'efeitos respeitam preferência de redução de movimento');
+ok(engine.includes('function objectiveProgress(s=phase())')&&engine.includes('const done=objectiveSatisfied(s);if(done)return 1'),'barra possui progresso científico próprio e só libera 100% com objetivo satisfeito');
+ok(engine.includes('const objective=objectiveProgress(s)')&&engine.includes('return Math.min(objective,flow)*100'),'PROGRESSO usa o menor avanço entre objetivo científico e flow');
+ok(engine.includes("state.readyToAdvance?100:Math.min(99,Math.floor(p))"),'texto da barra não arredonda uma fase incompleta para 100%');
 console.log('\nValidação estática do Ardua concluída.');
