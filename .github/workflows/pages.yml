@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,6 +23,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Apply stellar ring migration
+        run: |
+          python .github/scripts/patch_stellar_rings.py
+          node --check assets/js/ardua.js
+          git diff --check
+
+      - name: Commit engine migration
+        run: |
+          git config user.name "Ardua Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/js/ardua.js
+          git commit -m "Reorganize stellar hex rings and Coulomb barrier"
+          git push origin HEAD:main
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
