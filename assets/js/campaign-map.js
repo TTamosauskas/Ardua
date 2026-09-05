@@ -4,7 +4,7 @@
 const G=window.ARDUA_CAMPAIGN_GRAPH,C=window.ARDUA_CAMPAIGN;
 if(!G||!C)return;
 const $=id=>document.getElementById(id);
-let phaseButtons=[],phaseMeta={},selectedId=null,bigBangPending=false,mapRequired=false,returnTimer=0;
+let phaseButtons=[],phaseMeta={},selectedId=null,bigBangPending=false,mapRequired=false,returnTimer=0,legacyMenuPass=false;
 
 function bootstrapPhaseLauncher(){
  const opener=$('menuOpenBtn'),modal=$('menuModal');if(!opener||!modal)return;
@@ -38,7 +38,7 @@ function buildMap(){
  const editor=C.editor;
  const host=document.createElement('div');host.id='campaignMap';host.className='campaign-map';host.setAttribute('aria-hidden','true');
  host.innerHTML=`<div class="campaign-shell" id="campaignShell">
- <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha · do Big Bang aos elementos</span></div><div class="campaign-mode-chip">${editor?'Modo editor · cosmos completo':'Campanha · explore uma etapa por vez'}</div><button type="button" class="campaign-close" id="campaignClose">Voltar à fase</button></header>
+ <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha · do Big Bang aos elementos</span></div><div class="campaign-mode-chip">${editor?'Modo editor · cosmos completo':'Campanha · explore uma etapa por vez'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Atlas & elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar à fase</button></div></header>
  <main class="campaign-content">
   <section class="campaign-intro"><div><h1>Um Universo para explorar</h1><p>O Big Bang é a raiz da campanha. Cada núcleo luminoso representa uma fase jogável; bifurcações mostram histórias estelares distintas e portais abrem processos nucleares extensos.</p></div><div class="campaign-legend"><span><i></i> distante</span><span class="available"><i></i> disponível</span><span class="complete"><i></i> concluída</span></div></section>
   <section class="cosmos-root">
@@ -75,7 +75,7 @@ function buildMap(){
  <aside class="map-detail" id="mapDetail" aria-live="polite"></aside>`;
  document.body.appendChild(host);return host;
 }
-const map=buildMap(),detail=$('mapDetail'),closeBtn=$('campaignClose');
+const map=buildMap(),detail=$('mapDetail'),closeBtn=$('campaignClose'),dataBtn=$('campaignData');
 
 function refresh(){
  map.querySelectorAll('[data-phase]').forEach(el=>{const id=el.dataset.phase;if(el.classList.contains('singularity-map'))return;el.classList.remove('locked','revealed','available','completed','current');el.classList.add(phaseState(id));const sm=el.querySelector('small');if(sm&&!phaseMeta[id]?.branch)sm.textContent=stateLabel(phaseState(id))});
@@ -95,10 +95,11 @@ map.addEventListener('click',e=>{
  const scroll=e.target.closest('[data-scroll]');if(scroll){const target=map.querySelector(`[data-phase="${scroll.dataset.scroll}"]`);target?.scrollIntoView({behavior:'smooth',block:'center'});if(target)showDetail(scroll.dataset.scroll)}
 });
 closeBtn.addEventListener('click',hideMap);
+dataBtn?.addEventListener('click',()=>{legacyMenuPass=true;$('menuOpenBtn')?.click();legacyMenuPass=false;$('menuModal')?.classList.add('show')});
 map.addEventListener('keydown',e=>{if(e.key==='Escape'&&!mapRequired)hideMap()});
 
 // The engine's legacy list remains the launcher. The visible Menu button now opens the cosmological map.
-const menuOpen=$('menuOpenBtn');if(menuOpen){menuOpen.textContent='Mapa';menuOpen.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();showMap({required:false,focusCurrent:true})},true)}
+const menuOpen=$('menuOpenBtn');if(menuOpen){menuOpen.textContent='Mapa';menuOpen.addEventListener('click',e=>{if(legacyMenuPass)return;e.preventDefault();e.stopImmediatePropagation();showMap({required:false,focusCurrent:true})},true)}
 
 // A completed phase returns to the map after the engine's own scatter / transition animation finishes.
 const phaseEnd=$('phaseEndBtn');if(phaseEnd)phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id);clearTimeout(returnTimer);returnTimer=setTimeout(()=>showMap({required:true,focusCurrent:true}),1500)},true);
