@@ -2199,10 +2199,15 @@ function maybeChargeConvectionFromAction(s=phase(),fx={}){
  const selected=(state.selected||[]).filter(c=>Number.isInteger(c));if(selected.length)return grantConvectionFromCells(selected,s);
  const cell=nearestCellToPoint(fx?.x,fx?.y);return cell===null?false:grantConvectionFromCells([cell],s);
 }
+function convectionConfirmationIsUiControl(target){
+ const el=target instanceof Element?target:null;
+ return !!el?.closest('button,a,input,select,textarea,[role="dialog"],.modal,.stellar-intro,.event-tooltip,.ambient-banner');
+}
 function ensureConvectionConfirmationListener(){
  if(state.convectionConfirmListenerInstalled)return;state.convectionConfirmListenerInstalled=true;
  document.addEventListener('pointerdown',ev=>{
    if(!state.convectionConfirmPending||state.locked||state.phaseDone)return;
+   if(convectionConfirmationIsUiControl(ev.target))return;
    ev.preventDefault();ev.stopPropagation();const path=[...(state.convectionPathCells||[])];state.convectionConfirmPending=false;performConvection(path);
  },true);
 }
@@ -2214,6 +2219,8 @@ function ensureConvectionControl(){
 }
 function renderConvectionControl(){
  const b=ensureConvectionControl(),available=convectionMechanicUnlocked(),charged=Number(state.convectionCharge||0)>0,armed=!!state.convectionArmed,pending=!!state.convectionConfirmPending,show=available&&charged&&!state.phaseDone;
+ const centerCell=(byRing[0]||[])[0],centerId=centerCell===undefined?null:state.board[centerCell],centerPiece=centerId?state.pieces.get(centerId):null,anchor=centerPiece&&!centerPiece.free?{x:centerPiece.x,y:centerPiece.y}:(centerCell===undefined?null:pos(coords[centerCell]));
+ if(anchor){b.style.left=anchor.x+'px';b.style.top=anchor.y+'px'}
  b.classList.toggle('show',show);b.classList.toggle('charged',show);b.classList.toggle('armed',armed);b.classList.toggle('pending',pending);b.disabled=!show||state.locked||pending;b.setAttribute('aria-pressed',armed?'true':'false');
  dom.star.classList.toggle('convection-core-charged',show);dom.star.classList.toggle('convection-confirm-pending',pending);
 }
