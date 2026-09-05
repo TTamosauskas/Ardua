@@ -65,7 +65,7 @@ function node(id,extra=''){const title=window.ARDUA_PHASE_NAMES?.[id]||phaseMeta
 function flow(ids,cls=''){return `<div class="cosmos-flow ${cls}">${expanded(ids).map(id=>node(id)).join('')}</div>`}
 function structural(title,extra=''){return `<div class="epoch-label ${extra}"><strong>${title}</strong></div>`}
 function ambientImage(key,cls=''){const im=G.images[key];return im?`<img class="phenomenon-bg ${cls}" loading="lazy" referrerpolicy="no-referrer" src="${im.url}" alt="" aria-hidden="true">`:''}
-function portal(title,ids,open=false,key=''){return `<details class="portal" ${open?'open':''} ${key?`data-portal="${key}"`:''}><summary>${title}</summary><div class="portal-body">${flow(ids)}</div></details>`}
+function portal(title,ids,open=false,key=''){return `<section class="portal open-trail" ${key?`data-portal="${key}"`:''}><div class="portal-heading">${title}</div><div class="portal-body">${flow(ids)}</div></section>`}
 
 function branchVisualState(group,key){
  const members=BRANCH_MEMBERS[group]?.[key]||[],st=C.getState(),done=new Set(st.completed);

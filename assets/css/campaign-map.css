@@ -81,3 +81,14 @@
 }
 @media(max-width:390px){.sphere-brown{--sphere-size:42px}.sphere-red{--sphere-size:52px}.sphere-gold{--sphere-size:62px}.sphere-high{--sphere-size:80px}.branch-choice strong{font-size:6.5px;max-width:72px}}
 @media(prefers-reduced-motion:reduce){.campaign-map,.phase-node,.map-detail,.campaign-trail.trail-arrive,.branch-choice{transition:none;animation:none}.singularity-map::after{animation:none}.campaign-shell{scroll-behavior:auto}}
+
+
+/* Open process trails: former collapsible portals become continuous campaign segments. */
+.portal.open-trail{width:min(500px,100%);margin:20px auto 26px;border:0;border-radius:0;background:transparent;overflow:visible}
+.portal.open-trail .portal-heading{position:relative;z-index:4;width:max-content;max-width:92%;margin:0 auto 8px;padding:7px 13px;border:1px solid rgba(162,203,235,.22);border-radius:999px;background:rgba(5,16,30,.62);color:#e8f4ff;font-size:9px;font-weight:760;letter-spacing:.11em;text-transform:uppercase;text-align:center}
+.portal.open-trail .portal-heading::before{content:"◎";margin-right:7px;color:var(--map-violet);font-size:13px;filter:drop-shadow(0 0 6px currentColor)}
+.portal.open-trail .portal-body{padding:0}
+.portal.open-trail .cosmos-flow{gap:12px;padding-top:10px;padding-bottom:10px}
+.portal.open-trail .phase-node{width:min(260px,calc(100vw - 44px));padding-top:7px;padding-bottom:7px}
+.portal.open-trail .phase-node strong{font-size:10px}
+@media(max-width:640px){.portal.open-trail{width:100%;margin:16px auto 22px}.portal.open-trail .phase-node{width:min(250px,calc(100vw - 34px))}}
