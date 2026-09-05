@@ -55,4 +55,11 @@ ok(css.includes('@media(prefers-reduced-motion:reduce)'),'efeitos respeitam pref
 ok(engine.includes('function objectiveProgress(s=phase())')&&engine.includes('const done=objectiveSatisfied(s);if(done)return 1'),'barra possui progresso científico próprio e só libera 100% com objetivo satisfeito');
 ok(engine.includes('const objective=objectiveProgress(s)')&&engine.includes('return Math.min(objective,flow)*100'),'PROGRESSO usa o menor avanço entre objetivo científico e flow');
 ok(engine.includes("state.readyToAdvance?100:Math.min(99,Math.floor(p))"),'texto da barra não arredonda uma fase incompleta para 100%');
+ok(engine.includes("fragilePhase.uniqueMatterObjective=true")&&engine.includes('objectiveLineages:new Set()'),'fase de Be-8 usa objetivo por linhagem de matéria');
+ok(engine.includes('function mergeMatterLineages')&&engine.includes('function creditObjectiveLineage'),'proveniência de matéria é herdável e creditada por linhagem');
+ok(engine.includes("createPiece('He',origin,false,{lineage})")&&engine.includes("createPiece('He',secondCell,false,{lineage})"),'decaimento de Be-8 devolve Hélios com a mesma proveniência');
+ok(engine.includes("teachProductOnce('recycledMatter',t.x,t.y)")&&engine.includes('MATÉRIA RECICLADA · sem novo crédito'),'reciclagem repetida permanece válida mas não farma o objetivo');
+ok(engine.includes('CHAIN_LESSON_BY_KIND')&&engine.includes('await teachChainEffectOnce(kind,product.x,product.y)'),'primeira cascata pausa para explicação antes da continuação automática');
+ok(engine.includes("await teachProductOnce('neutronSource',at.x,at.y)")&&engine.includes("await teachProductOnce('freezeout',p.x,p.y)")&&engine.includes("await teachProductOnce('branching',p.x,p.y)"),'fontes, freeze-out e ramificações recebem tooltip antes do efeito');
+ok(engine.includes("if(viable&&!photoReturn&&route.rp&&route.pattern==='waiting')await teachProductOnce('waitingPoint',target.x,target.y)"),'waiting point é explicado antes da animação de captura');
 console.log('\nValidação estática do Ardua concluída.');
