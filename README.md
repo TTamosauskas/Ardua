@@ -51,4 +51,4 @@ O processo-s e o processo-r usam variações relaxantes da mesma mecânica centr
 
 ## Barreira de Coulomb
 
-Após o tutorial, a Barreira de Coulomb depende da camada radial: núcleo e camada 1 não bloqueiam; camada 2 bloqueia 50% das tentativas; camada 3, 60%; camada 4, 80%. H, Deutério e Trítio são sempre isentos. O tutorial permanece determinístico: anéis 0–2 permitem a reação e anéis 3–4 bloqueiam, para tornar clara a relação entre posição e probabilidade de reação. A regra probabilística entra em vigor somente depois que o tutorial é concluído.
+Após o tutorial, a Barreira de Coulomb depende da camada radial: núcleo e camada 1 não bloqueiam; camada 2 bloqueia 50% das tentativas; camada 3, 60%; camada 4, 80%. H, Deutério e Trítio são sempre isentos. O tutorial permanece determinístico: anéis 0–2 permitem a reação e anéis 3–4 bloqueiam, para tornar clara a relação entre posição e probabilidade de reação. A regra probabilística entra em vigor somente depois que o tutorial é concluído. Sempre que ocorre um bloqueio, o tooltip usa a mensagem fixa: “Aproxime os átomos do núcleo estelar para diminuir a resistência.”
