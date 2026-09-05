@@ -92,3 +92,24 @@
 .portal.open-trail .phase-node{width:min(260px,calc(100vw - 44px));padding-top:7px;padding-bottom:7px}
 .portal.open-trail .phase-node strong{font-size:10px}
 @media(max-width:640px){.portal.open-trail{width:100%;margin:16px auto 22px}.portal.open-trail .phase-node{width:min(250px,calc(100vw - 34px))}}
+
+
+/* Astrophysical fork refinement */
+.mainseq-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:360px}
+.spallation-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:340px}
+.supernova-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:650px}
+.neutron-branches>.branch-spheres{grid-template-columns:repeat(3,minmax(0,1fr));max-width:520px}
+.mainseq-branches{margin-top:0;margin-bottom:10px}.mainseq-convergence{margin-top:2px;margin-bottom:8px}
+.spallation-branches{margin:2px auto 8px}.interstellar-convergence{margin-top:3px}
+.sphere-orange{--sphere:#ffac63;--sphere-size:76px}.sphere-orange .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#fff5da 0 8%,#ffbd68 9% 25%,#d66b2c 48%,#2c1007 76%)}
+.sphere-yellow{--sphere:#ffe77a;--sphere-size:84px}.sphere-yellow .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#fff 0 8%,#ffe57a 9% 25%,#e39a32 48%,#321607 76%)}
+.sphere-pulsar{--sphere:#8bdcff;--sphere-size:78px}.sphere-pulsar .branch-sphere-art{background-image:radial-gradient(circle at 50% 50%,#f5ffff 0 7%,#8adfff 8% 19%,#245e93 35%,#081528 62%,#02050b 78%)}
+.sphere-blackhole{--sphere:#b58cff;--sphere-size:96px}.sphere-blackhole .branch-sphere-art{background-image:radial-gradient(circle at 50% 50%,#000 0 27%,#30104a 29%,#e5a0ff 34%,#fff 36%,#5aa8ff 40%,transparent 57%)}
+.sphere-spallation-be{--sphere:#a8d88a;--sphere-size:68px}.sphere-spallation-be .branch-sphere-art{background-image:radial-gradient(circle at 34% 30%,#f8ffe9 0 8%,#b8df91 9% 25%,#547c48 49%,#0c1c14 76%)}
+.sphere-spallation-b{--sphere:#e3c576;--sphere-size:72px}.sphere-spallation-b .branch-sphere-art{background-image:radial-gradient(circle at 34% 30%,#fff8df 0 8%,#e8c873 9% 25%,#8f6f29 49%,#211707 76%)}
+@media(max-width:640px){
+ .supernova-branches>.branch-spheres{max-width:100%;gap:12px 2px}.neutron-branches>.branch-spheres{max-width:100%;gap:12px 4px}
+ .mainseq-branches>.branch-spheres,.spallation-branches>.branch-spheres{max-width:320px}
+ .sphere-orange{--sphere-size:58px}.sphere-yellow{--sphere-size:64px}.sphere-pulsar{--sphere-size:58px}.sphere-blackhole{--sphere-size:70px}.sphere-spallation-be{--sphere-size:54px}.sphere-spallation-b{--sphere-size:56px}
+ .supernova-branches .branch-choice strong,.neutron-branches .branch-choice strong{font-size:6.5px;max-width:72px}
+}

@@ -21,16 +21,19 @@ function expanded(ids){return A.expand(ids)}
 function tail(id){return A.tail(id)}
 const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const xseq=ids=>expanded(ids);
+const rpMembers=xseq(G.sequences.rp),rMembers=xseq(G.sequences.r),decayMembers=xseq(G.sequences.decay),quasarMembers=xseq(G.sequences.quasar||[]);
 const stellarHighMembers=uniq([
  ...xseq(G.sequences.high),...xseq(G.sequences.weakS),...xseq(G.sequences.collapse),
- ...xseq(['nu_f']),...xseq(['gamma_process','neutron_star','pulsar','accretion']),
- ...xseq(G.sequences.rp),...xseq(G.sequences.r),...xseq(G.sequences.decay)
+ ...xseq(['nu_f','gamma_process','neutron_star','pulsar','accretion','black_hole']),
+ ...rpMembers,...rMembers,...decayMembers,...quasarMembers
 ]);
-const remnantMembers=uniq([
- ...xseq(['neutron_star','pulsar','accretion']),...xseq(G.sequences.rp),...xseq(G.sequences.r),...xseq(G.sequences.decay)
+const neutronStarMembers=uniq([
+ ...xseq(['neutron_star','pulsar','accretion']),...rpMembers,...rMembers,...decayMembers
 ]);
+const blackHoleMembers=uniq([...xseq(['black_hole']),...quasarMembers]);
 const BRANCH_MEMBERS={
  primordial:{tritium:xseq(G.sequences.primordialLeft),helium3:xseq(G.sequences.primordialRight)},
+ mainseq:{orange:xseq(['he_orange']),yellow:xseq(['he_yellow'])},
  stellar:{
   sub:xseq(G.sequences.brown),
   low:uniq([...xseq(G.sequences.red),'white']),
@@ -40,19 +43,23 @@ const BRANCH_MEMBERS={
  supernova:{
   nu:xseq(['nu_f']),
   gamma:xseq(['gamma_process']),
-  remnant:remnantMembers
+  ns:neutronStarMembers,
+  bh:blackHoleMembers
  },
  neutron:{
-  pulse:uniq([...xseq(['pulsar','accretion']),...xseq(G.sequences.rp)]),
-  r:uniq([...xseq(G.sequences.r),...xseq(G.sequences.decay)])
- }
+  pulsar:xseq(['pulsar']),
+  accretion:uniq([...xseq(['accretion']),...rpMembers]),
+  r:uniq([...rMembers,...decayMembers])
+ },
+ spallation:{be:xseq(['spallation_be']),b:xseq(['spallation'])}
 };
 const PORTAL_MEMBERS={
  s:xseq(G.sequences.sprocess),
  'weak-s':xseq(G.sequences.weakS),
- rp:xseq(G.sequences.rp),
- r:xseq(G.sequences.r)
+ rp:rpMembers,
+ r:rMembers
 };
+
 
 function phaseState(id){
  const st=C.getState(),done=new Set(st.completed),current=st.activeId===id,available=C.isUnlocked(id);
@@ -95,21 +102,31 @@ function buildMap(){
   {key:'tritium',label:'Trítio',visual:'sphere-tritium',content:flow(G.sequences.primordialLeft)},
   {key:'helium3',label:'Hélio-3',visual:'sphere-helium',content:flow(G.sequences.primordialRight)}
  ],'primordial-branches');
+ const mainseq=branchCluster('mainseq',[
+  {key:'orange',label:'Anã laranja',visual:'sphere-orange',content:flow(['he_orange'])},
+  {key:'yellow',label:'Anã amarela',visual:'sphere-yellow',content:flow(['he_yellow'])}
+ ],'mainseq-branches');
  const neutron=branchCluster('neutron',[
-  {key:'pulse',label:'Pulsar e acreção',visual:'sphere-accretion',image:'blackhole',content:`${flow(['pulsar','accretion'])}${structural('Explosão de raios X')}${portal('rp-process',G.sequences.rp,false,'rp')}${ambientImage('blackhole','branch-bg branch-bg-right')}`},
+  {key:'pulsar',label:'Pulsar',visual:'sphere-pulsar',image:'supernova',content:flow(['pulsar'])},
+  {key:'accretion',label:'Acreção + raios X',visual:'sphere-accretion',image:'blackhole',content:`${flow(['accretion'])}${structural('Explosão de raios X')}${portal('rp-process',G.sequences.rp,false,'rp')}${ambientImage('blackhole','branch-bg branch-bg-right')}`},
   {key:'r',label:'Kilonova',visual:'sphere-kilonova',image:'kilonova',content:`${structural('Sistema binário de estrelas de nêutrons','binary-junction')}${structural('Kilonova','kilonova-junction')}${portal('Processo-r',G.sequences.r,true,'r')}${ambientImage('kilonova','branch-bg branch-bg-left')}`}
  ],'neutron-branches');
  const supernova=branchCluster('supernova',[
   {key:'nu',label:'Neutrinos',visual:'sphere-neutrino',image:'supernova',content:flow(['nu_f'])},
   {key:'gamma',label:'Processo γ',visual:'sphere-gamma',image:'supernova',content:flow(['gamma_process'])},
-  {key:'remnant',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:`${flow(['neutron_star'])}${neutron}`}
+  {key:'ns',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:`${flow(['neutron_star'])}${neutron}`},
+  {key:'bh',label:'Buraco negro',visual:'sphere-blackhole',image:'blackhole',content:`${structural('Formação do buraco negro','blackhole-junction')}${flow(['black_hole'])}${ambientImage('blackhole','branch-bg branch-bg-right')}`}
  ],'supernova-branches');
  const stellar=branchCluster('stellar',[
   {key:'sub',label:'Anã marrom',visual:'sphere-brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
   {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${structural('Evolução de longa vida')}${flow(['white'])}`},
-  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
+  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${mainseq}<div class="convergence mainseq-convergence" data-junction="mainseq-convergence">Evolução estelar</div>${flow(['coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'])}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
   {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${portal('Processo-s fraco',G.sequences.weakS,false,'weak-s')}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
  ],'stellar-branches');
+ const spallation=branchCluster('spallation',[
+  {key:'be',label:'Berílio',visual:'sphere-spallation-be',content:flow(['spallation_be'])},
+  {key:'b',label:'Boro',visual:'sphere-spallation-b',content:flow(['spallation'])}
+ ],'spallation-branches');
  host.innerHTML=`<div class="campaign-shell" id="campaignShell">
  <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha</span></div><div class="campaign-mode-chip">${editor?'Editor':'Campanha'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar</button></div></header>
  <main class="campaign-content" id="campaignContent">
@@ -131,7 +148,7 @@ function buildMap(){
      ${stellar}
      <div class="branch-after" data-after-group="stellar" hidden>
       <section class="cycle-grid">
-       <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos')}${flow(G.sequences.interstellar)}</article>
+       <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos','cosmic-ray-junction')}${spallation}<div class="convergence interstellar-convergence" data-junction="spallation-convergence">Meio interestelar enriquecido</div></article>
        <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
       </section>
       <div class="cycle-arrow">Ciclo cósmico</div>
@@ -176,12 +193,20 @@ function inferAncestorBranches(){
   else if(done.has(tail('primordial_he3d')))branchSelection.primordial='helium3';
   else if(done.has(tail('primordial_td')))branchSelection.primordial='tritium';
  }
+ if(!branchSelection.mainseq){
+  if(active==='he_yellow'||done.has('he_yellow'))branchSelection.mainseq='yellow';
+  else if(active==='he_orange'||done.has('he_orange'))branchSelection.mainseq='orange';
+ }
  if(!branchSelection.stellar){
   if(active==='white')branchSelection.stellar=done.has('bi')?'mid':'low';
   else if(stellarHighMembers.includes(active)||done.has('final_collapse'))branchSelection.stellar='high';
   else if(BRANCH_MEMBERS.stellar.mid.includes(active)||done.has('bi'))branchSelection.stellar='mid';
   else if(BRANCH_MEMBERS.stellar.low.includes(active)||done.has('he_red'))branchSelection.stellar='low';
   else if(BRANCH_MEMBERS.stellar.sub.includes(active)||done.has('brown'))branchSelection.stellar='sub';
+ }
+ if(!branchSelection.spallation){
+  if(active==='spallation'||done.has('spallation'))branchSelection.spallation='b';
+  else if(active==='spallation_be'||done.has('spallation_be'))branchSelection.spallation='be';
  }
 }
 function syncBranchesToActive(){
@@ -193,7 +218,7 @@ function syncBranchesToActive(){
  }
  inferAncestorBranches();
  for(const [group,key] of Object.entries(branchSelection))activateBranch(group,key,false);
- for(const group of ['primordial','stellar','supernova','neutron'])syncBranchAfter(group);
+ for(const group of Object.keys(BRANCH_MEMBERS))syncBranchAfter(group);
 }
 function refreshBranchStates(){
  map.querySelectorAll('.branch-choice').forEach(btn=>{
@@ -242,7 +267,8 @@ function addPath(from,to,cls='main',bend=.5){
 }
 function connectIds(ids,cls='main'){for(let i=1;i<ids.length;i++)addPath(byPhase(ids[i-1]),byPhase(ids[i]),cls)}
 function connectTrail(ids,cls='main'){connectIds(expanded(ids),cls)}
-function portalSummary(key){const el=[...map.querySelectorAll(`[data-portal="${key}"] > summary`)].find(isVisible);return el||null}
+function portalSummary(key){const root=[...map.querySelectorAll(`[data-portal="${key}"]`)].find(isVisible);if(!root)return null;return root.querySelector(':scope > summary, :scope > .portal-heading')||root}
+function portalOpen(key){const root=[...map.querySelectorAll(`[data-portal="${key}"]`)].find(isVisible);return !!root&&(root.classList.contains('open-trail')||!!root.open)}
 function portalFirst(key){return [...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)].find(isVisible)||null}
 function portalLast(key){const xs=[...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)].filter(isVisible);return xs[xs.length-1]||null}
 function connectBranchJunction(from,group,classes={}){
@@ -256,32 +282,43 @@ function connectActiveSphere(group,firstId,cls){
 }
 
 function drawMid(){
- connectTrail(G.sequences.mid,'mid');
- const sPortal=portalSummary('s');addPath(byPhase(tail('o')),sPortal,'mid');
- if(map.querySelector('[data-portal="s"]')?.open){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}else addPath(sPortal,byPhase('white'),'mid');
+ const midSphere=branchSphereEl('stellar','mid');
+ connectBranchJunction(midSphere,'mainseq',{orange:'mid',yellow:'mid'});
+ const m=activeBranch('mainseq'),convergence=[...map.querySelectorAll('[data-junction="mainseq-convergence"]')].find(isVisible);
+ if(m==='orange'){connectActiveSphere('mainseq','he_orange','mid');addPath(byPhase(tail('he_orange')),convergence,'mid',.48)}
+ if(m==='yellow'){connectActiveSphere('mainseq','he_yellow','mid');addPath(byPhase(tail('he_yellow')),convergence,'mid',.48)}
+ if(convergence)addPath(convergence,byPhase('coulomb_intro'),'mid',.5);
+ connectTrail(['coulomb_intro','stellar_convection','stellar_li'],'mid');
+ const sPortal=portalSummary('s');
+ if(portalOpen('s')){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}
 }
 function drawHigh(){
  connectTrail(G.sequences.high,'high');
  const weakPortal=portalSummary('weak-s');addPath(byPhase(tail('co')),weakPortal,'high');
- if(map.querySelector('[data-portal="weak-s"]')?.open){addPath(weakPortal,portalFirst('weak-s'),'high');connectTrail(G.sequences.weakS,'high');addPath(portalLast('weak-s'),byPhase('neutronize'),'high')}else addPath(weakPortal,byPhase('neutronize'),'high');
+ if(portalOpen('weak-s')){addPath(weakPortal,portalFirst('weak-s'),'high');connectTrail(G.sequences.weakS,'high');addPath(portalLast('weak-s'),byPhase('neutronize'),'high')}else addPath(weakPortal,byPhase('neutronize'),'high');
  connectTrail(G.sequences.collapse,'high');
- const collapse=byPhase(tail('final_collapse'));connectBranchJunction(collapse,'supernova',{nu:'high',gamma:'high',remnant:'compact'});
+ const collapse=byPhase(tail('final_collapse'));connectBranchJunction(collapse,'supernova',{nu:'high',gamma:'high',ns:'compact',bh:'compact'});
  const s=activeBranch('supernova');
  if(s==='nu'){connectActiveSphere('supernova','nu_f','high');connectIds(expanded(['nu_f']),'high')}
  if(s==='gamma')connectActiveSphere('supernova','gamma_process','high');
- if(s==='remnant'){
+ if(s==='bh'){
+  const sphere=branchSphereEl('supernova','bh'),junction=[...map.querySelectorAll('.blackhole-junction')].find(isVisible),bh=byPhase('black_hole');
+  addPath(sphere,junction,'compact',.35);addPath(junction,bh,'compact',.5);
+ }
+ if(s==='ns'){
   connectActiveSphere('supernova','neutron_star','compact');
-  const neutron=byPhase(tail('neutron_star'));connectBranchJunction(neutron,'neutron',{pulse:'compact',r:'r'});
+  const neutron=byPhase(tail('neutron_star'));connectBranchJunction(neutron,'neutron',{pulsar:'compact',accretion:'compact',r:'r'});
   const n=activeBranch('neutron');
-  if(n==='pulse'){
-   connectActiveSphere('neutron','pulsar','compact');connectTrail(['pulsar','accretion'],'compact');
+  if(n==='pulsar')connectActiveSphere('neutron','pulsar','compact');
+  if(n==='accretion'){
+   connectActiveSphere('neutron','accretion','compact');
    const rpPortal=portalSummary('rp');addPath(byPhase(tail('accretion')),rpPortal,'compact');
-   if(map.querySelector('[data-portal="rp"]')?.open){addPath(rpPortal,portalFirst('rp'),'compact');connectTrail(G.sequences.rp,'compact')}
+   if(portalOpen('rp')){addPath(rpPortal,portalFirst('rp'),'compact');connectTrail(G.sequences.rp,'compact')}
   }
   if(n==='r'){
    const sphere=branchSphereEl('neutron','r'),binary=[...map.querySelectorAll('.binary-junction')].find(isVisible),kilo=[...map.querySelectorAll('.kilonova-junction')].find(isVisible),rPortal=portalSummary('r');
    addPath(sphere,binary,'r',.35);addPath(binary,kilo,'r');addPath(kilo,rPortal,'r');
-   if(map.querySelector('[data-portal="r"]')?.open){addPath(rPortal,portalFirst('r'),'r');connectTrail(G.sequences.r,'r');addPath(portalLast('r'),byPhase('decay_pa'),'radio',.55)}else addPath(rPortal,byPhase('decay_pa'),'radio',.55);
+   if(portalOpen('r')){addPath(rPortal,portalFirst('r'),'r');connectTrail(G.sequences.r,'r');addPath(portalLast('r'),byPhase('decay_pa'),'radio',.55)}else addPath(rPortal,byPhase('decay_pa'),'radio',.55);
   }
  }
 }
@@ -301,12 +338,16 @@ function drawLinks(){
  const s=activeBranch('stellar');
  if(s==='sub'){connectActiveSphere('stellar','brown','sub');connectTrail(G.sequences.brown,'sub')}
  if(s==='low'){connectActiveSphere('stellar','he_red','low');connectTrail(G.sequences.red,'low');addPath(byPhase(tail('he_red')),byPhase('white'),'converge',.5)}
- if(s==='mid'){connectActiveSphere('stellar','he_orange','mid');drawMid()}
+ if(s==='mid')drawMid()
  if(s==='high'){connectActiveSphere('stellar','carbon_burn','high');drawHigh()}
 
- connectTrail(G.sequences.interstellar,'interstellar');connectTrail(G.sequences.decay,'radio');
- const interstellarTarget=byPhase('spallation_be');
- for(const sourceId of ['o','final_collapse','white','u']){const source=byPhase(tail(sourceId));if(source){addPath(source,interstellarTarget,'interstellar',.68);break}}
+ connectTrail(G.sequences.decay,'radio');
+ const cosmic=[...map.querySelectorAll('.cosmic-ray-junction')].find(isVisible),spallationConvergence=[...map.querySelectorAll('[data-junction="spallation-convergence"]')].find(isVisible);
+ for(const sourceId of ['c','n','o','final_collapse','white','u']){const source=byPhase(tail(sourceId));if(source&&cosmic){addPath(source,cosmic,'interstellar',.68);break}}
+ if(cosmic)connectBranchJunction(cosmic,'spallation',{be:'interstellar',b:'interstellar'});
+ const sp=activeBranch('spallation');
+ if(sp==='be'){connectActiveSphere('spallation','spallation_be','interstellar');addPath(byPhase('spallation_be'),spallationConvergence,'interstellar',.5)}
+ if(sp==='b'){connectActiveSphere('spallation','spallation','interstellar');addPath(byPhase('spallation'),spallationConvergence,'interstellar',.5)}
 }
 function scheduleLinks(){if(linkFrame)cancelAnimationFrame(linkFrame);linkFrame=requestAnimationFrame(()=>requestAnimationFrame(drawLinks))}
 
