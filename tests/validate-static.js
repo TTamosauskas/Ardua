@@ -22,5 +22,15 @@ ok(engine.includes("RP_FOUNDATION_STEPS")&&engine.includes("from:'Fe',to:'Co'")&
 ok(engine.includes("const hasRpRoute=[...state.pieces.values()].some")&&engine.includes("createPiece('Fe',cell,true)"),'segurança do rp-process repõe apenas matéria-base, nunca o precursor direto');
 ok(engine.includes("configureSingleObjectiveIngredients(PHASES)")&&engine.includes("p.starterGroups=[[p.seed],...Array.from({length:baseCount},()=>['Fe'])]"),'fases s/r recebem uma única semente direta e Ferro para reconstrução');
 ok(engine.includes("foundation_weak_s")&&engine.includes("foundation_agb_s")&&engine.includes("foundation_r"),'processos de nêutrons possuem rotas agregadas de reconstrução a partir de Ferro');
+ok(engine.includes("configureNeutronGameplay(PHASES)")&&engine.includes("neutronPattern:'")===false,'mecânicas de nêutrons são configuradas por templates globais, não duplicadas nas fases');
+ok(engine.includes("source22")&&engine.includes("Ne22")&&engine.includes("²²Ne + ⁴He → ²⁵Mg + n"),'fonte ²²Ne(α,n) está implementada');
+ok(engine.includes("source13")&&engine.includes("C13")&&engine.includes("¹³C + ⁴He → ¹⁶O + n"),'fonte ¹³C(α,n) está implementada');
+ok(engine.includes("scheduleNeutronBeta")&&engine.includes("resolvePendingNeutronBetas")&&engine.includes("neutronBetaPending"),'espera β− usa estado nuclear pendente');
+ok(engine.includes("requiresNeutronBranch")&&engine.includes("captura antes do β−")&&engine.includes("neutronBranchesObserved"),'ramificações permitem captura antes de β−');
+ok(engine.includes("neutronShellExposure")&&engine.includes("CASCA ATRAVESSADA")&&engine.includes("EXPOSIÇÃO"),'cascas mágicas exigem exposição acumulada');
+ok(engine.includes("neutronPulseSize")&&engine.includes("spawnNeutronBatch")&&engine.includes("pulseStrong"),'pulsos de nêutrons variam o fluxo do processo-s');
+ok(engine.includes("rStorm")&&engine.includes("rWave")&&engine.includes("neutronStormsObserved"),'processo-r possui tempestades e ondas de nêutrons');
+ok(engine.includes("rFreezeout")&&engine.includes("FREEZE-OUT")&&engine.includes("neutronFreezeouts"),'freeze-out do processo-r está implementado como etapa própria');
+ok(engine.includes("p.neutronBetaPending&&neutronGameplay(s).pattern!=='branch'"),'núcleos aguardando β− bloqueiam recaptura fora de ramificações');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
 console.log('\nValidação estática do Ardua concluída.');
