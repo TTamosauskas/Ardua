@@ -15,70 +15,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reconstruct validated migration helper
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import base64
-
-          chunks = [
-              Path('.github/chain-feedback.part0').read_text(),
-              base64.b64decode(Path('.github/chain-feedback.part1').read_text().strip()).decode(),
-              Path('.github/chain-feedback.part2').read_text(),
-              Path('.github/chain-feedback.part3').read_text(),
-              Path('.github/chain-feedback.part4').read_text(),
-          ]
-          merged = chunks[0]
-          for i, chunk in enumerate(chunks[1:], 1):
-              overlap = 0
-              for n in range(min(96, len(merged), len(chunk)), 0, -1):
-                  if merged.endswith(chunk[:n]):
-                      overlap = n
-                      break
-              print(f'part{i}: overlap={overlap}')
-              merged += chunk[overlap:]
-          bad = '];", new_record = """function recordFlow'
-          good = '];"""\nnew_record = """function recordFlow'
-          if merged.count(bad) != 1:
-              raise SystemExit(f'recordFlow boundary: expected 1 malformed delimiter, found {merged.count(bad)}')
-          merged = merged.replace(bad, good, 1)
-          Path('/tmp/chain-feedback.py').write_text(merged)
-          PY
-          python .github/chain-feedback-fix.py
-          python -m py_compile /tmp/chain-feedback.py
+      - name: Validate migration helper
+        run: python -m py_compile .github/chain-feedback-v2.py
       - name: Apply reaction feedback migration
-        run: python /tmp/chain-feedback.py
-      - name: Normalize resonance CSS
+        run: python .github/chain-feedback-v2.py
+      - name: Validate engine and cascade invariants
         shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('assets/css/ardua.css')
-          s=p.read_text()
-          replacements={
-            'opacity:calc(var(--resonanceGlow,0)*.78)':'opacity:var(--resonanceGlow,0)',
-            'box-shadow:0 0 calc(18px + var(--resonanceGlow,0)*50px) rgba(171,226,255,.48)':'box-shadow:0 0 58px rgba(171,226,255,.48)',
-            'filter:brightness(calc(1 + var(--resonanceGlow,0)*.45))':'filter:brightness(1.22)'
-          }
-          for old,new in replacements.items():
-              if s.count(old)!=1:
-                  raise SystemExit(f'resonance CSS: expected 1 occurrence of {old!r}, found {s.count(old)}')
-              s=s.replace(old,new,1)
-          if 'calc(var(--resonanceGlow' in s:
-              raise SystemExit('unsafe resonance calc remains')
-          p.write_text(s)
-          PY
-      - name: Validate engine
         run: |
           node --check assets/js/ardua.js
           node tests/validate-static.js
+          grep -Fq "const CHAIN_AUTO_FLOW_FACTORS=Object.freeze([.25,.10,0]);" assets/js/ardua.js
+          grep -Fq "const CHAIN_MAX_PROGRESS_BONUS=.10;" assets/js/ardua.js
+          grep -Fq "const CHAIN_OBJECTIVE_PROGRESS_FLOOR=.75;" assets/js/ardua.js
+          grep -Fq "function scheduleAutoFusionCascade" assets/js/ardua.js
+          grep -Fq "function scheduleNeutronCascade" assets/js/ardua.js
+          grep -Fq "function scheduleAutoProtonCascade" assets/js/ardua.js
+          grep -Fq "function captureTag(x,y,text){if(!dom.fx" assets/js/ardua.js
+          grep -Fq "Reaction feedback + causal cascades" assets/css/ardua.css
+          ! grep -Fq "calc(var(--resonanceGlow" assets/css/ardua.css
       - name: Commit clean result
         shell: bash
         run: |
-          rm .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 .github/chain-feedback-fix.py .github/workflows/apply-chain-feedback.yml
+          rm -f .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4
+          rm -f .github/chain-feedback-fix.py .github/chain-feedback-v2.py .github/workflows/apply-chain-feedback.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/js/ardua.js assets/css/ardua.css .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 .github/chain-feedback-fix.py .github/workflows/apply-chain-feedback.yml
+          git add -A
           git commit -m 'Add reaction feedback and causal cascades'
           git push
