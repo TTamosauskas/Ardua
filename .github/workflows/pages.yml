@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,6 +23,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply black hole accretion mechanic
+        run: python .github/scripts/apply_blackhole_accretion.py
+
+      - name: Validate black hole mechanic
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-discoveries.js
+          git diff --check
+          grep -q "Buraco Negro + Átomo → Acreção" assets/js/ardua.js
+          grep -q "function completeBlackHoleAccretion" assets/js/ardua.js
+          grep -q "phenomenon:hawkingRadiation" assets/js/campaign-discoveries.js
+
+      - name: Commit black hole accretion mechanic
+        run: |
+          git config user.name "Ardua Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/js/ardua.js assets/css/ardua.css assets/js/campaign-discoveries.js
+          if ! git diff --cached --quiet; then
+            git commit -m "Add selectable black hole accretion mechanic [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
