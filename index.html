@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
 <meta name="theme-color" content="#070b18"/>
 <title>Ardua — Astrofísica Nuclear</title>
-<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin/>
-<link rel="preload" href="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" as="audio" type="audio/mp4" crossorigin="anonymous"/>
+<script>document.documentElement.classList.add('ardua-map-boot');setTimeout(()=>document.documentElement.classList.remove('ardua-map-boot'),5000)</script>
+<link rel="preconnect" href="https://raw.githubusercontent.com"/>
+<link rel="preload" href="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" as="audio" type="audio/mp4"/>
+<script src="assets/js/music.js"></script>
+<style>html.ardua-map-boot body>.app,html.ardua-map-boot .stellar-intro{visibility:hidden!important}</style>
 <link rel="stylesheet" href="assets/css/ardua.css"/>
 <link rel="stylesheet" href="assets/css/campaign-map.css"/>
 <link rel="stylesheet" href="assets/css/campaign-discoveries.css"/>
@@ -18,8 +21,6 @@
 
 </head>
 <body>
-<audio id="arduaSoundtrack" src="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" preload="auto" autoplay loop playsinline crossorigin="anonymous" hidden></audio>
-<script src="assets/js/music.js"></script>
 <div class="app">
   <div class="top">
     <div class="phase-card"><small id="branchLabel">Nascimento da primeira estrela</small><strong id="phaseTitle">Nebulosa</strong><span id="phaseMeta">Novo elemento: Hélio</span></div>
@@ -94,7 +95,6 @@
 <script src="assets/js/campaign-quasar-rules.js"></script>
 <script src="assets/js/campaign-mode.js"></script>
 <script src="assets/js/ardua.js"></script>
-<script src="assets/js/stellar-intro-input.js"></script>
 <script src="assets/js/campaign-quasar-game.js"></script>
 <script src="assets/js/campaign-phase-names.js"></script>
 <script src="assets/js/campaign-map.js"></script>

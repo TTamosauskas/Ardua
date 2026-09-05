@@ -1,98 +1,69 @@
-/* Ardua — continuous background soundtrack. */
+/* Ardua — continuous background soundtrack, independent from game controls. */
 (()=>{
 'use strict';
-const audio=document.getElementById('arduaSoundtrack');
-if(!audio)return;
-
 const RAW_SRC='https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a';
 const LOCAL_FALLBACK='assets/AaronCopland.m4a';
 const MAP_VOLUME=.50;
 const PHASE_VOLUME=.15;
 const FADE_MS=950;
+const audio=new Audio();
 let fadeFrame=0;
-let started=false;
 let fallbackUsed=false;
-let playQueued=false;
-let targetVolume=document.body.classList.contains('campaign-map-open')?MAP_VOLUME:PHASE_VOLUME;
+let observer=null;
 
-audio.loop=true;
 audio.preload='auto';
+audio.autoplay=true;
+audio.loop=true;
 audio.playsInline=true;
-audio.volume=targetVolume;
-if(audio.getAttribute('src')!==RAW_SRC){audio.src=RAW_SRC;audio.load()}
+audio.controls=false;
+audio.muted=false;
+audio.defaultMuted=false;
+audio.volume=MAP_VOLUME;
+audio.src=RAW_SRC;
 
-function stopFade(){
- if(fadeFrame){cancelAnimationFrame(fadeFrame);fadeFrame=0}
+function wantedVolume(){
+ const body=document.body;
+ if(!body||document.documentElement.classList.contains('ardua-map-boot'))return MAP_VOLUME;
+ return body.classList.contains('campaign-map-open')?MAP_VOLUME:PHASE_VOLUME;
 }
+function stopFade(){if(fadeFrame){cancelAnimationFrame(fadeFrame);fadeFrame=0}}
 function fadeTo(target,duration=FADE_MS){
- targetVolume=Math.max(0,Math.min(1,target));
- stopFade();
- const from=audio.volume,start=performance.now(),delta=targetVolume-from;
- if(Math.abs(delta)<.002||duration<=0){audio.volume=targetVolume;return}
- const step=now=>{
-  const t=Math.min(1,(now-start)/duration),ease=t*t*(3-2*t);
-  audio.volume=Math.max(0,Math.min(1,from+delta*ease));
-  if(t<1)fadeFrame=requestAnimationFrame(step);else fadeFrame=0;
- };
+ target=Math.max(0,Math.min(1,target));stopFade();
+ const from=audio.volume,start=performance.now(),delta=target-from;
+ if(Math.abs(delta)<.002||duration<=0){audio.volume=target;return}
+ const step=now=>{const t=Math.min(1,(now-start)/duration),ease=t*t*(3-2*t);audio.volume=Math.max(0,Math.min(1,from+delta*ease));if(t<1)fadeFrame=requestAnimationFrame(step);else fadeFrame=0};
  fadeFrame=requestAnimationFrame(step);
 }
-function contextualVolume(immediate=false){
- const target=document.body.classList.contains('campaign-map-open')?MAP_VOLUME:PHASE_VOLUME;
- if(immediate){stopFade();targetVolume=target;audio.volume=target}else fadeTo(target);
-}
-function removeUnlockListeners(){
- document.removeEventListener('pointerdown',unlockFromGesture,true);
- document.removeEventListener('touchstart',unlockFromGesture,true);
- document.removeEventListener('keydown',unlockFromGesture,true);
- document.removeEventListener('click',unlockFromGesture,true);
-}
-function markStarted(){
- started=true;playQueued=false;removeUnlockListeners();contextualVolume(false);
-}
+function sync(immediate=false){const target=wantedVolume();if(immediate){stopFade();audio.volume=target}else fadeTo(target)}
 function tryPlay(){
- playQueued=false;
- if(started&&!audio.paused)return;
- const attempt=audio.play();
- if(attempt&&typeof attempt.then==='function')attempt.then(markStarted).catch(()=>{});
- else if(!audio.paused)markStarted();
+ sync(true);
+ if(!audio.paused&&!audio.ended)return;
+ try{const p=audio.play();if(p&&typeof p.catch==='function')p.catch(()=>{})}catch(_e){}
 }
-function queuePlay(){
- if(playQueued)return;playQueued=true;
- // Executa logo depois do gesto atual. Assim o áudio deixa o botão COMEÇAR concluir
- // sua própria interação antes da tentativa de reprodução em mobile.
- queueMicrotask(tryPlay);
+function observeBody(){
+ if(!document.body||observer)return;
+ observer=new MutationObserver(()=>sync(false));
+ observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+ sync(true);
 }
-function unlockFromGesture(){queuePlay()}
-function armPlayback(){
- document.addEventListener('pointerdown',unlockFromGesture,true);
- document.addEventListener('touchstart',unlockFromGesture,{capture:true,passive:true});
- document.addEventListener('keydown',unlockFromGesture,true);
- document.addEventListener('click',unlockFromGesture,true);
+function useLocalFallback(){
+ if(fallbackUsed)return;fallbackUsed=true;
+ audio.src=LOCAL_FALLBACK;audio.load();tryPlay();
 }
 
-new MutationObserver(contextualVolume).observe(document.body,{attributes:true,attributeFilter:['class']});
+audio.addEventListener('loadedmetadata',tryPlay);
+audio.addEventListener('loadeddata',tryPlay);
+audio.addEventListener('canplay',tryPlay);
+audio.addEventListener('error',useLocalFallback);
 
-document.addEventListener('visibilitychange',()=>{
- if(document.hidden){stopFade();return}
- contextualVolume(true);if(started)queuePlay();
-});
+document.addEventListener('DOMContentLoaded',()=>{observeBody();tryPlay()},{once:true});
+window.addEventListener('load',tryPlay,{once:true});
+window.addEventListener('pageshow',tryPlay);
+window.addEventListener('focus',tryPlay);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){sync(true);tryPlay()}});
 
-audio.addEventListener('error',()=>{
- if(fallbackUsed)return;
- fallbackUsed=true;started=false;audio.src=LOCAL_FALLBACK;audio.load();queuePlay();
-});
-audio.addEventListener('ended',()=>{audio.currentTime=0;queuePlay()});
-audio.addEventListener('canplay',()=>{contextualVolume(true);if(!started)queuePlay()});
+audio.load();
+tryPlay();
 
-armPlayback();
-queuePlay();
-
-window.ARDUA_MUSIC=Object.freeze({
- audio,
- source:RAW_SRC,
- mapVolume:MAP_VOLUME,
- phaseVolume:PHASE_VOLUME,
- sync:()=>contextualVolume(false),
- play:queuePlay
-});
+window.ARDUA_MUSIC=Object.freeze({audio,source:RAW_SRC,mapVolume:MAP_VOLUME,phaseVolume:PHASE_VOLUME,sync:()=>sync(false),play:tryPlay});
 })();

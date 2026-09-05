@@ -246,7 +246,7 @@ function setTrailVisible(visible,animate=false){
 function visibleCurrent(){return [...map.querySelectorAll('.phase-node.current')].find(isVisible)||null}
 function showMap(opts={}){
  mapRequired=!!opts.required;refresh();map.classList.add('show');map.setAttribute('aria-hidden','false');document.body.classList.add('campaign-map-open');closeBtn.disabled=mapRequired;closeBtn.textContent=mapRequired?'Escolha uma fase':'Voltar';
- const introduced=C.getState().introduced||C.editor;setTrailVisible(introduced,!!opts.reveal);
+ setTrailVisible(true,!!opts.reveal);
  setTimeout(()=>{const focus=opts.rootOnly?map.querySelector('.singularity-map'):visibleCurrent();focus?.scrollIntoView({block:'center',behavior:opts.instant?'auto':'smooth'});scheduleLinks()},90);
 }
 function hideMap(force=false){if(mapRequired&&!force)return;map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');detail.classList.remove('show')}
@@ -378,6 +378,10 @@ const phaseTitle=$('phaseTitle');if(phaseTitle)new MutationObserver(()=>{
 
 window.addEventListener('ardua:campaign-progress',refresh);
 const initial=C.getState();
-if(C.editor||initial.introduced)setTimeout(()=>showMap({required:true,focusCurrent:true}),0);
-else setTimeout(()=>showMap({required:true,rootOnly:true,instant:true}),0);
+setTimeout(()=>{
+ const intro=$('stellarIntro');if(intro?.classList.contains('show'))$('stellarStartBtn')?.click();
+ showMap({required:true,focusCurrent:!!initial.introduced,rootOnly:!initial.introduced,instant:true});
+ document.documentElement.classList.remove('ardua-map-boot');
+ window.ARDUA_MUSIC?.sync?.();
+},0);
 })();

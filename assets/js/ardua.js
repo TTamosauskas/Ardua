@@ -3867,7 +3867,7 @@ function showStellarPopup(force=false){
  $('stellarIntro').classList.add('show');return true;
 }
 function closeStellarPopup(){
- if(!state.popupOpen)return;$('stellarIntro').classList.remove('show');state.popupOpen=false;state.popupKind=null;$('stellarStartBtn').textContent='COMEÇAR';
+ const intro=$('stellarIntro');if(!state.popupOpen&&!intro?.classList.contains('show'))return;intro?.classList.remove('show');state.popupOpen=false;state.popupKind=null;$('stellarStartBtn').textContent='COMEÇAR';
  state.locked=state.phaseDone;if(!state.phaseDone&&['neutron','neutronize'].includes(phase().mode))startNeutronSystem();if(!state.phaseDone&&phase().mode==='accretion')startAccretionFeed();if(!state.phaseDone&&['spallation','neutrino','gamma'].includes(phase().mode))startCosmicRaySystem();if(isPrimordial()&&phase().mode!=='opening')startPrimordialDrift();render();
 }
 
@@ -3897,7 +3897,20 @@ function bindReliableTap(el,action){
  el.addEventListener('pointerup',ev=>{lastPointerUp=performance.now();ev.preventDefault();ev.stopPropagation();action()},true);
  el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();if(performance.now()-lastPointerUp<650)return;action()},true);
 }
-$('phaseEndBtn').addEventListener('click',endPhaseAction);bindReliableTap($('eventTooltipBtn'),closeEventTooltip);bindReliableTap($('ambientContinueBtn'),rewardDirectorDismiss);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}bindReliableTap($('stellarStartBtn'),closeStellarPopup);$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
+function bindPhaseStart(el){
+ if(!el)return;let lastActivation=0;
+ el.style.touchAction='manipulation';el.style.pointerEvents='auto';el.style.position='relative';el.style.zIndex='24';
+ const activate=ev=>{
+  const intro=$('stellarIntro');if(!state.popupOpen&&!intro?.classList.contains('show'))return;
+  if(ev?.pointerType==='mouse'&&Number.isFinite(ev.button)&&ev.button!==0)return;
+  const now=performance.now();if(now-lastActivation<450)return;lastActivation=now;
+  ev?.preventDefault?.();ev?.stopPropagation?.();closeStellarPopup();
+ };
+ el.addEventListener('pointerdown',activate,true);
+ el.addEventListener('click',activate,true);
+ if(!window.PointerEvent)el.addEventListener('touchstart',activate,{capture:true,passive:false});
+}
+$('phaseEndBtn').addEventListener('click',endPhaseAction);bindReliableTap($('eventTooltipBtn'),closeEventTooltip);bindReliableTap($('ambientContinueBtn'),rewardDirectorDismiss);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}bindPhaseStart($('stellarStartBtn'));$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
 window.addEventListener('resize',()=>{applyGeometry();drawCells();state.pieces.forEach(p=>{if(!p.free&&p.cell!==null){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}else if(p.free){p.x=Math.max(28,Math.min(starSize()-28,p.x));p.y=Math.max(28,Math.min(starSize()-28,p.y))}});render()});
 load();applyGeometry();startPhase(state.phaseIndex,false,true);
 })();
