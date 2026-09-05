@@ -351,3 +351,9 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .objective-motif-nucleus.objective-motif-token.particle>span{font-size:clamp(25px,calc(var(--cellSize) * .62),46px);letter-spacing:-.03em;text-shadow:0 2px 8px rgba(0,0,0,.46)}
 .objective-motif-nucleus.interaction-result small{max-width:120px;text-align:center}
 .star-board.objective-motif-active .motif-source{opacity:.05!important;filter:brightness(.48) saturate(.35)!important;transition:opacity .12s ease,filter .12s ease!important}
+
+
+/* Persistent reward acknowledgement */
+.ambient-banner.awaiting-continue{pointer-events:auto}
+.ambient-banner .ambient-continue{width:100%;margin-top:9px;border:0;border-radius:10px;padding:8px 10px;background:linear-gradient(135deg,#8bdcff,#bba8ff);color:#07111f;font-size:10px;font-weight:950;cursor:pointer}
+.ambient-banner .ambient-continue[hidden]{display:none!important}

@@ -89,4 +89,13 @@ ok(engine.includes("'n','EXPOSIÇÃO'")&&engine.includes("'n','CAPTURA'"),'captu
 ok(engine.includes("'p','CAPTURA'")&&engine.includes('proton-fusion:${phase().id}:${r.out}'),'prótons livres usam a cerimônia em captura e fusão assistida');
 ok(engine.includes('objectiveInteractionCosmicToken(ray,s)')&&engine.includes('energetic:${s.id}:${source}:${resultSym}'),'raios cósmicos, neutrinos e fótons gama usam a mesma cerimônia');
 ok(css.includes('/* Objective Interaction Motif extensions */')&&css.includes('.objective-motif-token.particle')&&css.includes('.objective-motif-active .motif-source'),'CSS inclui partículas ampliadas e perda de contraste das fontes originais');
+
+ok(engine.includes("proton:{title:'PRÓTON LIBERADO',text:'Algumas transformações devolvem prótons que podem participar de novas reações.'}"),'tooltip de próton usa o texto simplificado');
+ok(engine.includes("gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia é liberado.'}"),'tooltip de raio gama usa o texto revisado');
+ok(engine.includes("kind==='p'?'+'"),'próton aparece como + no Objective Interaction Motif');
+ok(engine.includes('function playBigBangOverture()')&&engine.includes('phrase(170,110)')&&engine.includes('playBigBangOverture();vibrate'),'Big Bang possui abertura musical em frases e acorde de resolução');
+ok(engine.includes('function rewardDirectorNeedsContinue')&&engine.includes("'OBJETIVO CIENTÍFICO','MARCO','ATLAS ATUALIZADO'"),'notificações científicas exigem confirmação explícita');
+ok(engine.includes("$('ambientContinueBtn').addEventListener('click',rewardDirectorDismiss)")&&html.includes('id="ambientContinueBtn"'),'banner persistente possui botão CONTINUAR funcional');
+ok(css.includes('.ambient-banner.awaiting-continue')&&css.includes('.ambient-continue[hidden]'),'CSS permite interação somente quando a notificação aguarda confirmação');
+ok(engine.includes('A colisão entre ${a} e ${b} pode seguir mais de um caminho e produzir diferentes elementos.'),'tooltip de canais concorrentes foi simplificado');
 console.log('\nValidação estática do Ardua concluída.');

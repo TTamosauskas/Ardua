@@ -180,7 +180,7 @@ function atlasTooltipData(s=phase()){
  if(sp.category==='endothermic')return{title:'CANAL ENDOTÉRMICO',text:`O canal acompanhado para ${a} e ${b} absorve energia. Nesta fase, leve os reagentes para o centro ou primeira camada para fornecer um ambiente mais energético.`};
  if(sp.category==='inaccessible')return{title:'AMBIENTE INSUFICIENTE',text:`A combinação entre ${a} e ${b} pode existir em condições mais extremas, porém este ambiente torna o encontro eficaz praticamente inacessível. Cada aproximação observada dura uma rodada.`};
  if(sp.category==='rare')return{title:'REAÇÃO RARA',text:`A transformação entre ${a} e ${b} é possível, porém encontros que seguem este canal são pouco prováveis. Para manter a fase relaxante, o jogo garante o resultado após poucas tentativas.`};
- if(sp.category==='competing')return{title:'CANAIS CONCORRENTES',text:`A colisão entre ${a} e ${b} pode seguir mais de um caminho energeticamente aberto. Nesta fase acompanhamos o canal que produz ${main}; as taxas relativas mudam com a energia e com a estrutura dos núcleos.`};
+ if(sp.category==='competing')return{title:'CANAIS CONCORRENTES',text:`A colisão entre ${a} e ${b} pode seguir mais de um caminho e produzir diferentes elementos.`};
  return{title:'REAÇÃO FAVORÁVEL',text:`A colisão entre ${a} e ${b} libera energia e pode formar ${main}. O produto aparece depois que os núcleos vencem a aproximação elétrica.`};
 }
 function atlasVisualFor(sp){
@@ -1124,18 +1124,25 @@ const MICRO_REWARDS=Object.freeze({
  phaseComplete:['PROCESSO COMPLETO','Objetivo científico e ritmo da fase foram satisfeitos.']
 });
 function rewardReducedMotion(){return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches}
+function rewardDirectorNeedsContinue(p){return['OBJETIVO CIENTÍFICO','MARCO','ATLAS ATUALIZADO'].includes(String(p?.kicker||'').toUpperCase())}
+function rewardDirectorDismiss(){
+ const b=dom.ambient;if(!b)return false;if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);state.rewardBannerTimer=null;state.rewardBannerToken++;b.classList.remove('show','awaiting-continue');b.dataset.priority='0';const btn=$('ambientContinueBtn');if(btn)btn.hidden=true;
+ setTimeout(()=>{const next=state.rewardPending;state.rewardPending=null;if(next)rewardDirectorShow(next)},160);return true;
+}
 function rewardDirectorClear(){
- if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);state.rewardBannerTimer=null;state.rewardPending=null;state.rewardPhaseComplete=false;
- const b=dom.ambient;if(b){b.classList.remove('show','reward-banner','micro','discovery','signature','completion');b.dataset.priority='0'}
+ if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);state.rewardBannerTimer=null;state.rewardPending=null;state.rewardPhaseComplete=false;state.rewardBannerToken++;
+ const b=dom.ambient;if(b){b.classList.remove('show','reward-banner','micro','discovery','signature','completion','awaiting-continue');b.dataset.priority='0'}const btn=$('ambientContinueBtn');if(btn)btn.hidden=true;
  const callout=dom.fx?.querySelector('.chain-callout');if(callout)callout.remove();if(state.chainCalloutTimer)clearTimeout(state.chainCalloutTimer);state.chainCalloutTimer=null;state.chainCalloutRoot=null;
 }
 function rewardDirectorShow(payload={}){
  const b=dom.ambient;if(!b||state.popupOpen||state.tooltipOpen)return false;
- const p={kicker:'DESCOBERTA',title:'',text:'',priority:1,duration:1700,kind:'micro',...payload};if(state.objectiveMotifActive){if(p.priority>=2)state.rewardPending=p;return false}const now=performance.now(),shown=b.classList.contains('show'),current=Number(b.dataset.priority||0);
+ const p={kicker:'DESCOBERTA',title:'',text:'',priority:1,duration:1700,kind:'micro',...payload};if(state.objectiveMotifActive){if(p.priority>=2)state.rewardPending=p;return false}const now=performance.now(),shown=b.classList.contains('show'),current=Number(b.dataset.priority||0),awaiting=b.classList.contains('awaiting-continue');
+ if(shown&&awaiting){if(p.priority>=2)state.rewardPending=p;return false}
  if(shown&&(p.priority<current||(p.priority===current&&now-(state.rewardLastShownAt||0)<820))){if(p.priority>=2)state.rewardPending=p;return false}
- const token=++state.rewardBannerToken;state.rewardLastShownAt=now;if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);
- b.className=`ambient-banner show reward-banner ${p.kind}`;b.dataset.priority=String(p.priority);$('ambientKicker').textContent=p.kicker;$('ambientTitle').textContent=p.title;$('ambientText').textContent=p.text||'';
- state.rewardBannerTimer=setTimeout(()=>{if(token!==state.rewardBannerToken)return;b.classList.remove('show');b.dataset.priority='0';state.rewardBannerTimer=setTimeout(()=>{const next=state.rewardPending;state.rewardPending=null;if(next)rewardDirectorShow(next)},220)},Math.max(1200,p.duration));return true;
+ const token=++state.rewardBannerToken,needsContinue=rewardDirectorNeedsContinue(p);state.rewardLastShownAt=now;if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);state.rewardBannerTimer=null;
+ b.className=`ambient-banner show reward-banner ${p.kind}${needsContinue?' awaiting-continue':''}`;b.dataset.priority=String(p.priority);$('ambientKicker').textContent=p.kicker;$('ambientTitle').textContent=p.title;$('ambientText').textContent=p.text||'';const btn=$('ambientContinueBtn');if(btn)btn.hidden=!needsContinue;
+ if(needsContinue)return true;
+ state.rewardBannerTimer=setTimeout(()=>{if(token!==state.rewardBannerToken)return;rewardDirectorDismiss()},Math.max(1200,p.duration));return true;
 }
 function rewardParticles(x,y,level=2){
  if(!dom.fx||level<2)return;const count=rewardReducedMotion()?Math.min(3,level):Math.min(12,3+level*2),existing=dom.fx.querySelectorAll('.reward-spark');for(let i=0;i<Math.max(0,existing.length-28);i++)existing[i]?.remove();
@@ -1247,7 +1254,7 @@ const ObjectiveReactionMotif=Object.freeze({targetRecipes:objectiveMotifTargetRe
 function objectiveInteractionRecipe(key,out='H'){
  const safe=out&&E[out]?out:'H';return{ing:[`@${key}:a`,`@${key}:b`],out:safe,interactionKey:key};
 }
-function objectiveInteractionParticleGlyph(kind){return kind==='p'?'p':kind==='n'?'n':kind==='e'?'e⁻':kind==='nu'?'ν':kind==='gamma'?'γ':kind==='cosmic'?'✦':'•'}
+function objectiveInteractionParticleGlyph(kind){return kind==='p'?'+':kind==='n'?'n':kind==='e'?'e⁻':kind==='nu'?'ν':kind==='gamma'?'γ':kind==='cosmic'?'✦':'•'}
 function objectiveInteractionParticleBackground(kind){
  const map={p:'radial-gradient(circle at 36% 30%,#fff,#ffb795 44%,#bb4a38 78%)',n:'radial-gradient(circle at 36% 30%,#fff,#c5e2ff 44%,#567aa7 78%)',e:'radial-gradient(circle at 36% 30%,#fff,#bce6ff 44%,#4679ae 78%)',nu:'radial-gradient(circle at 36% 30%,#fff,#dacbff 44%,#7859b7 78%)',gamma:'radial-gradient(circle at 36% 30%,#fff,#ffe991 44%,#c89c2c 78%)',cosmic:'radial-gradient(circle at 36% 30%,#fff,#cceaff 44%,#5969c3 78%)'};return map[kind]||map.cosmic;
 }
@@ -2841,12 +2848,12 @@ function completeGardenDecayHold(id){
 }
 const PRODUCT_LESSONS={
  helium:{title:'NÚCLEO DE HÉLIO LIBERADO',text:'Decaimentos alfa podem liberar um núcleo de Hélio-4, que permanece disponível para novas reações.'},
- proton:{title:'PRÓTON LIBERADO',text:'Algumas transformações devolvem prótons ao plasma, onde podem participar de novas reações.'},
+ proton:{title:'PRÓTON LIBERADO',text:'Algumas transformações devolvem prótons que podem participar de novas reações.'},
  electron:{title:'ELÉTRON LIBERADO (e⁻)',text:'No decaimento β−, um nêutron se transforma em próton e libera um elétron e um antineutrino eletrônico.'},
  positron:{title:'PÓSITRONS E NEUTRINOS',text:'Na interação fraca, um próton pode tornar-se nêutron enquanto pósitrons e neutrinos são emitidos; o pósitron pode se aniquilar com um elétron.'},
  neutrino:{title:'NEUTRINO (νₑ)',text:'Neutrinos têm carga elétrica nula e interagem muito fracamente com a matéria, escapando com facilidade do ambiente.'},
  antineutrino:{title:'ANTINEUTRINO (ν̄ₑ)',text:'O antineutrino eletrônico acompanha processos β− e escapa quase sem interagir com a matéria.'},
- gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia precisa ser liberado.'},
+ gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia é liberado.'},
  coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'},
  waitingPoint:{title:'PONTO DE ESPERA',text:'Alguns núcleos proton-rich desaceleram o rp-process. Continue fazendo ações nucleares: o núcleo pode sofrer β⁺ enquanto a rede procura outra rota.'},
  photodisintegration:{title:'FOTODESINTEGRAÇÃO (γ,p)',text:'Em radiação muito intensa, um fóton pode devolver o próton recém-capturado. A matéria permanece disponível para outra tentativa.'},
@@ -3517,8 +3524,17 @@ function launchBigBangEjecta(count=260){
   setTimeout(()=>{layer.remove();resolve()},Math.ceil(maxTime)+40);
  })
 }
+function bigBangOvertureNote(delay,freq,duration=.28,gain=.022,type='sine'){setTimeout(()=>{if(phase().mode==='opening')tone(freq,duration,type,gain)},delay)}
+function playBigBangOverture(){
+ const phrase=(start,root)=>{[1,1.25,1.5].forEach((ratio,i)=>bigBangOvertureNote(start+i*145,root*ratio,.30,i===2?.028:.022,i===2?'triangle':'sine'))};
+ bigBangOvertureNote(0,55,.82,.052,'sine');bigBangOvertureNote(0,82.5,.62,.024,'triangle');
+ phrase(170,110);phrase(760,146.83);phrase(1360,164.81);
+ setTimeout(()=>{if(phase().mode!=='opening')return;for(const f of [220,275,330]){tone(f,.70,'triangle',.027);tone(f*2,.48,'sine',.010)}},2240);
+ setTimeout(()=>{if(phase().mode!=='opening')return;for(const f of [330,440,550])tone(f,.54,'sine',.016);tone(660,.42,'triangle',.014)},3030);
+ setTimeout(()=>{if(phase().mode==='opening'){tone(440,.46,'sine',.014);tone(660,.38,'sine',.012);tone(880,.30,'sine',.009)}},3580);
+}
 async function launchBigBang(){
- const s=phase();if(s.mode!=='opening'||state.bigBangStarted)return;state.bigBangStarted=true;state.locked=true;dom.singularity.classList.add('exploding');const ejectaFlight=launchBigBangEjecta(260);const shock=document.createElement('div');shock.className='universe-shock';dom.fx.appendChild(shock);setTimeout(()=>shock.remove(),1000);tone(55,.8,'sawtooth',.07);vibrate([25,20,45,25,65]);announce('BIG BANG','O UNIVERSO SE EXPANDE','A expansão revela prótons, elétrons e nêutrons no plasma primordial.');await wait(120);state.bigBangColorized=true;applyVisual();const size=starSize(),particles=[];for(let i=0;i<96;i++){const pt=freePoint(25),cycle=i%5,kind=cycle===4?'n':(cycle%2?'e':'p');particles.push({kind,x:pt.x/size,y:pt.y/size})}
+ const s=phase();if(s.mode!=='opening'||state.bigBangStarted)return;state.bigBangStarted=true;state.locked=true;dom.singularity.classList.add('exploding');const ejectaFlight=launchBigBangEjecta(260);const shock=document.createElement('div');shock.className='universe-shock';dom.fx.appendChild(shock);setTimeout(()=>shock.remove(),1000);playBigBangOverture();vibrate([25,20,45,25,65]);announce('BIG BANG','O UNIVERSO SE EXPANDE','A expansão revela prótons, elétrons e nêutrons no plasma primordial.');await wait(120);state.bigBangColorized=true;applyVisual();const size=starSize(),particles=[];for(let i=0;i<96;i++){const pt=freePoint(25),cycle=i%5,kind=cycle===4?'n':(cycle%2?'e':'p');particles.push({kind,x:pt.x/size,y:pt.y/size})}
  // A próxima fase só começa depois que toda a ejeção visual terminou.
  await ejectaFlight;await wait(160);state.primordialTransfer={particles};state.locked=false;startPhase((phaseIndexById.get('primordial_d')??1),true,false)
 }
@@ -3688,7 +3704,7 @@ function renderMenu(){renderDiscoveryAtlas();const pm=$('phaseMenu');pm.innerHTM
   const activeNow=new Set(activeFusionRecipes());learnedFusionRecipes().forEach(r=>{const b=document.createElement('button');b.className='reaction-chip'+(activeNow.has(r)?' available':'');b.textContent=fusionLabel(r);b.addEventListener('click',()=>{const min=fusionMinTemp(r),max=Number(phase().fusionTempMax||0),$d=$('reactionDetail'),scope=reactionScopeLabel(r);if($d)$d.innerHTML=`<strong>${fusionLabel(r)}</strong><span>${activeNow.has(r)?'Disponível agora':'Conhecida, mas fora das condições desta fase'}${scope?` · ${scope}`:''}</span><p>${min?(max?`Condição didática: reação exige ~${sci(min,1)} K · ambiente atual alcança ~${sci(max,1)} K.`:`Condição didática: reação exige ~${sci(min,1)} K.`):'Reação conhecida.'}</p>`});rc.appendChild(b)});if(phase().mode==='neutron')learnedNeutronTransitions(phase()).forEach(tr=>{const b=document.createElement('button');b.className='reaction-chip available';b.textContent=`${tr.from} + n → β− → ${tr.to}`;b.addEventListener('click',()=>{const $d=$('reactionDetail');if($d)$d.innerHTML=`<strong>${tr.from} → ${tr.to}</strong><span>Rota de captura já desbloqueada e compatível com este ambiente.</span><p>${tr.rprocess?'Múltiplas capturas rápidas são agregadas antes da cascata β−.':'Captura de nêutron e β− são representados de forma agregada.'}</p>`});rc.appendChild(b)})}
 const pc=$('protonCaptureCatalog'),pd=$('protonCaptureDetail');if(pc){pc.innerHTML='';if(state.protonCaptureUnlocked||phase().mode==='protonCapture'){Object.entries(PROTON_CAPTURES).forEach(([from,r])=>{const b=document.createElement('button'),open=!!protonCaptureRoute(from,phase()),label=r.label||`${E[from]?.symbol||from} + p → ${r.out}`;b.className='reaction-chip'+(open?' available':'');b.textContent=label;b.addEventListener('click',()=>{if(!pd)return;let status=open?'Rota compatível com o ambiente atual':'Rota conhecida; a captura encontra uma barreira forte neste ambiente',detail='Ao aproximar cargas positivas, a repulsão cresce com a carga nuclear. Ambientes mais energéticos aumentam a chance de chegar à região onde a reação pode ocorrer.';if(r.decay?.mode==='returnProton'){status=`Estado não ligado · dura ${r.decay.rounds} rodada`;detail=`${r.decay.label}. O núcleo treme durante a janela de instabilidade e depois reemite o próton.`}else if(r.decay?.mode==='betaPlus'){status=`Núcleo proton-rich · ${r.decay.rounds} ${r.decay.rounds===1?'rodada':'rodadas'} até β+`;detail=`${r.decay.label}. As rodadas representam estabilidade relativa dentro do jogo, não uma conversão literal da meia-vida.`}else if(r.out==='Be8'){status='Núcleo instável · janela do ⁸Be';detail='O ⁸Be treme por duas rodadas: pode receber Hélio e formar Carbono ou se desfazer em dois núcleos de Hélio.'}pd.innerHTML=`<strong>${label}</strong><span>${status}</span><p>${detail}</p>`});pc.appendChild(b)})}else{pc.innerHTML='<span style="font-size:10px;color:#8fa6ce">Descubra esta habilidade durante a evolução estelar.</span>';}}
 const c=$('catalog');c.innerHTML='';ORDER.forEach(sym=>{const e=E[sym],d=document.createElement('div');d.className='el-card';d.innerHTML=`<div class="n">${e.n}</div><div class="s">${sym}</div><div class="nm">${e.name}</div>`;d.addEventListener('click',()=>{$('catalogDetail').innerHTML=`<strong>${e.name} — ${e.n}</strong><span>${e.origin}</span>${e.route?`<span>Rota no jogo: ${e.route}</span>`:''}${e.stability?`<span>Estabilidade: ${e.stability}</span>`:''}<p>${e.process}</p>`});c.appendChild(d)})}
-$('phaseEndBtn').addEventListener('click',endPhaseAction);$('eventTooltipBtn').addEventListener('click',closeEventTooltip);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}$('stellarStartBtn').addEventListener('click',closeStellarPopup);$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
+$('phaseEndBtn').addEventListener('click',endPhaseAction);$('eventTooltipBtn').addEventListener('click',closeEventTooltip);$('ambientContinueBtn').addEventListener('click',rewardDirectorDismiss);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}$('stellarStartBtn').addEventListener('click',closeStellarPopup);$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
 window.addEventListener('resize',()=>{applyGeometry();drawCells();state.pieces.forEach(p=>{if(!p.free&&p.cell!==null){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}else if(p.free){p.x=Math.max(28,Math.min(starSize()-28,p.x));p.y=Math.max(28,Math.min(starSize()-28,p.y))}});render()});
 load();applyGeometry();startPhase(state.phaseIndex,false,true);
 })();
