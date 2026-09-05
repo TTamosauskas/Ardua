@@ -17,5 +17,10 @@ ok(engine.includes("fuel:'H'")&&engine.includes("fuel:'p'"),'há fases com H ion
 ok(engine.includes('ionizeRpHydrogen')&&engine.includes('H → p + e⁻'),'ionização de Hidrogênio está implementada');
 ok(engine.includes('rpPhotoReturns++')&&engine.includes('photodisintegration'),'competição (γ,p) está implementada');
 ok(engine.includes("rpWaitDecays>=1")&&engine.includes("rpCyclesObserved>=1"),'waiting point e ciclo exigem observação antes de concluir');
+ok(engine.includes("seedCount:1,menuTag:step.to")&&engine.includes("const step=rpStep(s),cells=activeCells().slice(),used=new Set(),seedCount=1"),'cada fase rp começa com exatamente uma semente direta');
+ok(engine.includes("RP_FOUNDATION_STEPS")&&engine.includes("from:'Fe',to:'Co'")&&engine.includes("from:'Co',to:'Ni'"),'rp-process reconstrói Ni a partir da semente-base de Ferro');
+ok(engine.includes("const hasRpRoute=[...state.pieces.values()].some")&&engine.includes("createPiece('Fe',cell,true)"),'segurança do rp-process repõe apenas matéria-base, nunca o precursor direto');
+ok(engine.includes("configureSingleObjectiveIngredients(PHASES)")&&engine.includes("p.starterGroups=[[p.seed],...Array.from({length:baseCount},()=>['Fe'])]"),'fases s/r recebem uma única semente direta e Ferro para reconstrução');
+ok(engine.includes("foundation_weak_s")&&engine.includes("foundation_agb_s")&&engine.includes("foundation_r"),'processos de nêutrons possuem rotas agregadas de reconstrução a partir de Ferro');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
 console.log('\nValidação estática do Ardua concluída.');
