@@ -16,6 +16,8 @@ function bootstrapPhaseLauncher(){
 }
 bootstrapPhaseLauncher();
 
+const ATLAS_BY_ANCHOR=G.atlas.reduce((acc,item)=>{(acc[item.anchor]||(acc[item.anchor]=[])).push(item.id);return acc},{});
+
 function phaseState(id){
  const st=C.getState(),done=new Set(st.completed),current=st.activeId===id,available=C.isUnlocked(id);if(current)return'current';if(done.has(id))return'completed';if(available)return'available';
  const atlas=G.atlasById[id],rule=G.prerequisites[id],parents=atlas?[atlas.anchor]:[...(rule?.allOf||[]),...(rule?.anyOf||[]).flat()];return parents.some(p=>done.has(p))?'revealed':'locked';
@@ -25,20 +27,20 @@ function node(id,extra=''){
  const state=phaseState(id),optional=!!G.atlasById[id];
  return `<button type="button" class="phase-node ${state}${optional?' optional':''} ${extra}" data-phase="${id}"><strong>${phaseMeta[id]?.title||id}</strong></button>`;
 }
-function flow(ids,cls=''){return `<div class="cosmos-flow ${cls}">${ids.map(id=>node(id)).join('')}</div>`}
+function atlasBranch(anchor){
+ const ids=ATLAS_BY_ANCHOR[anchor];if(!ids?.length)return'';
+ return `<details class="atlas-branch" data-atlas-anchor="${anchor}"><summary aria-label="Reações opcionais desta fase"><i></i><span>Atlas</span><b>${ids.length}</b></summary><div class="atlas-branch-body">${ids.map(id=>node(id)).join('')}</div></details>`;
+}
+function flow(ids,cls=''){return `<div class="cosmos-flow ${cls}">${ids.map(id=>node(id)+atlasBranch(id)).join('')}</div>`}
 function structural(title,extra=''){return `<div class="epoch-label ${extra}"><strong>${title}</strong></div>`}
 function ambientImage(key,cls=''){const im=G.images[key];return im?`<img class="phenomenon-bg ${cls}" loading="lazy" referrerpolicy="no-referrer" src="${im.url}" alt="" aria-hidden="true">`:''}
 function portal(title,ids,open=false,key=''){return `<details class="portal" ${open?'open':''} ${key?`data-portal="${key}"`:''}><summary>${title}</summary><div class="portal-body">${flow(ids)}</div></details>`}
-function atlasMarkup(){
- const groups={};for(const a of G.atlas)(groups[a.anchor]||(groups[a.anchor]=[])).push(a.id);
- const order=Object.keys(groups).sort((a,b)=>(G.runtimeIndex[a]??9999)-(G.runtimeIndex[b]??9999));
- return `<details class="atlas-zone"><summary>Atlas de reações</summary><div class="atlas-groups">${order.map(anchor=>`<section class="atlas-group"><h3>${phaseMeta[anchor]?.title||anchor}</h3>${groups[anchor].map(id=>node(id)).join('')}</section>`).join('')}</div></details>`;
-}
+
 function buildMap(){
  const editor=C.editor;
  const host=document.createElement('div');host.id='campaignMap';host.className='campaign-map';host.setAttribute('aria-hidden','true');
  host.innerHTML=`<div class="campaign-shell" id="campaignShell">
- <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha</span></div><div class="campaign-mode-chip">${editor?'Editor':'Campanha'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Atlas & elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar</button></div></header>
+ <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha</span></div><div class="campaign-mode-chip">${editor?'Editor':'Campanha'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar</button></div></header>
  <main class="campaign-content" id="campaignContent">
   <svg class="campaign-links" id="campaignLinks" aria-hidden="true"></svg>
   <section class="cosmos-root">
@@ -73,7 +75,6 @@ function buildMap(){
     <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
    </section>
    <div class="cycle-arrow">Ciclo cósmico</div>
-   ${atlasMarkup()}
   </div>
  </main></div>
  <aside class="map-detail" id="mapDetail" aria-live="polite"></aside>`;
@@ -82,8 +83,15 @@ function buildMap(){
 const map=buildMap(),detail=$('mapDetail'),closeBtn=$('campaignClose'),dataBtn=$('campaignData'),content=$('campaignContent'),trail=$('campaignTrail'),links=$('campaignLinks'),shell=$('campaignShell');
 
 function refresh(){
+ const st=C.getState(),done=new Set(st.completed);
  map.querySelectorAll('[data-phase]').forEach(el=>{const id=el.dataset.phase;if(el.classList.contains('singularity-map'))return;el.classList.remove('locked','revealed','available','completed','current');el.classList.add(phaseState(id))});
  map.querySelector('.singularity-map')?.setAttribute('data-state',phaseState('bigbang'));
+ map.querySelectorAll('.atlas-branch').forEach(branch=>{
+   const ready=C.editor||done.has(branch.dataset.atlasAnchor);branch.classList.toggle('atlas-ready',ready);
+   if(!ready)branch.open=false;
+ });
+ const activeAtlas=G.atlasById[st.activeId];
+ if(activeAtlas){const branch=map.querySelector(`.atlas-branch[data-atlas-anchor="${activeAtlas.anchor}"]`);if(branch?.classList.contains('atlas-ready'))branch.open=true}
  if(selectedId)showDetail(selectedId);
  scheduleLinks();
 }
@@ -113,11 +121,22 @@ function addPath(from,to,cls='main',bend=.5){
  if(!from||!to)return;const a=centerOf(from,'bottom'),b=centerOf(to,'top');if(!a||!b)return;const dy=b.y-a.y,mid=a.y+dy*bend;
  const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',`M ${a.x.toFixed(1)} ${a.y.toFixed(1)} C ${a.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`);p.setAttribute('class',`campaign-link ${cls}`);links.appendChild(p)
 }
+function addAtlasPath(from,to){
+ if(!from||!to)return;const a=centerOf(from,'center'),b=centerOf(to,'center');if(!a||!b)return;
+ const direction=b.x>=a.x?1:-1,span=Math.max(26,Math.abs(b.x-a.x)*.46),p=document.createElementNS('http://www.w3.org/2000/svg','path');
+ p.setAttribute('d',`M ${a.x.toFixed(1)} ${a.y.toFixed(1)} C ${(a.x+span*direction).toFixed(1)} ${a.y.toFixed(1)}, ${(b.x-span*.35*direction).toFixed(1)} ${b.y.toFixed(1)}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`);
+ p.setAttribute('class','campaign-link atlas');links.appendChild(p)
+}
 function byPhase(id){return map.querySelector(`.phase-node[data-phase="${id}"]`)}
 function connectSequence(ids,cls='main'){for(let i=1;i<ids.length;i++)addPath(byPhase(ids[i-1]),byPhase(ids[i]),cls)}
 function portalSummary(key){return map.querySelector(`[data-portal="${key}"] > summary`)}
 function portalFirst(key){return map.querySelector(`[data-portal="${key}"] .phase-node`)}
 function portalLast(key){const xs=[...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)];return xs[xs.length-1]||null}
+function drawAtlasLinks(){
+ map.querySelectorAll('.atlas-branch[open].atlas-ready').forEach(branch=>{
+  const anchor=byPhase(branch.dataset.atlasAnchor);branch.querySelectorAll('.atlas-branch-body > .phase-node').forEach(n=>addAtlasPath(anchor,n))
+ })
+}
 function drawLinks(){
  cancelAnimationFrame(linkFrame);linkFrame=0;if(!map.classList.contains('show')||!map.classList.contains('trail-revealed')){links.innerHTML='';return}
  const w=content.scrollWidth,h=content.scrollHeight;links.setAttribute('viewBox',`0 0 ${w} ${h}`);links.setAttribute('width',w);links.setAttribute('height',h);links.innerHTML='';
@@ -138,6 +157,7 @@ function drawLinks(){
  const binary=map.querySelector('.binary-junction'),kilo=map.querySelector('.kilonova-junction'),rPortal=portalSummary('r');addPath(byPhase('neutron_star'),binary,'r',.42);addPath(binary,kilo,'r');addPath(kilo,rPortal,'r');
  if(map.querySelector('[data-portal="r"]')?.open){addPath(rPortal,portalFirst('r'),'r');connectSequence(G.sequences.r,'r');addPath(portalLast('r'),byPhase('decay_pa'),'radio',.55)}else addPath(rPortal,byPhase('decay_pa'),'radio',.55);
  connectSequence(G.sequences.interstellar,'interstellar');connectSequence(G.sequences.decay,'radio');addPath(byPhase('o'),byPhase('spallation_be'),'interstellar',.68);
+ drawAtlasLinks()
 }
 function scheduleLinks(){if(linkFrame)cancelAnimationFrame(linkFrame);linkFrame=requestAnimationFrame(()=>requestAnimationFrame(drawLinks))}
 
@@ -146,6 +166,9 @@ map.addEventListener('click',e=>{
   if(C.getState().introduced||C.editor){setTrailVisible(true,true);scheduleLinks();return}
   bigBangPending=true;C.setActive('bigbang');hideMap(true);$('singularityBtn')?.click();return
  }
+ const atlasSummary=e.target.closest('.atlas-branch > summary');if(atlasSummary){
+  const branch=atlasSummary.parentElement;if(!branch.classList.contains('atlas-ready')){e.preventDefault();return}
+ }
  const phase=e.target.closest('.phase-node[data-phase]');if(phase){e.preventDefault();showDetail(phase.dataset.phase);return}
  const launchBtn=e.target.closest('[data-launch]');if(launchBtn){launch(launchBtn.dataset.launch);return}
  if(e.target.closest('[data-detail-close]')){detail.classList.remove('show');selectedId=null;return}
@@ -153,7 +176,11 @@ map.addEventListener('click',e=>{
 closeBtn.addEventListener('click',()=>hideMap());
 dataBtn?.addEventListener('click',()=>{legacyMenuPass=true;$('menuOpenBtn')?.click();legacyMenuPass=false;$('menuModal')?.classList.add('show')});
 map.addEventListener('keydown',e=>{if(e.key==='Escape'&&!mapRequired)hideMap()});
-map.querySelectorAll('details').forEach(d=>d.addEventListener('toggle',scheduleLinks));
+map.querySelectorAll('.atlas-branch').forEach(branch=>branch.addEventListener('toggle',()=>{
+ if(branch.open){map.querySelectorAll('.atlas-branch[open]').forEach(other=>{if(other!==branch)other.open=false})}
+ scheduleLinks()
+}));
+map.querySelectorAll('.portal').forEach(d=>d.addEventListener('toggle',scheduleLinks));
 window.addEventListener('resize',scheduleLinks);
 shell?.addEventListener('scroll',()=>{detail.classList.remove('show')},{passive:true});
 
