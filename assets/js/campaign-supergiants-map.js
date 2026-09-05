@@ -136,6 +136,9 @@ function drawLines(){
  addLine(nodeById(last),core,S.routeClasses[selected],.55);addLine(core,sharedFirst,'high',.45);
 }
 function scheduleLines(){clearTimeout(lineTimer);lineTimer=setTimeout(drawLines,90)}
+function isCustomCampaignLine(node){
+ return node?.nodeType===1&&(node.classList?.contains('giant-link')||node.classList?.contains('sg-link'));
+}
 
 buildFork();
 map.addEventListener('click',e=>{const sphere=e.target.closest('.supergiant-branches .branch-choice[data-branch-open]');if(sphere)setTimeout(()=>{selectRoute(sphere.dataset.branchOpen,{scroll:true});scheduleSync()},0)},false);
@@ -145,5 +148,9 @@ map.addEventListener('toggle',scheduleLines,true);
 new MutationObserver(muts=>{
  if(muts.some(m=>m.type==='attributes'&&(m.attributeName==='hidden'||m.attributeName==='class'))){scheduleSync();scheduleLines()}
 }).observe(map,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
+new MutationObserver(muts=>{
+ const baseLayerChanged=muts.some(m=>[...m.addedNodes,...m.removedNodes].some(node=>node.nodeType===1&&!isCustomCampaignLine(node)));
+ if(baseLayerChanged)scheduleLines();
+}).observe(links,{childList:true});
 scheduleSync();
 })();
