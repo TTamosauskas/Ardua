@@ -36,6 +36,8 @@ node --check assets/js/ardua.js
 node tests/validate-static.js
 ```
 
-## Campanha rp-process
+A campanha inclui uma sequência de rp-process na superfície de uma estrela de nêutrons em acreção, com fases individuais de Cobre a Telúrio, alternando H ionizável e prótons livres, waiting points, competição `(γ,p)` e o ciclo terminal Sn–Sb–Te.
 
-Após **Acreção extrema**, a superfície da estrela de nêutrons entra em uma sequência de rp-process com fases individuais de **Cobre a Telúrio**. A campanha alterna Hidrogênio ionizável e prótons livres, usa estados instáveis com β⁺, competição `(γ,p)`, Barreira de Coulomb, os waiting points `⁶⁴Ge`, `⁶⁸Se` e `⁷²Kr`, e termina com o ciclo **Sn–Sb–Te**.
+## Regra de ingredientes por fase
+
+Fases de produção começam com material pronto suficiente para concluir somente uma unidade do objetivo. Se a meta pede três Cobres, por exemplo, a fase rp começa com um único Níquel; as unidades restantes exigem reconstruir a cadeia a partir de matéria-base. O mesmo princípio vale para as fases s/r de captura de nêutrons: uma única semente direta e Ferro como ponto de reconstrução agregado.
