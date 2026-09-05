@@ -1,0 +1,45 @@
+/* Ardua — supergiant fork: red, yellow and blue evolutionary routes. */
+.supergiant-junction{margin-top:18px;border-color:rgba(255,150,92,.32);box-shadow:0 0 24px rgba(255,93,72,.08)}
+.supergiant-branches{margin-top:0;max-width:620px}
+.supergiant-branches>.branch-spheres{grid-template-columns:repeat(3,minmax(0,1fr));max-width:520px;align-items:end}
+.supergiant-branches>.branch-panels{position:relative}
+.supergiant-branches .branch-choice{opacity:.3}
+.supergiant-branches .branch-choice.available{opacity:.86}
+.supergiant-branches .branch-choice.current,.supergiant-branches .branch-choice.selected{opacity:1}
+.supergiant-branches .branch-choice.completed{opacity:.82}
+.supergiant-branches .branch-choice.revealed{opacity:.5}
+.supergiant-branches .branch-choice.locked{opacity:.22}
+.supergiant-branches .branch-choice strong{max-width:145px}
+
+.supergiant-red{--sphere:#ff5d4e;--sphere-size:126px}
+.supergiant-red .branch-sphere-art{background-image:radial-gradient(circle at 35% 28%,#fff1c7 0 5%,#ffb157 8% 18%,#e84a37 31%,#8d1d20 56%,#23070b 80%);box-shadow:inset -20px -22px 34px rgba(0,0,0,.64),inset 12px 9px 20px rgba(255,240,210,.12),0 0 28px rgba(255,72,53,.38)}
+.supergiant-yellow{--sphere:#ffd66c;--sphere-size:104px}
+.supergiant-yellow .branch-sphere-art{background-image:radial-gradient(circle at 35% 28%,#fffde8 0 7%,#ffe78b 10% 24%,#e59c35 45%,#7d3514 67%,#1d0c07 82%)}
+.supergiant-blue{--sphere:#8edcff;--sphere-size:94px}
+.supergiant-blue .branch-sphere-art{background-image:radial-gradient(circle at 34% 27%,#fff 0 8%,#d8f7ff 10% 21%,#73cfff 35%,#2878bf 55%,#0b1d48 78%);box-shadow:inset -16px -18px 28px rgba(0,0,0,.58),inset 10px 8px 18px rgba(255,255,255,.18),0 0 12px rgba(255,255,255,.72),0 0 34px rgba(76,182,255,.48)}
+
+.campaign-link.supergiant-red{stroke:#ff6655;stroke-width:2.35}
+.campaign-link.supergiant-yellow{stroke:#ffd76c;stroke-width:2.2}
+.campaign-link.supergiant-blue{stroke:#78d4ff;stroke-width:2.35}
+.campaign-link.supergiant{stroke:#ffd0ac}
+.advanced-core{margin:24px auto 8px;border-color:rgba(255,215,126,.36);color:#fff0c8;box-shadow:0 0 20px rgba(255,175,76,.08)}
+.supergiant-after{padding-top:4px}
+
+/* Route-specific astronomical atmosphere. */
+.supergiant-route{position:relative;isolation:isolate;min-height:210px}
+.supergiant-route::before,.supergiant-route::after{content:"";position:absolute;z-index:0;pointer-events:none;width:clamp(170px,30vw,270px);height:clamp(140px,23vw,220px);background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.13;filter:saturate(.88) contrast(1.08);mask-image:radial-gradient(ellipse at center,#000 0 38%,rgba(0,0,0,.7) 60%,transparent 82%)}
+.supergiant-route::before{left:-150px;top:42px}.supergiant-route::after{right:-150px;top:220px}
+.supergiant-route[data-branch-panel="red"]::before{background-image:url("https://photojournal.jpl.nasa.gov/jpeg/PIA21473.jpg");opacity:.15}
+.supergiant-route[data-branch-panel="red"]::after{background-image:url("https://science.nasa.gov/wp-content/uploads/2023/09/potw2336a.jpg");opacity:.11}
+.supergiant-route[data-branch-panel="yellow"]::before{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/nebulae/planetary/NGC%206891.jpg");opacity:.12}
+.supergiant-route[data-branch-panel="yellow"]::after{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/12/STScI-01HFCAHP1B0GCDNQGD8W25N33G.png?crop=faces%2Cfocalpoint&fit=clip&h=5978&w=3788");opacity:.09}
+.supergiant-route[data-branch-panel="blue"]::before{background-image:url("https://cdn.esahubble.org/archives/images/screen/potm2409a.jpg");opacity:.14}
+.supergiant-route[data-branch-panel="blue"]::after{background-image:url("https://science.nasa.gov/wp-content/uploads/2023/10/crab-nebula-webb-and-hubble-comparison.jpg");opacity:.1}
+
+@media(max-width:700px){
+ .supergiant-branches>.branch-spheres{gap:10px;max-width:100%}
+ .supergiant-red{--sphere-size:92px}.supergiant-yellow{--sphere-size:76px}.supergiant-blue{--sphere-size:68px}
+ .supergiant-branches .branch-choice strong{font-size:7.5px;letter-spacing:.055em;max-width:98px}
+ .supergiant-route::before,.supergiant-route::after{width:160px;height:132px;opacity:.09}
+ .supergiant-route::before{left:-74px}.supergiant-route::after{right:-74px}
+}
