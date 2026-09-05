@@ -1,0 +1,43 @@
+/* Ardua — giant fork after stellar lithium production. */
+.giant-junction{margin-top:18px;border-color:rgba(255,198,116,.28);box-shadow:0 0 22px rgba(255,176,78,.07)}
+.giant-branches{margin-top:0;max-width:690px}
+.giant-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:650px;align-items:end;gap:14px 10px}
+.giant-branches>.branch-panels{position:relative}
+.giant-branches .branch-choice{opacity:.3}
+.giant-branches .branch-choice.available{opacity:.86}
+.giant-branches .branch-choice.current,.giant-branches .branch-choice.selected{opacity:1}
+.giant-branches .branch-choice.completed{opacity:.82}
+.giant-branches .branch-choice.revealed{opacity:.5}
+.giant-branches .branch-choice.locked{opacity:.22}
+.giant-branches .branch-choice strong{max-width:130px}
+
+.giant-red{--sphere:#ef6757;--sphere-size:112px}
+.giant-red .branch-sphere-art{background-image:radial-gradient(circle at 35% 28%,#fff0cf 0 6%,#ffad63 9% 22%,#d94f40 38%,#78202a 60%,#1e090d 82%)}
+.giant-yellow{--sphere:#ffd66d;--sphere-size:94px}
+.giant-yellow .branch-sphere-art{background-image:radial-gradient(circle at 35% 28%,#fffde8 0 7%,#ffe998 10% 25%,#d89a38 46%,#713413 68%,#1b0d07 82%)}
+.giant-blue{--sphere:#78ceff;--sphere-size:86px}
+.giant-blue .branch-sphere-art{background-image:radial-gradient(circle at 34% 27%,#fff 0 8%,#dff8ff 10% 22%,#70cfff 36%,#2c79ba 57%,#0b1c44 80%);box-shadow:inset -16px -18px 28px rgba(0,0,0,.58),inset 10px 8px 18px rgba(255,255,255,.18),0 0 12px rgba(255,255,255,.68),0 0 30px rgba(80,187,255,.42)}
+.giant-white{--sphere:#eef8ff;--sphere-size:78px}
+.giant-white .branch-sphere-art{background-image:radial-gradient(circle at 34% 27%,#fff 0 15%,#eefaff 18% 32%,#b9dced 48%,#58788e 68%,#111d28 83%);box-shadow:inset -14px -16px 24px rgba(0,0,0,.52),inset 9px 7px 16px rgba(255,255,255,.22),0 0 13px rgba(255,255,255,.86),0 0 27px rgba(194,232,255,.4)}
+
+.campaign-link.giant-red{stroke:#ef6a57;stroke-width:2.25}
+.campaign-link.giant-yellow{stroke:#ffd66d;stroke-width:2.15}
+.campaign-link.giant-blue{stroke:#78ceff;stroke-width:2.25}
+.campaign-link.giant-white{stroke:#e6f7ff;stroke-width:2.1}
+.campaign-link.giant{stroke:#ffe0b6}
+.giant-agb{margin:24px auto 9px;border-color:rgba(255,214,132,.32);color:#fff0cb;box-shadow:0 0 18px rgba(255,176,74,.07)}
+.giant-after{padding-top:4px}
+
+.giant-route{position:relative;isolation:isolate;min-height:190px}
+.giant-route::before{content:"";position:absolute;z-index:0;pointer-events:none;width:clamp(170px,29vw,250px);height:clamp(135px,22vw,205px);left:-145px;top:45px;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.11;filter:saturate(.86) contrast(1.06);mask-image:radial-gradient(ellipse at center,#000 0 38%,rgba(0,0,0,.68) 60%,transparent 82%)}
+.giant-route[data-branch-panel="red"]::before{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/nebulae/planetary/NGC%206891.jpg");opacity:.12}
+.giant-route[data-branch-panel="yellow"]::before{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/12/STScI-01HFCAHP1B0GCDNQGD8W25N33G.png?crop=faces%2Cfocalpoint&fit=clip&h=5978&w=3788");opacity:.09}
+.giant-route[data-branch-panel="blue"]::before{background-image:url("https://cdn.esahubble.org/archives/images/screen/potm2409a.jpg");opacity:.11}
+.giant-route[data-branch-panel="white"]::before{background-image:url("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/nebulae/planetary/NGC%206891.jpg");opacity:.1;filter:saturate(.45) brightness(1.18)}
+
+@media(max-width:700px){
+ .giant-branches>.branch-spheres{gap:8px 5px;max-width:100%}
+ .giant-red{--sphere-size:80px}.giant-yellow{--sphere-size:68px}.giant-blue{--sphere-size:62px}.giant-white{--sphere-size:56px}
+ .giant-branches .branch-choice strong{font-size:7px;letter-spacing:.04em;max-width:80px}
+ .giant-route::before{width:150px;height:122px;left:-68px;opacity:.08}
+}
