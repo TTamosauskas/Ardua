@@ -1,7 +1,7 @@
 /* Ardua — game engine and content. Static, dependency-free. */
 (()=>{
 'use strict';
-const MAX_RADIUS=4;
+const MAX_RADIUS=5;
 const E={
  H:{n:1,name:'Hidrogênio',origin:'Universo primordial',process:'Matéria primordial e combustível das estrelas.',c:['#f7feff','#8ddbff','#439ce5']},
  Plus:{n:0,symbol:'+',name:'Partícula positiva',origin:'Representação simplificada da anã vermelha',process:'Peça positiva usada na etapa didática que antecede a cadeia próton-próton completa.',c:['#fff','#ff937b','#b8192d']},
@@ -188,7 +188,7 @@ function atlasVisualFor(sp){
 }
 function atlasPhaseFromSpec(sp){
  const info=ATLAS_CATEGORY_INFO[sp.category]||ATLAS_CATEGORY_INFO.favorable;
- return{id:`phase_${sp.id}`,branch:`Atlas de fusões · ${info.label.toLowerCase()}`,title:`Reação ${E[sp.a]?.name||sp.a}–${E[sp.b]?.name||sp.b}`,meta:sp.label,new:sp.mainSym,mode:'reactionExplore',atlasId:sp.id,target:sp.target,flowTarget:sp.target,visual:atlasVisualFor(sp),fill:0,micro:true,continueAfterComplete:true,fusionTempMax:Math.min(3.2e9,Math.max(1e8,sp.barrier*2e7)),menuTag:`${sp.a}+${sp.b}`,endLabel:'PRÓXIMA<br>REAÇÃO'};
+ return{id:`phase_${sp.id}`,branch:`Atlas de fusões · ${info.label.toLowerCase()}`,title:`Reação ${E[sp.a]?.name||sp.a}–${E[sp.b]?.name||sp.b}`,meta:sp.label,new:sp.mainSym,mode:'reactionExplore',atlasId:sp.id,anchorId:sp.anchorId||sp.existingPhaseId||null,target:sp.target,flowTarget:sp.target,visual:atlasVisualFor(sp),fill:0,micro:true,continueAfterComplete:true,fusionTempMax:Math.min(3.2e9,Math.max(1e8,sp.barrier*2e7)),menuTag:`${sp.a}+${sp.b}`,endLabel:'PRÓXIMA<br>REAÇÃO'};
 }
 const FUSIONS={
  D:{ing:['H','H'],out:'D',emissions:['positron','neutrino'],pp:true},
@@ -954,14 +954,21 @@ const ABUNDANCE={
  kilonova:[['Fe',300],['Ni',270],['Si',100],['O',80],['Ag',18],['Eu',7],['Pt',5],['Au',4],['Th',1.2],['U',1],['He',10],['H',5]]
 };
 function isPrimordial(s=phase()){return !!s.primordial||s.mode==='opening'}
+const SUPERGIANT_RADIUS_VISUALS=new Set(['massive','supergiant','advanced','ironCore','kilonova','xrayBurst']);
+const SUPERGIANT_RADIUS_MODES=new Set(['collapseFinal','remnant','pulsar','accretion','blackhole','guidedDecay']);
+const SUPERGIANT_ATLAS_ANCHORS=new Set(['nu_f','ne','na','mg','al','si','p','s','cl','ar','k','ca','sc','ti','v','cr','mn','fe']);
 function phaseRadius(s=phase()){
   if(isPrimordial(s))return 3;
-  if(s.mode==='whiteCompact')return 3;
-  if(s.mode==='collapseFinal')return 2;
-  if(['remnant','pulsar','accretion','blackhole'].includes(s.mode))return 3;
-  if(s.visual==='brownDwarf'||s.visual==='whiteDwarf')return 1;
-  if(s.visual==='nebula'||s.visual==='redDwarf'||s.visual==='orangeDwarf')return 2;
-  if(s.visual==='yellowDwarf'||s.visual==='agb')return 3;
+  if(s.id==='brown'||s.visual==='brownDwarf')return 1;
+  if(s.id==='he_red'||s.visual==='redDwarf')return 2;
+  if(s.id==='he_orange'||s.id==='he_yellow'||s.mode==='whiteCompact'||s.visual==='whiteDwarf')return 3;
+  // Queima de Carbono é o precursor imediato do fork de Supergigantes.
+  if(s.id==='carbon_burn')return 4;
+  // Microfases Atlas acompanham a escala física do ponto da trilha em que vivem.
+  if(s.mode==='reactionExplore'&&s.anchorId)return SUPERGIANT_ATLAS_ANCHORS.has(s.anchorId)?5:4;
+  if(SUPERGIANT_RADIUS_MODES.has(s.mode)||SUPERGIANT_RADIUS_VISUALS.has(s.visual))return 5;
+  if(s.visual==='redGiant'||s.visual==='agb')return 4;
+  if(s.visual==='nebula')return 2;
   return 4;
 }
 function activeCells(){const r=phaseRadius();return coords.map((c,i)=>c.ring<=r?i:null).filter(v=>v!==null)}
@@ -1024,6 +1031,7 @@ function phaseGeometry(s=phase()){
   else if(s.visual==='orangeDwarf'){factor=.79;max=385}
   else if(s.visual==='yellowDwarf'){factor=.86;max=440}
   else if(s.visual==='redGiant'){factor=.98;max=560}
+  else if(r===5){factor=.995;max=600}
   else if(r===3){factor=.90;max=470}
   else {factor=.985;max=555}
   return {r,factor,max};
@@ -1032,7 +1040,7 @@ function applyGeometry(){
   const g=phaseGeometry(),root=document.documentElement;
   const px=Math.max(260,Math.min(window.innerWidth*g.factor,g.max));
   root.style.setProperty('--starSize',`${px}px`);
-  const c=Math.max(36,Math.min(72,px*.88/(2*g.r+1)));
+  const minCell=g.r>=5?28:36,c=Math.max(minCell,Math.min(72,px*.88/(2*g.r+1)));
   root.style.setProperty('--cellSize',`${c}px`);
 }
 function desiredFill(){
@@ -1316,7 +1324,7 @@ function phaseCompletionReward(s=phase()){
 }
 
 function starSize(){return dom.star.clientWidth}
-function cellSize(){const g=phaseGeometry();return Math.max(36,Math.min(72,starSize()*.88/(2*g.r+1)))}
+function cellSize(){const g=phaseGeometry(),minCell=g.r>=5?28:36;return Math.max(minCell,Math.min(72,starSize()*.88/(2*g.r+1)))}
 function pos(c){const a=cellSize()*.58,x=starSize()/2+a*Math.sqrt(3)*(c.q+c.r/2),y=starSize()/2+a*1.5*c.r;return{x,y}}
 function outside(i){const p=pos(coords[i]),c=starSize()/2,a=Math.atan2(p.y-c,p.x-c),rr=starSize()*.56+18+Math.random()*20;return{x:c+Math.cos(a)*rr,y:c+Math.sin(a)*rr}}
 function elementStyle(sym){const c=E[sym].c;return`radial-gradient(circle at 36% 30%,${c[0]},${c[1]} 44%,${c[2]} 76%)`}
@@ -2102,14 +2110,14 @@ const POST_ATOM_MODES=new Set(['remnant','pulsar','accretion','blackhole']);
 function isPostAtomMode(s=phase()){return POST_ATOM_MODES.has(s.mode)}
 function isPostMode(s=phase()){return isPostAtomMode(s)||s.mode==='collapseFinal'}
 const COULOMB_EXEMPT_SYMS=new Set(['H','D','T']);
-const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8});
+const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50});
 function coulombMechanicUnlocked(s=phase()){
  const intro=phaseIndexById.get('coulomb_intro');return intro!==undefined&&state.phaseIndex>=intro;
 }
 function coulombBlockChance(cell,s=phase(),sym=null){
  if(!coulombMechanicUnlocked(s)||cell===null||cell===undefined)return 0;
  if(sym&&COULOMB_EXEMPT_SYMS.has(sym))return 0;
- const ring=Math.max(0,Math.min(4,Number(coords[cell]?.ring)||0));
+ const ring=Math.max(0,Math.min(5,Number(coords[cell]?.ring)||0));
  if(s.id==='coulomb_intro')return ring<=2?0:1;
  return Number(COULOMB_BLOCK_CHANCE_BY_RING[ring]||0);
 }
