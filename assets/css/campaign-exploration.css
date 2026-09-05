@@ -1,0 +1,10 @@
+/* Ardua — progressive reveal for the campaign map. */
+.campaign-map .phase-node.exploration-hidden,
+.campaign-map .exploration-structure-hidden{display:none!important}
+.campaign-map .phase-node.exploration-next{position:relative;opacity:1}
+.campaign-map .phase-node.exploration-next::after{content:"";position:absolute;inset:-3px;border-radius:12px;border:1px solid rgba(94,233,255,.24);box-shadow:0 0 18px rgba(94,233,255,.08);pointer-events:none}
+.campaign-map .phase-node.exploration-preview{opacity:.26;filter:saturate(.42)}
+.campaign-map .phase-node.exploration-preview-2{opacity:.16}
+.campaign-map .phase-node.exploration-preview::before{box-shadow:none}
+.campaign-map.exploration-editor .phase-node{filter:none}
+@media(max-width:700px){.campaign-map .phase-node.exploration-preview{opacity:.3}.campaign-map .phase-node.exploration-preview-2{opacity:.2}}
