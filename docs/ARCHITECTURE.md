@@ -48,3 +48,7 @@ O rp-process foi colocado depois de **Acreção extrema** e antes de **Limite de
 ## Testes estáticos
 
 `tests/validate-static.js` verifica a presença e a ordem das 24 fases rp, os waiting points, o ciclo Sn–Sb–Te, as duas formas de combustível (H e p) e as referências estáticas do `index.html`. `node --check assets/js/ardua.js` continua sendo a validação sintática mínima do motor.
+
+### Economia de ingredientes
+
+Cada fase de produção deve oferecer exatamente uma oportunidade direta para o objetivo. Precursores pesados não são repostos automaticamente depois de consumidos. O motor usa matéria-base e rotas históricas já aprendidas para reconstruir novas sementes: no rp-process, Fe → Co → Ni inicia a cadeia cumulativa; nos processos weak-s, AGB-s e r, Ferro alimenta rotas agregadas de reconstrução antes das transições já aprendidas.
