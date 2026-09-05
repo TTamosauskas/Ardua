@@ -18,7 +18,28 @@ jobs:
       - name: Reconstruct validated migration helper
         shell: bash
         run: |
-          cat .github/chain-feedback.part0 .github/chain-feedback.part1 .github/chain-feedback.part2 .github/chain-feedback.part3 .github/chain-feedback.part4 > /tmp/chain-feedback.py
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+
+          chunks = [
+              Path('.github/chain-feedback.part0').read_text(),
+              base64.b64decode(Path('.github/chain-feedback.part1').read_text().strip()).decode(),
+              Path('.github/chain-feedback.part2').read_text(),
+              Path('.github/chain-feedback.part3').read_text(),
+              Path('.github/chain-feedback.part4').read_text(),
+          ]
+          merged = chunks[0]
+          for i, chunk in enumerate(chunks[1:], 1):
+              overlap = 0
+              for n in range(min(96, len(merged), len(chunk)), 0, -1):
+                  if merged.endswith(chunk[:n]):
+                      overlap = n
+                      break
+              print(f'part{i}: overlap={overlap}')
+              merged += chunk[overlap:]
+          Path('/tmp/chain-feedback.py').write_text(merged)
+          PY
           python .github/chain-feedback-fix.py
           python -m py_compile /tmp/chain-feedback.py
       - name: Apply reaction feedback migration
