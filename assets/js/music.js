@@ -6,10 +6,12 @@ if(!audio)return;
 const MAP_VOLUME=.50;
 const PHASE_VOLUME=.15;
 const FADE_MS=950;
+const START_AT=22;
 let fadeFrame=0;
 let observer=null;
+let startPositionApplied=false;
 
-audio.loop=true;
+audio.loop=false;
 audio.preload='auto';
 audio.playsInline=true;
 audio.controls=false;
@@ -28,9 +30,22 @@ function fadeTo(target,duration=FADE_MS){
  fadeFrame=requestAnimationFrame(step);
 }
 function sync(immediate=false){const target=wantedVolume();if(immediate){stopFade();audio.volume=target}else fadeTo(target)}
+function applyStartPosition(force=false){
+ if(audio.readyState<1)return false;
+ const maxStart=Number.isFinite(audio.duration)&&audio.duration>0?Math.max(0,audio.duration-.25):START_AT;
+ const target=Math.min(START_AT,maxStart);
+ if(force||!startPositionApplied||audio.currentTime<target-.25){
+  try{audio.currentTime=target;startPositionApplied=true}catch(_e){return false}
+ }
+ return true;
+}
 function tryPlay(){
- sync(true);
+ sync(true);applyStartPosition(false);
  if(!audio.paused&&!audio.ended)return;
+ try{const p=audio.play();if(p&&typeof p.catch==='function')p.catch(()=>{})}catch(_e){}
+}
+function restartLoop(){
+ applyStartPosition(true);
  try{const p=audio.play();if(p&&typeof p.catch==='function')p.catch(()=>{})}catch(_e){}
 }
 function observeBody(){
@@ -39,10 +54,11 @@ function observeBody(){
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 }
 
-audio.addEventListener('loadedmetadata',tryPlay);
+audio.addEventListener('loadedmetadata',()=>{applyStartPosition(true);tryPlay()});
 audio.addEventListener('loadeddata',tryPlay);
 audio.addEventListener('canplay',tryPlay);
 audio.addEventListener('playing',()=>sync(false));
+audio.addEventListener('ended',restartLoop);
 window.addEventListener('pageshow',tryPlay);
 window.addEventListener('focus',tryPlay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){sync(true);tryPlay()}});
@@ -50,5 +66,5 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){sync(true
 observeBody();
 tryPlay();
 
-window.ARDUA_MUSIC=Object.freeze({audio,mapVolume:MAP_VOLUME,phaseVolume:PHASE_VOLUME,sync:()=>sync(false),play:tryPlay});
+window.ARDUA_MUSIC=Object.freeze({audio,mapVolume:MAP_VOLUME,phaseVolume:PHASE_VOLUME,startAt:START_AT,sync:()=>sync(false),play:tryPlay});
 })();
