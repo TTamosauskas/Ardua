@@ -16,6 +16,7 @@ function syncButtonState(){
 }
 function makeMenuButton(){
  let b=menuButton();if(b)return b;
+ phaseMenu.querySelector('[data-quasar-family]')?.remove();
  b=document.createElement('button');b.type='button';b.className='phase-jump';b.dataset.quasarPhase='true';b.dataset.phaseId=Q.id;
  b.innerHTML=`<span class="idx">${G.runtimeOrder.indexOf(Q.id)+1}</span><span><strong>${Q.title}</strong><small>${Q.branch}</small></span><span class="new">AGN</span>`;
  const family=document.createElement('div');family.className='phase-family';family.dataset.quasarFamily='true';family.textContent='Núcleos galácticos';
@@ -120,6 +121,7 @@ phaseEnd.addEventListener('click',e=>{
 phaseMenu.addEventListener('click',e=>{
  const b=e.target.closest('.phase-jump');if(b&&!b.matches('[data-quasar-phase]')&&board.classList.contains('quasar-mode'))cleanup();
 },true);
+$('menuOpenBtn')?.addEventListener('click',ensureMenuButton);
 window.addEventListener('ardua:campaign-progress',syncButtonState);
 new MutationObserver(()=>{if(!menuButton())ensureMenuButton()}).observe(phaseMenu,{childList:true});
 ensureMenuButton();
