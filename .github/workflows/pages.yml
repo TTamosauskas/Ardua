@@ -30,6 +30,11 @@ jobs:
         run: |
           python -m py_compile .github/scripts/refine_stellar_convection.py
           python .github/scripts/refine_stellar_convection.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/css/ardua.css')
+          p.write_text(p.read_text(encoding='utf-8').rstrip()+'\n',encoding='utf-8')
+          PY
           node --check assets/js/ardua.js
           node --check assets/js/campaign-discoveries.js
           git diff --check
