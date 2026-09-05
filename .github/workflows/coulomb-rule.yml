@@ -27,3 +27,5 @@ jobs:
           git add assets/js/ardua.js tests/validate-static.js README.md docs/ARCHITECTURE.md .github
           git commit -m "Refine Coulomb barrier by stellar layer"
           git push
+
+# retry with complete radial patch
