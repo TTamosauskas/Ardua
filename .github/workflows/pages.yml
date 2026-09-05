@@ -1,4 +1,4 @@
-name: Deploy Ardua to GitHub Pages
+name: Apply stellar proton visual parity
 
 on:
   push:
@@ -6,29 +6,33 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  migrate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          fetch-depth: 0
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+      - name: Add stellar proton styling
+        run: |
+          cat >> assets/css/ardua.css <<'EOF'
+
+          /* Stellar proton visual parity with free neutrons */
+          .star-board:not(.primordial-mode) .primordial-particle.proton{width:22px;height:22px;font-size:13px;opacity:.62}
+          .star-board:not(.primordial-mode) .primordial-particle.proton.candidate,.star-board:not(.primordial-mode) .primordial-particle.proton.selected{opacity:1}
+          EOF
+
+      - name: Validate diff
+        run: git diff --check
+
+      - name: Commit styling
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/css/ardua.css
+          git commit -m "Match stellar protons to neutron size and opacity [skip ci]"
+          git push
