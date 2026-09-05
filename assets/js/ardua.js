@@ -2449,7 +2449,7 @@ const PRODUCT_LESSONS={
  neutrino:{title:'NEUTRINO (νₑ)',text:'Neutrinos têm carga elétrica nula e interagem muito fracamente com a matéria, escapando com facilidade do ambiente.'},
  antineutrino:{title:'ANTINEUTRINO (ν̄ₑ)',text:'O antineutrino eletrônico acompanha processos β− e escapa quase sem interagir com a matéria.'},
  gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia precisa ser liberado.'},
- coulomb:{title:'BARREIRA DE COULOMB',text:'No jogo: núcleo e camada 1 são livres; camada 2 bloqueia 50%, camada 3 bloqueia 60% e camada 4 bloqueia 80%. H, ²H e ³H são isentos.'},
+ coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'},
  waitingPoint:{title:'PONTO DE ESPERA',text:'Alguns núcleos proton-rich desaceleram o rp-process. Continue fazendo ações nucleares: o núcleo pode sofrer β⁺ enquanto a rede procura outra rota.'},
  photodisintegration:{title:'FOTODESINTEGRAÇÃO (γ,p)',text:'Em radiação muito intensa, um fóton pode devolver o próton recém-capturado. A matéria permanece disponível para outra tentativa.'},
  rpCycle:{title:'CICLO Sn–Sb–Te',text:'Na região de Estanho, Antimônio e Telúrio, a rede pode fechar um ciclo. Esse comportamento representa o limite natural desta campanha do rp-process.'},
