@@ -21,7 +21,8 @@ function build(){
 function sync(){
  const b=quasar(),j=junction();if(!b)return;
  const next=state(),states=['locked','revealed','available','completed','current'];if(!b.classList.contains(next)||states.some(x=>x!==next&&b.classList.contains(x))){b.classList.remove(...states);b.classList.add(next)}
- const shouldShow=C.editor||C.isUnlocked(Q.id)||C.getState().completed.includes(Q.id)||C.getState().activeId===Q.id;
+ const horizon=b.classList.contains('exploration-next')||b.classList.contains('exploration-preview');
+ const shouldShow=C.editor||C.isUnlocked(Q.id)||C.getState().completed.includes(Q.id)||C.getState().activeId===Q.id||horizon;
  if(j)j.hidden=!shouldShow||b.classList.contains('exploration-hidden');
  const rp=b.closest('.portal[data-portal="rp"]');if(rp&&(C.getState().activeId===Q.id||C.getState().completed.includes(Q.id)))rp.open=true;
  schedule();
