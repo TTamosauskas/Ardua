@@ -20,8 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Patch stellar geometry and Coulomb rings
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
 
           path = Path('assets/js/ardua.js')
@@ -34,11 +35,7 @@ jobs:
                   raise SystemExit(f'{label}: expected 1 match, found {count}')
               text = text.replace(old, new, 1)
 
-          replace_once(
-              "const MAX_RADIUS=4;",
-              "const MAX_RADIUS=5;",
-              'MAX_RADIUS'
-          )
+          replace_once('const MAX_RADIUS=4;', 'const MAX_RADIUS=5;', 'MAX_RADIUS')
 
           replace_once(
               "return{id:`phase_${sp.id}`,branch:`Atlas de fusões · ${info.label.toLowerCase()}`,title:`Reação ${E[sp.a]?.name||sp.a}–${E[sp.b]?.name||sp.b}`,meta:sp.label,new:sp.mainSym,mode:'reactionExplore',atlasId:sp.id,target:sp.target,flowTarget:sp.target,visual:atlasVisualFor(sp),fill:0,micro:true,continueAfterComplete:true,fusionTempMax:Math.min(3.2e9,Math.max(1e8,sp.barrier*2e7)),menuTag:`${sp.a}+${sp.b}`,endLabel:'PRÓXIMA<br>REAÇÃO'};",
@@ -75,53 +72,55 @@ function phaseRadius(s=phase()){
 }"""
           replace_once(old_radius, new_radius, 'phaseRadius')
 
-          old_geometry = """  else if(s.visual==='redGiant'){factor=.98;max=560}
+          replace_once(
+              """  else if(s.visual==='redGiant'){factor=.98;max=560}
   else if(r===3){factor=.90;max=470}
-  else {factor=.985;max=555}"""
-          new_geometry = """  else if(s.visual==='redGiant'){factor=.98;max=560}
+  else {factor=.985;max=555}""",
+              """  else if(s.visual==='redGiant'){factor=.98;max=560}
   else if(r===5){factor=.995;max=600}
   else if(r===3){factor=.90;max=470}
-  else {factor=.985;max=555}"""
-          replace_once(old_geometry, new_geometry, 'phaseGeometry ring 5')
+  else {factor=.985;max=555}""",
+              'phaseGeometry ring 5'
+          )
 
           replace_once(
-              "  const c=Math.max(36,Math.min(72,px*.88/(2*g.r+1)));",
-              "  const minCell=g.r>=5?28:36,c=Math.max(minCell,Math.min(72,px*.88/(2*g.r+1)));",
+              '  const c=Math.max(36,Math.min(72,px*.88/(2*g.r+1)));',
+              '  const minCell=g.r>=5?28:36,c=Math.max(minCell,Math.min(72,px*.88/(2*g.r+1)));',
               'CSS cell size'
           )
 
           replace_once(
-              "function cellSize(){const g=phaseGeometry();return Math.max(36,Math.min(72,starSize()*.88/(2*g.r+1)))}",
-              "function cellSize(){const g=phaseGeometry(),minCell=g.r>=5?28:36;return Math.max(minCell,Math.min(72,starSize()*.88/(2*g.r+1)))}",
+              'function cellSize(){const g=phaseGeometry();return Math.max(36,Math.min(72,starSize()*.88/(2*g.r+1)))}',
+              'function cellSize(){const g=phaseGeometry(),minCell=g.r>=5?28:36;return Math.max(minCell,Math.min(72,starSize()*.88/(2*g.r+1)))}',
               'runtime cell size'
           )
 
           replace_once(
-              "const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8});",
-              "const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50});",
+              'const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8});',
+              'const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50});',
               'Coulomb probabilities'
           )
 
           replace_once(
-              " const ring=Math.max(0,Math.min(4,Number(coords[cell]?.ring)||0));",
-              " const ring=Math.max(0,Math.min(5,Number(coords[cell]?.ring)||0));",
+              ' const ring=Math.max(0,Math.min(4,Number(coords[cell]?.ring)||0));',
+              ' const ring=Math.max(0,Math.min(5,Number(coords[cell]?.ring)||0));',
               'Coulomb ring clamp'
           )
 
           path.write_text(text)
 
-          # Structural validation of the requested model.
           checks = [
               'const MAX_RADIUS=5;',
-              "{0:0,1:0,2:.10,3:.20,4:.40,5:.50}",
+              '{0:0,1:0,2:.10,3:.20,4:.40,5:.50}',
               "const COULOMB_EXEMPT_SYMS=new Set(['H','D','T']);",
               "if(s.id==='carbon_burn')return 4;",
-              "SUPERGIANT_RADIUS_VISUALS",
+              'SUPERGIANT_RADIUS_VISUALS',
               "s.mode==='whiteCompact'||s.visual==='whiteDwarf')return 3;",
           ]
           for check in checks:
               if check not in text:
                   raise SystemExit(f'validation missing: {check}')
+          PY
 
       - name: Syntax check
         run: node --check assets/js/ardua.js
