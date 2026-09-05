@@ -44,7 +44,7 @@ new_lessons_tail = """ rpCycle:{title:'CICLO Sn–Sb–Te',text:'Na região de E
 };"""
 js = once(js, old_lessons_tail, new_lessons_tail, 'first occurrence lessons')
 
-# Matter provenance helpers and lineage-bearing board/free pieces.
+# Matter provenance helpers and lineage-bearing pieces.
 create_anchor = "function createPiece(sym,cell,fromOutside=false,opts={}){"
 provenance_helpers = """function normalizeMatterLineage(lineage=[]){
  const raw=Array.isArray(lineage)?lineage:(lineage instanceof Set?[...lineage]:[]);return [...new Set(raw.map(String).filter(Boolean))].sort();
@@ -66,7 +66,7 @@ old_create_free = "piece={id,sym,cell:null,free:true,x:pt.x,y:pt.y,captures:0,ma
 new_create_free = "piece={id,sym,cell:null,free:true,x:pt.x,y:pt.y,captures:0,matterState:opts.matterState||'nucleus',boundElectrons:Number(opts.boundElectrons||0),massNumber:opts.massNumber??E[sym]?.mass??null,longRadioactive:!!opts.longRadioactive,lineage:normalizeMatterLineage(opts.lineage?.length?opts.lineage:freshMatterLineage())};"
 js = once(js, old_create_free, new_create_free, 'free piece lineage')
 
-# Reactions inherit the identities of their input nuclei.
+# Board fusion inherits the identities of its input nuclei.
 old_fuse_start = "const cells=[...state.selected],target=[...cells].sort((a,b)=>coords[a].ring-coords[b].ring)[0],ids=cells.map(c=>state.board[c]),t=pos(coords[target]),preparedChain=preparedContinuationForFusion(r,cells,target);if(!(await fusionBarrierPasses(r,cells,ids,target)))return;ids.forEach(id=>{"
 new_fuse_start = "const cells=[...state.selected],target=[...cells].sort((a,b)=>coords[a].ring-coords[b].ring)[0],ids=cells.map(c=>state.board[c]),t=pos(coords[target]),preparedChain=preparedContinuationForFusion(r,cells,target),inputPieces=ids.map(id=>state.pieces.get(id)).filter(Boolean),productLineage=mergeMatterLineages(inputPieces),uniqueGoal=r.out===phase().new&&!!phase().uniqueMatterObjective,objectiveLineageFresh=!uniqueGoal||objectiveLineageIsFresh(phase(),productLineage);if(!(await fusionBarrierPasses(r,cells,ids,target)))return;if(uniqueGoal&&!objectiveLineageFresh)await teachProductOnce('recycledMatter',t.x,t.y);ids.forEach(id=>{"
 js = once(js, old_fuse_start, new_fuse_start, 'fusion lineage preflight')
@@ -75,12 +75,8 @@ old_fuse_product = "const np=createPiece(r.out,target,false);np.x=t.x;np.y=t.y;f
 new_fuse_product = "const np=createPiece(r.out,target,false,{lineage:productLineage});np.x=t.x;np.y=t.y;focusPieceInfo(np);if(pieceIsUnstable(np))np.unstableBornRound=state.nuclearRound+1;const objectiveLineageCredited=!uniqueGoal||creditObjectiveLineage(phase(),productLineage);if(!uniqueGoal||objectiveLineageCredited)state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);if(uniqueGoal&&!objectiveLineageCredited)captureTag(t.x,t.y,'MATÉRIA RECICLADA · sem novo crédito');if(!phase().objectiveOnlyProgress||r.out===phase().new)recordFlow(r.out===phase().new&&objectiveLineageCredited?3:1,{kind:'nuclear',x:t.x,y:t.y,label:r.out===phase().new&&objectiveLineageCredited?E[r.out].name:null});state.selected=[];burst(t.x,t.y);"
 js = once(js, old_fuse_product, new_fuse_product, 'fusion objective lineage credit')
 
-old_free_fusion = "const out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive});"
-new_free_fusion = "const out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive,lineage:mergeMatterLineages(parts)});"
-js = once(js, old_free_fusion, new_free_fusion, 'free fusion lineage inheritance')
-
 # Be-8 returns the same matter identities when it decays. Re-fusing those exact
-# daughters therefore recreates the same lineage and cannot farm the objective.
+# daughters recreates the same lineage and cannot farm the objective.
 old_be8_head = "const firstLesson=!state.productLessons.has('helium'),origin=piece.cell,at={x:piece.x,y:piece.y};if(firstLesson)await teachProductOnce('helium',at.x,at.y);state.board[origin]=null;state.pieces.delete(piece.id);\n const first=createPiece('He',origin,false);"
 new_be8_head = "const firstLesson=!state.productLessons.has('helium'),origin=piece.cell,at={x:piece.x,y:piece.y},lineage=pieceMatterLineage(piece);if(firstLesson)await teachProductOnce('helium',at.x,at.y);state.board[origin]=null;state.pieces.delete(piece.id);\n const first=createPiece('He',origin,false,{lineage});"
 js = once(js, old_be8_head, new_be8_head, 'Be8 first daughter lineage')
@@ -106,8 +102,7 @@ old_proton_ctx = "const nearby=[...state.primordialParticles.values()].filter(q=
 new_proton_ctx = "const nearby=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting).map(q=>({q,d:Math.hypot(q.x-target.x,q.y-target.y)})).filter(x=>x.d<=starSize()*.24).sort((a,b)=>a.d-b.d)[0];if(!nearby)return;await teachChainEffectOnce('proton',target.x,target.y);if(state.phaseDone||state.readyToAdvance||!state.pieces.has(target.id)||!state.primordialParticles.has(nearby.q.id))return;const ctx={rootId,depth:depth+1,kind:'proton',x:target.x,y:target.y,creditUsed:false,feedbackUsed:false};"
 js = once(js, old_proton_ctx, new_proton_ctx, 'proton cascade lesson')
 
-# First occurrence lessons for the other major nuclear effects happen before their
-# distinctive animation, not after it.
+# First occurrence lessons for other major nuclear effects happen before their distinctive animation.
 old_source = "if(state.locked||!source||!helium)return;const g=neutronGameplay(s);state.locked=true;const at={x:source.x,y:source.y},sourceCell=source.cell,heCell=helium.cell;\n state.board[sourceCell]=null;"
 new_source = "if(state.locked||!source||!helium)return;const g=neutronGameplay(s);state.locked=true;const at={x:source.x,y:source.y},sourceCell=source.cell,heCell=helium.cell;\n await teachProductOnce('neutronSource',at.x,at.y);\n state.board[sourceCell]=null;"
 js = once(js, old_source, new_source, 'neutron source lesson')
@@ -124,7 +119,7 @@ old_freeze = "else if(ng.pattern==='rFreezeout'){recordFlow(1);state.neutronFree
 new_freeze = "else if(ng.pattern==='rFreezeout'){await teachProductOnce('freezeout',p.x,p.y);recordFlow(1);state.neutronFreezeouts++;captureTag(p.x,p.y,'FREEZE-OUT');"
 js = once(js, old_freeze, new_freeze, 'freezeout lesson')
 
-# Waiting point must explain itself before the tunneling/capture animation begins.
+# Waiting point explains itself before the tunneling/capture animation begins.
 old_waiting_pre = "const viable=!!route&&!blocked,photoReturn=viable&&route.photoChance>0&&Math.random()<route.photoChance;\n if(!viable||photoReturn){"
 new_waiting_pre = "const viable=!!route&&!blocked,photoReturn=viable&&route.photoChance>0&&Math.random()<route.photoChance;\n if(viable&&!photoReturn&&route.rp&&route.pattern==='waiting')await teachProductOnce('waitingPoint',target.x,target.y);\n if(!viable||photoReturn){"
 js = once(js, old_waiting_pre, new_waiting_pre, 'waiting point lesson timing')
