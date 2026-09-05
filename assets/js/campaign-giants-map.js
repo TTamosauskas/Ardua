@@ -126,9 +126,9 @@ function suppressLegacyShortcut(from,to){
 function drawLines(){
  clearTimeout(lineTimer);lineTimer=0;links.querySelectorAll('.giant-link').forEach(p=>p.remove());
  if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
- const cluster=giantCluster(),hub=giantHub(),f=fork();if(!visible(cluster)||!visible(hub)||!visible(f))return;
+ const cluster=giantCluster(),f=fork();if(!visible(cluster)||!visible(f))return;
  const precursorTail=nodeById(A.tail(S.precursor));
- addLine(precursorTail,hub,'mid',.48);addLine(hub,f,'branch-fork giant',.5);
+ addLine(precursorTail,f,'branch-fork giant',.52);
  for(const key of S.routeOrder)addLine(f,giantSphere(key),`branch ${S.routeClasses[key]}`,.38);
  const selected=cluster.querySelector(':scope > .branch-spheres > .branch-choice.selected')?.dataset.branchOpen;if(!selected)return;
  const first=S.routes[selected][0],last=routeTail(selected);
