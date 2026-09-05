@@ -38,4 +38,18 @@ ok(engine.includes("COULOMB_EXEMPT_SYMS=new Set(['H','D','T'])"),'H, Deutério e
 ok(engine.includes('coulombRollBlocks(blockedCell,s,blockedPiece.sym)')&&engine.includes('coulombRollBlocks(cell,s,target.sym)'),'fusão e captura de prótons usam a chance radial da Barreira de Coulomb');
 ok(engine.includes("coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'}"),'tooltip da Barreira de Coulomb usa sempre a mensagem didática fixa');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
+
+ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
+ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
+ok(engine.includes("state.chainCalloutTimer=setTimeout")&&engine.includes("},1850)"),'texto de cascata permanece legível por aproximadamente 1,85 s após a última atualização');
+ok(engine.includes("CHAIN_AUTO_FLOW_FACTORS=Object.freeze([.25,.10,0])")&&engine.includes('CHAIN_MAX_PROGRESS_BONUS=.10'),'cascatas preservam crédito decrescente e teto de 10% do flowTarget');
+ok(engine.includes('CHAIN_OBJECTIVE_PROGRESS_FLOOR=.75'),'objetivo científico preserva piso de 75% sem encerrar a fase sozinho');
+ok(engine.includes("preparedContinuationForFusion")&&engine.includes("phenomenon:plannedChain"),'cadeias previamente posicionadas podem ser reconhecidas como rede preparada');
+ok(engine.includes("playScientificSignature('supernova')")&&engine.includes("playScientificSignature('neutronStar')")&&engine.includes("playScientificSignature('blackHole')"),'Supernova, Estrela de Nêutrons e Buraco Negro possuem momentos de assinatura');
+ok(engine.includes("C:'carbon'")&&engine.includes("Fe:'iron'")&&engine.includes("Au:'gold'")&&engine.includes("U:'uranium'"),'Carbono, Ferro, Ouro e Urânio possuem assinaturas científicas');
+ok(engine.includes("setTimeout(()=>{if(phase()===s&&state.readyToAdvance)$('phaseEndBtn').classList.add('show')},720)"),'avanço da fase espera o beat audiovisual de conclusão');
+ok(html.includes('id="discoveryAtlas"')&&html.includes('Atlas de descobertas'),'menu contém Atlas de descobertas persistente');
+const css=fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8');
+ok(css.includes('.chain-callout')&&css.includes('.reward-progress-aura')&&css.includes('.reward-spark'),'hierarquia visual inclui callout, aura persistente e partículas contidas');
+ok(css.includes('@media(prefers-reduced-motion:reduce)'),'efeitos respeitam preferência de redução de movimento');
 console.log('\nValidação estática do Ardua concluída.');
