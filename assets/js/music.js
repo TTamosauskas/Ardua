@@ -4,16 +4,22 @@
 const audio=document.getElementById('arduaSoundtrack');
 if(!audio)return;
 
+const RAW_SRC='https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a';
+const LOCAL_FALLBACK='assets/AaronCopland.m4a';
 const MAP_VOLUME=.50;
 const PHASE_VOLUME=.15;
 const FADE_MS=950;
 let fadeFrame=0;
 let started=false;
+let fallbackUsed=false;
+let playQueued=false;
 let targetVolume=document.body.classList.contains('campaign-map-open')?MAP_VOLUME:PHASE_VOLUME;
 
 audio.loop=true;
 audio.preload='auto';
+audio.playsInline=true;
 audio.volume=targetVolume;
+if(audio.getAttribute('src')!==RAW_SRC){audio.src=RAW_SRC;audio.load()}
 
 function stopFade(){
  if(fadeFrame){cancelAnimationFrame(fadeFrame);fadeFrame=0}
@@ -36,42 +42,57 @@ function contextualVolume(immediate=false){
 }
 function removeUnlockListeners(){
  document.removeEventListener('pointerdown',unlockFromGesture,true);
- document.removeEventListener('touchend',unlockFromGesture,true);
+ document.removeEventListener('touchstart',unlockFromGesture,true);
  document.removeEventListener('keydown',unlockFromGesture,true);
+ document.removeEventListener('click',unlockFromGesture,true);
 }
 function markStarted(){
- started=true;removeUnlockListeners();contextualVolume(false);
+ started=true;playQueued=false;removeUnlockListeners();contextualVolume(false);
 }
 function tryPlay(){
+ playQueued=false;
  if(started&&!audio.paused)return;
  const attempt=audio.play();
  if(attempt&&typeof attempt.then==='function')attempt.then(markStarted).catch(()=>{});
  else if(!audio.paused)markStarted();
 }
-function unlockFromGesture(){tryPlay()}
+function queuePlay(){
+ if(playQueued)return;playQueued=true;
+ // Executa logo depois do gesto atual. Assim o áudio deixa o botão COMEÇAR concluir
+ // sua própria interação antes da tentativa de reprodução em mobile.
+ queueMicrotask(tryPlay);
+}
+function unlockFromGesture(){queuePlay()}
 function armPlayback(){
  document.addEventListener('pointerdown',unlockFromGesture,true);
- document.addEventListener('touchend',unlockFromGesture,true);
+ document.addEventListener('touchstart',unlockFromGesture,{capture:true,passive:true});
  document.addEventListener('keydown',unlockFromGesture,true);
+ document.addEventListener('click',unlockFromGesture,true);
 }
 
 new MutationObserver(contextualVolume).observe(document.body,{attributes:true,attributeFilter:['class']});
 
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden){stopFade();return}
- contextualVolume(true);if(started)tryPlay();
+ contextualVolume(true);if(started)queuePlay();
 });
 
-audio.addEventListener('ended',()=>{audio.currentTime=0;tryPlay()});
-audio.addEventListener('canplay',()=>{if(started)contextualVolume(true)},{once:true});
+audio.addEventListener('error',()=>{
+ if(fallbackUsed)return;
+ fallbackUsed=true;started=false;audio.src=LOCAL_FALLBACK;audio.load();queuePlay();
+});
+audio.addEventListener('ended',()=>{audio.currentTime=0;queuePlay()});
+audio.addEventListener('canplay',()=>{contextualVolume(true);if(!started)queuePlay()});
 
 armPlayback();
-tryPlay();
+queuePlay();
 
 window.ARDUA_MUSIC=Object.freeze({
  audio,
+ source:RAW_SRC,
  mapVolume:MAP_VOLUME,
  phaseVolume:PHASE_VOLUME,
- sync:()=>contextualVolume(false)
+ sync:()=>contextualVolume(false),
+ play:queuePlay
 });
 })();
