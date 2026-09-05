@@ -1071,7 +1071,10 @@ function armPieceInstability(piece,{rounds=2,mode=null,to=null,toMass=null,label
 function armIntrinsicInstability(piece,bornRound=state.nuclearRound){if(!piece)return piece;clearPieceInstability(piece);if(piece.sym==='HeU')return armPieceInstability(piece,{rounds:4,mode:'heU'},bornRound);if(piece.sym==='Be7')return armPieceInstability(piece,{rounds:1,mode:'be7',to:'Li',toMass:7,label:'⁷Be + e⁻ → ⁷Li + νₑ'},bornRound);if(piece.sym==='Be8')return armPieceInstability(piece,{rounds:2,mode:'be8'},bornRound);return piece}
 function save(){localStorage.setItem('stellarForgeV1013',JSON.stringify({phaseIndex:state.phaseIndex,version:'10.80',phaseId:phase().id,discovered:[...state.discovered],ignited:state.ignited,productLessons:[...state.productLessons],protonCaptureUnlocked:state.protonCaptureUnlocked,neutronCaptureUnlocked:state.neutronCaptureUnlocked,rewardDiscoveries:[...state.rewardDiscoveries],rewardAchievements:[...state.rewardAchievements],signatureSeen:[...state.signatureSeen]}))}
 function load(){try{const d=JSON.parse(localStorage.getItem('stellarForgeV1013')||'null');if(!d)return;const legacy={co:'ni_fusion',ni:'ni_fusion',explosive_zn:'ni_fusion',decay_garden:'white',primordial_n:'primordial_d',primordial_dn:'primordial_t',primordial_he:'primordial_he3d',primordial_h:'atomic_h'};const savedId=d.phaseId&&legacy[d.phaseId]?legacy[d.phaseId]:d.phaseId;let idx=savedId&&phaseIndexById.has(savedId)?phaseIndexById.get(savedId):(d.phaseIndex||0);if(!d.phaseId&&idx>=13)idx++;if(!d.phaseId&&idx>=14)idx++;state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,idx));state.discovered=new Set(d.discovered||[]);state.ignited=!!d.ignited;state.productLessons=new Set(d.productLessons||[]);state.protonCaptureUnlocked=!!d.protonCaptureUnlocked||state.phaseIndex>=(phaseIndexById.get('proton_capture')??Infinity);state.neutronCaptureUnlocked=!!d.neutronCaptureUnlocked||state.phaseIndex>=(phaseIndexById.get('primordial_t')??Infinity);state.rewardDiscoveries=new Set(d.rewardDiscoveries||[]);state.rewardAchievements=new Set(d.rewardAchievements||[]);state.signatureSeen=new Set(d.signatureSeen||[])}catch(e){}}
-function tone(f=440,d=.05,t='sine',v=.03){try{tone.ctx??=new(AudioContext||webkitAudioContext)();const o=tone.ctx.createOscillator(),g=tone.ctx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(tone.ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,tone.ctx.currentTime+d);o.stop(tone.ctx.currentTime+d)}catch(e){}}
+function audioContextReady(){try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;tone.ctx??=new Ctx();return tone.ctx}catch(e){return null}}
+function tone(f=440,d=.05,t='sine',v=.03){
+ try{const ctx=audioContextReady();if(!ctx)return;const play=()=>{try{const o=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;o.type=t;o.frequency.setValueAtTime(f,now);g.gain.setValueAtTime(Math.max(.0001,v),now);o.connect(g);g.connect(ctx.destination);o.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+d);o.stop(now+d+.02)}catch(e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(e){}
+}
 function vibrate(p=10){if(navigator.vibrate)navigator.vibrate(p)}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 function toast(s){return}
@@ -1172,8 +1175,8 @@ function objectiveMotifNotes(r){
  const root=OBJECTIVE_MOTIF_ROOTS[objectiveMotifHash(recipeKey(r))%OBJECTIVE_MOTIF_ROOTS.length],unstable=!!E[r?.out]?.unstable;
  return unstable?[root,root*(4/3),root*1.5]:[root,root*1.25,root*1.5];
 }
-function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))];tone(f,index===2?.18:.13,index===2?'triangle':'sine',index===2?.032:.026)}
-function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes)tone(f,.34,'sine',.013);if(final)tone(notes[0]*2,.38,'triangle',.008)}
+function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))];tone(f,index===2?.20:.15,index===2?'triangle':'sine',index===2?.050:.042)}
+function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes)tone(f,.38,'sine',.022);if(final)tone(notes[0]*2,.42,'triangle',.012)}
 function objectiveMotifSameRecipe(a,b){return !!a&&!!b&&recipeKey(a)===recipeKey(b)}
 function objectiveMotifTargetRecipes(s=phase()){
  if(s.mode==='whiteCompact'){
@@ -1219,10 +1222,10 @@ function objectiveMotifNode(piece,kind='reactant'){
 function objectiveMotifResultNode(piece){const d=objectiveMotifNode(piece,'result'),name=document.createElement('small');name.textContent=E[piece.sym]?.name||piece.sym;d.appendChild(name);return d}
 function objectiveMotifFlushReward(){const next=state.rewardPending;if(!next)return;state.rewardPending=null;setTimeout(()=>{if(!state.objectiveMotifActive)rewardDirectorShow(next)},180)}
 function objectiveMotifReset(){
- state.objectiveMotifRun++;state.objectiveMotifActive=false;state.objectiveMotifSelection=null;dom.star?.classList.remove('objective-motif-active');dom.fx?.querySelectorAll('.objective-motif-stage').forEach(x=>x.remove());dom.pieces?.querySelectorAll('.motif-source').forEach(x=>x.classList.remove('motif-source'));
+ state.objectiveMotifRun++;state.objectiveMotifActive=false;state.objectiveMotifSelection=null;dom.star?.classList.remove('objective-motif-active');dom.star?.querySelectorAll('.objective-motif-stage').forEach(x=>x.remove());dom.pieces?.querySelectorAll('.motif-source').forEach(x=>x.classList.remove('motif-source'));
 }
 async function objectiveMotifPrepare(r,pieces,targetPoint){
- const run=++state.objectiveMotifRun,stage=document.createElement('div'),size=starSize(),center=size/2,reduced=rewardReducedMotion();state.objectiveMotifActive=true;dom.star.classList.add('objective-motif-active');stage.className='objective-motif-stage';dom.fx.appendChild(stage);
+ const run=++state.objectiveMotifRun,stage=document.createElement('div'),size=starSize(),center=size/2,reduced=rewardReducedMotion();state.objectiveMotifActive=true;dom.star.classList.add('objective-motif-active');stage.className='objective-motif-stage';dom.star.appendChild(stage);
  const nodes=pieces.map((p,i)=>{const d=objectiveMotifNode(p);d.style.left=p.x+'px';d.style.top=p.y+'px';d.dataset.side=i?'right':'left';stage.appendChild(d);dom.pieces.querySelector(`[data-id="${p.id}"]`)?.classList.add('motif-source');return d});
  await wait(reduced?35:70);if(run!==state.objectiveMotifRun)return null;
  nodes[0].style.left=(size*.28)+'px';nodes[1].style.left=(size*.72)+'px';for(const d of nodes){d.style.top=(center*.98)+'px';d.classList.add('aligned')}

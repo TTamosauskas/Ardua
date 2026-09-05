@@ -317,8 +317,18 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 /* Objective Reaction Motif */
 .star-board.objective-motif-active .rings,.star-board.objective-motif-active .cells,.star-board.objective-motif-active .stellar-zones{opacity:.34;transition:opacity .28s ease}
 .star-board.objective-motif-active .atom:not(.motif-source){opacity:.42;filter:brightness(.67) saturate(.78)}
+
+.star-board.objective-motif-active .primordial-layer,
+.star-board.objective-motif-active .neutrons,
+.star-board.objective-motif-active .cosmic-rays,
+.star-board.objective-motif-active .electron-mesh,
+.star-board.objective-motif-active .remnant-layer{opacity:.16!important;filter:brightness(.55) saturate(.45);transition:opacity .22s ease,filter .22s ease}
+.star-board.objective-motif-active .fx>.gamma-emission,
+.star-board.objective-motif-active .fx>.decay-emission,
+.star-board.objective-motif-active .fx>.spall-fragment,
+.star-board.objective-motif-active .fx>.tunnel-ghost{opacity:.16!important;filter:brightness(.58) saturate(.45)}
 .star-board.objective-motif-active .atom.motif-source{opacity:.08;box-shadow:none;outline-color:transparent}
-.objective-motif-stage{position:absolute;inset:0;z-index:92;pointer-events:none;overflow:visible}
+.objective-motif-stage{position:absolute;inset:0;z-index:120;pointer-events:none;overflow:visible}
 .objective-motif-stage::before{content:"";position:absolute;inset:7%;border-radius:50%;background:radial-gradient(circle at center,rgba(255,255,255,.075),rgba(12,17,34,.16) 42%,rgba(0,0,0,.34) 76%,transparent 100%);opacity:.82;backdrop-filter:blur(.6px)}
 .objective-motif-nucleus{position:absolute;width:clamp(72px,calc(var(--cellSize) * 1.72),112px);height:clamp(72px,calc(var(--cellSize) * 1.72),112px);transform:translate(-50%,-50%) scale(.62);border-radius:50%;border:1px solid rgba(255,255,255,.42);display:grid;place-items:center;color:#07080b;box-shadow:inset 0 0 24px rgba(255,255,255,.22),0 12px 28px rgba(0,0,0,.30),0 0 24px rgba(255,255,255,.12);opacity:.78;transition:left .33s cubic-bezier(.18,.78,.2,1),top .33s cubic-bezier(.18,.78,.2,1),transform .26s cubic-bezier(.18,.78,.2,1),opacity .22s ease,filter .24s ease}
 .objective-motif-nucleus>span{font-size:clamp(30px,calc(var(--cellSize) * .82),58px);font-weight:950;line-height:1;letter-spacing:-.05em;text-shadow:0 1px 0 rgba(255,255,255,.22)}

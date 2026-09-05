@@ -71,4 +71,8 @@ ok(engine.includes('objectiveMotifSelectionReady(r,cells)')&&engine.includes('ob
 ok(engine.includes('objectiveMotifBarrierBlocked(blockedPiece,r)'),'Barreira de Coulomb interrompe a resolução musical e rearma a tentativa');
 ok(engine.includes('await objectiveMotifPrepare')&&engine.includes('await objectiveMotifConverge')&&engine.includes('await objectiveMotifReveal'),'reação-objetivo possui timeline visual preparar → convergir → revelar');
 ok(css.includes('/* Objective Reaction Motif */')&&css.includes('.objective-motif-nucleus.result.visible'),'CSS contém a cerimônia visual central da reação-objetivo');
+ok(engine.includes('window.AudioContext||window.webkitAudioContext')&&engine.includes("ctx.state==='suspended'")&&engine.includes('ctx.resume()'),'áudio do Reaction Motif desbloqueia e retoma Web Audio de forma compatível');
+ok(engine.includes("stage.className='objective-motif-stage';dom.star.appendChild(stage)"),'palco do Reaction Motif fica acima das camadas de partículas');
+ok(css.includes('.star-board.objective-motif-active .primordial-layer')&&css.includes('.star-board.objective-motif-active .neutrons')&&css.includes('.star-board.objective-motif-active .cosmic-rays'),'prótons, nêutrons e partículas flutuantes perdem contraste durante a cerimônia');
+ok(css.includes('.objective-motif-stage{position:absolute;inset:0;z-index:120'),'Reaction Motif usa camada visual superior dedicada');
 console.log('\nValidação estática do Ardua concluída.');
