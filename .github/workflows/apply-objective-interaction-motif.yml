@@ -22,6 +22,18 @@ jobs:
           compile(src,'.github/objective-interaction-motif.py','exec')
           print('migration syntax ok')
           PY
+      - name: Normalize README motif paragraph
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('README.md')
+          text=p.read_text()
+          old="Durante o Reaction Motif, o áudio adaptativo e banners secundários cedem prioridade à reação principal, e `prefers-reduced-motion` reduz o deslocamento visual sem remover a informação sonora.\n\nAs notas do Reaction Motif usam ganho reforçado e um harmônico uma oitava acima para permanecerem audíveis também em alto-falantes pequenos. O produto real da grade é renderizado por baixo da cerimônia e mantido invisível até o instante final; quando a apresentação central termina, ela revela o núcleo já colocado na célula definitiva, evitando uma segunda animação de transformação ao retornar ao tabuleiro."
+          new="Durante o Reaction Motif, o áudio adaptativo e banners secundários cedem prioridade à reação principal, e `prefers-reduced-motion` reduz o deslocamento visual sem remover a informação sonora. As notas individuais receberam ganho e um harmônico superior para permanecerem audíveis em alto-falantes pequenos; no encerramento da cerimônia, o produto real já está pré-renderizado e oculto na célula de destino, de modo que o overlay apenas entrega a imagem ao tabuleiro e não existe uma segunda transformação visual."
+          if old not in text:
+              raise SystemExit('README normalization anchor not found')
+          p.write_text(text.replace(old,new,1))
+          PY
       - name: Apply migration
         run: python .github/objective-interaction-motif.py
       - name: Validate JavaScript
