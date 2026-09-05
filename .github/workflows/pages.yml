@@ -35,6 +35,7 @@ jobs:
           p=Path('assets/css/ardua.css')
           p.write_text(p.read_text(encoding='utf-8').rstrip()+'\n',encoding='utf-8')
           PY
+          git checkout HEAD -- .github/workflows/pages.yml .github/scripts/refine_stellar_convection.py
           node --check assets/js/ardua.js
           node --check assets/js/campaign-discoveries.js
           git diff --check
@@ -43,7 +44,7 @@ jobs:
         run: |
           git config user.name "Ardua Automation"
           git config user.email "actions@users.noreply.github.com"
-          git add -A
+          git add assets/js/ardua.js assets/js/campaign-discoveries.js assets/css/ardua.css
           git diff --cached --check
           git commit -m "Refine stellar convection core interaction [skip ci]"
           git push origin HEAD:main
