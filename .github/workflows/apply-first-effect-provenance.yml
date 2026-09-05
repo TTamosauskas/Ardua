@@ -1,0 +1,31 @@
+name: Apply first-effect lessons and provenance
+on:
+  push:
+    paths:
+      - 'tools/apply-first-effect-provenance.py'
+      - '.github/workflows/apply-first-effect-provenance.yml'
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile migration
+        run: python -m py_compile tools/apply-first-effect-provenance.py
+      - name: Apply migration
+        run: python tools/apply-first-effect-provenance.py
+      - name: Validate JavaScript
+        run: node --check assets/js/ardua.js
+      - name: Validate Ardua
+        run: node tests/validate-static.js
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Explain first effects and prevent recycled objective farming"
+          git push
