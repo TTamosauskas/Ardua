@@ -5,6 +5,10 @@ path=Path('assets/js/ardua.js')
 s=path.read_text()
 
 repls=[
+("coulomb:{title:'BARREIRA DE COULOMB',text:'Traga os núcleos para o centro da estrela.'},",
+ "coulomb:{title:'BARREIRA DE COULOMB',text:'No jogo: núcleo e camada 1 são livres; camada 2 bloqueia 50%, camada 3 bloqueia 60% e camada 4 bloqueia 80%. H, ²H e ³H são isentos.'},"),
+("if(coulombCellBlocked(hCell,phase(),h.sym)&&coulombRollBlocks(phase())){await showCoulombTooltip(t.x,t.y);showCoulombBarrier(h);state.coulombRepulsions++;p.coulombDeflect=true;renderPrimordialParticles();tone(165,.10,'sawtooth',.026);vibrate(6);await wait(300);p.coulombDeflect=false;state.primordialSelected=protonId;state.selected=[hCell];state.locked=false;state.fusionInProgress=false;render();return}",
+ "if(coulombRollBlocks(hCell,phase(),h.sym)){await showCoulombTooltip(t.x,t.y);showCoulombBarrier(h);state.coulombRepulsions++;p.coulombDeflect=true;renderPrimordialParticles();tone(165,.10,'sawtooth',.026);vibrate(6);await wait(300);p.coulombDeflect=false;state.primordialSelected=protonId;state.selected=[hCell];state.locked=false;state.fusionInProgress=false;render();return}"),
 ("const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombCellBlocked(cell,s,target.sym)&&coulombRollBlocks(s);state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;",
  "const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombRollBlocks(cell,s,target.sym);state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;"),
 ("""const COULOMB_EXEMPT_SYMS=new Set(['H','D','T']);
