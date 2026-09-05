@@ -1,0 +1,31 @@
+/* Ardua — first campaign action: Big Bang. */
+html.ardua-awaiting-bigbang #campaignTrail{display:none!important}
+.campaign-map.awaiting-bigbang .campaign-head-actions{opacity:.28;pointer-events:none}
+.campaign-map.awaiting-bigbang .campaign-content>.cosmos-root{min-height:calc(100vh - 120px);justify-content:center}
+.campaign-map.awaiting-bigbang .singularity-map{animation:bigbang-idle-pulse 2.4s ease-in-out infinite}
+.bigbang-start-prompt{position:relative;z-index:6;margin-top:-7px;color:#b8dff5;font-size:9px;font-weight:760;letter-spacing:.18em;text-transform:uppercase;text-align:center;opacity:.88;animation:bigbang-prompt 1.7s ease-in-out infinite}
+.bigbang-start-prompt::before{content:'TOQUE PARA INICIAR';display:block}
+.campaign-map.bigbang-complete .bigbang-start-prompt{display:none}
+.campaign-map.bigbang-complete .singularity-map{transform:scale(.72);filter:drop-shadow(0 0 16px rgba(119,213,255,.5))}
+.campaign-map.bigbang-expanding .singularity-map{z-index:8;animation:bigbang-map-expand 1.35s cubic-bezier(.18,.72,.18,1) both}
+.campaign-map.bigbang-expanding .singularity-map::after{animation:map-spin .8s linear infinite,bigbang-ring-flare 1.25s ease-out both}
+.campaign-map.bigbang-expanding .singularity-map-label{animation:bigbang-label-flare 1.2s ease-out both}
+.campaign-bigbang-burst{position:absolute;z-index:7;left:50%;top:50%;width:1px;height:1px;pointer-events:none}
+.campaign-bigbang-particle{--distance:220px;--angle:0deg;--size:3px;position:absolute;left:0;top:0;width:var(--size);height:var(--size);border-radius:50%;background:#e9f8ff;box-shadow:0 0 8px #fff,0 0 16px rgba(83,211,255,.9);opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(0);animation:bigbang-particle-flight 1.25s cubic-bezier(.12,.7,.17,1) var(--delay,0ms) forwards}
+.campaign-bigbang-particle:nth-child(3n){background:#ffb6ef;box-shadow:0 0 7px #fff,0 0 15px rgba(255,96,218,.86)}
+.campaign-bigbang-particle:nth-child(4n){background:#ffd58e;box-shadow:0 0 7px #fff,0 0 15px rgba(255,178,77,.82)}
+.campaign-map.bigbang-expanding::before{animation:bigbang-background-flash 1.25s ease-out both}
+.campaign-map.bigbang-revealing .campaign-trail{animation:trail-bigbang-reveal .9s cubic-bezier(.18,.72,.18,1) both}
+.campaign-map.bigbang-revealing .phase-node.available:first-of-type{box-shadow:0 0 0 1px rgba(94,233,255,.22),0 0 28px rgba(94,233,255,.18)}
+
+@keyframes bigbang-idle-pulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 24px rgba(255,89,221,.7))}50%{transform:scale(1.08);filter:drop-shadow(0 0 36px rgba(105,214,255,.86))}}
+@keyframes bigbang-prompt{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(3px)}}
+@keyframes bigbang-map-expand{0%{transform:scale(1);filter:brightness(1)}32%{transform:scale(1.5);filter:brightness(1.7)}58%{transform:scale(3.2);filter:brightness(2.5)}78%{transform:scale(5.8);opacity:.9;filter:brightness(3)}100%{transform:scale(.72);opacity:1;filter:brightness(1.12)}}
+@keyframes bigbang-ring-flare{0%{opacity:.55;transform:scale(1)}55%{opacity:1;transform:scale(2.1)}100%{opacity:.16;transform:scale(4.4)}}
+@keyframes bigbang-label-flare{0%,45%{opacity:1}70%{opacity:.2;letter-spacing:.34em}100%{opacity:1}}
+@keyframes bigbang-particle-flight{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(0) scale(.6)}10%{opacity:1}72%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(var(--distance)) scale(1.25)}}
+@keyframes bigbang-background-flash{0%{filter:brightness(1)}34%{filter:brightness(1.65)}100%{filter:brightness(1)}}
+@keyframes trail-bigbang-reveal{0%{opacity:0;transform:translateY(-28px) scale(.985);filter:blur(4px)}100%{opacity:1;transform:none;filter:none}}
+
+@media(max-width:700px){.campaign-bigbang-particle{--distance:150px}.bigbang-start-prompt{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.campaign-map.awaiting-bigbang .singularity-map,.bigbang-start-prompt,.campaign-map.bigbang-expanding .singularity-map,.campaign-map.bigbang-expanding .singularity-map::after,.campaign-map.bigbang-expanding .singularity-map-label,.campaign-bigbang-particle,.campaign-map.bigbang-revealing .campaign-trail{animation-duration:.18s!important;animation-iteration-count:1!important}}
