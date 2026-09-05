@@ -41,3 +41,5 @@ A campanha inclui uma sequência de rp-process na superfície de uma estrela de 
 ## Regra de ingredientes por fase
 
 Fases de produção começam com material pronto suficiente para concluir somente uma unidade do objetivo. Se a meta pede três Cobres, por exemplo, a fase rp começa com um único Níquel; as unidades restantes exigem reconstruir a cadeia a partir de matéria-base. O mesmo princípio vale para as fases s/r de captura de nêutrons: uma única semente direta e Ferro como ponto de reconstrução agregado.
+
+A Receita Recomendada acompanha essa reconstrução e aponta para a próxima reação executável da cadeia.
