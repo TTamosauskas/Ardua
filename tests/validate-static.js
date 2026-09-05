@@ -80,4 +80,13 @@ ok(engine.includes("tone(f,.52,'triangle',.040)")&&engine.includes("tone(f*2,.42
 ok(engine.includes("renderPieces();const motifGridProduct=dom.pieces.querySelector")&&engine.includes("motifGridProduct.classList.add('motif-grid-product')"),'produto real da grade é renderizado sob a cerimônia antes do handoff');
 ok(engine.includes("grid.classList.remove('motif-grid-product')")&&engine.includes("grid.classList.add('motif-grid-ready')"),'fim da cerimônia revela o produto já existente na grade sem segunda transformação');
 ok(css.includes('/* Objective Motif grid handoff */')&&css.includes('.atom.motif-grid-product')&&css.includes('.atom.motif-grid-ready'),'CSS contém handoff instantâneo entre produto central e produto da grade');
+ok(engine.includes('const ObjectiveInteractionMotif=Object.freeze')&&engine.includes('objectiveInteractionImpact'),'Objective Interaction Motif generaliza a cerimônia para interações manuais');
+ok(engine.includes('reactPrimordialParticlePair')&&engine.includes('primordial:${s.id}:${r.out}')&&engine.includes('reactPrimordialMixed'),'Universo primordial usa a cerimônia nas receitas que avançam o objetivo');
+ok(engine.includes('atomic:${s.id}:H')&&engine.includes("'e⁻','CAPTURA'"),'Era atômica usa a cerimônia em recombinação e captura eletrônica');
+ok(engine.includes('atlas:${sp.id}')&&engine.includes('atlas-inaccessible:${sp.id}')&&engine.includes("'×','SEM FUSÃO'"),'Atlas de fusões usa motivo em produtos e observações sem fusão');
+ok(engine.includes('neutron-source:${s.id}:${g.source}')&&engine.includes('objectiveInteractionNeutronToken(n)'),'processo-s usa a cerimônia na fonte e nas capturas de nêutrons');
+ok(engine.includes("'n','EXPOSIÇÃO'")&&engine.includes("'n','CAPTURA'"),'capturas de nêutrons e exposição de casca usam feedback audiovisual');
+ok(engine.includes("'p','CAPTURA'")&&engine.includes('proton-fusion:${phase().id}:${r.out}'),'prótons livres usam a cerimônia em captura e fusão assistida');
+ok(engine.includes('objectiveInteractionCosmicToken(ray,s)')&&engine.includes('energetic:${s.id}:${source}:${resultSym}'),'raios cósmicos, neutrinos e fótons gama usam a mesma cerimônia');
+ok(css.includes('/* Objective Interaction Motif extensions */')&&css.includes('.objective-motif-token.particle')&&css.includes('.objective-motif-active .motif-source'),'CSS inclui partículas ampliadas e perda de contraste das fontes originais');
 console.log('\nValidação estática do Ardua concluída.');

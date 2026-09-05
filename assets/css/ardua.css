@@ -344,3 +344,10 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 /* Objective Motif grid handoff */
 .star-board .atom.motif-grid-product{opacity:0!important;pointer-events:none!important;transition:none!important}
 .star-board .atom.motif-grid-ready{opacity:1!important;transition:none!important;filter:none!important}
+
+
+/* Objective Interaction Motif extensions */
+.objective-motif-nucleus.objective-motif-token.particle{width:clamp(62px,calc(var(--cellSize) * 1.42),94px);height:clamp(62px,calc(var(--cellSize) * 1.42),94px);color:#f8fbff;border-color:rgba(235,247,255,.58);box-shadow:inset 0 0 22px rgba(255,255,255,.24),0 12px 30px rgba(0,0,0,.34),0 0 30px rgba(178,222,255,.20)}
+.objective-motif-nucleus.objective-motif-token.particle>span{font-size:clamp(25px,calc(var(--cellSize) * .62),46px);letter-spacing:-.03em;text-shadow:0 2px 8px rgba(0,0,0,.46)}
+.objective-motif-nucleus.interaction-result small{max-width:120px;text-align:center}
+.star-board.objective-motif-active .motif-source{opacity:.05!important;filter:brightness(.48) saturate(.35)!important;transition:opacity .12s ease,filter .12s ease!important}
