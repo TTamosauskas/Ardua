@@ -1,0 +1,42 @@
+name: Apply objective reaction motif
+on:
+  push:
+    paths:
+      - 'tools/apply-objective-reaction-motif.py'
+      - '.github/workflows/apply-objective-reaction-motif.yml'
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile migration source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('tools/apply-objective-reaction-motif.py').read_text()
+          compile(src, 'tools/apply-objective-reaction-motif.py', 'exec')
+          print('migration syntax ok')
+          PY
+      - name: Apply migration
+        run: python tools/apply-objective-reaction-motif.py
+      - name: Validate JavaScript
+        run: node --check assets/js/ardua.js
+      - name: Validate Ardua
+        run: node tests/validate-static.js
+      - name: Verify staging cleanup
+        run: |
+          test ! -e tools/apply-objective-reaction-motif.py
+          test ! -e .github/workflows/apply-objective-reaction-motif.yml
+          test ! -d tools/__pycache__
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add objective reaction motif"
+          git push
