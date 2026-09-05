@@ -57,13 +57,20 @@ function nextPhaseId(){
  const next=(G?.runtimeOrder||[]).find(id=>id!=='bigbang'&&!done.has(id)&&C.isUnlocked(id));
  return next||resumeActive||'primordial_d';
 }
-function visiblePhaseNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||null}
-function showNextPhase(){
- const id=nextPhaseId(),node=visiblePhaseNode(id),title=node?.querySelector('strong')?.textContent?.trim()||window.ARDUA_PHASE_NAMES?.[id]||id;
- const text=id==='primordial_d'?'O Universo primordial está em expansão. Inicie a primeira etapa jogável da nucleossíntese.':'A campanha está pronta para continuar a partir desta etapa disponível.';
- detail.innerHTML=`<div class="detail-kicker">PRÓXIMA FASE</div><h3>${title}</h3><p>${text}</p><div class="detail-actions"><button type="button" data-detail-close>Fechar</button><button type="button" class="primary" data-launch="${id}">Explorar</button></div>`;
- detail.classList.add('show');
- setTimeout(()=>node?.scrollIntoView({block:'center',behavior:'smooth'}),120);
+function phaseNode(id){return map.querySelector(`.phase-node[data-phase="${id}"]`)}
+function visiblePhaseNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||phaseNode(id)}
+function openCurrentPhaseDetail(){
+ const id=nextPhaseId(),node=phaseNode(id);
+ if(!node)return;
+ node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+ setTimeout(()=>{
+  const visible=visiblePhaseNode(id);
+  visible?.scrollIntoView({block:'center',behavior:'smooth'});
+  if(detail.classList.contains('show'))return;
+  const title=visible?.querySelector('strong')?.textContent?.trim()||window.ARDUA_PHASE_NAMES?.[id]||id;
+  detail.innerHTML=`<div class="detail-kicker">PRÓXIMA FASE</div><h3>${title}</h3><div class="detail-actions"><button type="button" data-detail-close>Fechar</button><button type="button" class="primary" data-launch="${id}">Explorar</button></div>`;
+  detail.classList.add('show');
+ },90);
 }
 function finishBigBang(){
  if(firstCosmicRun){
@@ -79,7 +86,7 @@ function finishBigBang(){
  if(label){label.hidden=false;label.querySelector('strong').textContent='Big Bang'}
  window.dispatchEvent(new Event('resize'));
  setTimeout(()=>map.classList.remove('bigbang-revealing'),1250);
- setTimeout(showNextPhase,720);
+ setTimeout(openCurrentPhaseDetail,760);
 }
 function beginBigBang(e){
  if(C.editor||started||finished)return;
