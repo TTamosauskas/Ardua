@@ -16,7 +16,7 @@ const layer=document.createElementNS(NS,'svg');
 layer.id='campaignForkLinks';
 layer.classList.add('campaign-links','campaign-fork-links');
 layer.setAttribute('aria-hidden','true');
-layer.style.zIndex='2';
+layer.style.zIndex='1';
 layer.style.pointerEvents='none';
 layer.style.overflow='visible';
 content.appendChild(layer);
