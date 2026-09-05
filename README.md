@@ -27,6 +27,7 @@ Depois acesse `http://localhost:8000`.
 
 O projeto privilegia portabilidade e baixo atrito: JavaScript e CSS nativos, caminhos relativos e zero etapa de compilação. Mudanças de conteúdo e regras devem preservar a capacidade de abrir o jogo diretamente por `index.html`.
 
+
 ## Validação
 
 A validação de estrutura pode ser executada sem instalar dependências:
@@ -48,4 +49,6 @@ A Receita Recomendada acompanha essa reconstrução e aponta para a próxima rea
 
 O processo-s e o processo-r usam variações relaxantes da mesma mecânica central: fluxo lento, fontes `¹³C(α,n)`/`²²Ne(α,n)`, pulsos térmicos, espera β−, ramificações, cascas mágicas por exposição e tempestades-r com freeze-out. As fases continuam sem game over e mantêm uma única semente direta do objetivo; as demais precisam ser reconstruídas pelo jogador.
 
-Essas personalidades alternam ao longo da campanha, de Cobre aos actinídeos, para que fases consecutivas de captura de nêutrons tenham ritmos e decisões perceptivelmente diferentes.
+## Barreira de Coulomb
+
+Após o tutorial, a Barreira de Coulomb depende da camada radial: núcleo e camada 1 não bloqueiam; camada 2 bloqueia 50% das tentativas; camada 3, 60%; camada 4, 80%. H, Deutério e Trítio são sempre isentos. O tutorial permanece determinístico: anéis 0–2 permitem a reação e anéis 3–4 bloqueiam, para tornar clara a relação entre posição e probabilidade de reação.
