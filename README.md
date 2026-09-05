@@ -66,7 +66,9 @@ Uma cadeia é considerada preparada apenas quando a continuação já estava geo
 
 ## Ritmo e progresso das fases
 
-A barra existente usa o rótulo **PROGRESSO** e acompanha o `flowTarget` da fase; o objetivo científico permanece separado no texto superior. As classes internas de balanceamento são `quick` (60–90 s), `short` (90–150 s), `standard` (150–210 s), `long` (210–255 s) e `epic` (255–300 s). Essas janelas são metas de design, sem cronômetro ou derrota por tempo.
+A barra **PROGRESSO** representa o avanço efetivo da fase. Nas fases que usam `flowTarget`, ela mostra o menor avanço entre a atividade nuclear (`flow`) e o objetivo científico; portanto, só pode chegar a 100% quando ambos estiverem completos. Requisitos adicionais de objetivo — como waiting point, ramificação, fonte de nêutrons, prova radioativa ou freeze-out — também participam desse cálculo. Anã marrom e anã branca preservam seus indicadores próprios baseados diretamente no objetivo.
+
+As classes internas de balanceamento são `quick` (60–90 s), `short` (90–150 s), `standard` (150–210 s), `long` (210–255 s) e `epic` (255–300 s). Essas janelas são metas de design, sem cronômetro ou derrota por tempo.
 
 As fases iniciais privilegiam `quick`/`short`; cadeias mais profundas avançam para `standard`/`long`, enquanto marcos como Pb, Bi, Au, Th, U e o encerramento Sn–Sb–Te podem usar `epic`. Quanto mais cara a reconstrução histórica, menor a repetição do produto final: fases profundas tendem a exigir duas unidades, fazendo a reconstrução completa valer como a principal conquista do nível.
 
