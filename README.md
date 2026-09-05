@@ -27,7 +27,6 @@ Depois acesse `http://localhost:8000`.
 
 O projeto privilegia portabilidade e baixo atrito: JavaScript e CSS nativos, caminhos relativos e zero etapa de compilação. Mudanças de conteúdo e regras devem preservar a capacidade de abrir o jogo diretamente por `index.html`.
 
-
 ## Validação
 
 A validação de estrutura pode ser executada sem instalar dependências:
@@ -48,6 +47,12 @@ A Receita Recomendada acompanha essa reconstrução e aponta para a próxima rea
 ## Fases de captura de nêutrons
 
 O processo-s e o processo-r usam variações relaxantes da mesma mecânica central: fluxo lento, fontes `¹³C(α,n)`/`²²Ne(α,n)`, pulsos térmicos, espera β−, ramificações, cascas mágicas por exposição e tempestades-r com freeze-out. As fases continuam sem game over e mantêm uma única semente direta do objetivo; as demais precisam ser reconstruídas pelo jogador.
+
+## Ritmo e progresso das fases
+
+A barra existente usa o rótulo **PROGRESSO** e acompanha o `flowTarget` da fase; o objetivo científico permanece separado no texto superior. As classes internas de balanceamento são `quick` (60–90 s), `short` (90–150 s), `standard` (150–210 s), `long` (210–255 s) e `epic` (255–300 s). Essas janelas são metas de design, sem cronômetro ou derrota por tempo.
+
+As fases iniciais privilegiam `quick`/`short`; cadeias mais profundas avançam para `standard`/`long`, enquanto marcos como Pb, Bi, Au, Th, U e o encerramento Sn–Sb–Te podem usar `epic`. Quanto mais cara a reconstrução histórica, menor a repetição do produto final: fases profundas tendem a exigir duas unidades, fazendo a reconstrução completa valer como a principal conquista do nível.
 
 ## Barreira de Coulomb
 
