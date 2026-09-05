@@ -379,3 +379,11 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 @keyframes blackHoleSelectedPulse{from{transform:translate(-50%,-50%) scale(.96);filter:brightness(.92)}to{transform:translate(-50%,-50%) scale(1.045);filter:brightness(1.18)}}
 .atom.blackhole-accreting{z-index:34;pointer-events:none!important;will-change:left,top,transform,opacity,filter;transition:none!important;outline-color:rgba(255,214,102,.75);box-shadow:0 0 26px rgba(255,188,70,.72),0 0 52px rgba(129,180,255,.32)}
 .hawking-quantum{position:absolute;z-index:72;pointer-events:none;transform:translate(-50%,-50%);font-size:10px;font-weight:900;color:#dff9ff;text-shadow:0 0 8px #fff,0 0 18px rgba(111,221,255,.92);will-change:transform,opacity}
+
+
+/* Phase header and recipe focus */
+.phase-card small,.phase-card span{display:none!important}
+.phase-card strong{margin-top:0}
+.formula-line strong{font-weight:950;color:#fff;text-shadow:0 0 9px rgba(255,255,255,.22)}
+.formula-line.recipe-intro-flash{animation:recipeIntroFlash .62s ease-in-out 2}
+@keyframes recipeIntroFlash{0%,100%{opacity:1;transform:scale(1);text-shadow:none}45%{opacity:.42;transform:scale(.985);text-shadow:0 0 5px rgba(255,213,126,.1)}55%{opacity:1;transform:scale(1.035);text-shadow:0 0 18px rgba(255,213,126,.82)}}

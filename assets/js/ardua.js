@@ -1982,37 +1982,34 @@ async function attemptProtonCapture(cell,protonId){
  setTimeout(()=>{const q=state.pieces.get(target.id);if(q){q.newborn=false;renderPieces()}},360);await afterNuclearAction({advanceRound:true,protectedPieceIds:[target.id]});state.protonCaptureAttempts[key]=0;ensureProtonCaptureFuel(s.mode==='protonCapture'?3:(rpStep(s)?.fuel==='p'?4:1));state.selected=[];state.locked=false;render();checkComplete();const chainCtx=state.chainAutoContext,chainRoot=chainCtx?.rootId||startChainEvent('proton',target.x,target.y),chainDepth=chainCtx?.depth||1;if(!pieceIsUnstable(target))scheduleAutoProtonCascade(target.id,chainRoot,chainDepth);
 }
 function learnedFusionRecipes(){
-  // Conhecimento cumulativo: uma receita de fusão aprendida nunca é esquecida.
-  // O ambiente atual decide apenas se ela é compatível e executável agora.
-  const map=new Map();
-  const dIntro=phaseIndexById.get('he_orange');if(dIntro!==undefined&&state.phaseIndex>=dIntro){const r=FUSIONS.D;map.set([...r.ing].sort().join('+')+'>'+r.out,r)}
-  for(let i=0;i<=state.phaseIndex;i++){
-    const p=PHASES[i],recipes=p.mode==='fusion'?phaseFusionRecipes(p):[];
-    recipes.forEach(r=>{const key=[...r.ing].sort().join('+')+'>'+r.out;map.set(key,r)})
+  // Conhecimento cumulativo real: a campanha guarda as fases efetivamente alcançadas,
+  // então ramos paralelos deixam de conceder receitas que o jogador ainda não viveu.
+  const map=new Map(),campaign=window.ARDUA_CAMPAIGN,graphState=campaign?.getState?.(),done=new Set(graphState?.completed||[]),currentId=graphState?.activeId||phase()?.id,campaignAware=!!campaign&&!campaign.editor&&Array.isArray(graphState?.completed);
+  const reached=(p,i)=>campaignAware?(done.has(p.id)||p.id===currentId):i<=state.phaseIndex;
+  for(let i=0;i<PHASES.length;i++){
+    const p=PHASES[i];if(!reached(p,i)||p.mode!=='fusion')continue;
+    phaseFusionRecipes(p).forEach(r=>{const key=[...r.ing].sort().join('+')+'>'+r.out;map.set(key,r)})
   }
+  const current=phase();if(current?.mode==='fusion')phaseFusionRecipes(current).forEach(r=>{const key=[...r.ing].sort().join('+')+'>'+r.out;map.set(key,r)});
   return[...map.values()]
 }
 const STELLAR_SANDBOX_VISUALS=new Set(['redGiant','massive','supergiant','advanced','ironCore','agb','whiteDwarf']);
 const WHITE_DWARF_COMPATIBLE_OUTPUTS=new Set(['D','He3','He','Be8','C','N','O']);
 function fusionSandboxAllowed(s=phase()){
-  // O modo descreve a lição principal, não apaga conhecimento anterior.
-  // O Atlas também preserva toda a cadeia de fusões aprendida: o jogador fabrica
-  // os reagentes das observações seguintes em vez de recebê-los prontos.
-  if(s.mode==='fusion'||s.mode==='reactionExplore'||s.mode==='protonCapture'||s.mode==='whiteCompact'||s.reuseFusion)return true;
-  if(['neutron','neutrino','gamma','explosive'].includes(s.mode)&&STELLAR_SANDBOX_VISUALS.has(s.visual))return true;
-  return false;
+  // Depois que uma fusão foi aprendida, ela continua acessível nas fases que usam a
+  // grade nuclear. Modos primordiais e remanescentes compactos mantêm seus gestos próprios.
+  if(!s||isPrimordial(s)||s.mode==='opening')return false;
+  if(['remnant','pulsar','accretion','blackhole','neutronize'].includes(s.mode))return false;
+  return true;
 }
 function recipeEnvironmentAllows(r,s=phase()){
   if(!r||!fusionSandboxAllowed(s))return false;
-  // As rotas com He instável são abstrações específicas das primeiras estrelas.
+  // Estas três rotas são abstrações didáticas exclusivas de suas estrelas de origem.
   if(r===BROWN_FUSION)return s.id==='brown';
   if(r===RED_UNSTABLE_FUSION)return s.id==='he_red';
   if(r===RED_STABLE_FUSION)return s.id==='he_red';
-  // A Anã Branca representa a construção/organização final do núcleo C/O.
-  // Ela herda a cadeia pp e as rotas de He/C/O, mas não reabre a forja até Ni.
-  if(s.mode==='whiteCompact')return WHITE_DWARF_COMPATIBLE_OUTPUTS.has(r.out);
-  const maxT=Number(s.fusionTempMax||0),minT=fusionMinTemp(r);
-  return maxT>=minT;
+  // Receitas de fusão já aprendidas permanecem jogáveis; temperatura segue como contexto científico.
+  return true;
 }
 function fusionRecipeLearned(r){return !!r&&learnedFusionRecipes().some(x=>x===r||(x.out===r.out&&same(x.ing,r.ing)))}
 function fusionRecipeCompatible(r,s=phase()){return fusionRecipeLearned(r)&&recipeEnvironmentAllows(r,s)}
@@ -2492,7 +2489,23 @@ function formulaHTML(label,boldSyms=null){
   return out;
 }
 function scienceScopeLabel(){return''}
-function setFormula(label,boldSyms=null){const tag=scienceScopeLabel(),shown=headerRecipeLine(label);$('formulaText').innerHTML=formulaHTML(shown,boldSyms)+(tag?`<small class="science-tag">${tag}</small>`:'')}
+function selectedGridPieceForFormula(){
+ const cell=state.selected?.length===1?state.selected[0]:null,id=cell===null?null:state.board[cell];return id?state.pieces.get(id)||null:null
+}
+function formulaContainsSym(label,sym){const name=E[sym]?.name||'';return !!name&&headerRecipeLine(label).includes(name)}
+function contextualRecipeForSelectedPiece(piece){
+ if(!piece||piece.cell===null||piece.cell===undefined||!fusionSandboxAllowed())return null;
+ const candidates=possibleRecipes([piece.sym]).map(r=>({r,cluster:connectedRecipeCluster(r,[piece.cell])})).filter(x=>x.cluster);
+ if(!candidates.length)return null;const s=phase();candidates.sort((a,b)=>Number(b.r.out===s.new)-Number(a.r.out===s.new)||(E[a.r.out]?.n||0)-(E[b.r.out]?.n||0));return candidates[0].r
+}
+function contextualFormula(label,boldSyms=null){
+ const piece=selectedGridPieceForFormula();if(!piece)return{label,boldSyms};
+ const bold=[...(Array.isArray(boldSyms)?boldSyms:(boldSyms?[boldSyms]:[])),piece.sym];
+ if(formulaContainsSym(label,piece.sym))return{label,boldSyms:bold};
+ const recipe=contextualRecipeForSelectedPiece(piece);return recipe?{label:topFusionLabel(recipe),boldSyms:bold}:{label,boldSyms:bold}
+}
+function setFormula(label,boldSyms=null){const ctx=contextualFormula(label,boldSyms),tag=scienceScopeLabel(),shown=headerRecipeLine(ctx.label);$('formulaText').innerHTML=formulaHTML(shown,ctx.boldSyms)+(tag?'<small class="science-tag">'+tag+'</small>':'')}
+function flashRecipeTwice(){const el=$('formulaText');if(!el)return;el.classList.remove('recipe-intro-flash');void el.offsetWidth;el.classList.add('recipe-intro-flash');setTimeout(()=>el.classList.remove('recipe-intro-flash'),1500)}
 async function tapExplosiveTarget(id){
  const s=phase(),p=state.pieces.get(id);if(s.mode!=='explosive'||state.locked||state.phaseDone||!p)return;
  if(!['Fe','Ni'].includes(p.sym)){toast('Choque os núcleos do grupo do Ferro: Fe ou Ni.');tone(180,.05,'sawtooth',.02);return}
@@ -2830,7 +2843,7 @@ function conciseRecipeLine(s=phase()){
 function updateHUD(){
  const s=phase();
  dom.singularity.classList.toggle('show',s.mode==='opening'&&!state.bigBangStarted);
- $('branchLabel').textContent=s.branch;$('phaseTitle').textContent=s.title;$('phaseMeta').textContent=s.mode==='reactionExplore'?headerRecipeLine(atlasNextRecipeLine(s)):headerRecipeLine(s.mode==='primordialNuclear'?primordialNextRecipeLine(s):(s.meta||''));
+ $('branchLabel').textContent='';$('phaseTitle').textContent=s.title;$('phaseMeta').textContent='';
  const p=currentProgress(),flowTarget=Math.max(0,s.flowTarget||0);
  $('stageProgress').style.width=p+'%';
  if(s.id==='brown')$('stageProgressText').textContent=`${state.created.He3||0}/${brownBurnLimit()}`;
@@ -2940,7 +2953,7 @@ function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)r
    if(selectAtomForMovement(p))return;
    invalid(p.cell);return;
  }
- if(s.mode==='spallation'){if(state.selectedCosmic!==null)return tapParticleTarget(id);if(selectAtomForMovement(p))return;return tapParticleTarget(id)}
+ if(s.mode==='spallation'){if(state.selectedCosmic!==null)return tapParticleTarget(id);if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;return tapParticleTarget(id)}
  if(['neutrino','gamma'].includes(s.mode)){
    // Com uma partícula energética armada, a mecânica principal tem prioridade.
    // Sem ela, receitas herdadas e reposicionamento continuam disponíveis.
@@ -2949,12 +2962,12 @@ function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)r
    if(selectAtomForMovement(p))return;
    return tapParticleTarget(id);
  }
- if(s.mode==='guidedDecay'||s.mode==='decayGarden'){if(selectAtomForMovement(p))return;return;}
+ if(s.mode==='guidedDecay'||s.mode==='decayGarden'){if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;return;}
  if(s.mode==='explosive'){
    if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;
    return tapExplosiveTarget(id);
  }
- if(s.mode==='whiteCompact'){if(handleFusionTap(p))return;invalid(p.cell);return}if(isPrimordial(s)&&s.mode!=='opening')return tapFreeAtom(id);const cell=p.cell;if(s.mode==='collapseFinal'){toast('A matéria já está em órbita extrema. Segure o núcleo central.');return}if(s.mode==='blackhole'){if(state.selected.includes(cell)){state.selected=[];render();return}if(!state.blackHoleSelected){state.selected=[cell];tone(248,.05,'sine',.025);toast('Átomo selecionado · toque no Buraco Negro.');render();return}return completeBlackHoleAccretion(id)}if(isPostAtomMode(s)){if(state.postHoldLearned)return completePostAbsorb(id);toast('Segure o primeiro núcleo por 1 s; depois, use toques simples.');return}if(s.mode==='neutronize'){toast('Mantenha o átomo pressionado por 1 segundo.');return}
+ if(s.mode==='whiteCompact'){if(handleFusionTap(p))return;invalid(p.cell);return}if(isPrimordial(s)&&s.mode!=='opening')return tapFreeAtom(id);const cell=p.cell;if(s.mode==='collapseFinal'){if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;toast('A matéria já está em órbita extrema. Segure o núcleo central.');return}if(s.mode==='blackhole'){if(state.selected.includes(cell)){state.selected=[];render();return}if(!state.blackHoleSelected){state.selected=[cell];tone(248,.05,'sine',.025);toast('Átomo selecionado · toque no Buraco Negro.');render();return}return completeBlackHoleAccretion(id)}if(isPostAtomMode(s)){if(state.postHoldLearned)return completePostAbsorb(id);toast('Segure o primeiro núcleo por 1 s; depois, use toques simples.');return}if(s.mode==='neutronize'){toast('Mantenha o átomo pressionado por 1 segundo.');return}
  if(s.id==='he_red'&&p.sym==='H'){
    state.selected=state.selected[0]===cell?[]:[cell];state.primordialSelected=null;tone(320,.04);render();return
  }
@@ -3868,7 +3881,7 @@ function showStellarPopup(force=false){
 }
 function closeStellarPopup(){
  const intro=$('stellarIntro');if(!state.popupOpen&&!intro?.classList.contains('show'))return;intro?.classList.remove('show');state.popupOpen=false;state.popupKind=null;$('stellarStartBtn').textContent='COMEÇAR';
- state.locked=state.phaseDone;if(!state.phaseDone&&['neutron','neutronize'].includes(phase().mode))startNeutronSystem();if(!state.phaseDone&&phase().mode==='accretion')startAccretionFeed();if(!state.phaseDone&&['spallation','neutrino','gamma'].includes(phase().mode))startCosmicRaySystem();if(isPrimordial()&&phase().mode!=='opening')startPrimordialDrift();render();
+ state.locked=state.phaseDone;if(!state.phaseDone&&['neutron','neutronize'].includes(phase().mode))startNeutronSystem();if(!state.phaseDone&&phase().mode==='accretion')startAccretionFeed();if(!state.phaseDone&&['spallation','neutrino','gamma'].includes(phase().mode))startCosmicRaySystem();if(isPrimordial()&&phase().mode!=='opening')startPrimordialDrift();render();setTimeout(flashRecipeTwice,70);
 }
 
 function phaseFamily(p){
@@ -3889,7 +3902,7 @@ function renderMenu(){renderDiscoveryAtlas();const pm=$('phaseMenu');pm.innerHTM
   const primordialActive=isPrimordial(phase())&&phase().mode!=='opening';
   learnedPrimordialNuclearReactions().forEach(r=>{const b=document.createElement('button');b.className='reaction-chip'+(primordialActive?' available':'');b.textContent=r.label;b.addEventListener('click',()=>{const $d=$('reactionDetail');if($d)$d.innerHTML=`<strong>${r.label}</strong><span>${primordialActive?'Disponível com reagentes compatíveis nesta era':'Receita primordial aprendida · permanece no repertório'}</span><p>Reação nuclear descoberta durante a nucleossíntese primordial. O ambiente e os reagentes presentes determinam quando ela pode voltar a ocorrer.</p>`});rc.appendChild(b)});
   for(const sym of ['He','H','Li'])if(atomicRecombinationLearned(sym)){const labels={He:'He²⁺ + 2e⁻ → He + γ',H:'p + e⁻ → H + γ',Li:'Li³⁺ + 3e⁻ → Li + γ'},available=phase().mode==='atomicRecombination';const b=document.createElement('button');b.className='reaction-chip'+(available?' available':'');b.textContent=labels[sym];b.addEventListener('click',()=>{const $d=$('reactionDetail');if($d)$d.innerHTML=`<strong>${labels[sym]}</strong><span>${available?'Recombinação eletrônica disponível nesta era':'Receita atômica aprendida · permanece no repertório'}</span><p>Os elétrons ligam-se ao núcleo em etapas até neutralizar sua carga. Em plasma quente, o mesmo conhecimento permanece enquanto o ambiente favorece ionização.</p>`});rc.appendChild(b)}
-  const activeNow=new Set(activeFusionRecipes());learnedFusionRecipes().forEach(r=>{const b=document.createElement('button');b.className='reaction-chip'+(activeNow.has(r)?' available':'');b.textContent=fusionLabel(r);b.addEventListener('click',()=>{const min=fusionMinTemp(r),max=Number(phase().fusionTempMax||0),$d=$('reactionDetail'),scope=reactionScopeLabel(r);if($d)$d.innerHTML=`<strong>${fusionLabel(r)}</strong><span>${activeNow.has(r)?'Disponível agora':'Conhecida, mas fora das condições desta fase'}${scope?` · ${scope}`:''}</span><p>${min?(max?`Condição didática: reação exige ~${sci(min,1)} K · ambiente atual alcança ~${sci(max,1)} K.`:`Condição didática: reação exige ~${sci(min,1)} K.`):'Reação conhecida.'}</p>`});rc.appendChild(b)});if(phase().mode==='neutron')learnedNeutronTransitions(phase()).forEach(tr=>{const b=document.createElement('button');b.className='reaction-chip available';b.textContent=`${tr.from} + n → β− → ${tr.to}`;b.addEventListener('click',()=>{const $d=$('reactionDetail');if($d)$d.innerHTML=`<strong>${tr.from} → ${tr.to}</strong><span>Rota de captura já desbloqueada e compatível com este ambiente.</span><p>${tr.rprocess?'Múltiplas capturas rápidas são agregadas antes da cascata β−.':'Captura de nêutron e β− são representados de forma agregada.'}</p>`});rc.appendChild(b)})}
+  const activeNow=new Set(activeFusionRecipes());learnedFusionRecipes().forEach(r=>{const b=document.createElement('button');b.className='reaction-chip'+(activeNow.has(r)?' available':'');b.textContent=fusionLabel(r);b.addEventListener('click',()=>{const min=fusionMinTemp(r),max=Number(phase().fusionTempMax||0),$d=$('reactionDetail'),scope=reactionScopeLabel(r);if($d)$d.innerHTML=`<strong>${fusionLabel(r)}</strong><span>${activeNow.has(r)?'Disponível com reagentes compatíveis nesta fase':'Receita aprendida · permanece no repertório'}${scope?` · ${scope}`:''}</span><p>${min?(max?`Contexto térmico: limiar didático ~${sci(min,1)} K · ambiente atual ~${sci(max,1)} K.`:`Contexto térmico da reação: ~${sci(min,1)} K.`):'Reação conhecida.'}</p>`});rc.appendChild(b)});if(phase().mode==='neutron')learnedNeutronTransitions(phase()).forEach(tr=>{const b=document.createElement('button');b.className='reaction-chip available';b.textContent=`${tr.from} + n → β− → ${tr.to}`;b.addEventListener('click',()=>{const $d=$('reactionDetail');if($d)$d.innerHTML=`<strong>${tr.from} → ${tr.to}</strong><span>Rota de captura já desbloqueada e compatível com este ambiente.</span><p>${tr.rprocess?'Múltiplas capturas rápidas são agregadas antes da cascata β−.':'Captura de nêutron e β− são representados de forma agregada.'}</p>`});rc.appendChild(b)})}
 const pc=$('protonCaptureCatalog'),pd=$('protonCaptureDetail');if(pc){pc.innerHTML='';if(state.protonCaptureUnlocked||phase().mode==='protonCapture'){Object.entries(PROTON_CAPTURES).forEach(([from,r])=>{const b=document.createElement('button'),open=!!protonCaptureRoute(from,phase()),label=r.label||`${E[from]?.symbol||from} + p → ${r.out}`;b.className='reaction-chip'+(open?' available':'');b.textContent=label;b.addEventListener('click',()=>{if(!pd)return;let status=open?'Rota compatível com o ambiente atual':'Rota conhecida; a captura encontra uma barreira forte neste ambiente',detail='Ao aproximar cargas positivas, a repulsão cresce com a carga nuclear. Ambientes mais energéticos aumentam a chance de chegar à região onde a reação pode ocorrer.';if(r.decay?.mode==='returnProton'){status=`Estado não ligado · dura ${r.decay.rounds} rodada`;detail=`${r.decay.label}. O núcleo treme durante a janela de instabilidade e depois reemite o próton.`}else if(r.decay?.mode==='betaPlus'){status=`Núcleo proton-rich · ${r.decay.rounds} ${r.decay.rounds===1?'rodada':'rodadas'} até β+`;detail=`${r.decay.label}. As rodadas representam estabilidade relativa dentro do jogo, não uma conversão literal da meia-vida.`}else if(r.out==='Be8'){status='Núcleo instável · janela do ⁸Be';detail='O ⁸Be treme por duas rodadas: pode receber Hélio e formar Carbono ou se desfazer em dois núcleos de Hélio.'}pd.innerHTML=`<strong>${label}</strong><span>${status}</span><p>${detail}</p>`});pc.appendChild(b)})}else{pc.innerHTML='<span style="font-size:10px;color:#8fa6ce">Descubra esta habilidade durante a evolução estelar.</span>';}}
 const c=$('catalog');c.innerHTML='';ORDER.forEach(sym=>{const e=E[sym],d=document.createElement('div');d.className='el-card';d.innerHTML=`<div class="n">${e.n}</div><div class="s">${sym}</div><div class="nm">${e.name}</div>`;d.addEventListener('click',()=>{$('catalogDetail').innerHTML=`<strong>${e.name} — ${e.n}</strong><span>${e.origin}</span>${e.route?`<span>Rota no jogo: ${e.route}</span>`:''}${e.stability?`<span>Estabilidade: ${e.stability}</span>`:''}<p>${e.process}</p>`});c.appendChild(d)})}
 function bindReliableTap(el,action){
