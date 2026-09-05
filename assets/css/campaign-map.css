@@ -12,7 +12,7 @@
 .campaign-head-actions{justify-self:end;display:flex;gap:7px;align-items:center}.campaign-close{border:1px solid rgba(165,198,225,.31);background:rgba(4,13,25,.68);color:#eaf5ff;border-radius:999px;padding:8px 12px;font:700 9px/1 inherit;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.campaign-close:hover{border-color:var(--map-cyan);box-shadow:0 0 16px rgba(94,233,255,.14)}.campaign-close:disabled{opacity:.48;cursor:default}
 .campaign-content{position:relative;z-index:1;width:min(880px,100%);margin:0 auto;padding:92px clamp(14px,4vw,38px) 110px;box-sizing:border-box;min-height:100vh;overflow:visible}
 .campaign-links{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none}
-.campaign-link{fill:none;stroke:#78cffa;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(99,205,255,.55));opacity:.72}.campaign-link.root,.campaign-link.primordial{stroke:#8bd8ff}.campaign-link.birth{stroke:#d8f5ff;stroke-width:2.4}.campaign-link.sub{stroke:var(--map-orange)}.campaign-link.low{stroke:var(--map-red)}.campaign-link.mid{stroke:var(--map-gold)}.campaign-link.high{stroke:var(--map-blue)}.campaign-link.compact{stroke:var(--map-blue)}.campaign-link.r{stroke:var(--map-violet)}.campaign-link.converge{stroke:#bdfc83;opacity:.62}.campaign-link.interstellar{stroke:#b9d97d;stroke-dasharray:4 5;opacity:.55}.campaign-link.radio{stroke:#a7e88e;opacity:.55}
+.campaign-link{fill:none;stroke:#78cffa;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(99,205,255,.55));opacity:.72}.campaign-link.root,.campaign-link.primordial{stroke:#8bd8ff}.campaign-link.birth{stroke:#d8f5ff;stroke-width:2.4}.campaign-link.branch-fork{stroke:#d7f3ff;stroke-width:2.2}.campaign-link.sub{stroke:#8b5a38}.campaign-link.low{stroke:var(--map-red)}.campaign-link.mid{stroke:var(--map-gold)}.campaign-link.high{stroke:#ff604d;stroke-width:2.5}.campaign-link.compact{stroke:var(--map-blue)}.campaign-link.r{stroke:var(--map-violet)}.campaign-link.converge{stroke:#bdfc83;opacity:.62}.campaign-link.interstellar{stroke:#b9d97d;stroke-dasharray:4 5;opacity:.55}.campaign-link.radio{stroke:#a7e88e;opacity:.55}
 
 .cosmos-root{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center}
 .campaign-map:not(.trail-revealed) .campaign-content>.cosmos-root{min-height:calc(100vh - 120px);justify-content:center}
@@ -27,28 +27,36 @@
 .phase-node:hover{transform:translateX(2px);background:rgba(14,31,50,.66)}.phase-node strong{display:block;font-size:11px;line-height:1.2;font-weight:620}.phase-node.locked{opacity:.22;cursor:default}.phase-node.revealed{opacity:.48}.phase-node.available{--node:var(--map-cyan)}.phase-node.available::before{background:#06131b;box-shadow:0 0 6px #fff,0 0 16px var(--map-cyan)}.phase-node.completed{--node:var(--map-green);opacity:.84}.phase-node.completed::before{background:#bdfc83;box-shadow:0 0 10px rgba(189,252,131,.92)}.phase-node.current{--node:#18d8ff;background:linear-gradient(90deg,rgba(18,118,155,.20),rgba(3,12,24,.66));box-shadow:inset 0 0 0 1px rgba(57,216,255,.21)}
 
 .epoch-label{position:relative;z-index:4;margin:7px 0;border:1px solid rgba(104,143,177,.22);background:rgba(5,16,30,.62);border-radius:999px;padding:7px 13px;text-align:center;min-width:180px}.epoch-label strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em}
-.convergence{position:relative;z-index:4;margin:16px 0 4px;padding:7px 14px;border:1px solid rgba(128,212,255,.23);border-radius:999px;color:#c9e8f8;font-size:9px;letter-spacing:.08em;text-transform:uppercase;background:rgba(4,15,28,.62)}
+.convergence{position:relative;z-index:4;margin:16px auto 4px;width:max-content;padding:7px 14px;border:1px solid rgba(128,212,255,.23);border-radius:999px;color:#c9e8f8;font-size:9px;letter-spacing:.08em;text-transform:uppercase;background:rgba(4,15,28,.62)}
 .stellar-birth{position:relative;z-index:4;margin:22px 0 34px;display:flex;flex-direction:column;align-items:center;gap:7px}.stellar-birth i{display:block;width:32px;height:32px;border-radius:50%;background:#e8fdff;box-shadow:0 0 12px #fff,0 0 28px #5fe9ff,0 0 64px rgba(255,200,89,.55)}.stellar-birth strong{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#d9efff}
+.branch-after{position:relative;width:100%}.branch-after[hidden]{display:none!important}
 
 .phenomenon-bg{position:absolute;z-index:0;pointer-events:none;object-fit:cover;opacity:.2;filter:saturate(.82) contrast(1.12);mask-image:radial-gradient(circle at center,black 0 38%,rgba(0,0,0,.72) 58%,transparent 80%)}.birth-bg{width:360px;height:240px;right:-170px;bottom:-60px;opacity:.16}.branch-bg{width:320px;height:250px}.branch-bg-left{left:-170px;top:80px}.branch-bg-right{right:-170px;top:130px}
 
-.branch-cluster{position:relative;z-index:4;width:100%;max-width:760px;margin:6px auto 30px}
-.branch-spheres{position:relative;z-index:5;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:18px 22px;width:100%;margin:0 auto;padding:8px 0 14px}
-.branch-choice{--sphere:#6e8aa5;appearance:none;border:0;background:transparent;color:#b9cada;width:132px;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;opacity:.5;transition:opacity .18s ease,transform .18s ease,color .18s ease}
+.branch-cluster{position:relative;z-index:4;width:100%;max-width:760px;margin:8px auto 30px;padding-top:24px}
+.branch-fork-node{position:relative;z-index:6;display:block;width:15px;height:15px;margin:0 auto 20px;border:2px solid #dff8ff;border-radius:50%;background:#071421;box-shadow:0 0 8px #fff,0 0 22px rgba(104,221,255,.75)}
+.branch-spheres{position:relative;z-index:5;display:grid;justify-items:center;align-items:start;gap:18px 12px;width:100%;margin:0 auto;padding:8px 0 18px}
+.primordial-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:390px}
+.stellar-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:690px;align-items:end}
+.supernova-branches>.branch-spheres{grid-template-columns:repeat(3,minmax(0,1fr));max-width:520px}
+.neutron-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:390px}
+.branch-choice{--sphere:#6e8aa5;--sphere-size:88px;appearance:none;border:0;background:transparent;color:#b9cada;width:100%;min-width:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;cursor:pointer;opacity:.5;transition:opacity .18s ease,transform .18s ease,color .18s ease}
 .branch-choice:hover,.branch-choice.selected{opacity:1;color:#f1f8ff;transform:translateY(-2px)}
 .branch-choice.locked{opacity:.24}.branch-choice.revealed{opacity:.5}.branch-choice.available{opacity:.83}.branch-choice.completed{opacity:.8}.branch-choice.current,.branch-choice.selected{opacity:1}
-.branch-choice strong{font-size:9px;line-height:1.25;text-align:center;text-transform:uppercase;letter-spacing:.08em;font-weight:650}
-.branch-sphere-art{position:relative;display:block;width:92px;height:92px;border-radius:50%;background-color:#0b1827;background-position:center;background-size:cover;border:1px solid color-mix(in srgb,var(--sphere) 70%,white 8%);box-shadow:inset -14px -16px 24px rgba(0,0,0,.68),inset 10px 8px 18px rgba(255,255,255,.09),0 0 18px color-mix(in srgb,var(--sphere) 35%,transparent);overflow:hidden}
+.branch-choice strong{font-size:9px;line-height:1.25;text-align:center;text-transform:uppercase;letter-spacing:.08em;font-weight:650;max-width:120px}
+.branch-sphere-art{position:relative;display:block;width:var(--sphere-size);height:var(--sphere-size);max-width:100%;aspect-ratio:1;border-radius:50%;background-color:#0b1827;background-position:center;background-size:cover;border:1px solid color-mix(in srgb,var(--sphere) 70%,white 8%);box-shadow:inset -14px -16px 24px rgba(0,0,0,.68),inset 10px 8px 18px rgba(255,255,255,.09),0 0 18px color-mix(in srgb,var(--sphere) 35%,transparent);overflow:hidden}
 .branch-sphere-art::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.36),transparent 22%),linear-gradient(135deg,transparent 25%,rgba(0,0,0,.12) 60%,rgba(0,0,0,.72));mix-blend-mode:screen;opacity:.8}
 .branch-choice.selected .branch-sphere-art,.branch-choice.current .branch-sphere-art{box-shadow:inset -14px -16px 24px rgba(0,0,0,.64),inset 10px 8px 18px rgba(255,255,255,.12),0 0 10px #fff,0 0 28px var(--sphere)}
 .branch-choice.available .branch-sphere-art{box-shadow:inset -14px -16px 24px rgba(0,0,0,.66),inset 10px 8px 18px rgba(255,255,255,.1),0 0 22px color-mix(in srgb,var(--sphere) 68%,transparent)}
 .branch-choice.completed .branch-sphere-art{filter:saturate(.82);border-color:var(--map-green)}
-.sphere-tritium{--sphere:#7dd8ff}.sphere-tritium .branch-sphere-art{background-image:radial-gradient(circle at 35% 30%,#dffcff 0 7%,#4d9fd6 8% 22%,#112f55 45%,#05101e 74%)}
-.sphere-helium{--sphere:#8db5ff}.sphere-helium .branch-sphere-art{background-image:radial-gradient(circle at 33% 28%,#fff 0 8%,#7ab5ff 9% 24%,#243d87 48%,#080d25 76%)}
-.sphere-brown{--sphere:var(--map-orange)}.sphere-red{--sphere:var(--map-red)}.sphere-red .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#ffe5d3 0 8%,#f37062 9% 24%,#7e1d32 47%,#180710 76%)}
-.sphere-gold{--sphere:var(--map-gold)}.sphere-gold .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#fff9dc 0 8%,#ffd86f 9% 25%,#d27827 48%,#251006 76%)}
-.sphere-blue{--sphere:var(--map-blue)}.sphere-neutrino{--sphere:#88e8ff}.sphere-gamma{--sphere:#d28dff}.sphere-remnant{--sphere:#a6d9ff}.sphere-accretion{--sphere:#77cfff}.sphere-kilonova{--sphere:var(--map-violet)}
-.branch-panels{position:relative;z-index:4;width:100%;max-width:600px;margin:0 auto}
+.sphere-tritium{--sphere:#7dd8ff;--sphere-size:82px}.sphere-tritium .branch-sphere-art{background-image:radial-gradient(circle at 35% 30%,#dffcff 0 7%,#4d9fd6 8% 22%,#112f55 45%,#05101e 74%)}
+.sphere-helium{--sphere:#8db5ff;--sphere-size:90px}.sphere-helium .branch-sphere-art{background-image:radial-gradient(circle at 33% 28%,#fff 0 8%,#7ab5ff 9% 24%,#243d87 48%,#080d25 76%)}
+.sphere-brown{--sphere:#8c5b38;--sphere-size:62px}.sphere-brown .branch-sphere-art{background-image:radial-gradient(circle at 34% 28%,#e5b27b 0 7%,#98613d 8% 27%,#5d321f 48%,#1b0e0a 78%)}
+.sphere-red{--sphere:#e96962;--sphere-size:78px}.sphere-red .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#ffe5d3 0 8%,#f37062 9% 24%,#7e1d32 47%,#180710 76%)}
+.sphere-gold{--sphere:var(--map-gold);--sphere-size:94px}.sphere-gold .branch-sphere-art{background-image:radial-gradient(circle at 34% 29%,#fff9dc 0 8%,#ffd86f 9% 25%,#d27827 48%,#251006 76%)}
+.sphere-high{--sphere:#ff5d49;--sphere-size:122px}.sphere-high .branch-sphere-art{background-image:radial-gradient(circle at 35% 28%,#fff4d8 0 7%,#ffb25e 8% 20%,#f14e3d 35%,#8d1820 57%,#21070d 79%);box-shadow:inset -18px -20px 30px rgba(0,0,0,.63),inset 12px 9px 20px rgba(255,255,255,.14),0 0 26px rgba(255,74,53,.46)}
+.sphere-neutrino{--sphere:#88e8ff}.sphere-gamma{--sphere:#d28dff}.sphere-remnant{--sphere:#a6d9ff}.sphere-accretion{--sphere:#77cfff}.sphere-kilonova{--sphere:var(--map-violet)}
+.branch-panels{position:relative;z-index:4;width:100%;max-width:600px;margin:0 auto}.branch-panels:empty{display:none}
 .branch-panel{position:relative;width:100%;min-height:100px;padding:8px 0 20px}.branch-panel[hidden]{display:none!important}
 .branch-panel>.cosmos-flow,.branch-panel>.portal,.branch-panel>.epoch-label,.branch-panel>.branch-cluster{position:relative;z-index:4}
 .stellar-branches{margin-top:4px}.stellar-branches>.branch-panels{max-width:620px}
@@ -63,11 +71,13 @@
 
 @media(max-width:700px){
  .campaign-head{grid-template-columns:1fr auto;padding:12px}.campaign-mode-chip{display:none}.campaign-head-actions{gap:5px}.campaign-close{padding:7px 9px;font-size:8px}.campaign-brand span{display:none}.campaign-brand strong{font-size:19px}
- .campaign-content{width:100%;padding:74px 12px 90px}.campaign-head-actions #campaignData{display:none}
- .branch-cluster{max-width:100%;margin-bottom:24px}.branch-spheres{gap:14px 8px;padding-inline:2px}.branch-choice{width:calc(50% - 8px);max-width:150px}.branch-sphere-art{width:80px;height:80px}.branch-choice strong{font-size:8px;max-width:120px}
+ .campaign-content{width:100%;padding:74px 10px 90px}.campaign-head-actions #campaignData{display:none}
+ .branch-cluster{max-width:100%;margin-bottom:24px;padding-top:20px}.branch-fork-node{margin-bottom:15px}.branch-spheres{gap:13px 4px;padding-inline:0}.branch-choice strong{font-size:7px;max-width:78px;letter-spacing:.055em}
+ .stellar-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:100%}.primordial-branches>.branch-spheres,.neutron-branches>.branch-spheres{max-width:330px}.supernova-branches>.branch-spheres{max-width:350px}
+ .sphere-brown{--sphere-size:46px}.sphere-red{--sphere-size:58px}.sphere-gold{--sphere-size:68px}.sphere-high{--sphere-size:88px}.sphere-tritium{--sphere-size:68px}.sphere-helium{--sphere-size:76px}
  .phase-node{width:min(250px,calc(100vw - 34px))}.portal{width:min(94vw,460px)}.portal .phase-node{width:min(240px,calc(100vw - 56px))}
- .birth-bg{right:-110px;width:250px;height:190px}.branch-bg{width:240px;height:190px;opacity:.14}.branch-bg-left{left:-120px}.branch-bg-right{right:-120px}
+ .birth-bg{right:-100px;width:240px;height:180px}.branch-bg{width:230px;height:180px;opacity:.14}.branch-bg-left{left:-105px}.branch-bg-right{right:-105px}
  .map-detail{left:12px;right:12px;bottom:12px;width:auto}
 }
-@media(max-width:390px){.branch-sphere-art{width:72px;height:72px}.branch-choice{max-width:138px}.branch-spheres{column-gap:4px}}
+@media(max-width:390px){.sphere-brown{--sphere-size:42px}.sphere-red{--sphere-size:52px}.sphere-gold{--sphere-size:62px}.sphere-high{--sphere-size:80px}.branch-choice strong{font-size:6.5px;max-width:72px}}
 @media(prefers-reduced-motion:reduce){.campaign-map,.phase-node,.map-detail,.campaign-trail.trail-arrive,.branch-choice{transition:none;animation:none}.singularity-map::after{animation:none}.campaign-shell{scroll-behavior:auto}}
