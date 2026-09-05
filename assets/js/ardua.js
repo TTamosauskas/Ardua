@@ -1053,7 +1053,7 @@ function desiredFill(){
   return Math.max(Math.min(6,count),Math.min(count,Math.round(count*ratio)));
 }
 
-const state={phaseIndex:0,board:Array(coords.length).fill(null),pieces:new Map(),nextId:1,selected:[],created:{},discovered:new Set(),locked:false,fusionInProgress:false,neutrons:new Map(),nextN:1,neutronTimer:null,neutronTick:null,accretionTimer:null,phaseDone:false,popupOpen:false,popupKind:null,lastStellarKey:null,lessonResolver:null,productLessons:new Set(),ignited:false,phaseMilestoneAnnounced:false,crushed:0,absorbed:0,postInitialMatter:0,collapseMatterSnapshot:null,crushTimer:null,crushId:null,coreHoldTimer:null,suppressTapId:null,suppressTapUntil:0,nuclearRound:0,primordialParticles:new Map(),nextPrimordialId:1,primordialSelected:null,primordialDriftTimer:null,particleDrag:null,freeSelected:[],primordialTransfer:null,bigBangStarted:false,bigBangColorized:false,cosmicRays:new Map(),nextCosmicId:1,cosmicTimer:null,selectedCosmic:null,selectedNeutron:null,explosiveHits:0,decayFound:new Set(),postHoldLearned:false,radioactiveProofDone:false,readyToAdvance:false,flow:0,flowMilestones:new Set(),contextRecipeKey:null,stratificationCoreGroup:null,protonCaptureUnlocked:false,protonCaptures:0,protonCaptureProducts:{},protonCaptureAttempts:{},rpIonized:0,rpPhotoReturns:0,rpCyclesObserved:0,rpWaitDecays:0,neutronSourceActivations:0,neutronPulsesObserved:0,neutronBranchesObserved:0,neutronBetaWaits:0,neutronFreezeouts:0,neutronStormsObserved:0,fusionAttempts:{},atlasProgress:0,atlasAttempts:{},atlasBarrierPassed:{},atlasPhaseTooltipSeen:false,coulombRepulsions:0,neutronBirths:0,neutronCaptureUnlocked:false,primordialDByProton:0,primordialDByNeutron:0,infoSelection:null,tooltipOpen:false,tooltipResolver:null,tooltipRestoreLock:false,rewardDiscoveries:new Set(),rewardAchievements:new Set(),signatureSeen:new Set(),rewardBannerTimer:null,rewardBannerToken:0,rewardLastShownAt:0,rewardPending:null,rewardPhaseComplete:false,chainCalloutTimer:null,chainCalloutRoot:null,preparedChainRoots:{},nextMatterOrigin:1,objectiveLineages:new Set()};
+const state={phaseIndex:0,board:Array(coords.length).fill(null),pieces:new Map(),nextId:1,selected:[],created:{},discovered:new Set(),locked:false,fusionInProgress:false,neutrons:new Map(),nextN:1,neutronTimer:null,neutronTick:null,accretionTimer:null,phaseDone:false,popupOpen:false,popupKind:null,lastStellarKey:null,lessonResolver:null,productLessons:new Set(),ignited:false,phaseMilestoneAnnounced:false,crushed:0,absorbed:0,postInitialMatter:0,collapseMatterSnapshot:null,crushTimer:null,crushId:null,coreHoldTimer:null,suppressTapId:null,suppressTapUntil:0,nuclearRound:0,primordialParticles:new Map(),nextPrimordialId:1,primordialSelected:null,primordialDriftTimer:null,particleDrag:null,freeSelected:[],primordialTransfer:null,bigBangStarted:false,bigBangColorized:false,cosmicRays:new Map(),nextCosmicId:1,cosmicTimer:null,selectedCosmic:null,selectedNeutron:null,explosiveHits:0,decayFound:new Set(),postHoldLearned:false,radioactiveProofDone:false,readyToAdvance:false,flow:0,flowMilestones:new Set(),contextRecipeKey:null,stratificationCoreGroup:null,protonCaptureUnlocked:false,protonCaptures:0,protonCaptureProducts:{},protonCaptureAttempts:{},rpIonized:0,rpPhotoReturns:0,rpCyclesObserved:0,rpWaitDecays:0,neutronSourceActivations:0,neutronPulsesObserved:0,neutronBranchesObserved:0,neutronBetaWaits:0,neutronFreezeouts:0,neutronStormsObserved:0,fusionAttempts:{},atlasProgress:0,atlasAttempts:{},atlasBarrierPassed:{},atlasPhaseTooltipSeen:false,coulombRepulsions:0,neutronBirths:0,neutronCaptureUnlocked:false,primordialDByProton:0,primordialDByNeutron:0,infoSelection:null,tooltipOpen:false,tooltipResolver:null,tooltipRestoreLock:false,rewardDiscoveries:new Set(),rewardAchievements:new Set(),signatureSeen:new Set(),rewardBannerTimer:null,rewardBannerToken:0,rewardLastShownAt:0,rewardPending:null,rewardPhaseComplete:false,chainCalloutTimer:null,chainCalloutRoot:null,preparedChainRoots:{},nextMatterOrigin:1,objectiveLineages:new Set(),objectiveMotifSelection:null,objectiveMotifActive:false,objectiveMotifRun:0};
 const $=id=>document.getElementById(id);
 const dom={star:$('starBoard'),core:$('starCore'),cells:$('cells'),pieces:$('pieces'),neutrons:$('neutrons'),lines:$('lines'),fx:$('fx'),objective:$('objective'),toast:$('toast'),ambient:$('ambientBanner'),remnant:$('remnantLayer'),remnantCore:$('remnantCore'),primordial:$('primordialLayer'),zones:$('stellarZones'),electronMesh:$('electronMesh'),singularity:$('singularityBtn'),cosmic:$('cosmicRays')};
 function buildElectronMesh(){
@@ -1128,7 +1128,7 @@ function rewardDirectorClear(){
 }
 function rewardDirectorShow(payload={}){
  const b=dom.ambient;if(!b||state.popupOpen||state.tooltipOpen)return false;
- const p={kicker:'DESCOBERTA',title:'',text:'',priority:1,duration:1700,kind:'micro',...payload},now=performance.now(),shown=b.classList.contains('show'),current=Number(b.dataset.priority||0);
+ const p={kicker:'DESCOBERTA',title:'',text:'',priority:1,duration:1700,kind:'micro',...payload};if(state.objectiveMotifActive){if(p.priority>=2)state.rewardPending=p;return false}const now=performance.now(),shown=b.classList.contains('show'),current=Number(b.dataset.priority||0);
  if(shown&&(p.priority<current||(p.priority===current&&now-(state.rewardLastShownAt||0)<820))){if(p.priority>=2)state.rewardPending=p;return false}
  const token=++state.rewardBannerToken;state.rewardLastShownAt=now;if(state.rewardBannerTimer)clearTimeout(state.rewardBannerTimer);
  b.className=`ambient-banner show reward-banner ${p.kind}`;b.dataset.priority=String(p.priority);$('ambientKicker').textContent=p.kicker;$('ambientTitle').textContent=p.title;$('ambientText').textContent=p.text||'';
@@ -1166,6 +1166,78 @@ function renderDiscoveryAtlas(){
 }
 const DiscoverySystem=Object.freeze({register:registerRewardDiscovery,achievement:unlockRewardAchievement,render:renderDiscoveryAtlas});
 const AdaptiveAudio=Object.freeze({reaction:adaptiveAudioReaction,resolve:adaptiveAudioResolve});
+const OBJECTIVE_MOTIF_ROOTS=Object.freeze([196,220,247,262,294,330]);
+function objectiveMotifHash(text=''){let h=17;for(const ch of String(text))h=(h*31+ch.charCodeAt(0))>>>0;return h}
+function objectiveMotifNotes(r){
+ const root=OBJECTIVE_MOTIF_ROOTS[objectiveMotifHash(recipeKey(r))%OBJECTIVE_MOTIF_ROOTS.length],unstable=!!E[r?.out]?.unstable;
+ return unstable?[root,root*(4/3),root*1.5]:[root,root*1.25,root*1.5];
+}
+function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))];tone(f,index===2?.18:.13,index===2?'triangle':'sine',index===2?.032:.026)}
+function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes)tone(f,.34,'sine',.013);if(final)tone(notes[0]*2,.38,'triangle',.008)}
+function objectiveMotifSameRecipe(a,b){return !!a&&!!b&&recipeKey(a)===recipeKey(b)}
+function objectiveMotifTargetRecipes(s=phase()){
+ if(s.mode==='whiteCompact'){
+   const info=whiteCounts(s),out=[];
+   if(info.c<info.targetC)out.push(FUSIONS.C);
+   if(info.o<info.targetO&&info.c>info.targetC)out.push(FUSIONS.O);
+   return out.filter(Boolean);
+ }
+ if(s.mode!=='fusion')return[];
+ return phaseFusionRecipes(s).filter(r=>r?.out===s.new);
+}
+function objectiveMotifReactionEligible(r,pieces=[],s=phase()){
+ if(!r||state.chainAutoContext||state.phaseDone||state.readyToAdvance||r.ing?.length!==2||pieces.length!==2)return false;
+ if(!objectiveMotifTargetRecipes(s).some(q=>objectiveMotifSameRecipe(q,r)))return false;
+ if(s.uniqueMatterObjective&&!objectiveLineageIsFresh(s,mergeMatterLineages(pieces)))return false;
+ if(s.mode==='whiteCompact'){
+   const info=whiteCounts(s);if(r.out==='C')return info.c<info.targetC;if(r.out==='O')return info.o<info.targetO&&info.c>info.targetC;return false;
+ }
+ return !!s.new&&r.out===s.new&&(state.created[s.new]||0)<Math.max(1,s.target||1);
+}
+function objectiveMotifCandidateForFirst(piece,s=phase()){
+ if(!piece||piece.cell===null||piece.cell===undefined||state.chainAutoContext)return null;
+ for(const r of objectiveMotifTargetRecipes(s)){
+   if(r.ing?.length!==2||!r.ing.includes(piece.sym))continue;
+   for(const cell of neigh[piece.cell]||[]){const id=state.board[cell],other=id?state.pieces.get(id):null;if(!other||!same([piece.sym,other.sym],r.ing))continue;if(objectiveMotifReactionEligible(r,[piece,other],s))return r}
+ }
+ return null;
+}
+function objectiveMotifCancelSelection(){state.objectiveMotifSelection=null}
+function objectiveMotifArmFirst(piece,{sound=true}={}){
+ const r=objectiveMotifCandidateForFirst(piece);if(!r){objectiveMotifCancelSelection();return false}
+ state.objectiveMotifSelection={recipeKey:recipeKey(r),cells:[piece.cell],ready:false};if(sound)objectiveMotifPlayNote(r,0);return true;
+}
+function objectiveMotifArmSecond(r,cells){
+ const sel=state.objectiveMotifSelection,pieces=(cells||[]).map(c=>state.pieces.get(state.board[c])).filter(Boolean);
+ if(!sel||sel.recipeKey!==recipeKey(r)||sel.cells?.[0]!==cells?.[0]||!objectiveMotifReactionEligible(r,pieces)){objectiveMotifCancelSelection();return false}
+ sel.cells=[...cells];sel.ready=true;objectiveMotifPlayNote(r,1);return true;
+}
+function objectiveMotifSelectionReady(r,cells){const sel=state.objectiveMotifSelection;return !!sel?.ready&&sel.recipeKey===recipeKey(r)&&same(sel.cells||[],cells||[])}
+function objectiveMotifNode(piece,kind='reactant'){
+ const d=document.createElement('div'),shown=pieceDisplaySymbol(piece);d.className=`objective-motif-nucleus ${kind}`;d.style.background=elementStyle(piece.sym);d.innerHTML=`<span>${shown}</span>`;return d;
+}
+function objectiveMotifResultNode(piece){const d=objectiveMotifNode(piece,'result'),name=document.createElement('small');name.textContent=E[piece.sym]?.name||piece.sym;d.appendChild(name);return d}
+function objectiveMotifFlushReward(){const next=state.rewardPending;if(!next)return;state.rewardPending=null;setTimeout(()=>{if(!state.objectiveMotifActive)rewardDirectorShow(next)},180)}
+function objectiveMotifReset(){
+ state.objectiveMotifRun++;state.objectiveMotifActive=false;state.objectiveMotifSelection=null;dom.star?.classList.remove('objective-motif-active');dom.fx?.querySelectorAll('.objective-motif-stage').forEach(x=>x.remove());dom.pieces?.querySelectorAll('.motif-source').forEach(x=>x.classList.remove('motif-source'));
+}
+async function objectiveMotifPrepare(r,pieces,targetPoint){
+ const run=++state.objectiveMotifRun,stage=document.createElement('div'),size=starSize(),center=size/2,reduced=rewardReducedMotion();state.objectiveMotifActive=true;dom.star.classList.add('objective-motif-active');stage.className='objective-motif-stage';dom.fx.appendChild(stage);
+ const nodes=pieces.map((p,i)=>{const d=objectiveMotifNode(p);d.style.left=p.x+'px';d.style.top=p.y+'px';d.dataset.side=i?'right':'left';stage.appendChild(d);dom.pieces.querySelector(`[data-id="${p.id}"]`)?.classList.add('motif-source');return d});
+ await wait(reduced?35:70);if(run!==state.objectiveMotifRun)return null;
+ nodes[0].style.left=(size*.28)+'px';nodes[1].style.left=(size*.72)+'px';for(const d of nodes){d.style.top=(center*.98)+'px';d.classList.add('aligned')}
+ await wait(reduced?70:330);if(run!==state.objectiveMotifRun)return null;objectiveMotifPlayNote(r,2);stage.classList.add('aligned');await wait(reduced?45:135);return{run,stage,nodes,r,targetPoint,center};
+}
+async function objectiveMotifConverge(ctx){if(!ctx||ctx.run!==state.objectiveMotifRun)return false;const reduced=rewardReducedMotion();for(const d of ctx.nodes){d.style.left=ctx.center+'px';d.style.top=ctx.center+'px';d.classList.add('converging')}await wait(reduced?55:190);return ctx.run===state.objectiveMotifRun}
+function objectiveMotifFinalCredit(s=phase()){if(s.mode==='whiteCompact')return objectiveSatisfied(s);return !!s.new&&(state.created[s.new]||0)>=Math.max(1,s.target||1)}
+async function objectiveMotifReveal(ctx,product,targetPoint){
+ if(!ctx||ctx.run!==state.objectiveMotifRun)return;const reduced=rewardReducedMotion(),result=objectiveMotifResultNode(product);result.style.left=ctx.center+'px';result.style.top=ctx.center+'px';ctx.stage.appendChild(result);requestAnimationFrame(()=>result.classList.add('visible'));objectiveMotifChord(ctx.r,objectiveMotifFinalCredit());updateHUD();RewardDirector.particles(ctx.center,ctx.center,3);vibrate(rewardReducedMotion()?5:[6,9,6]);await wait(reduced?90:310);if(ctx.run!==state.objectiveMotifRun)return;
+ result.classList.add('settling');result.style.left=targetPoint.x+'px';result.style.top=targetPoint.y+'px';await wait(reduced?70:245);if(ctx.run!==state.objectiveMotifRun)return;ctx.stage.remove();dom.pieces.querySelectorAll('.motif-source').forEach(x=>x.classList.remove('motif-source'));dom.star.classList.remove('objective-motif-active');state.objectiveMotifActive=false;state.objectiveMotifSelection=null;objectiveMotifFlushReward();
+}
+function objectiveMotifBarrierBlocked(piece,r){
+ const sel=state.objectiveMotifSelection;if(sel?.ready&&sel.recipeKey===recipeKey(r)){const notes=objectiveMotifNotes(r);tone(notes[1]*.75,.13,'sine',.017)}objectiveMotifCancelSelection();if(piece)setTimeout(()=>objectiveMotifArmFirst(piece,{sound:false}),80);
+}
+const ObjectiveReactionMotif=Object.freeze({targetRecipes:objectiveMotifTargetRecipes,eligible:objectiveMotifReactionEligible,reset:objectiveMotifReset});
 function showChainCallout(rootId,kind,step,x,y){
  if(!dom.fx||step<2)return;let d=dom.fx.querySelector('.chain-callout');if(!d){d=document.createElement('div');d.className='chain-callout';dom.fx.appendChild(d)}state.chainCalloutRoot=rootId;const px=Number.isFinite(x)?Math.max(78,Math.min(starSize()-78,x)):starSize()/2,py=Number.isFinite(y)?Math.max(62,Math.min(starSize()-62,y-42)):starSize()*.34;d.style.left=px+'px';d.style.top=py+'px';d.innerHTML=`<small>${chainEventTitle(kind)}</small><strong>×${step}</strong>`;d.classList.remove('visible');void d.offsetWidth;d.classList.add('visible');if(state.chainCalloutTimer)clearTimeout(state.chainCalloutTimer);state.chainCalloutTimer=setTimeout(()=>{d.classList.remove('visible');setTimeout(()=>{if(!d.classList.contains('visible'))d.remove()},300)},1850);
 }
@@ -2275,7 +2347,7 @@ function chainEventTitle(kind){return kind==='r'?'TEMPESTADE-r':kind==='neutron'
 const CHAIN_LESSON_BY_KIND=Object.freeze({nuclear:'chainNuclear',neutron:'chainNeutron',r:'chainR',proton:'chainProton',energetic:'chainEnergetic'});
 async function teachChainEffectOnce(kind,x,y){const key=CHAIN_LESSON_BY_KIND[kind];return key?teachProductOnce(key,x,y):false}
 function resetChainFeedback(){
- state.chainEvent={id:0,kind:'',step:0,lastAt:0};state.chainAutoContext=null;state.chainBonusFlowByRoot={};state.preparedChainRoots={};state.resonance=0;
+ objectiveMotifReset();state.chainEvent={id:0,kind:'',step:0,lastAt:0};state.chainAutoContext=null;state.chainBonusFlowByRoot={};state.preparedChainRoots={};state.resonance=0;
  if(chainResonanceTimer){clearInterval(chainResonanceTimer);chainResonanceTimer=null}
  rewardDirectorClear();document.documentElement.style.setProperty('--resonanceGlow','0');dom.star?.classList.remove('chain-resonance','reaction-reward','reaction-reward-strong','reward-signature','completion-settle');applyRewardProgressVisuals();
 }
@@ -2287,7 +2359,7 @@ function bumpReactionResonance(amount=.12){
 function flashReactionReward(strength=1){if(!dom.star)return;const cls=strength>=3?'reaction-reward-strong':'reaction-reward';dom.star.classList.remove('reaction-reward','reaction-reward-strong');void dom.star.offsetWidth;dom.star.classList.add(cls);setTimeout(()=>dom.star?.classList.remove(cls),strength>=3?520:340)}
 function reactionFeedback({kind=null,x=null,y=null,step=1,automatic=false,label=null,strength=1,rootId=null}={}){
  const k=kind||chainKindForPhase(),n=Math.max(1,Number(step)||1),level=n>=4?4:n>1?3:Math.max(1,Math.min(2,Number(strength)||1));bumpReactionResonance(.09+level*.035+Math.min(.18,(n-1)*.05));flashReactionReward(level);applyRewardProgressVisuals();
- if(Number.isFinite(x)&&Number.isFinite(y)&&label)captureTag(x,y,label);if(level>=2)rewardParticles(x,y,level);AdaptiveAudio.reaction(level,k,n);
+ if(Number.isFinite(x)&&Number.isFinite(y)&&label)captureTag(x,y,label);if(!state.objectiveMotifActive&&level>=2)rewardParticles(x,y,level);if(!state.objectiveMotifActive)AdaptiveAudio.reaction(level,k,n);
  if(n>1){showChainCallout(rootId,k,n,x,y);if(n===3)unlockRewardAchievement('chain3');if(n>=4)unlockRewardAchievement('chain4');if(n>=4)vibrate([7,12,9])}
 }
 function startChainEvent(kind=chainKindForPhase(),x=null,y=null){const id=++chainEventSeq;state.chainEvent={id,kind,step:1,lastAt:performance.now(),x,y};state.chainBonusFlowByRoot=state.chainBonusFlowByRoot||{};state.preparedChainRoots=state.preparedChainRoots||{};state.chainBonusFlowByRoot[id]=0;return id}
@@ -2638,15 +2710,15 @@ function renderRemnant(){
 function render(){drawLines();renderPieces();updateMoveTargets();renderPrimordialParticles();renderCosmicRays();updateHUD();renderNeutrons();renderMenu()}
 function handleFusionTap(p){
  const cell=p.cell;if(cell===null||cell===undefined)return false;
- if(state.selected.includes(cell)){state.selected=[];render();return true}
+ if(state.selected.includes(cell)){state.selected=[];objectiveMotifCancelSelection();render();return true}
  if(!state.selected.length){
    const canStart=possibleRecipes([p.sym]).some(r=>!!connectedRecipeCluster(r,[cell]));
    if(!canStart&&!canSelectAtomForMovement(p))return false;
-   state.selected=[cell];tone(canStart?320:300,.04);render();return true;
+   state.selected=[cell];if(!objectiveMotifArmFirst(p))tone(canStart?320:300,.04);render();return true;
  }
- if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];tone(300,.035);render();return true}return false}
- const test=[...selectedSyms(),p.sym];if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];tone(300,.035);render();return true}return false}
- state.selected.push(cell);render();const ex=exactRecipe(test);if(ex)setTimeout(()=>fuse(ex),85);return true;
+ if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
+ const test=[...selectedSyms(),p.sym];if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
+ state.selected.push(cell);render();const ex=exactRecipe(test);if(ex){objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95)}return true;
 }
 function neutronSourceSelectedPiece(s=phase()){
  if(!state.selected.length)return null;const id=state.board[state.selected[0]],p=id?state.pieces.get(id):null;return p&&p.sym===neutronGameplay(s).source?p:null;
@@ -2915,7 +2987,7 @@ function beginCoreHold(ev){
 }
 function cancelCoreHold(){if(!state.coreHoldTimer)return;clearTimeout(state.coreHoldTimer);state.coreHoldTimer=null;dom.remnantCore.classList.remove('core-hold');dom.star.classList.remove('core-collapsing')}
 
-function invalid(cell){const id=state.board[cell],el=id?dom.pieces.querySelector(`[data-id="${id}"]`):null;if(el){el.classList.add('invalid');setTimeout(()=>el.classList.remove('invalid'),250)}tone(170,.07,'sawtooth');vibrate(10);state.selected=[];render()}
+function invalid(cell){const id=state.board[cell],el=id?dom.pieces.querySelector(`[data-id="${id}"]`):null;if(el){el.classList.add('invalid');setTimeout(()=>el.classList.remove('invalid'),250)}tone(170,.07,'sawtooth');vibrate(10);state.selected=[];objectiveMotifCancelSelection();render()}
 function be7InCoolLayer(piece,s=phase()){if(!piece||piece.cell===null||piece.cell===undefined)return false;const r=phaseRadius(s);return coords[piece.cell].ring>=Math.max(2,Math.ceil(r*.65))}
 async function decayBe7(piece){
  if(!piece||!state.pieces.has(piece.id)||piece.sym!=='Be7')return;
@@ -2963,9 +3035,9 @@ async function fusionBarrierPasses(r,cells,ids,target){
  const blockedCell=blocked[0],blockedId=state.board[blockedCell],blockedPiece=blockedId?state.pieces.get(blockedId):null;
  if(!blockedPiece||!coulombRollBlocks(blockedCell,s,blockedPiece.sym))return true;
  const t={x:blockedPiece.x,y:blockedPiece.y};
- await showCoulombTooltip(t.x,t.y);showCoulombBarrier(blockedPiece);state.coulombRepulsions++;captureTag(t.x,t.y,'barreira de Coulomb');tone(165,.10,'sawtooth',.028);vibrate(7);await wait(300);state.selected=[blockedCell];render();return false;
+ await showCoulombTooltip(t.x,t.y);showCoulombBarrier(blockedPiece);state.coulombRepulsions++;captureTag(t.x,t.y,'barreira de Coulomb');tone(165,.10,'sawtooth',.028);vibrate(7);await wait(300);state.selected=[blockedCell];objectiveMotifBarrierBlocked(blockedPiece,r);render();return false;
 }
-async function fuse(r){if(state.locked)return;state.locked=true;state.fusionInProgress=true;try{const cells=[...state.selected],target=[...cells].sort((a,b)=>coords[a].ring-coords[b].ring)[0],ids=cells.map(c=>state.board[c]),t=pos(coords[target]),preparedChain=preparedContinuationForFusion(r,cells,target),inputPieces=ids.map(id=>state.pieces.get(id)).filter(Boolean),productLineage=mergeMatterLineages(inputPieces),uniqueGoal=r.out===phase().new&&!!phase().uniqueMatterObjective,objectiveLineageFresh=!uniqueGoal||objectiveLineageIsFresh(phase(),productLineage);if(!(await fusionBarrierPasses(r,cells,ids,target)))return;if(uniqueGoal&&!objectiveLineageFresh)await teachProductOnce('recycledMatter',t.x,t.y);ids.forEach(id=>{const p=state.pieces.get(id);if(p){p.x=t.x;p.y=t.y}});dom.star.classList.add('pulse');renderPieces();await wait(140);cells.forEach(c=>state.board[c]=null);ids.forEach(id=>state.pieces.delete(id));const np=createPiece(r.out,target,false,{lineage:productLineage});np.x=t.x;np.y=t.y;focusPieceInfo(np);if(pieceIsUnstable(np))np.unstableBornRound=state.nuclearRound+1;const objectiveLineageCredited=!uniqueGoal||creditObjectiveLineage(phase(),productLineage);if(!uniqueGoal||objectiveLineageCredited)state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);if(uniqueGoal&&!objectiveLineageCredited)captureTag(t.x,t.y,'MATÉRIA RECICLADA · sem novo crédito');if(!phase().objectiveOnlyProgress||r.out===phase().new)recordFlow(r.out===phase().new&&objectiveLineageCredited?3:1,{kind:'nuclear',x:t.x,y:t.y,label:r.out===phase().new&&objectiveLineageCredited?E[r.out].name:null});state.selected=[];burst(t.x,t.y);await handleReactionEmissions(r,np);const milestoneTriggered=triggerPhaseMilestone();tone(350+Math.max(1,E[r.out].n)*8,.09,'triangle',.042);if(!milestoneTriggered){let unstableHint='';if(r.out==='HeU')unstableHint=phase().id==='he_red'?'Crie outro He instável antes de 4 rodadas e una os dois para formar He estável.':'Ele treme e se desfaz após 4 rodadas.';else if(r.out==='Be7')unstableHint='Transporte o Berílio-7 para uma camada externa; ali a captura eletrônica formará Lítio-7.';else if(E[r.out]?.unstable)unstableHint=recipeIsActive(FUSIONS.C)?'Use-o na próxima ação nuclear para formar Carbono.':'Outra ação nuclear fará este núcleo se desfazer.';announce(E[r.out]?.unstable?'NÚCLEO INSTÁVEL':'NOVO ELEMENTO',E[r.out].name.toUpperCase(),unstableHint)};render();await wait(90);const protectedIds=phase().id==='coulomb_intro'?[...state.pieces.values()].filter(q=>q.sym==='He3').map(q=>q.id):[];await afterNuclearAction({advanceRound:true,forceBoardPulse:true,protectedPieceIds:protectedIds});const chainCtx=state.chainAutoContext,chainRoot=chainCtx?.rootId||startChainEvent('nuclear',np.x,np.y),chainDepth=chainCtx?.depth||1;if(preparedChain&&!chainCtx){state.preparedChainRoots=state.preparedChainRoots||{};state.preparedChainRoots[chainRoot]=true}scheduleAutoFusionCascade(np.id,chainRoot,chainDepth,'nuclear')}catch(err){console.error(err)}finally{state.fusionInProgress=false;state.locked=false;dom.star.classList.remove('pulse');ensureOpportunity();render()}checkComplete()}
+async function fuse(r){if(state.locked)return;state.locked=true;state.fusionInProgress=true;try{const cells=[...state.selected],target=[...cells].sort((a,b)=>coords[a].ring-coords[b].ring)[0],ids=cells.map(c=>state.board[c]),t=pos(coords[target]),preparedChain=preparedContinuationForFusion(r,cells,target),inputPieces=ids.map(id=>state.pieces.get(id)).filter(Boolean),productLineage=mergeMatterLineages(inputPieces),uniqueGoal=r.out===phase().new&&!!phase().uniqueMatterObjective,objectiveLineageFresh=!uniqueGoal||objectiveLineageIsFresh(phase(),productLineage),motifEligible=objectiveMotifReactionEligible(r,inputPieces,phase())&&objectiveMotifSelectionReady(r,cells);if(!(await fusionBarrierPasses(r,cells,ids,target)))return;if(uniqueGoal&&!objectiveLineageFresh)await teachProductOnce('recycledMatter',t.x,t.y);const motifCtx=motifEligible?await objectiveMotifPrepare(r,inputPieces,t):null;ids.forEach(id=>{const p=state.pieces.get(id);if(p){p.x=t.x;p.y=t.y}});dom.star.classList.add('pulse');renderPieces();await wait(140);if(motifCtx)await objectiveMotifConverge(motifCtx);cells.forEach(c=>state.board[c]=null);ids.forEach(id=>state.pieces.delete(id));const np=createPiece(r.out,target,false,{lineage:productLineage});np.x=t.x;np.y=t.y;focusPieceInfo(np);if(pieceIsUnstable(np))np.unstableBornRound=state.nuclearRound+1;const objectiveLineageCredited=!uniqueGoal||creditObjectiveLineage(phase(),productLineage);if(!uniqueGoal||objectiveLineageCredited)state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);if(uniqueGoal&&!objectiveLineageCredited)captureTag(t.x,t.y,'MATÉRIA RECICLADA · sem novo crédito');if(!phase().objectiveOnlyProgress||r.out===phase().new)recordFlow(r.out===phase().new&&objectiveLineageCredited?3:1,{kind:'nuclear',x:t.x,y:t.y,label:motifCtx?null:(r.out===phase().new&&objectiveLineageCredited?E[r.out].name:null)});state.selected=[];if(motifCtx)await objectiveMotifReveal(motifCtx,np,t);burst(t.x,t.y);await handleReactionEmissions(r,np);const milestoneTriggered=triggerPhaseMilestone();if(!motifCtx)tone(350+Math.max(1,E[r.out].n)*8,.09,'triangle',.042);if(!milestoneTriggered){let unstableHint='';if(r.out==='HeU')unstableHint=phase().id==='he_red'?'Crie outro He instável antes de 4 rodadas e una os dois para formar He estável.':'Ele treme e se desfaz após 4 rodadas.';else if(r.out==='Be7')unstableHint='Transporte o Berílio-7 para uma camada externa; ali a captura eletrônica formará Lítio-7.';else if(E[r.out]?.unstable)unstableHint=recipeIsActive(FUSIONS.C)?'Use-o na próxima ação nuclear para formar Carbono.':'Outra ação nuclear fará este núcleo se desfazer.';announce(E[r.out]?.unstable?'NÚCLEO INSTÁVEL':'NOVO ELEMENTO',E[r.out].name.toUpperCase(),unstableHint)};render();await wait(90);const protectedIds=phase().id==='coulomb_intro'?[...state.pieces.values()].filter(q=>q.sym==='He3').map(q=>q.id):[];await afterNuclearAction({advanceRound:true,forceBoardPulse:true,protectedPieceIds:protectedIds});const chainCtx=state.chainAutoContext,chainRoot=chainCtx?.rootId||startChainEvent('nuclear',np.x,np.y),chainDepth=chainCtx?.depth||1;if(preparedChain&&!chainCtx){state.preparedChainRoots=state.preparedChainRoots||{};state.preparedChainRoots[chainRoot]=true}scheduleAutoFusionCascade(np.id,chainRoot,chainDepth,'nuclear')}catch(err){console.error(err)}finally{if(state.objectiveMotifActive)objectiveMotifReset();state.fusionInProgress=false;state.locked=false;dom.star.classList.remove('pulse');ensureOpportunity();render()}checkComplete()}
 function burst(x,y){const b=document.createElement('div');b.className='burst';b.style.left=x+'px';b.style.top=y+'px';b.innerHTML='<i class="wave"></i>';dom.fx.appendChild(b);setTimeout(()=>b.remove(),650)}
 function stratificationStrength(s=phase()){
  if(isPrimordial(s))return 0;

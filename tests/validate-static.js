@@ -62,4 +62,13 @@ ok(engine.includes("teachProductOnce('recycledMatter',t.x,t.y)")&&engine.include
 ok(engine.includes('CHAIN_LESSON_BY_KIND')&&engine.includes('await teachChainEffectOnce(kind,product.x,product.y)'),'primeira cascata pausa para explicação antes da continuação automática');
 ok(engine.includes("await teachProductOnce('neutronSource',at.x,at.y)")&&engine.includes("await teachProductOnce('freezeout',p.x,p.y)")&&engine.includes("await teachProductOnce('branching',p.x,p.y)"),'fontes, freeze-out e ramificações recebem tooltip antes do efeito');
 ok(engine.includes("if(viable&&!photoReturn&&route.rp&&route.pattern==='waiting')await teachProductOnce('waitingPoint',target.x,target.y)"),'waiting point é explicado antes da animação de captura');
+ok(engine.includes('const ObjectiveReactionMotif=Object.freeze')&&engine.includes("if(s.mode!=='fusion')return[]"),'Reaction Motif é um sistema global mas só escolhe receitas-alvo de fusão manual');
+ok(engine.includes('r?.out===s.new')||engine.includes('r.out===s.new'),'receita-alvo do motif precisa produzir o objetivo científico da fase');
+ok(engine.includes('state.chainAutoContext')&&engine.includes('objectiveMotifReactionEligible'),'cascatas automáticas não recebem a cerimônia completa do objetivo');
+ok(engine.includes('objectiveMotifArmFirst(p)')&&engine.includes('objectiveMotifArmSecond(ex,[...state.selected])'),'primeiro e segundo reagentes da receita-alvo disparam notas próprias');
+ok(engine.includes('objectiveMotifPlayNote(r,2)')&&engine.includes('objectiveMotifChord(ctx.r'),'alinhamento toca a terceira nota e o produto resolve com o acorde das três notas');
+ok(engine.includes('objectiveMotifSelectionReady(r,cells)')&&engine.includes('objectiveLineageIsFresh'),'motif exige seleção manual pronta e respeita a proveniência anti-reciclagem');
+ok(engine.includes('objectiveMotifBarrierBlocked(blockedPiece,r)'),'Barreira de Coulomb interrompe a resolução musical e rearma a tentativa');
+ok(engine.includes('await objectiveMotifPrepare')&&engine.includes('await objectiveMotifConverge')&&engine.includes('await objectiveMotifReveal'),'reação-objetivo possui timeline visual preparar → convergir → revelar');
+ok(css.includes('/* Objective Reaction Motif */')&&css.includes('.objective-motif-nucleus.result.visible'),'CSS contém a cerimônia visual central da reação-objetivo');
 console.log('\nValidação estática do Ardua concluída.');
