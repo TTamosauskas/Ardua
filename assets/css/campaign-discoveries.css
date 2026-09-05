@@ -1,8 +1,29 @@
 /* Ardua — discoveries overlay opened from the campaign map. */
 #menuModal.discoveries-view{z-index:520;background:rgba(3,7,16,.9)}
-#menuModal.discoveries-view .card{width:min(100%,540px);border-color:rgba(112,205,244,.24);box-shadow:0 30px 100px rgba(0,0,0,.68),0 0 42px rgba(72,183,235,.08)}
-#menuModal.discoveries-view .card>h2{margin-bottom:14px}
+#menuModal.discoveries-view .card{width:min(100%,560px);border-color:rgba(112,205,244,.24);box-shadow:0 30px 100px rgba(0,0,0,.68),0 0 42px rgba(72,183,235,.08)}
+#menuModal.discoveries-view .card>h2{margin-bottom:12px}
 #menuModal.discoveries-view [hidden]{display:none!important}
-#menuModal.discoveries-view .menu-section:first-of-type{margin-top:0}
+#menuModal.discoveries-view .menu-sep{display:none}
+#menuModal.discoveries-view .menu-section{margin-top:0}
 #menuModal.discoveries-view .reaction-catalog,#menuModal.discoveries-view .discovery-atlas,#menuModal.discoveries-view .catalog{scroll-margin-top:18px}
-@media(max-width:700px){.campaign-head-actions #campaignData{display:inline-flex!important;align-items:center;justify-content:center}#menuModal.discoveries-view{padding:10px}#menuModal.discoveries-view .card{max-height:94dvh;border-radius:20px;padding:16px}}
+.discoveries-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 16px;padding:4px;border:1px solid rgba(139,190,222,.16);border-radius:14px;background:rgba(3,11,22,.56)}
+.discoveries-tabs button{border:0;border-radius:10px;background:transparent;color:#8fa6bc;padding:10px 8px;font:750 9px/1 inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .16s ease,color .16s ease,box-shadow .16s ease}
+.discoveries-tabs button:hover{color:#e9f7ff;background:rgba(88,187,230,.07)}
+.discoveries-tabs button.active{color:#effbff;background:linear-gradient(180deg,rgba(73,184,230,.19),rgba(58,122,177,.10));box-shadow:inset 0 0 0 1px rgba(102,213,255,.25),0 0 18px rgba(83,190,235,.08)}
+#menuModal.discoveries-view .discovery-panel[data-discovery-panel="elements"]>h3:first-child,#menuModal.discoveries-view .discovery-panel[data-discovery-panel="phenomena"]>h3:first-child{display:none}
+#menuModal.discoveries-view .discovery-panel[data-discovery-panel="reactions"]>h3:first-child{margin-top:0}
+.trail-reaction-title{margin-top:16px!important}
+.trail-reaction-catalog{margin-bottom:4px}
+.trail-reaction{cursor:default}
+.discovery-empty{grid-column:1/-1;width:100%;padding:16px 12px;border:1px dashed rgba(139,190,222,.18);border-radius:12px;color:#8298ad;font-size:10px;line-height:1.45;text-align:center;background:rgba(255,255,255,.02)}
+#menuModal.discoveries-view .catalog .el-card[hidden],#menuModal.discoveries-view .reaction-chip[hidden]{display:none!important}
+#menuModal.discoveries-view .discovery-atlas{margin-top:4px}
+#menuModal.discoveries-view .discovery-group{margin-top:13px}
+#menuModal.discoveries-view .discovery-group:first-child{margin-top:0}
+@media(max-width:700px){
+ .campaign-head-actions #campaignData{display:inline-flex!important;align-items:center;justify-content:center}
+ #menuModal.discoveries-view{padding:10px}
+ #menuModal.discoveries-view .card{max-height:94dvh;border-radius:20px;padding:14px}
+ .discoveries-tabs{position:sticky;top:-14px;z-index:6;margin-inline:-4px;background:rgba(8,16,31,.96);backdrop-filter:blur(12px)}
+ .discoveries-tabs button{padding:10px 5px;font-size:8px;letter-spacing:.055em}
+}
