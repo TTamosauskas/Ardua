@@ -1,0 +1,26 @@
+name: Diagnose fusion tap handler
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/diagnose-fusion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Print fusion handler
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          const a=s.indexOf('function handleFusionTap(p)');
+          const b=s.indexOf('\nfunction beginCrushHold',a);
+          console.log(s.slice(a,b));
+          NODE
