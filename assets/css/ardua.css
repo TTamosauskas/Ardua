@@ -339,3 +339,8 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .objective-motif-nucleus.result small{position:absolute;top:calc(100% + 9px);left:50%;transform:translateX(-50%);white-space:nowrap;color:#f8fbff;text-transform:uppercase;font-size:9px;font-weight:950;letter-spacing:.11em;text-shadow:0 2px 8px #000}
 .objective-motif-nucleus.result.settling{transform:translate(-50%,-50%) scale(.52);opacity:.18;filter:brightness(1.08)}
 @media(prefers-reduced-motion:reduce){.objective-motif-nucleus{transition:left .08s linear,top .08s linear,transform .08s linear,opacity .08s linear}.objective-motif-stage::before{backdrop-filter:none}.star-board.objective-motif-active .rings,.star-board.objective-motif-active .cells,.star-board.objective-motif-active .stellar-zones{transition:none}}
+
+
+/* Objective Motif grid handoff */
+.star-board .atom.motif-grid-product{opacity:0!important;pointer-events:none!important;transition:none!important}
+.star-board .atom.motif-grid-ready{opacity:1!important;transition:none!important;filter:none!important}

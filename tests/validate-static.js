@@ -75,4 +75,9 @@ ok(engine.includes('window.AudioContext||window.webkitAudioContext')&&engine.inc
 ok(engine.includes("stage.className='objective-motif-stage';dom.star.appendChild(stage)"),'palco do Reaction Motif fica acima das camadas de partículas');
 ok(css.includes('.star-board.objective-motif-active .primordial-layer')&&css.includes('.star-board.objective-motif-active .neutrons')&&css.includes('.star-board.objective-motif-active .cosmic-rays'),'prótons, nêutrons e partículas flutuantes perdem contraste durante a cerimônia');
 ok(css.includes('.objective-motif-stage{position:absolute;inset:0;z-index:120'),'Reaction Motif usa camada visual superior dedicada');
+ok(engine.includes("d=index===2?.28:.24")&&engine.includes("g=index===2?.086:.074")&&engine.includes("tone(f*2,d*.82,'sine',g*.30)"),'notas de seleção e alinhamento do Reaction Motif têm presença reforçada e harmônico audível');
+ok(engine.includes("tone(f,.52,'triangle',.040)")&&engine.includes("tone(f*2,.42,'sine',.014)"),'acorde final do Reaction Motif possui corpo e reforço harmônico próprios');
+ok(engine.includes("renderPieces();const motifGridProduct=dom.pieces.querySelector")&&engine.includes("motifGridProduct.classList.add('motif-grid-product')"),'produto real da grade é renderizado sob a cerimônia antes do handoff');
+ok(engine.includes("grid.classList.remove('motif-grid-product')")&&engine.includes("grid.classList.add('motif-grid-ready')"),'fim da cerimônia revela o produto já existente na grade sem segunda transformação');
+ok(css.includes('/* Objective Motif grid handoff */')&&css.includes('.atom.motif-grid-product')&&css.includes('.atom.motif-grid-ready'),'CSS contém handoff instantâneo entre produto central e produto da grade');
 console.log('\nValidação estática do Ardua concluída.');
