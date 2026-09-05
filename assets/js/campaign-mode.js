@@ -9,9 +9,9 @@ const nativeGet=Storage.prototype.getItem;
 const nativeSet=Storage.prototype.setItem;
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set(xs.filter(Boolean))]}
-function defaults(){return{version:1,introduced:false,activeId:'bigbang',completed:[]}}
+function defaults(){return{version:2,introduced:false,activeId:'bigbang',completed:[]}}
 function legacyMigration(){
- const raw=nativeGet.call(localStorage,MAP_KEY);if(raw){const x=parse(raw)||defaults();return{...defaults(),...x,completed:uniq(x.completed||[])}}
+ const raw=nativeGet.call(localStorage,MAP_KEY);if(raw){const x=parse(raw)||defaults();return{...defaults(),...x,version:2,completed:uniq(x.completed||[])}}
  const legacy=parse(nativeGet.call(localStorage,SAVE_KEY));if(!legacy)return defaults();
  const max=Number.isInteger(legacy.maxUnlockedPhaseIndex)?legacy.maxUnlockedPhaseIndex:(Number.isInteger(legacy.campaignPhaseIndex)?legacy.campaignPhaseIndex:(legacy.phaseIndex||0));
  const completed=G?G.runtimeOrder.slice(0,Math.max(0,max)).filter(id=>G.baseIndex[id]!==undefined):[];
@@ -25,7 +25,7 @@ function state(){return{...graphState,completed:[...graphState.completed]}}
 function completedSet(){return new Set(graphState.completed)}
 function isUnlocked(id){
  if(EDITOR_MODE)return true;if(id==='bigbang')return true;
- const done=completedSet(),atlas=G?.atlasById?.[id];if(atlas)return done.has(atlas.anchor);const rule=G?.prerequisites?.[id];if(!rule)return false;
+ const done=completedSet(),rule=G?.prerequisites?.[id];if(!rule)return false;
  if(rule.allOf&&rule.allOf.some(x=>!done.has(x)))return false;
  if(rule.anyOf&&rule.anyOf.length&&!rule.anyOf.some(group=>group.every(x=>done.has(x))))return false;
  return true;
