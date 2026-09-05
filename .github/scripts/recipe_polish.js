@@ -81,7 +81,7 @@ function contextualFormula(label,boldSyms=null){
  if(formulaContainsSym(label,piece.sym))return{label,boldSyms:bold};
  const recipe=contextualRecipeForSelectedPiece(piece);return recipe?{label:topFusionLabel(recipe),boldSyms:bold}:{label,boldSyms:bold}
 }
-function setFormula(label,boldSyms=null){const ctx=contextualFormula(label,boldSyms),tag=scienceScopeLabel(),shown=headerRecipeLine(ctx.label);$('formulaText').innerHTML=formulaHTML(shown,ctx.boldSyms)+(tag?`<small class="science-tag">${tag}</small>`:'')}
+function setFormula(label,boldSyms=null){const ctx=contextualFormula(label,boldSyms),tag=scienceScopeLabel(),shown=headerRecipeLine(ctx.label);$('formulaText').innerHTML=formulaHTML(shown,ctx.boldSyms)+(tag?'<small class="science-tag">'+tag+'</small>':'')}
 function flashRecipeTwice(){const el=$('formulaText');if(!el)return;el.classList.remove('recipe-intro-flash');void el.offsetWidth;el.classList.add('recipe-intro-flash');setTimeout(()=>el.classList.remove('recipe-intro-flash'),1500)}`,
 'contextual formula');
 
