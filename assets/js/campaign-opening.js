@@ -25,7 +25,9 @@ function setOpeningState(){
  }
 }
 function makeBurst(){
- const burst=document.createElement('div');burst.className='campaign-bigbang-burst';burst.setAttribute('aria-hidden','true');
+ const burst=document.createElement('div'),rr=root.getBoundingClientRect(),sr=rootSection.getBoundingClientRect();
+ burst.className='campaign-bigbang-burst';burst.setAttribute('aria-hidden','true');
+ burst.style.left=`${rr.left-sr.left+rr.width/2}px`;burst.style.top=`${rr.top-sr.top+rr.height/2}px`;
  const total=54;
  for(let i=0;i<total;i++){
   const p=document.createElement('i'),angle=(360/total)*i+(Math.random()*8-4),distance=145+Math.random()*210,size=2+Math.random()*4,delay=Math.random()*170;
