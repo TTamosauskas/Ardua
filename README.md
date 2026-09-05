@@ -47,3 +47,5 @@ A Receita Recomendada acompanha essa reconstrução e aponta para a próxima rea
 ## Fases de captura de nêutrons
 
 O processo-s e o processo-r usam variações relaxantes da mesma mecânica central: fluxo lento, fontes `¹³C(α,n)`/`²²Ne(α,n)`, pulsos térmicos, espera β−, ramificações, cascas mágicas por exposição e tempestades-r com freeze-out. As fases continuam sem game over e mantêm uma única semente direta do objetivo; as demais precisam ser reconstruídas pelo jogador.
+
+Essas personalidades alternam ao longo da campanha, de Cobre aos actinídeos, para que fases consecutivas de captura de nêutrons tenham ritmos e decisões perceptivelmente diferentes.
