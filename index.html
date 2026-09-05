@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
 <meta name="theme-color" content="#070b18"/>
 <title>Ardua — Astrofísica Nuclear</title>
-<script>document.documentElement.classList.add('ardua-map-boot');setTimeout(()=>document.documentElement.classList.remove('ardua-map-boot'),5000)</script>
-<link rel="preconnect" href="https://raw.githubusercontent.com"/>
-<link rel="preload" href="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" as="audio" type="audio/mp4"/>
-<script src="assets/js/music.js"></script>
-<style>html.ardua-map-boot body>.app,html.ardua-map-boot .stellar-intro{visibility:hidden!important}</style>
+<link rel="preload" href="assets/AaronCopland.m4a" as="fetch" type="audio/mp4" fetchpriority="low"/>
 <link rel="stylesheet" href="assets/css/ardua.css"/>
 <link rel="stylesheet" href="assets/css/campaign-map.css"/>
 <link rel="stylesheet" href="assets/css/campaign-discoveries.css"/>
@@ -21,6 +17,11 @@
 
 </head>
 <body>
+<audio id="arduaSoundtrack" preload="auto" autoplay loop playsinline hidden>
+  <source src="assets/AaronCopland.m4a" type="audio/mp4"/>
+  <source src="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" type="audio/mp4"/>
+</audio>
+<script src="assets/js/music.js"></script>
 <div class="app">
   <div class="top">
     <div class="phase-card"><small id="branchLabel">Nascimento da primeira estrela</small><strong id="phaseTitle">Nebulosa</strong><span id="phaseMeta">Novo elemento: Hélio</span></div>
