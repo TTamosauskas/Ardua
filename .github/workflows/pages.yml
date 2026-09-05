@@ -1,4 +1,4 @@
-name: Run recipe polish migration
+name: Deploy Ardua to GitHub Pages
 
 on:
   push:
@@ -6,36 +6,29 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  migrate:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
         with:
-          fetch-depth: 0
+          path: .
 
-      - name: Apply recipe and header polish
-        run: node .github/scripts/recipe_polish.js
-
-      - name: Validate JavaScript
-        run: node --check assets/js/ardua.js
-
-      - name: Validate diff
-        run: git diff --check
-
-      - name: Commit migration
-        run: |
-          if git diff --quiet; then
-            echo "No migration changes"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/js/ardua.js assets/css/ardua.css
-          git commit -m "Polish phase recipes and cumulative reactions [skip ci]"
-          git push
-
-# retry after helper syntax correction
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
