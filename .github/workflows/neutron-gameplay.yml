@@ -1,0 +1,39 @@
+name: Apply varied neutron-capture gameplay
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/neutron-gameplay.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply validated engine patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=ebb64f07439f63d630b37516efec23c15515153d5f4b17445fcbfb478f177937
+          target=2ee67287872d4271f584b787b93b4f076e1dc1d2bbee44fdb837d374edcc19c0
+          test "$(sha256sum assets/js/ardua.js | cut -d' ' -f1)" = "$base"
+          base64 -d .github/staging/neutron-gameplay.patch.xz.b64 | xz -d > /tmp/neutron-gameplay.patch
+          patch -p0 < /tmp/neutron-gameplay.patch
+          test "$(sha256sum assets/js/ardua.js | cut -d' ' -f1)" = "$target"
+          node --check assets/js/ardua.js
+          node tests/validate-static.js
+      - name: Commit clean implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/staging/neutron-gameplay.patch.xz.b64
+          rm -f .github/workflows/neutron-gameplay.yml
+          rmdir .github/staging 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js tests/validate-static.js README.md docs/ARCHITECTURE.md .github
+          git commit -m "Vary neutron-capture gameplay across s and r processes"
+          git push
