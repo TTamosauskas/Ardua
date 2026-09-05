@@ -1620,7 +1620,7 @@ async function ionizeRpHydrogen(piece){
 async function attemptProtonCapture(cell,protonId){
  const s=phase(),targetId=state.board[cell],target=targetId?state.pieces.get(targetId):null,p=state.primordialParticles.get(protonId);if(state.locked||state.phaseDone||!protonCaptureAvailable(s)||!target||!p||p.kind!=='p'||p.reacting)return;
  state.locked=true;state.selected=[cell];state.primordialSelected=null;
- const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombCellBlocked(cell,s,target.sym)&&coulombRollBlocks(s);state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;
+ const route=protonCaptureRoute(target,s),key=String(target.id),blocked=coulombRollBlocks(cell,s,target.sym);state.protonCaptureAttempts[key]=(state.protonCaptureAttempts[key]||0)+1;
  const ox=p.x,oy=p.y,z=Number(E[target.sym]?.n||1),dx=ox-target.x,dy=oy-target.y,len=Math.max(1,Math.hypot(dx,dy));
  if(blocked)await showCoulombTooltip(target.x,target.y);
  const barrier=blocked?showCoulombBarrier(target):Math.max(44,54+Math.min(64,z*2.25)),approach=Math.max(30,barrier*.72);p.reacting=true;p.x=target.x+dx/len*approach;p.y=target.y+dy/len*approach;renderPrimordialParticles();tone(250+Math.min(420,z*12),.08,'sine',.024);await wait(350);
@@ -1797,17 +1797,22 @@ const POST_ATOM_MODES=new Set(['remnant','pulsar','accretion','blackhole']);
 function isPostAtomMode(s=phase()){return POST_ATOM_MODES.has(s.mode)}
 function isPostMode(s=phase()){return isPostAtomMode(s)||s.mode==='collapseFinal'}
 const COULOMB_EXEMPT_SYMS=new Set(['H','D','T']);
+const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8});
 function coulombMechanicUnlocked(s=phase()){
  const intro=phaseIndexById.get('coulomb_intro');return intro!==undefined&&state.phaseIndex>=intro;
 }
-function coulombCellBlocked(cell,s=phase(),sym=null){
- if(!coulombMechanicUnlocked(s)||cell===null||cell===undefined||Number(coords[cell]?.ring)<=2)return false;
- if(sym&&COULOMB_EXEMPT_SYMS.has(sym))return false;
- return true;
+function coulombBlockChance(cell,s=phase(),sym=null){
+ if(!coulombMechanicUnlocked(s)||cell===null||cell===undefined)return 0;
+ if(sym&&COULOMB_EXEMPT_SYMS.has(sym))return 0;
+ const ring=Math.max(0,Math.min(4,Number(coords[cell]?.ring)||0));
+ if(s.id==='coulomb_intro')return ring<=2?0:1;
+ return Number(COULOMB_BLOCK_CHANCE_BY_RING[ring]||0);
 }
-function coulombRollBlocks(s=phase()){
- // O tutorial é determinístico. Depois dele, tentar na periferia é uma aposta de 50%.
- return s.id==='coulomb_intro'||Math.random()<.5;
+function coulombCellBlocked(cell,s=phase(),sym=null){
+ return coulombBlockChance(cell,s,sym)>0;
+}
+function coulombRollBlocks(cell,s=phase(),sym=null){
+ const chance=coulombBlockChance(cell,s,sym);return chance>0&&Math.random()<chance;
 }
 function atomicMovementAllowed(s=phase()){
  if(!coulombMechanicUnlocked(s))return false;
@@ -1881,7 +1886,7 @@ async function decayFloatingNeutron(n){
 async function fuseHydrogenWithProton(hCell,protonId,r){
  if(state.locked)return;const hId=state.board[hCell],h=state.pieces.get(hId),p=state.primordialParticles.get(protonId);if(!h||h.sym!=='H'||!p||p.kind!=='p')return;
  state.locked=true;state.fusionInProgress=true;state.selected=[hCell];state.primordialSelected=null;const t=pos(coords[hCell]);
- if(coulombCellBlocked(hCell,phase(),h.sym)&&coulombRollBlocks(phase())){await showCoulombTooltip(t.x,t.y);showCoulombBarrier(h);state.coulombRepulsions++;p.coulombDeflect=true;renderPrimordialParticles();tone(165,.10,'sawtooth',.026);vibrate(6);await wait(300);p.coulombDeflect=false;state.primordialSelected=protonId;state.selected=[hCell];state.locked=false;state.fusionInProgress=false;render();return}
+ if(coulombRollBlocks(hCell,phase(),h.sym)){await showCoulombTooltip(t.x,t.y);showCoulombBarrier(h);state.coulombRepulsions++;p.coulombDeflect=true;renderPrimordialParticles();tone(165,.10,'sawtooth',.026);vibrate(6);await wait(300);p.coulombDeflect=false;state.primordialSelected=protonId;state.selected=[hCell];state.locked=false;state.fusionInProgress=false;render();return}
  p.reacting=true;p.x=t.x;p.y=t.y;h.x=t.x;h.y=t.y;render();await wait(340);
  state.primordialParticles.delete(protonId);state.board[hCell]=null;state.pieces.delete(hId);const np=createPiece(r.out,hCell,false);np.x=t.x;np.y=t.y;focusPieceInfo(np);if(pieceIsUnstable(np))np.unstableBornRound=state.nuclearRound+1;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);recordFlow(r.out===phase().new?3:1);state.selected=[];burst(t.x,t.y);tone(350+Math.max(1,E[r.out].n)*8,.09,'triangle',.042);render();await handleReactionEmissions(r,np);await wait(90);await afterNuclearAction({advanceRound:true,forceBoardPulse:true});state.fusionInProgress=false;state.locked=false;ensureOpportunity();render();checkComplete()
 }
@@ -2444,7 +2449,7 @@ const PRODUCT_LESSONS={
  neutrino:{title:'NEUTRINO (νₑ)',text:'Neutrinos têm carga elétrica nula e interagem muito fracamente com a matéria, escapando com facilidade do ambiente.'},
  antineutrino:{title:'ANTINEUTRINO (ν̄ₑ)',text:'O antineutrino eletrônico acompanha processos β− e escapa quase sem interagir com a matéria.'},
  gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia precisa ser liberado.'},
- coulomb:{title:'BARREIRA DE COULOMB',text:'Traga os núcleos para o centro da estrela.'},
+ coulomb:{title:'BARREIRA DE COULOMB',text:'No jogo: núcleo e camada 1 são livres; camada 2 bloqueia 50%, camada 3 bloqueia 60% e camada 4 bloqueia 80%. H, ²H e ³H são isentos.'},
  waitingPoint:{title:'PONTO DE ESPERA',text:'Alguns núcleos proton-rich desaceleram o rp-process. Continue fazendo ações nucleares: o núcleo pode sofrer β⁺ enquanto a rede procura outra rota.'},
  photodisintegration:{title:'FOTODESINTEGRAÇÃO (γ,p)',text:'Em radiação muito intensa, um fóton pode devolver o próton recém-capturado. A matéria permanece disponível para outra tentativa.'},
  rpCycle:{title:'CICLO Sn–Sb–Te',text:'Na região de Estanho, Antimônio e Telúrio, a rede pode fechar um ciclo. Esse comportamento representa o limite natural desta campanha do rp-process.'},
@@ -2646,9 +2651,11 @@ async function advanceNuclearRound(){
 async function fusionBarrierPasses(r,cells,ids,target){
  const s=phase();if(!coulombMechanicUnlocked(s))return true;
  const blocked=[...cells].filter(c=>{const id=state.board[c],p=id?state.pieces.get(id):null;return !!p&&coulombCellBlocked(c,s,p.sym)}).sort((a,b)=>(coords[b]?.ring??0)-(coords[a]?.ring??0));
- if(!blocked.length||!coulombRollBlocks(s))return true;
- const blockedCell=blocked[0],blockedId=state.board[blockedCell],blockedPiece=blockedId?state.pieces.get(blockedId):null,t=blockedPiece?{x:blockedPiece.x,y:blockedPiece.y}:pos(coords[blockedCell]);
- await showCoulombTooltip(t.x,t.y);if(blockedPiece)showCoulombBarrier(blockedPiece);state.coulombRepulsions++;captureTag(t.x,t.y,'barreira de Coulomb');tone(165,.10,'sawtooth',.028);vibrate(7);await wait(300);state.selected=[blockedCell];render();return false;
+ if(!blocked.length)return true;
+ const blockedCell=blocked[0],blockedId=state.board[blockedCell],blockedPiece=blockedId?state.pieces.get(blockedId):null;
+ if(!blockedPiece||!coulombRollBlocks(blockedCell,s,blockedPiece.sym))return true;
+ const t={x:blockedPiece.x,y:blockedPiece.y};
+ await showCoulombTooltip(t.x,t.y);showCoulombBarrier(blockedPiece);state.coulombRepulsions++;captureTag(t.x,t.y,'barreira de Coulomb');tone(165,.10,'sawtooth',.028);vibrate(7);await wait(300);state.selected=[blockedCell];render();return false;
 }
 async function fuse(r){if(state.locked)return;state.locked=true;state.fusionInProgress=true;try{const cells=[...state.selected],target=[...cells].sort((a,b)=>coords[a].ring-coords[b].ring)[0],ids=cells.map(c=>state.board[c]),t=pos(coords[target]);if(!(await fusionBarrierPasses(r,cells,ids,target)))return;ids.forEach(id=>{const p=state.pieces.get(id);if(p){p.x=t.x;p.y=t.y}});dom.star.classList.add('pulse');renderPieces();await wait(140);cells.forEach(c=>state.board[c]=null);ids.forEach(id=>state.pieces.delete(id));const np=createPiece(r.out,target,false);np.x=t.x;np.y=t.y;focusPieceInfo(np);if(pieceIsUnstable(np))np.unstableBornRound=state.nuclearRound+1;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);if(!phase().objectiveOnlyProgress||r.out===phase().new)recordFlow(r.out===phase().new?3:1);state.selected=[];burst(t.x,t.y);await handleReactionEmissions(r,np);const milestoneTriggered=triggerPhaseMilestone();tone(350+Math.max(1,E[r.out].n)*8,.09,'triangle',.042);if(!milestoneTriggered){let unstableHint='';if(r.out==='HeU')unstableHint=phase().id==='he_red'?'Crie outro He instável antes de 4 rodadas e una os dois para formar He estável.':'Ele treme e se desfaz após 4 rodadas.';else if(r.out==='Be7')unstableHint='Transporte o Berílio-7 para uma camada externa; ali a captura eletrônica formará Lítio-7.';else if(E[r.out]?.unstable)unstableHint=recipeIsActive(FUSIONS.C)?'Use-o na próxima ação nuclear para formar Carbono.':'Outra ação nuclear fará este núcleo se desfazer.';announce(E[r.out]?.unstable?'NÚCLEO INSTÁVEL':'NOVO ELEMENTO',E[r.out].name.toUpperCase(),unstableHint)};render();await wait(90);const protectedIds=phase().id==='coulomb_intro'?[...state.pieces.values()].filter(q=>q.sym==='He3').map(q=>q.id):[];await afterNuclearAction({advanceRound:true,forceBoardPulse:true,protectedPieceIds:protectedIds})}catch(err){console.error(err)}finally{state.fusionInProgress=false;state.locked=false;dom.star.classList.remove('pulse');ensureOpportunity();render()}checkComplete()}
 function burst(x,y){const b=document.createElement('div');b.className='burst';b.style.left=x+'px';b.style.top=y+'px';b.innerHTML='<i class="wave"></i>';dom.fx.appendChild(b);setTimeout(()=>b.remove(),650)}
