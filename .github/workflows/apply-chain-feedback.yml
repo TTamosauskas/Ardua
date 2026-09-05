@@ -23,6 +23,26 @@ jobs:
           python -m py_compile /tmp/chain-feedback.py
       - name: Apply reaction feedback migration
         run: python /tmp/chain-feedback.py
+      - name: Normalize resonance CSS
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/css/ardua.css')
+          s=p.read_text()
+          replacements={
+            'opacity:calc(var(--resonanceGlow,0)*.78)':'opacity:var(--resonanceGlow,0)',
+            'box-shadow:0 0 calc(18px + var(--resonanceGlow,0)*50px) rgba(171,226,255,.48)':'box-shadow:0 0 58px rgba(171,226,255,.48)',
+            'filter:brightness(calc(1 + var(--resonanceGlow,0)*.45))':'filter:brightness(1.22)'
+          }
+          for old,new in replacements.items():
+              if s.count(old)!=1:
+                  raise SystemExit(f'resonance CSS: expected 1 occurrence of {old!r}, found {s.count(old)}')
+              s=s.replace(old,new,1)
+          if 'calc(var(--resonanceGlow' in s:
+              raise SystemExit('unsafe resonance calc remains')
+          p.write_text(s)
+          PY
       - name: Validate engine
         run: |
           node --check assets/js/ardua.js
