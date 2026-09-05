@@ -54,6 +54,12 @@ Toda transformação que contribui para o fluxo da fase produz feedback global d
 
 As cascatas nunca substituem a ação principal do jogador. O primeiro elo automático recebe 25% do crédito normal de `flow`, o segundo 10% e os seguintes 0%; o bônus total de uma mesma cascata não pode ultrapassar 10% do `flowTarget`. Ao cumprir o objetivo científico, fases baseadas em `flow` recebem no máximo um piso de 75% de progresso, preservando o último quarto para interação manual. Barreira de Coulomb, waiting points, instabilidade nuclear e compatibilidade ambiental continuam valendo normalmente durante continuidades automáticas.
 
+## Primeira ocorrência e matéria reciclada
+
+Fenômenos especiais usam a mesma infraestrutura didática dos produtos nucleares: na primeira ocorrência de uma reação em cadeia, cascata de nêutrons, tempestade-r, cadeia de prótons, reciclagem nuclear, fonte de nêutrons, ramificação, waiting point, freeze-out ou ciclo Sn–Sb–Te, o jogo pausa antes da animação característica e exibe um tooltip explicativo. Ao fechar o aviso, a sequência retoma do ponto em que foi interrompida; as ocorrências seguintes seguem diretamente para a animação.
+
+A fase de Berílio-8 usa um objetivo por **linhagem de matéria**. Cada núcleo recebe uma proveniência transitória que é combinada nas fusões e preservada quando `⁸Be → He + He`. Se exatamente a mesma linhagem for reunida novamente para formar ⁸Be, a reação continua fisicamente válida e seus efeitos aparecem, mas ela não aumenta outra vez o contador científico. Misturar ou incorporar matéria nova cria uma linhagem diferente e pode registrar uma nova formação independente. Essa proteção é ativada somente em objetivos explicitamente marcados como recicláveis e não altera a contagem das demais redes.
+
 ## Recompensa, descobertas e direção estética
 
 O feedback de jogo é coordenado globalmente por um diretor de recompensas: reações comuns permanecem discretas, eventos importantes recebem partículas e áudio adicionais, cascatas ganham escalada audiovisual e marcos científicos podem assumir uma apresentação de assinatura. O texto de `CADEIA NUCLEAR`, `TEMPESTADE-r`, `CADEIA DE PRÓTONS` e equivalentes usa um único callout atualizado durante a sequência e permanece legível por cerca de 1,85 s após o último elo, evitando empilhamento de mensagens.
