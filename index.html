@@ -54,7 +54,7 @@
 <div class="ambient-banner" id="ambientBanner" role="status"><span class="ak" id="ambientKicker"></span><strong id="ambientTitle"></strong><small id="ambientText"></small><button type="button" class="ambient-continue" id="ambientContinueBtn" hidden>CONTINUAR</button></div>
 
 <div class="modal" id="menuModal"><div class="card">
-  <div class="eyebrow">Modo de teste</div><h2>Fases</h2><p>Todas as fases estão liberadas nesta versão para facilitar o balanceamento.</p>
+  <div class="eyebrow" id="phaseMenuMode">Campanha</div><h2>Fases</h2><p id="phaseMenuHint">As fases são liberadas conforme o avanço da campanha. Fases já alcançadas podem ser revisitadas.</p>
   <div class="phase-menu" id="phaseMenu"></div>
   <div class="menu-sep"></div>
   <div class="menu-section"><h3>Reações descobertas</h3><div class="reaction-catalog" id="reactionCatalog"></div><div class="catalog-detail reaction-detail" id="reactionDetail"><strong>Reações cumulativas</strong><span>Uma reação aprendida continua disponível quando o ambiente atual alcança as condições físicas necessárias.</span><p>O objetivo da fase permanece principal; reações antigas são opcionais.</p></div><h3 style="margin-top:13px">Capturas de prótons</h3><div class="reaction-catalog" id="protonCaptureCatalog"></div><div class="catalog-detail reaction-detail" id="protonCaptureDetail"><strong>Captura p</strong><span>Desbloqueada depois da fase de Captura de Prótons.</span><p>Selecione um próton livre e depois um núcleo. A carga do núcleo e o ambiente controlam a dificuldade da aproximação.</p></div></div>
@@ -76,6 +76,7 @@
   </div>
 </div>
 
+<script src="assets/js/campaign-mode.js"></script>
 <script src="assets/js/ardua.js"></script>
 
 </body>
