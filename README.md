@@ -60,7 +60,7 @@ Fenômenos especiais usam a mesma infraestrutura didática dos produtos nucleare
 
 A fase de Berílio-8 usa um objetivo por **linhagem de matéria**. Cada núcleo recebe uma proveniência transitória que é combinada nas fusões e preservada quando `⁸Be → He + He`. Se exatamente a mesma linhagem for reunida novamente para formar ⁸Be, a reação continua fisicamente válida e seus efeitos aparecem, mas ela não aumenta outra vez o contador científico. Misturar ou incorporar matéria nova cria uma linhagem diferente e pode registrar uma nova formação independente. Essa proteção é ativada somente em objetivos explicitamente marcados como recicláveis e não altera a contagem das demais redes.
 
-## Reaction Motif da receita-objetivo
+## Reaction Motif e interações-objetivo
 
 Fusões manuais de dois núcleos recebem uma cerimônia audiovisual especial somente quando a reação executada é a **receita final que realmente aumenta o objetivo científico da fase**. Reações intermediárias usadas para reconstruir reagentes, fusões opcionais e continuidades automáticas de cascata permanecem no feedback normal e não disparam essa sequência.
 
