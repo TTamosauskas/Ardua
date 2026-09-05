@@ -1,0 +1,8 @@
+/* Ardua — discoveries overlay opened from the campaign map. */
+#menuModal.discoveries-view{z-index:520;background:rgba(3,7,16,.9)}
+#menuModal.discoveries-view .card{width:min(100%,540px);border-color:rgba(112,205,244,.24);box-shadow:0 30px 100px rgba(0,0,0,.68),0 0 42px rgba(72,183,235,.08)}
+#menuModal.discoveries-view .card>h2{margin-bottom:14px}
+#menuModal.discoveries-view [hidden]{display:none!important}
+#menuModal.discoveries-view .menu-section:first-of-type{margin-top:0}
+#menuModal.discoveries-view .reaction-catalog,#menuModal.discoveries-view .discovery-atlas,#menuModal.discoveries-view .catalog{scroll-margin-top:18px}
+@media(max-width:700px){.campaign-head-actions #campaignData{display:inline-flex!important;align-items:center;justify-content:center}#menuModal.discoveries-view{padding:10px}#menuModal.discoveries-view .card{max-height:94dvh;border-radius:20px;padding:16px}}
