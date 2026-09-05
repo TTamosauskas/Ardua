@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,6 +23,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Apply boot, music and start fixes
+        run: python .github/scripts/fix_boot_music_start.py
+
+      - name: Validate JavaScript and patch
+        run: |
+          node --check assets/js/music.js
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-map.js
+          git diff --check
+          grep -F "raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" index.html
+          grep -F "bindPhaseStart" assets/js/ardua.js
+          grep -F "setTrailVisible(true" assets/js/campaign-map.js
+
+      - name: Commit production fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/js/music.js assets/js/ardua.js assets/js/campaign-map.js assets/css/ardua.css assets/js/stellar-intro-input.js
+          if ! git diff --cached --quiet; then
+            git commit -m "Boot into campaign trail and harden soundtrack [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
