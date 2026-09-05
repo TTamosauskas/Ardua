@@ -15,6 +15,7 @@ const PHENOMENA=[
  {key:'process:r',glyph:'r',title:'Processo-r',group:'Processos',text:'Capturas rápidas durante fluxos intensos de nêutrons.',infer:['eu','u']},
  {key:'process:rp',glyph:'p',title:'rp-process',group:'Processos',text:'Capturas rápidas de prótons em uma estrela de nêutrons em acreção.',infer:['rp_cu','rp_te']},
  {key:'phenomenon:tripleAlpha',glyph:'3α',title:'Triplo-alfa',group:'Fenômenos',text:'Berílio-8 instável recebe outro Hélio e forma Carbono.',infer:['c']},
+ {key:'phenomenon:stellarConvection',glyph:'↕',title:'Convecção Estelar',group:'Fenômenos',text:'Correntes de plasma transportam matéria e energia entre diferentes regiões da estrela.'},
  {key:'phenomenon:waitingPoint',glyph:'β⁺',title:'Waiting point',group:'Fenômenos',text:'Um núcleo proton-rich interrompe temporariamente a sequência de capturas.'},
  {key:'phenomenon:freezeout',glyph:'n↓',title:'Freeze-out',group:'Fenômenos',text:'O fluxo de nêutrons cai e os decaimentos passam a dominar.'},
  {key:'phenomenon:supernova',glyph:'✦',title:'Supernova',group:'Eventos cósmicos',text:'Uma explosão estelar dispersa matéria enriquecida.',infer:['final_collapse']},
@@ -94,7 +95,7 @@ function ensureTrailReactionHost(){
 function renderTrailReactions(completed){
  const host=ensureTrailReactionHost();if(!host)return;host.innerHTML='';ensurePhaseIds();
  const buttons=[...(phaseMenu?.querySelectorAll('.phase-jump')||[])];
- const structural=new Set(['bigbang','brown','he_red','he_orange','he_yellow','coulomb_intro','white','final_collapse','neutron_star','pulsar','accretion','stability','black_hole']);
+ const structural=new Set(['bigbang','brown','he_red','he_orange','he_yellow','coulomb_intro','stellar_convection','white','final_collapse','neutron_star','pulsar','accretion','stability','black_hole']);
  const chosen=buttons.filter(b=>{
   const id=b.dataset.phaseId||'';
   if(editor)return id&&!structural.has(id);
