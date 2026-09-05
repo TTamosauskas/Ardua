@@ -29,6 +29,7 @@ jobs:
       - name: Apply stellar convection migration
         run: |
           sed -i 's/if count != 1:/if count < 1:/' .github/scripts/apply_stellar_convection.py
+          sed -i "s/graph.count('stellar_convection') != 3/graph.count('stellar_convection') != 4/" .github/scripts/apply_stellar_convection.py
           python -m py_compile .github/scripts/apply_stellar_convection.py
           python .github/scripts/apply_stellar_convection.py
           node --check assets/js/ardua.js
