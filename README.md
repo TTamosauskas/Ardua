@@ -54,6 +54,16 @@ Toda transformação que contribui para o fluxo da fase produz feedback global d
 
 As cascatas nunca substituem a ação principal do jogador. O primeiro elo automático recebe 25% do crédito normal de `flow`, o segundo 10% e os seguintes 0%; o bônus total de uma mesma cascata não pode ultrapassar 10% do `flowTarget`. Ao cumprir o objetivo científico, fases baseadas em `flow` recebem no máximo um piso de 75% de progresso, preservando o último quarto para interação manual. Barreira de Coulomb, waiting points, instabilidade nuclear e compatibilidade ambiental continuam valendo normalmente durante continuidades automáticas.
 
+## Recompensa, descobertas e direção estética
+
+O feedback de jogo é coordenado globalmente por um diretor de recompensas: reações comuns permanecem discretas, eventos importantes recebem partículas e áudio adicionais, cascatas ganham escalada audiovisual e marcos científicos podem assumir uma apresentação de assinatura. O texto de `CADEIA NUCLEAR`, `TEMPESTADE-r`, `CADEIA DE PRÓTONS` e equivalentes usa um único callout atualizado durante a sequência e permanece legível por cerca de 1,85 s após o último elo, evitando empilhamento de mensagens.
+
+A estrela combina dois estados visuais independentes. A Ressonância Estelar representa atividade recente e decai com o tempo; uma aura derivada de `PROGRESSO` permanece durante a fase para mostrar transformação acumulada. Partículas de recompensa são deliberadamente escassas e limitadas, e o sistema respeita `prefers-reduced-motion` para reduzir animações quando solicitado pelo usuário.
+
+O Menu inclui um **Atlas de descobertas** persistente para elementos-chave, processos e fenômenos. Carbono, Ferro, Ouro e Urânio recebem momentos de assinatura próprios, assim como eventos como freeze-out, Supernova, Estrela de Nêutrons, ciclo Sn–Sb–Te e Buraco Negro. Microconquistas como `TRIPLO-ALFA`, `WAITING POINT`, `RAMIFICAÇÃO`, `FONTE DE NÊUTRONS`, `CADEIA ×3/×4` e `REDE PREPARADA` reconhecem acontecimentos científicos ou domínio do tabuleiro sem moeda, loot, streak diário ou bônus obrigatório.
+
+Uma cadeia é considerada preparada apenas quando a continuação já estava geometricamente disponível antes da reação inicial; o reconhecimento não tenta inferir intenção. A conclusão de uma fase também reserva um breve beat audiovisual antes de devolver protagonismo ao botão de avanço. Esses sistemas observam o motor científico existente e não alteram quais reações são válidas nem os requisitos de vitória.
+
 ## Ritmo e progresso das fases
 
 A barra existente usa o rótulo **PROGRESSO** e acompanha o `flowTarget` da fase; o objetivo científico permanece separado no texto superior. As classes internas de balanceamento são `quick` (60–90 s), `short` (90–150 s), `standard` (150–210 s), `long` (210–255 s) e `epic` (255–300 s). Essas janelas são metas de design, sem cronômetro ou derrota por tempo.
