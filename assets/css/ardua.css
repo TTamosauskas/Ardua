@@ -291,3 +291,12 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .atlas-energy-inflow{position:absolute;z-index:43;width:7px;height:7px;border-radius:50%;pointer-events:none;background:#fff4b7;box-shadow:0 0 12px rgba(255,214,107,.92);transform:translate(-50%,-50%);animation:atlasEnergyIn .62s ease-in forwards}
 @keyframes atlasEnergyIn{from{opacity:.2;transform:translate(var(--sx),var(--sy)) scale(.5)}55%{opacity:1}to{opacity:0;transform:translate(-50%,-50%) scale(1.35)}}
 .atlas-rebound{filter:brightness(1.18)}
+
+
+/* Reaction feedback + causal cascades */
+.capture-tag{position:absolute;z-index:40;pointer-events:none;transform:translate(-50%,-50%);padding:4px 7px;border:1px solid rgba(255,255,255,.42);border-radius:999px;background:rgba(8,15,30,.80);box-shadow:0 0 16px rgba(161,222,255,.26);color:#f7fbff;font-size:9px;font-weight:900;letter-spacing:.035em;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8);animation:captureTagRise .78s ease-out forwards}
+@keyframes captureTagRise{0%{opacity:0;transform:translate(-50%,-30%) scale(.84)}18%{opacity:1;transform:translate(-50%,-58%) scale(1)}100%{opacity:0;transform:translate(-50%,-135%) scale(.94)}}
+.star-board.chain-resonance::after{content:"";position:absolute;inset:-5%;z-index:2;pointer-events:none;border-radius:50%;opacity:var(--resonanceGlow,0);background:radial-gradient(circle,transparent 48%,rgba(255,246,190,.10) 61%,rgba(150,222,255,.30) 77%,transparent 92%);box-shadow:0 0 58px rgba(171,226,255,.48);mix-blend-mode:screen;transition:opacity .38s ease;filter:brightness(1.22)}
+.star-board.reaction-reward{animation:reactionReward .34s ease-out}.star-board.reaction-reward-strong{animation:reactionRewardStrong .52s ease-out}
+@keyframes reactionReward{0%{filter:brightness(1)}42%{filter:brightness(1.24) drop-shadow(0 0 24px rgba(192,235,255,.52))}100%{filter:brightness(1)}}
+@keyframes reactionRewardStrong{0%{filter:brightness(1)}38%{filter:brightness(1.46) drop-shadow(0 0 46px rgba(255,238,169,.72))}100%{filter:brightness(1)}}
