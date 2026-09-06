@@ -1,4 +1,4 @@
-name: Inspect fusion tap handler
+name: Fix completed fusion selection priority
 
 on:
   push:
@@ -6,21 +6,54 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  migrate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-      - name: Print handler
+        with:
+          fetch-depth: 0
+
+      - name: Patch fusion tap handler
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const s=fs.readFileSync('assets/js/ardua.js','utf8');
-          const a=s.indexOf('function handleFusionTap(p)');
-          const b=s.indexOf('\nfunction beginCrushHold',a);
-          if(a<0||b<0) throw new Error('handler bounds not found');
-          console.log(s.slice(a,b));
+          const p='assets/js/ardua.js';
+          let s=fs.readFileSync(p,'utf8');
+          const before=` if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}\n const test=[...selectedSyms(),p.sym];if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}\n state.selected.push(cell);render();const ex=exactRecipe(test);if(ex){objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95)}return true;`;
+          const after=` const test=[...selectedSyms(),p.sym],ex=exactRecipe(test);\n if(ex){state.selected.push(cell);render();objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95);return true}\n if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}\n if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}\n state.selected.push(cell);render();return true;`;
+          if(!s.includes(before))throw new Error('fusion handler anchor changed');
+          s=s.replace(before,after);
+          fs.writeFileSync(p,s);
           NODE
+
+      - name: Validate JavaScript
+        run: node --check assets/js/ardua.js
+
+      - name: Validate completed-recipe ordering
+        run: |
+          node - <<'NODE'
+          const s=require('fs').readFileSync('assets/js/ardua.js','utf8');
+          const a=s.indexOf('function handleFusionTap(p)');
+          const b=s.indexOf('\nfunction neutronSourceSelectedPiece',a);
+          const h=s.slice(a,b);
+          const exact=h.indexOf('ex=exactRecipe(test)');
+          const neighbour=h.indexOf('state.selected.some(x=>neigh[x].includes(cell))');
+          if(exact<0||neighbour<0||exact>neighbour)throw new Error('completed recipe is not prioritized');
+          if(!h.includes('if(ex){state.selected.push(cell);render();objectiveMotifArmSecond'))throw new Error('exact recipe execution path missing');
+          console.log('Fusion priority validation passed.');
+          NODE
+
+      - name: Validate diff
+        run: git diff --check
+
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js
+          git commit -m "Prioritize completed learned fusion recipes [skip ci]"
+          git push
