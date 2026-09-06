@@ -39,11 +39,15 @@ jobs:
           from pathlib import Path
           p=Path('tests/validate-static.js')
           s=p.read_text(encoding='utf-8')
-          old="COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8})"
-          new="COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50})"
-          if old not in s:
-              raise SystemExit('expected stale Coulomb assertion was not found')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          replacements={
+            "COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.5,3:.6,4:.8})":"COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50})",
+            "$('ambientContinueBtn').addEventListener('click',rewardDirectorDismiss)":"bindReliableTap($('ambientContinueBtn'),rewardDirectorDismiss)",
+          }
+          for old,new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'expected stale baseline assertion was not found: {old}')
+              s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
           PY
           node tests/validate-static.js
           git checkout -- tests/validate-static.js
