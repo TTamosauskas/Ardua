@@ -1,7 +1,7 @@
 /* Ardua — generation landmarks and phase annotations for the campaign map. */
 (()=>{
 'use strict';
-const G=window.ARDUA_CAMPAIGN_GRAPH,GEN=window.ARDUA_GENERATIONS,map=document.getElementById('campaignMap');if(!G||!GEN||!map)return;
+const GEN=window.ARDUA_GENERATIONS,map=document.getElementById('campaignMap');if(!GEN||!map)return;
 function banner(key,subtitle=''){
  const d=GEN.defs[key],el=document.createElement('section');el.className=`generation-banner generation-${key}`;el.dataset.generationBanner=key;
  el.innerHTML=`<span>${d.number?`${d.number}ª GERAÇÃO`:'PRÓLOGO'}</span><strong>${d.title}</strong><small>${subtitle||d.description}</small>`;return el;
