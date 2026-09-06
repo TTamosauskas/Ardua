@@ -1,0 +1,37 @@
+name: Apply formation depth and auto H
+on:
+  push:
+    branches:
+      - fix/formation-depth-auto-h
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/formation-depth-auto-h
+      - name: Apply patch
+        run: node scripts/patch-formation-depth-auto-h.js
+      - name: Validate syntax
+        run: node --check assets/js/ardua.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate formation invariants
+        run: |
+          grep -F "const STELLAR_FORMATION_VISIBLE_TOTAL=STELLAR_FORMATION_PAIR_COUNT*2" assets/js/ardua.js
+          grep -F "stellarFormationFiveLayerAtomSize" assets/js/ardua.js
+          grep -F "if(mass===STELLAR_FORMATION_VISIBLE_TOTAL)stellarFormationAutoComplete(f,g)" assets/js/ardua.js
+          grep -F "formation-pair" assets/css/stellar-formation.css
+          grep -F "formation-cluster" assets/css/stellar-formation.css
+          grep -F "formation-auto-h" assets/css/stellar-formation.css
+          ! grep -F "18 duplas de Hidrogênio e 1 átomo isolado" assets/js/ardua.js
+      - name: Commit product change
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js
+          git commit -m "fix: refina profundidade e conclusão da formação"
+          git push
