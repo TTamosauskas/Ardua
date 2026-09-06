@@ -1,0 +1,46 @@
+name: Validate generation inheritance model
+on:
+  push:
+    branches: [fix/generation-inheritance-model]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/generation-inheritance-model
+          fetch-depth: 0
+      - name: Apply engine patch
+        run: node scripts/patch-generation-inheritance-model.js
+      - name: Validate implementation
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-generations.js
+          node --check assets/js/campaign-generations-map.js
+          node --check assets/js/campaign-mode.js
+          node scripts/validate-cumulative-recipes.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const game=fs.readFileSync('assets/js/ardua.js','utf8');
+          const gen=fs.readFileSync('assets/js/campaign-generations.js','utf8');
+          const mode=fs.readFileSync('assets/js/campaign-mode.js','utf8');
+          if(!gen.includes("birthSymbols:Object.freeze(['H','He','Li'])"))throw new Error('first generation birth composition missing');
+          if(!gen.includes("'C','N','O'"))throw new Error('N missing from inherited second-generation composition');
+          if(!mode.includes('version:5'))throw new Error('save version 5 missing');
+          for(const sym of ["'N'","'Na'","'Al'","'Cu'","'Kr'"])if(!mode.includes(sym))throw new Error('expanded first-generation heritage missing '+sym);
+          if(game.includes("campaignHeritage>=2&&generation==='third'"))throw new Error('generation still overrides every phase abundance');
+          if(!game.includes("['first_enrichment','second_birth','spallation_be','spallation']"))throw new Error('birth/enrichment abundance mapping missing');
+          if(!game.includes("if(s.visual==='kilonova')return ABUNDANCE.kilonova"))throw new Error('kilonova environment profile missing');
+          if(!game.includes("if(s.visual==='agb')return ABUNDANCE.agb"))throw new Error('AGB environment profile missing');
+          NODE
+      - name: Commit engine integration
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/ardua.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: scope chemical inheritance to generation births"
+          git push origin HEAD:fix/generation-inheritance-model
