@@ -14,15 +14,15 @@
 .formation-g-field.compatible{border-color:rgba(151,239,255,.48);box-shadow:0 0 18px rgba(111,225,255,.16);opacity:.96}
 .formation-g-field.blocked{animation:formation-field-block .36s ease}
 @keyframes formation-field-block{50%{border-color:rgba(255,133,133,.72);box-shadow:0 0 20px rgba(255,104,104,.18)}}
-.formation-atom{position:absolute;width:clamp(30px,8vw,42px);height:clamp(30px,8vw,42px);margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.42);border-radius:50%;display:grid;place-items:center;color:#06111c;font:800 7px/1 Inter,system-ui,sans-serif;box-shadow:inset -5px -6px 9px rgba(0,0,0,.24),0 0 9px rgba(190,232,255,.16);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:width .55s ease,height .55s ease,box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:4}
-.formation-atom.selected{box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 7px #fff,0 0 17px rgba(90,214,255,.72)}
-.formation-atom.compatible{box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 12px rgba(133,245,255,.62)}
+.formation-atom{position:absolute;width:clamp(39px,9.7vw,49px);height:clamp(39px,9.7vw,49px);margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;color:#07080b;font:950 clamp(20px,5.4vw,28px)/1 Inter,system-ui,sans-serif;letter-spacing:-.045em;box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:width .55s ease,height .55s ease,box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:4}
+.formation-atom.selected{outline:5px solid #43f28a;outline-offset:1px;box-shadow:0 0 24px rgba(67,242,138,.48),inset 0 0 18px rgba(255,255,255,.18),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
+.formation-atom.compatible{outline:3px solid rgba(67,242,138,.92);outline-offset:1px;box-shadow:0 0 16px rgba(67,242,138,.28),inset 0 0 18px rgba(255,255,255,.18),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .formation-atom.reorganizing{filter:brightness(1.24)}
 .formation-hud{display:none!important}
 .stellar-formation-layer.complete .formation-g-field{border-color:rgba(235,250,255,.44);box-shadow:0 0 28px rgba(152,223,255,.16);opacity:.82}
-.stellar-formation-layer.complete .formation-atom{width:var(--cellSize);height:var(--cellSize);font-size:calc(var(--cellSize)*.18);box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 8px rgba(255,255,255,.42)}
+.stellar-formation-layer.complete .formation-atom{width:var(--cellSize);height:var(--cellSize);font-size:calc(var(--cellSize)*.56);box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .star-board.formation-materializing .stellar-formation-layer{opacity:0;transition:opacity .72s ease}
 .star-board.formation-birth-flash::after{content:"";position:absolute;inset:0;z-index:19;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(245,253,255,.48),rgba(132,211,255,.18) 18%,transparent 54%);animation:formation-birth .9s ease-out both}
 @keyframes formation-birth{from{opacity:0;transform:scale(.72)}35%{opacity:1}to{opacity:0;transform:scale(1.1)}}
-@media(max-width:520px){.formation-atom{font-size:7px}}
+@media(max-width:520px){.formation-atom{font-size:clamp(20px,5.4vw,28px)}}
 @media(prefers-reduced-motion:reduce){.formation-g-field,.formation-atom,.stellar-formation-layer{transition:none}.star-board.formation-birth-flash::after{animation:none}}
