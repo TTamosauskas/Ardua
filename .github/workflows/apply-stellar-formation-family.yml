@@ -1,0 +1,78 @@
+name: Apply stellar formation family
+on:
+  push:
+    branches:
+      - feat/stellar-formation-family
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/stellar-formation-family
+      - name: Prepare patch matcher
+        run: node scripts/fix-stellar-formation-patch.js
+      - name: Apply patch
+        run: node scripts/patch-stellar-formation-family.js
+      - name: Validate syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-mode.js
+          node --check assets/js/campaign-generations.js
+          node --check assets/js/campaign-giants.js
+          node --check assets/js/campaign-giants-map.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate formation family invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const engine=fs.readFileSync('assets/js/ardua.js','utf8');
+          for(const [id,layers,total,pairs] of [
+            ['first_generation_formation',4,37,18],
+            ['brown_formation',2,7,3],
+            ['low_mass_formation',2,7,3],
+            ['intermediate_mass_formation',3,19,9],
+            ['giant_formation',4,37,18],
+            ['high_mass_formation',5,61,30]
+          ]){
+            if(!engine.includes(`id:'${id}'`))throw new Error(`phase missing ${id}`);
+            if(!engine.includes(`formationLayers:${layers},target:${total}`))throw new Error(`geometry missing ${id}`);
+            const r=layers-1,computed=1+3*r*(r+1);
+            if(computed!==total||(total-1)/2!==pairs)throw new Error(`bad centered hex math ${id}`);
+          }
+          if(engine.includes('STELLAR_FORMATION_'))throw new Error('legacy hardcoded formation constants remain');
+          if(!engine.includes("if(s.mode==='stellarFormation')return stellarFormationSpec(s).radius;"))throw new Error('dynamic formation radius missing');
+          if(!engine.includes('g.members.length!==f.spec.visibleTotal'))throw new Error('dynamic final-H gate missing');
+          if(!engine.includes('Array(spec.pairCount).fill(2)'))throw new Error('dynamic pair spawn missing');
+          global.window={};require('./assets/js/campaign-graph.js');const G=window.ARDUA_CAMPAIGN_GRAPH;
+          if(G.version!==7)throw new Error('graph version');
+          const expectPrefix=(name,prefix)=>{const got=G.sequences[name]||[];prefix.forEach((id,i)=>{if(got[i]!==id)throw new Error(`${name} sequence missing ${id}`)})};
+          expectPrefix('brown',['brown_formation','brown']);
+          expectPrefix('red',['low_mass_formation','he_red']);
+          expectPrefix('mid',['intermediate_mass_formation','he_orange']);
+          expectPrefix('high',['high_mass_formation','carbon_burn']);
+          if(!G.sequences.mid.includes('giant_formation'))throw new Error('giant formation missing from mid sequence');
+          const req=(id,parent)=>{if(G.prerequisites[id]?.allOf?.[0]!==parent)throw new Error(`${id} should require ${parent}`)};
+          req('brown','brown_formation');req('he_red','low_mass_formation');req('he_orange','intermediate_mass_formation');req('giant_formation','stellar_li');req('carbon_burn','high_mass_formation');
+          const giants=fs.readFileSync('assets/js/campaign-giants.js','utf8');
+          if(!giants.includes("const precursor='giant_formation';"))throw new Error('giant fork precursor');
+          const map=fs.readFileSync('assets/js/campaign-giants-map.js','utf8');
+          if(!map.includes("'stellar_li',S.precursor"))throw new Error('giant map placement');
+          const generations=fs.readFileSync('assets/js/campaign-generations.js','utf8');
+          for(const id of ['brown_formation','low_mass_formation','intermediate_mass_formation','giant_formation','high_mass_formation'])if(!generations.includes(`'${id}'`))throw new Error(`formation role ${id}`);
+          const mode=fs.readFileSync('assets/js/campaign-mode.js','utf8');
+          if(!mode.includes('version:9'))throw new Error('save version 9 missing');
+          console.log('formation family invariants ok');
+          NODE
+      - name: Commit product change
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-mode.js assets/js/campaign-generations.js assets/js/campaign-giants.js assets/js/campaign-giants-map.js assets/css/stellar-formation.css
+          git commit -m "feat: adiciona formações estelares por faixa de massa"
+          git push
