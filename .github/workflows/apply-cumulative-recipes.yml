@@ -1,0 +1,171 @@
+name: Apply cumulative recipe architecture
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-cumulative-recipes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Apply campaign topology and cumulative recipes
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const must=(ok,msg)=>{if(!ok)throw new Error(msg)};
+          const replaceOne=(s,a,b,label)=>{const n=s.split(a).length-1;must(n===1,`${label}: expected 1 anchor, found ${n}`);return s.replace(a,b)};
+
+          // 1) Intermediate-mass path: a single teaching sequence.
+          {
+            const p='assets/js/campaign-graph.js';let s=fs.readFileSync(p,'utf8');
+            s=replaceOne(s,'"he_yellow":{"allOf":["atomic_li"]},"coulomb_intro":{"anyOf":[["he_orange"],["he_yellow"]]}','"he_yellow":{"allOf":["he_orange"]},"coulomb_intro":{"allOf":["he_yellow"]}','graph mid-sequence');
+            fs.writeFileSync(p,s);
+          }
+          {
+            const p='assets/js/campaign-map.js';let s=fs.readFileSync(p,'utf8');
+            s=replaceOne(s," mainseq:{orange:xseq(['he_orange']),yellow:xseq(['he_yellow'])},\n",'', 'remove mainseq branch members');
+            const a=s.indexOf(" const mainseq=branchCluster('mainseq',[");
+            const b=s.indexOf(" const neutron=branchCluster('neutron',[",a);
+            must(a>=0&&b>a,'mainseq cluster bounds');s=s.slice(0,a)+s.slice(b);
+            s=replaceOne(s,"  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${mainseq}<div class=\"convergence mainseq-convergence\" data-junction=\"mainseq-convergence\">Evolução estelar</div>${flow(['coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'])}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},","  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},",'linear mid map');
+            s=s.replace(/\n if\(!branchSelection\.mainseq\)\{[\s\S]*?\n \}/,'');
+            const da=s.indexOf('function drawMid(){');const db=s.indexOf('\nfunction drawHigh(){',da);must(da>=0&&db>da,'drawMid bounds');
+            const drawMid=`function drawMid(){\n const midSphere=branchSphereEl('stellar','mid');\n addPath(midSphere,byPhase('he_orange'),'mid',.40);\n connectTrail(['he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li'],'mid');\n const sPortal=portalSummary('s');\n if(portalOpen('s')){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}\n}\n`;
+            s=s.slice(0,da)+drawMid+s.slice(db+1);
+            must(!s.includes("branchCluster('mainseq'"),'mainseq sphere cluster remains');
+            must(!s.includes("activeBranch('mainseq')"),'mainseq active branch remains');
+            fs.writeFileSync(p,s);
+          }
+
+          // 2) Engine: campaign-aware knowledge + reusable primordial/stellar recipes.
+          {
+            const p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');
+            s=replaceOne(s,
+              "function learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>{const i=phaseIndexById.get(r.unlock);return i!==undefined&&state.phaseIndex>=i})}",
+              `function campaignKnowledgeReached(id){\n const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),campaignAware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);\n if(campaignAware)return gs.activeId===id||gs.completed.includes(id);\n const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>=i\n}\nfunction learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>campaignKnowledgeReached(r.unlock))}`,
+              'campaign-aware primordial knowledge');
+            s=replaceOne(s,
+              "function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym),i=id?phaseIndexById.get(id):undefined;return i!==undefined&&state.phaseIndex>=i}",
+              "function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym);return !!id&&campaignKnowledgeReached(id)}",
+              'campaign-aware atomic knowledge');
+            s=replaceOne(s,
+              `function protonCaptureAvailable(s=phase()){\n const intro=phaseIndexById.get('proton_capture');\n if(isPrimordial(s)||isPostMode(s)||s.mode==='opening'||s.mode==='neutronize')return false;\n return s.mode==='protonCapture'||s.mode==='rpProcess'||state.protonCaptureUnlocked||(intro!==undefined&&state.phaseIndex>=intro);\n}`,
+              `function protonCaptureAvailable(s=phase()){\n if(isPrimordial(s)||isPostMode(s)||s.mode==='opening'||s.mode==='neutronize')return false;\n const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),campaignAware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);\n return s.mode==='protonCapture'||s.mode==='rpProcess'||(campaignAware?campaignKnowledgeReached('proton_capture'):(state.protonCaptureUnlocked||campaignKnowledgeReached('proton_capture')));\n}`,
+              'campaign-aware proton capture');
+            s=replaceOne(s,
+              "function universalNeutronCaptureEligible(p){return !!(state.neutronCaptureUnlocked&&p&&p.sym==='H')}",
+              "function universalNeutronCaptureEligible(p){return !!(campaignKnowledgeReached('primordial_d')&&p&&p.sym==='H')}",
+              'universal H+n knowledge');
+
+            const na=s.indexOf('function allLearnedNeutronTransitions(){');const nb=s.indexOf('\nfunction neutronTransitionEnvironmentAllows',na);must(na>=0&&nb>na,'neutron knowledge bounds');
+            const neutronLearned=`function allLearnedNeutronTransitions(){\n // Memória cumulativa baseada nas fases realmente vividas na campanha.\n const map=new Map();\n for(const p of PHASES){\n   if(!campaignKnowledgeReached(p.id))continue;\n   const cls=neutronProcessClass(p);if(!cls)continue;\n   for(const tr of phaseNeutronTransitions(p))map.set(\`${'${tr.from}'}>${'${tr.to}'}@${'${cls}'}\`,{...tr,processClass:cls})\n }\n return[...map.values()]\n}`;
+            s=s.slice(0,na)+neutronLearned+s.slice(nb);
+            s=s.replace("const liIntro=phaseIndexById.get('stellar_li');\n if(sym==='Li'&&liIntro!==undefined&&state.phaseIndex>=liIntro)","if(sym==='Li'&&campaignKnowledgeReached('stellar_li'))");
+
+            s=replaceOne(s,
+              `function activeFusionRecipes(){\n  const s=phase(),map=new Map();\n  for(const r of learnedFusionRecipes()){\n    if(!recipeEnvironmentAllows(r,s))continue;\n    map.set(recipeKey(r),r);\n  }\n  return[...map.values()]\n}`,
+              `function primordialFusionRecipe(r){return{...r,ing:[...(r.pieces||[])],primordialCarry:true}}\nfunction activeFusionRecipes(){\n  const s=phase(),map=new Map();\n  for(const r of learnedFusionRecipes()){\n    if(!recipeEnvironmentAllows(r,s))continue;\n    map.set(recipeKey(r),r);\n  }\n  if(fusionSandboxAllowed(s))for(const pr of learnedPrimordialNuclearReactions()){\n    if(pr.particles.length||pr.pieces.length<2)continue;const r=primordialFusionRecipe(pr);map.set(recipeKey(r),r);\n  }\n  return[...map.values()]\n}`,
+              'primordial piece recipes in fusion sandbox');
+
+            const renderA=s.indexOf('function renderPrimordialParticles(){');const renderB=s.indexOf('\nfunction tapPrimordialParticle(id){',renderA);must(renderA>=0&&renderB>renderA,'renderPrimordialParticles bounds');
+            const renderPrimordial=`function cumulativeParticleInteractionAllowed(s=phase()){return !!s&&s.mode!=='opening'&&learnedPrimordialNuclearReactions().length>0}\nfunction ensureCumulativeParticleFuel(s=phase()){\n if(!s||isPrimordial(s)||!cumulativeParticleInteractionAllowed(s))return;\n ensurePrimordialParticleMix({p:2,n:2,e:atomicRecombinationLearned('H')?2:0});startPrimordialDrift();\n}\nfunction renderPrimordialParticles(){\n if(!dom.primordial)return;const s=phase(),primordialActive=isPrimordial(s)&&s.mode!=='opening',canUseStellarProton=!!stellarProtonRecipe(s)||protonCaptureAvailable(s),canUseCumulative=cumulativeParticleInteractionAllowed(s),selectedParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedPiece=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,selectedBoardPiece=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null,selectedSystemNeutron=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;dom.primordial.classList.toggle('active',(primordialActive||canUseStellarProton||canUseCumulative)&&!state.locked);const existing=new Map([...dom.primordial.querySelectorAll('.primordial-particle')].map(el=>[+el.dataset.id,el]));\n const foregroundFree=new Set();\n if(!isPrimordial(s))for(const kind of ['p','n','e']){const free=[...state.primordialParticles.values()].filter(p=>p.kind===kind&&!p.reacting).sort((a,b)=>((b.id===state.primordialSelected)-(a.id===state.primordialSelected))||a.id-b.id);free.slice(0,2).forEach(p=>foregroundFree.add(p.id))}\n state.primordialParticles.forEach((p,id)=>{let el=existing.get(id);if(!el){el=document.createElement('button');el.type='button';el.dataset.id=id;el.addEventListener('contextmenu',ev=>ev.preventDefault());el.addEventListener('pointerdown',ev=>armParticleDrag(id,el,ev));el.addEventListener('pointermove',ev=>moveParticleDrag(id,ev));el.addEventListener('pointerup',ev=>finishParticleDrag(id,ev,false));el.addEventListener('pointercancel',ev=>finishParticleDrag(id,ev,true));el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const q=state.primordialParticles.get(id);if(q&&performance.now()<(q.suppressTapUntil||0))return;tapPrimordialParticle(id)});dom.primordial.appendChild(el)}const cls=p.kind==='p'?'proton':p.kind==='pos'?'positron':p.kind==='n'?'neutronfree':'electron',label=p.kind==='p'?'+':p.kind==='pos'?'e⁺':p.kind==='n'?'n':'−';let candidate=false,interactive=false;\n   if((primordialActive||canUseCumulative)&&!p.reacting){\n     if(selectedPiece){candidate=!!primordialMixedReaction(selectedPiece.sym,p.kind)||(p.kind==='e'&&pieceCanBindElectron(selectedPiece));interactive=candidate||state.primordialSelected===id}\n     else if(selectedBoardPiece&&!isPrimordial(s)){candidate=!!primordialMixedReaction(selectedBoardPiece.sym,p.kind)||(p.kind==='p'&&((stellarProtonRecipe(s)&&selectedBoardPiece.sym==='H')||(protonCaptureAvailable(s)&&protonCaptureRoute(selectedBoardPiece,s))));interactive=candidate||state.primordialSelected===id}\n     else if(selectedParticle&&selectedParticle.id!==id){candidate=!!primordialParticlePairReaction([selectedParticle.kind,p.kind])||(atomicRecombinationLearned('H')&&same([selectedParticle.kind,p.kind],['p','e']));interactive=candidate||state.primordialSelected===id}\n     else if(selectedSystemNeutron&&p.kind==='p'){candidate=!!primordialParticlePairReaction(['p','n']);interactive=candidate}\n     else{interactive=learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned))||(p.kind==='p'&&(atomicRecombinationLearned('H')||canUseStellarProton))}\n   }else if(canUseStellarProton&&!p.reacting){interactive=p.kind==='p'}\n   const reserve=!isPrimordial(s)&&['p','n','e'].includes(p.kind)&&!p.reacting&&!foregroundFree.has(id);el.className=\`primordial-particle ${'${cls}'}${'${p.kind===\'n\'&&p.unstable?\' unstable\':\'\'}'}${'${state.primordialSelected===id?\' selected\':\'\'}'}${'${candidate?\' candidate\':\'\'}'}${'${p.reacting?\' reacting\':\'\'}'}${'${p.dragging?\' dragging\':\'\'}'}${'${p.throwing?\' throwing\':\'\'}'}${'${p.coulombDeflect?\' coulomb-deflect\':\'\'}'}${'${p.tunneling?\' tunneling\':\'\'}'}${'${reserve?\' particle-reserve\':\'\'}'}\`;el.textContent=label;el.style.pointerEvents=reserve?'none':'auto';el.setAttribute('aria-hidden',reserve?'true':'false');el.dataset.mechanical=interactive&&!reserve?'1':'0';el.style.left=p.x+'px';el.style.top=p.y+'px';existing.delete(id)});existing.forEach(el=>el.remove())\n}\n`;
+            s=s.slice(0,renderA)+renderPrimordial+s.slice(renderB+1);
+
+            // Cross-system reactions let process-s neutrons reuse primordial knowledge.
+            const insertAt=s.indexOf('function tapPrimordialParticle(id){');must(insertAt>=0,'tapPrimordialParticle insert point');
+            const cross=`async function reactCrossSystemProtonNeutron(proton,n){\n const r=primordialParticlePairReaction(['p','n']);if(!r||state.locked||!proton||!n)return;const x=(proton.x+n.x)/2,y=(proton.y+n.y)/2;state.locked=true;state.primordialSelected=null;state.selectedNeutron=null;await objectiveInteractionImpact(\`cumulative:${'${phase().id}'}:p+n>D\`,[objectiveInteractionPrimordialToken(proton),objectiveInteractionNeutronToken(n)],'D',{x,y},'γ','FUSÃO');state.primordialParticles.delete(proton.id);state.neutrons.delete(n.id);renderPrimordialParticles();renderNeutrons();const out=createFreePiece('D',x,y,{massNumber:2});out.newborn=true;state.created.D=(state.created.D||0)+1;state.discovered.add('D');focusPieceInfo(out);burst(x,y);await emitGamma(x,y);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();\n}\nasync function reactCrossSystemNeutronMixed(r,piece,n){\n if(!r||state.locked||!piece||!n)return;const x=piece.x,y=piece.y,wasFree=!!piece.free;state.locked=true;state.selected=[];state.freeSelected=[];state.selectedNeutron=null;await objectiveInteractionImpact(\`cumulative:${'${phase().id}'}:${'${piece.sym}'}+n>${'${r.out}'}\`,[objectiveInteractionPieceToken(piece),objectiveInteractionNeutronToken(n)],r.out,{x,y},'n','CAPTURA');state.neutrons.delete(n.id);renderNeutrons();let out=piece;if(wasFree){state.pieces.delete(piece.id);out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive})}else{out.sym=r.out;out.massNumber=r.mass??E[r.out]?.mass??null;out.captures=0}out.newborn=true;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);focusPieceInfo(out);burst(x,y);await handleReactionEmissions(r,out);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();\n}\nasync function reactBoardPrimordialMixed(r,piece,particle){\n if(!r||state.locked||!piece||!particle||particle.reacting)return;const x=piece.x,y=piece.y;state.locked=true;state.selected=[];state.primordialSelected=null;await objectiveInteractionImpact(\`cumulative:${'${phase().id}'}:${'${piece.sym}'}+${'${particle.kind}'}>${'${r.out}'}\`,[objectiveInteractionPieceToken(piece),objectiveInteractionPrimordialToken(particle)],r.out,{x,y},particle.kind,'CAPTURA');particle.reacting=true;state.primordialParticles.delete(particle.id);renderPrimordialParticles();piece.sym=r.out;piece.massNumber=r.mass??E[r.out]?.mass??null;piece.captures=0;piece.newborn=true;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);focusPieceInfo(piece);burst(x,y);await handleReactionEmissions(r,piece);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(piece.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();\n}\n`;
+            s=s.slice(0,insertAt)+cross+s.slice(insertAt);
+
+            const tapA=s.indexOf('function tapPrimordialParticle(id){');const tapB=s.indexOf('\nasync function reactPrimordialParticlePair',tapA);must(tapA>=0&&tapB>tapA,'tapPrimordialParticle bounds');
+            const tapPrim=`function tapPrimordialParticle(id){\n const s=phase(),p=state.primordialParticles.get(id);if(p)focusParticleInfo(p.kind,id);if(s.mode==='opening'||state.locked||state.phaseDone||!p||p.reacting||p.dragging)return;\n if(!isPrimordial(s)){\n   const selectedN=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;if(selectedN&&p.kind==='p'&&primordialParticlePairReaction(['p','n']))return reactCrossSystemProtonNeutron(p,selectedN);\n   const selectedFree=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null;if(selectedFree){if(p.kind==='e'&&pieceCanBindElectron(selectedFree))return bindElectronToPiece(selectedFree,p);const mixed=primordialMixedReaction(selectedFree.sym,p.kind);if(mixed)return reactPrimordialMixed(mixed,selectedFree,p)}\n   const selectedBoard=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;if(selectedBoard){const mixed=primordialMixedReaction(selectedBoard.sym,p.kind);if(mixed)return reactBoardPrimordialMixed(mixed,selectedBoard,p)}\n   if(state.primordialSelected===id){state.primordialSelected=null;render();return}\n   if(state.primordialSelected!==null){const first=state.primordialParticles.get(state.primordialSelected);if(first){if(atomicRecombinationLearned('H')&&same([first.kind,p.kind],['p','e']))return recombineHydrogenParticles(first,p);const pair=primordialParticlePairReaction([first.kind,p.kind]);if(pair)return reactPrimordialParticlePair(pair,first,p)}}\n   const canStart=cumulativeParticleInteractionAllowed(s)&&(learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned)));if(canStart){state.primordialSelected=id;tone(p.kind==='e'?460:p.kind==='n'?420:340,.04);render();return}\n   if(p.kind==='p'&&(stellarProtonRecipe(s)||protonCaptureAvailable(s)))return tapStellarProton(id);return;\n }\n const selectedPiece=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null;\n if(selectedPiece){if(p.kind==='e'&&pieceCanBindElectron(selectedPiece))return bindElectronToPiece(selectedPiece,p);const mixed=primordialMixedReaction(selectedPiece.sym,p.kind);if(mixed)return reactPrimordialMixed(mixed,selectedPiece,p);state.freeSelected=[];invalidPrimordial(id);render();return}\n if(state.primordialSelected===id){state.primordialSelected=null;render();return}\n if(state.primordialSelected===null){const canStart=learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned))||(p.kind==='p'&&atomicRecombinationLearned('H'));if(!canStart)return;state.primordialSelected=id;tone(p.kind==='e'?460:p.kind==='n'?420:340,.04);render();return}\n const first=state.primordialParticles.get(state.primordialSelected);if(!first){state.primordialSelected=id;render();return}\n if(atomicRecombinationLearned('H')&&same([first.kind,p.kind],['p','e']))return recombineHydrogenParticles(first,p);\n const pair=primordialParticlePairReaction([first.kind,p.kind]);if(pair)return reactPrimordialParticlePair(pair,first,p);\n state.primordialSelected=id;invalidPrimordial(id);render();\n}\n`;
+            s=s.slice(0,tapA)+tapPrim+s.slice(tapB+1);
+
+            s=replaceOne(s,
+              " const p=state.pieces.get(id);if(!p||!p.free||state.locked||state.phaseDone)return;const particle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;",
+              " const p=state.pieces.get(id);if(!p||!p.free||state.locked||state.phaseDone)return;const selectedN=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;if(selectedN){const nr=primordialMixedReaction(p.sym,'n');if(nr)return reactCrossSystemNeutronMixed(nr,p,selectedN)}const particle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;",
+              'free piece + neutron bridge');
+            s=replaceOne(s,
+              "function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();",
+              "function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);",
+              'free cumulative pieces in later phases');
+            s=replaceOne(s,
+              " if(armedProton?.kind==='p'){\n   const protonRecipe=stellarProtonRecipe(s),pid=armedProton.id;",
+              " if(armedProton?.kind==='p'){\n   const primordialMixed=primordialMixedReaction(p.sym,'p');if(primordialMixed){state.selected=[p.cell];render();setTimeout(()=>reactBoardPrimordialMixed(primordialMixed,p,armedProton),70);return}\n   const protonRecipe=stellarProtonRecipe(s),pid=armedProton.id;",
+              'board D + proton bridge');
+            s=replaceOne(s,
+              "  if(s.mode==='rpProcess'){",
+              "  if(state.selectedNeutron!==null){const nn=state.neutrons.get(state.selectedNeutron),nr=primordialMixedReaction(p.sym,'n');if(nn&&nr){state.selected=[p.cell];render();reactCrossSystemNeutronMixed(nr,p,nn);return}}\n  if(s.mode==='rpProcess'){",
+              'board D + selected neutron bridge');
+
+            const rnA=s.indexOf('function renderNeutrons(){');const rnB=s.indexOf('\nasync function captureNeutron(id){',rnA);must(rnA>=0&&rnB>rnA,'renderNeutrons bounds');
+            const renderN=`function renderNeutrons(){const s=phase();if(!['neutron','neutronize'].includes(s.mode)){dom.neutrons.innerHTML='';return}const sp=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null,free=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,floating=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,cumulativePartner=(floating?.kind==='p'&&!!primordialParticlePairReaction(['p','n']))||(free&&!!primordialMixedReaction(free.sym,'n'))||(sp&&!!primordialMixedReaction(sp.sym,'n')),partner=s.mode==='neutron'&&(neutronEligible(sp,s)||universalNeutronCaptureEligible(sp)||cumulativePartner),visible=new Set([...state.neutrons.values()].sort((a,b)=>((b.id===state.selectedNeutron)-(a.id===state.selectedNeutron))||a.id-b.id).slice(0,2).map(n=>n.id));const existing=new Map([...dom.neutrons.querySelectorAll('.neutron')].map(el=>[+el.dataset.id,el]));state.neutrons.forEach((n,id)=>{let el=existing.get(id);if(!el){el=document.createElement('button');el.dataset.id=id;el.textContent='n';el.addEventListener('click',ev=>{ev.stopPropagation();captureNeutron(id)});dom.neutrons.appendChild(el)}const selected=state.selectedNeutron===id,reserve=!visible.has(id);el.className='neutron'+(selected?' selected':partner?' candidate':'')+(s.mode==='neutronize'?' passive':'')+(reserve?' particle-reserve':'');el.style.pointerEvents=reserve?'none':'auto';el.setAttribute('aria-hidden',reserve?'true':'false');el.style.left=n.x+'px';el.style.top=n.y+'px';existing.delete(id)});existing.forEach(el=>el.remove())}\n`;
+            s=s.slice(0,rnA)+renderN+s.slice(rnB+1);
+
+            s=replaceOne(s,
+              `async function captureNeutron(id){\n focusParticleInfo('n',id);if(state.locked||phase().mode!=='neutron')return;\n const n=state.neutrons.get(id);if(!n)return;\n const s=phase();`,
+              `async function captureNeutron(id){\n focusParticleInfo('n',id);if(state.locked)return;\n const n=state.neutrons.get(id);if(!n)return;const s=phase(),floating=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,free=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,boardPiece=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;\n if(floating?.kind==='p'&&primordialParticlePairReaction(['p','n'])){reactCrossSystemProtonNeutron(floating,n);return}\n if(free){const r=primordialMixedReaction(free.sym,'n');if(r){reactCrossSystemNeutronMixed(r,free,n);return}}\n if(boardPiece){const r=primordialMixedReaction(boardPiece.sym,'n');if(r){reactCrossSystemNeutronMixed(r,boardPiece,n);return}}\n if(s.mode!=='neutron')return;`,
+              'capture neutron cumulative bridge');
+
+            s=replaceOne(s,"  const s=phase();if(ensureNeutronMechanicOpportunity(s))return;","  const s=phase();ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;",'ensure cumulative fuel');
+            s=replaceOne(s,"if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;const popupShown=showStellarPopup(forcePopup);","if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;ensureCumulativeParticleFuel(s);const popupShown=showStellarPopup(forcePopup);",'initial cumulative fuel');
+            fs.writeFileSync(p,s);
+          }
+          NODE
+
+      - name: Add permanent regression validator
+        run: |
+          mkdir -p scripts
+          cat > scripts/validate-cumulative-recipes.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const fail=m=>{throw new Error(m)};
+          const graphSrc=fs.readFileSync('assets/js/campaign-graph.js','utf8'),ctx={window:{}};vm.createContext(ctx);vm.runInContext(graphSrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
+          if(JSON.stringify(G.prerequisites.he_yellow)!==JSON.stringify({allOf:['he_orange']}))fail('he_yellow must follow he_orange');
+          if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('coulomb_intro must follow he_yellow');
+          const map=fs.readFileSync('assets/js/campaign-map.js','utf8');if(map.includes("branchCluster('mainseq'"))fail('main-sequence sphere fork remains');if(!map.includes("flow(G.sequences.mid)"))fail('linear intermediate sequence missing');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          for(const token of ["campaignKnowledgeReached(r.unlock)","campaignKnowledgeReached(id)","campaignKnowledgeReached('primordial_d')","primordialParticlePairReaction(['p','n'])","reactCrossSystemProtonNeutron","reactCrossSystemNeutronMixed","primordialFusionRecipe","ensureCumulativeParticleFuel(s)"])if(!s.includes(token))fail('missing cumulative architecture token: '+token);
+          const learned=s.slice(s.indexOf('function allLearnedNeutronTransitions(){'),s.indexOf('function neutronTransitionEnvironmentAllows'));if(learned.includes('state.phaseIndex'))fail('neutron knowledge still depends on raw phase index');if(!learned.includes('campaignKnowledgeReached(p.id)'))fail('neutron knowledge lacks campaign history');
+          const tap=s.slice(s.indexOf('function tapPrimordialParticle(id){'),s.indexOf('async function reactPrimordialParticlePair'));if(!tap.includes("selectedN&&p.kind==='p'"))fail('reverse n->p interaction missing');
+          const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));if(!cap.includes("floating?.kind==='p'"))fail('p->n bridge missing');if(cap.indexOf("primordialParticlePairReaction(['p','n'])")>cap.indexOf("if(s.mode!=='neutron')return"))fail('p+n bridge must precede mode gate');
+          console.log('Cumulative recipe regression validation passed.');
+          NODE
+          node scripts/validate-cumulative-recipes.js
+
+      - name: Validate JavaScript
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-giants-map.js
+          node --check scripts/validate-cumulative-recipes.js
+          git diff --check
+
+      - name: Install validator in Pages deploy
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),p='.github/workflows/pages.yml';let s=fs.readFileSync(p,'utf8');
+          const anchor='      - name: Upload static site\n';
+          if(!s.includes('Validate cumulative recipe architecture')){
+            if(!s.includes(anchor))throw new Error('Pages upload anchor missing');
+            s=s.replace(anchor,'      - name: Validate cumulative recipe architecture\n        run: node scripts/validate-cumulative-recipes.js\n\n'+anchor);
+            fs.writeFileSync(p,s);
+          }
+          NODE
+
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-map.js scripts/validate-cumulative-recipes.js .github/workflows/pages.yml
+          git commit -m "Linearize intermediate stars and enforce cumulative recipes [skip ci]"
+          git push
