@@ -17,7 +17,7 @@ jobs:
         run: node scripts/patch-first-generation-formation.js
       - name: Syntax checks
         run: |
-          node --check assets/js/ardua.js
+          node --check assets/js/ardua.js || { nl -ba assets/js/ardua.js | sed -n '3760,3790p'; exit 1; }
           node --check assets/js/campaign-graph.js
           node --check assets/js/campaign-map.js
           node --check assets/js/campaign-generations.js
