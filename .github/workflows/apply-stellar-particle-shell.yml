@@ -6,6 +6,12 @@ on:
       - fix/stellar-particle-shell
     paths:
       - .github/workflows/apply-stellar-particle-shell.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-stellar-particle-shell.yml
+      - scripts/apply-stellar-particle-shell.py
 
 permissions:
   contents: write
@@ -14,7 +20,7 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout implementation branch
         uses: actions/checkout@v4
         with:
           ref: fix/stellar-particle-shell
@@ -30,6 +36,7 @@ jobs:
         run: node tests/validate-static.js
 
       - name: Commit implementation
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
