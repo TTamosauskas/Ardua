@@ -1,0 +1,185 @@
+name: Apply cumulative recipes v2
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-cumulative-recipes-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Apply topology and cumulative recipe layer
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const must=(v,m)=>{if(!v)throw new Error(m)};
+          const once=(s,a,b,m)=>{const n=s.split(a).length-1;must(n===1,`${m}: ${n} anchors`);return s.replace(a,b)};
+
+          // Intermediate mass is one continuous teaching sequence.
+          {
+            const p='assets/js/campaign-graph.js';let s=fs.readFileSync(p,'utf8');
+            s=once(s,'"he_yellow":{"allOf":["atomic_li"]},"coulomb_intro":{"anyOf":[["he_orange"],["he_yellow"]]}','"he_yellow":{"allOf":["he_orange"]},"coulomb_intro":{"allOf":["he_yellow"]}','graph intermediate chain');
+            fs.writeFileSync(p,s);
+          }
+          {
+            const p='assets/js/campaign-map.js';let s=fs.readFileSync(p,'utf8');
+            s=once(s," mainseq:{orange:xseq(['he_orange']),yellow:xseq(['he_yellow'])},\n",'', 'mainseq branch members');
+            const a=s.indexOf(" const mainseq=branchCluster('mainseq',[");
+            const b=s.indexOf(" const neutron=branchCluster('neutron',[",a);
+            must(a>=0&&b>a,'mainseq cluster bounds');s=s.slice(0,a)+s.slice(b);
+            s=once(s,"  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${mainseq}<div class=\"convergence mainseq-convergence\" data-junction=\"mainseq-convergence\">Evolução estelar</div>${flow(['coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'])}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},","  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},",'linear intermediate map');
+            const infer=/\n if\(!branchSelection\.mainseq\)\{[\s\S]*?\n \}/;must(infer.test(s),'mainseq selection inference');s=s.replace(infer,'');
+            const da=s.indexOf('function drawMid(){'),db=s.indexOf('\nfunction drawHigh(){',da);must(da>=0&&db>da,'drawMid bounds');
+            s=s.slice(0,da)+`function drawMid(){\n const midSphere=branchSphereEl('stellar','mid');\n addPath(midSphere,byPhase('he_orange'),'mid',.40);\n connectTrail(['he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li'],'mid');\n const sPortal=portalSummary('s');\n if(portalOpen('s')){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}\n}\n`+s.slice(db+1);
+            must(!s.includes("branchCluster('mainseq'"),'mainseq cluster remains');
+            fs.writeFileSync(p,s);
+          }
+
+          {
+            const p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');
+
+            // Knowledge follows the path actually completed in Campaign; editor/legacy keeps index fallback.
+            s=once(s,
+              "function learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>{const i=phaseIndexById.get(r.unlock);return i!==undefined&&state.phaseIndex>=i})}",
+              `function campaignKnowledgeReached(id){\n const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);\n if(aware)return gs.activeId===id||gs.completed.includes(id);\n const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>=i\n}\nfunction learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>campaignKnowledgeReached(r.unlock))}`,
+              'primordial knowledge');
+            s=once(s,"function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym),i=id?phaseIndexById.get(id):undefined;return i!==undefined&&state.phaseIndex>=i}","function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym);return !!id&&campaignKnowledgeReached(id)}",'atomic knowledge');
+            s=once(s,"function universalNeutronCaptureEligible(p){return !!(state.neutronCaptureUnlocked&&p&&p.sym==='H')}","function universalNeutronCaptureEligible(p){return !!(campaignKnowledgeReached('primordial_d')&&p&&p.sym==='H')}",'H+n learned rule');
+
+            const nla=s.indexOf('function allLearnedNeutronTransitions(){'),nlb=s.indexOf('\nfunction neutronTransitionEnvironmentAllows',nla);must(nla>=0&&nlb>nla,'neutron learned bounds');
+            s=s.slice(0,nla)+`function allLearnedNeutronTransitions(){\n const map=new Map();\n for(const p of PHASES){\n   if(!campaignKnowledgeReached(p.id))continue;\n   const cls=neutronProcessClass(p);if(!cls)continue;\n   for(const tr of phaseNeutronTransitions(p))map.set(\`${'${tr.from}'}>${'${tr.to}'}@${'${cls}'}\`,{...tr,processClass:cls})\n }\n return[...map.values()]\n}`+s.slice(nlb);
+
+            // Piece+piece primordial recipes join the same cumulative grid catalog.
+            s=once(s,
+`function activeFusionRecipes(){
+  const s=phase(),map=new Map();
+  for(const r of learnedFusionRecipes()){
+    if(!recipeEnvironmentAllows(r,s))continue;
+    map.set(recipeKey(r),r);
+  }
+  return[...map.values()]
+}`,
+`function primordialFusionRecipe(r){return{...r,ing:[...(r.pieces||[])],primordialCarry:true}}
+function activeFusionRecipes(){
+  const s=phase(),map=new Map();
+  for(const r of learnedFusionRecipes()){
+    if(!recipeEnvironmentAllows(r,s))continue;
+    map.set(recipeKey(r),r);
+  }
+  if(fusionSandboxAllowed(s))for(const pr of learnedPrimordialNuclearReactions()){
+    if(pr.particles.length||pr.pieces.length<2)continue;
+    const r=primordialFusionRecipe(pr);map.set(recipeKey(r),r);
+  }
+  return[...map.values()]
+}`,'active cumulative fusion catalog');
+
+            // Cumulative free-particle layer is present in every post-primordial phase.
+            const renderAnchor='function renderPrimordialParticles(){';must(s.includes(renderAnchor),'render primordial anchor');
+            s=s.replace(renderAnchor,`function cumulativeParticleInteractionAllowed(s=phase()){return !!s&&s.mode!=='opening'&&learnedPrimordialNuclearReactions().length>0}\nfunction ensureCumulativeParticleFuel(s=phase()){\n if(!s||isPrimordial(s)||!cumulativeParticleInteractionAllowed(s))return;\n ensurePrimordialParticleMix({p:2,n:2,e:atomicRecombinationLearned('H')?2:0});startPrimordialDrift();\n}\n${renderAnchor}`);
+            s=once(s,"if(!dom.primordial)return;const s=phase(),primordialActive=isPrimordial(s)&&s.mode!=='opening',canUseStellarProton=!!stellarProtonRecipe(s)||protonCaptureAvailable(s),selectedParticle=", "if(!dom.primordial)return;const s=phase(),primordialActive=isPrimordial(s)&&s.mode!=='opening',canUseCumulative=cumulativeParticleInteractionAllowed(s),canUseStellarProton=!!stellarProtonRecipe(s)||protonCaptureAvailable(s),selectedParticle=",'render cumulative flag');
+            s=once(s,"dom.primordial.classList.toggle('active',(primordialActive||canUseStellarProton)&&!state.locked)","dom.primordial.classList.toggle('active',(primordialActive||canUseStellarProton||canUseCumulative)&&!state.locked)",'particle layer active');
+            s=once(s,
+`   }else if(canUseStellarProton&&!p.reacting){
+     if(p.kind==='p'&&selectedBoardPiece){candidate=!!((stellarProtonRecipe(s)&&selectedBoardPiece.sym==='H')||(protonCaptureAvailable(s)&&protonCaptureRoute(selectedBoardPiece,s)));interactive=candidate}
+     else interactive=p.kind==='p';
+   }`,
+`   }else if((canUseStellarProton||canUseCumulative)&&!p.reacting){
+     if(selectedBoardPiece){candidate=!!primordialMixedReaction(selectedBoardPiece.sym,p.kind)||(p.kind==='p'&&((stellarProtonRecipe(s)&&selectedBoardPiece.sym==='H')||(protonCaptureAvailable(s)&&protonCaptureRoute(selectedBoardPiece,s))));interactive=candidate}
+     else if(selectedParticle&&selectedParticle.id!==id){candidate=!!primordialParticlePairReaction([selectedParticle.kind,p.kind])||(atomicRecombinationLearned('H')&&same([selectedParticle.kind,p.kind],['p','e']));interactive=candidate||state.primordialSelected===id}
+     else{interactive=learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned))||(p.kind==='p'&&canUseStellarProton)}
+   }`,'post primordial particle interactions');
+
+            // Bridge process-s/r neutrons to the same primordial p+n recipe.
+            const tapIdx=s.indexOf('function tapPrimordialParticle(id){');must(tapIdx>=0,'tap particle anchor');
+            s=s.slice(0,tapIdx)+`async function reactCumulativeProcessNeutronWithProton(proton,n){\n const r=primordialParticlePairReaction(['p','n']);if(!r||state.locked||!proton||!n)return;\n const x=(proton.x+n.x)/2,y=(proton.y+n.y)/2;state.locked=true;state.primordialSelected=null;state.selectedNeutron=null;\n await objectiveInteractionImpact(\`cumulative:${'${phase().id}'}:p+n>D\`,[objectiveInteractionPrimordialToken(proton),objectiveInteractionNeutronToken(n)],'D',{x,y},'γ','FUSÃO');\n state.primordialParticles.delete(proton.id);state.neutrons.delete(n.id);renderPrimordialParticles();renderNeutrons();\n const out=createFreePiece('D',x,y,{massNumber:2});out.newborn=true;state.created.D=(state.created.D||0)+1;state.discovered.add('D');focusPieceInfo(out);burst(x,y);await emitGamma(x,y);await afterNuclearAction({advanceRound:true});\n setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();\n}\n`+s.slice(tapIdx);
+            s=once(s,"if(!isPrimordial(s)){if(stellarProtonRecipe(s)||protonCaptureAvailable(s))return tapStellarProton(id);return}",
+`if(!isPrimordial(s)){
+ const p=preview;if(!p||p.reacting||p.dragging||state.locked||state.phaseDone)return;
+ const processN=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;
+ if(processN&&p.kind==='p'&&primordialParticlePairReaction(['p','n']))return reactCumulativeProcessNeutronWithProton(p,processN);
+ if(state.primordialSelected===id){state.primordialSelected=null;render();return}
+ if(state.primordialSelected!==null){const first=state.primordialParticles.get(state.primordialSelected);if(first){if(atomicRecombinationLearned('H')&&same([first.kind,p.kind],['p','e']))return recombineHydrogenParticles(first,p);const pair=primordialParticlePairReaction([first.kind,p.kind]);if(pair)return reactPrimordialParticlePair(pair,first,p)}}
+ const board=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;if(board){const mixed=primordialMixedReaction(board.sym,p.kind);if(mixed){state.selected=[];const wasFree=board.free;if(wasFree)return reactPrimordialMixed(mixed,board,p);state.freeSelected=[board.id];board.free=true;const task=reactPrimordialMixed(mixed,board,p);board.free=wasFree;return task}}
+ if(cumulativeParticleInteractionAllowed(s)&&learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))){state.primordialSelected=id;tone(p.kind==='e'?460:p.kind==='n'?420:340,.04);render();return}
+ if(p.kind==='p'&&(stellarProtonRecipe(s)||protonCaptureAvailable(s)))return tapStellarProton(id);return
+}`,'post primordial tap logic');
+
+            // A process neutron clicked after a proton completes p+n before process-specific capture logic.
+            s=once(s,
+`async function captureNeutron(id){
+ focusParticleInfo('n',id);if(state.locked||phase().mode!=='neutron')return;
+ const n=state.neutrons.get(id);if(!n)return;
+ const s=phase();`,
+`async function captureNeutron(id){
+ focusParticleInfo('n',id);if(state.locked)return;
+ const n=state.neutrons.get(id);if(!n)return;const s=phase(),selectedParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;
+ if(selectedParticle?.kind==='p'&&primordialParticlePairReaction(['p','n'])){reactCumulativeProcessNeutronWithProton(selectedParticle,n);return}
+ if(s.mode!=='neutron')return;`,'process neutron bridge');
+
+            // Seed cumulative p/n/e after every later phase setup and whenever opportunities refresh.
+            s=once(s,"if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;const popupShown=showStellarPopup(forcePopup);","if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;ensureCumulativeParticleFuel(s);const popupShown=showStellarPopup(forcePopup);",'phase cumulative fuel');
+            s=once(s,"  const s=phase();if(ensureNeutronMechanicOpportunity(s))return;","  const s=phase();ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;",'refresh cumulative fuel');
+
+            fs.writeFileSync(p,s);
+          }
+          NODE
+
+      - name: Create permanent regression validator
+        run: |
+          mkdir -p scripts
+          cat > scripts/validate-cumulative-recipes.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const fail=m=>{throw new Error(m)};
+          const gsrc=fs.readFileSync('assets/js/campaign-graph.js','utf8'),ctx={window:{}};vm.createContext(ctx);vm.runInContext(gsrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
+          if(JSON.stringify(G.prerequisites.he_yellow)!==JSON.stringify({allOf:['he_orange']}))fail('Anã Amarela deve seguir Anã Laranja');
+          if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('Coulomb deve seguir Anã Amarela');
+          const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
+          if(map.includes("branchCluster('mainseq'"))fail('Esferas Laranja/Amarela ainda formam fork');
+          if(!map.includes("flow(G.sequences.mid)"))fail('Sequência intermediária linear ausente');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          for(const token of ["campaignKnowledgeReached(r.unlock)","campaignKnowledgeReached('primordial_d')","primordialFusionRecipe","cumulativeParticleInteractionAllowed","ensureCumulativeParticleFuel","reactCumulativeProcessNeutronWithProton","selectedParticle?.kind==='p'&&primordialParticlePairReaction(['p','n'])"])if(!s.includes(token))fail('Arquitetura cumulativa ausente: '+token);
+          const learned=s.slice(s.indexOf('function allLearnedNeutronTransitions(){'),s.indexOf('function neutronTransitionEnvironmentAllows'));
+          if(learned.includes('state.phaseIndex'))fail('Memória de capturas ainda depende do índice linear');
+          if(!learned.includes('campaignKnowledgeReached(p.id)'))fail('Memória de capturas precisa seguir histórico real');
+          const cpi=s.slice(s.indexOf('function cumulativeParticleInteractionAllowed'),s.indexOf('function ensureCumulativeParticleFuel'));
+          if(/remnant|pulsar|accretion|blackhole|neutronize/.test(cpi))fail('Camada cumulativa contém exclusão de fases posteriores');
+          const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));
+          if(cap.indexOf("selectedParticle?.kind==='p'")<0||cap.indexOf("selectedParticle?.kind==='p'")>cap.indexOf("if(s.mode!=='neutron')return"))fail('p+n precisa ter prioridade sobre handler do processo-s');
+          const primordialDef=s.match(/\{id:'pn_d',unlock:'primordial_d',pieces:\[\],particles:\['p','n'\],out:'D'/);if(!primordialDef)fail('Receita p+n→D ausente');
+          console.log('Cumulative recipe regression validation passed.');
+          NODE
+          node scripts/validate-cumulative-recipes.js
+
+      - name: Validate source
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-giants-map.js
+          node --check scripts/validate-cumulative-recipes.js
+          git diff --check
+
+      - name: Install validator in Pages workflow
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),p='.github/workflows/pages.yml';let s=fs.readFileSync(p,'utf8');
+          const a='      - name: Upload static site\n';if(!s.includes('Validate cumulative recipe architecture')){if(!s.includes(a))throw new Error('Pages anchor missing');s=s.replace(a,'      - name: Validate cumulative recipe architecture\n        run: node scripts/validate-cumulative-recipes.js\n\n'+a);fs.writeFileSync(p,s)}
+          NODE
+
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-map.js scripts/validate-cumulative-recipes.js .github/workflows/pages.yml
+          git commit -m "Linearize intermediate stars and enforce cumulative recipes [skip ci]"
+          git push
