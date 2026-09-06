@@ -1,0 +1,43 @@
+name: Validate generation map forks
+on:
+  push:
+    branches: [fix/generation-map-forks]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/generation-map-forks
+          fetch-depth: 0
+      - name: Apply map fork patch
+        run: node scripts/patch-generation-map-forks.js
+      - name: Validate syntax and campaign architecture
+        run: |
+          node --check assets/js/campaign-map.js
+          node scripts/validate-cumulative-recipes.js
+      - name: Validate visual fork semantics
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
+          const css=fs.readFileSync('assets/css/campaign-map.css','utf8');
+          if(!map.includes("connectBranchJunction(hub,'secondgen'"))throw new Error('Second Generation fork lines missing');
+          if(!map.includes("connectBranchJunction(junction,'neutron'"))throw new Error('Third Generation fork lines missing');
+          if(!map.includes("addPath(sphere,binary,'r'"))throw new Error('Kilonova branch guide missing');
+          if(!map.includes("addPath(binary,kilo,'r'"))throw new Error('binary to kilonova guide missing');
+          if(!map.includes("addPath(kilo,rPortal,'r'"))throw new Error('kilonova to r-process guide missing');
+          if(!css.includes('.second-generation-branches>.branch-spheres{grid-template-columns:repeat(4'))throw new Error('Second Generation four-column bifurcation missing');
+          if(map.includes("const weakPortal=portalSummary('weak-s');addPath(byPhase(tail('co'))"))throw new Error('legacy First Generation weak-s connector remains');
+          NODE
+      - name: Commit visual fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/campaign-map.js assets/css/campaign-map.css
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: draw generation forks and guide lines"
+          git push origin HEAD:fix/generation-map-forks
