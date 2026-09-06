@@ -17,7 +17,7 @@ const THIRD_CHAPTER_EVIDENCE=['binary_neutron_stars','kilonova',...R_PROCESS_EVI
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set((xs||[]).filter(Boolean))]}
 function heritageDefaults(){return{level:0,seeds:[],sourceGeneration:0}}
-function defaults(){return{version:8,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
+function defaults(){return{version:9,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
 function evidenceSet(completed,activeId){return new Set([...completed,activeId].filter(Boolean))}
 function expectedSeeds(level){return level>=2?SECOND_SEEDS:level>=1?FIRST_SEEDS:[]}
 function applyHeritage(next,level){
@@ -25,10 +25,19 @@ function applyHeritage(next,level){
  next.heritage={...heritageDefaults(),...(next.heritage||{}),level:target,sourceGeneration:Math.max(Number(next.heritage?.sourceGeneration||0),target),seeds:uniq([...(next.heritage?.seeds||[]),...seeds])};
 }
 function normalizeState(rawState,inferHistorical=false){
- const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:8,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:9,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
  const seen=evidenceSet(next.completed,next.activeId);
  if(previousVersion<7&&['brown','he_red','he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o','carbon_burn','ne','fe','final_collapse','first_enrichment','second_birth','second_enrichment','third_birth','neutron_star','black_hole'].some(id=>seen.has(id)))next.completed=uniq([...next.completed,'first_generation_formation']);
  if(previousVersion<8){const cutoff=G?.runtimeIndex?.first_generation_formation??Infinity,passed=[...seen].some(id=>Number.isInteger(G?.runtimeIndex?.[id])&&G.runtimeIndex[id]>=cutoff);if(passed)next.completed=uniq([...next.completed,'first_atomic_bonds','first_nebulae'])}
+ if(previousVersion<9){
+  const add=[];
+  if(['brown'].some(id=>seen.has(id)))add.push('brown_formation');
+  if(['he_red'].some(id=>seen.has(id)))add.push('low_mass_formation');
+  if(['he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'].some(id=>seen.has(id)))add.push('intermediate_mass_formation');
+  if(['fragile','c','n','o','rb','sr','y','zr','nb','gamma_mo','tc','gamma_ru','rh','pd','ag','cd','in','sn','sb','te','i','xe','cs','ba','la','ce','pr','nd','pm','sm','pb','bi'].some(id=>seen.has(id)))add.push('giant_formation');
+  if(['carbon_burn','ne','proton_capture','na','carbon_oxygen','mg','al','oxygen_burn','si','p','s','cl','ar','k','ca','sc','ti','v','cr','mn','cr_alpha_fe','fe','ni_fusion','co','neutronize','final_collapse'].some(id=>seen.has(id)))add.push('high_mass_formation');
+  if(add.length)next.completed=uniq([...next.completed,...add]);
+ }
  if(inferHistorical||previousVersion<3){
    const secondEvidence=['final_collapse','nu_f','gamma_process','neutron_star','rb','sr','bi','spallation_be','spallation','eu','u','decay_at','pulsar','accretion','rp_cu','rp_te','stability','black_hole','quasar'].some(id=>seen.has(id));
    const thirdEvidence=['bi','u','decay_at','pulsar','accretion','rp_cu','rp_te','stability','black_hole','quasar'].some(id=>seen.has(id));

@@ -44,7 +44,7 @@ function buildFork(){
  if(!agb||!portal||!whiteFlow)return;
 
  const precursorFlow=makeFlow('giant-precursor');
- moveNodes(['he_orange','he_yellow','coulomb_intro','stellar_convection',S.precursor],precursorFlow);
+ moveNodes(['intermediate_mass_formation','he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li',S.precursor],precursorFlow);
 
  const hub=document.createElement('div');hub.className='epoch-label giant-junction';hub.innerHTML='<strong>Gigante</strong>';
  const cluster=document.createElement('section');cluster.className='branch-cluster giant-branches';cluster.dataset.branchGroup='giant';

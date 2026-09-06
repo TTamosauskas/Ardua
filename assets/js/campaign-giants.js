@@ -10,7 +10,7 @@ const routes=Object.freeze({
  blue:Object.freeze(['o']),
  white:Object.freeze(['fragile'])
 });
-const precursor='stellar_li';
+const precursor='giant_formation';
 const convergence=G.sequences.sprocess[0];
 const tail=id=>A.tail(id);
 
