@@ -1,0 +1,72 @@
+name: Validate first generation formation prototype
+on:
+  push:
+    branches: [feat/first-generation-formation-test]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/first-generation-formation-test
+          fetch-depth: 0
+      - name: Apply prototype patch
+        run: node scripts/patch-first-generation-formation.js
+      - name: Syntax checks
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-generations.js
+          node --check assets/js/campaign-generations-map.js
+          node --check assets/js/campaign-mode.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate formation invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm'),cp=require('child_process');
+          const evalGraph=src=>{const ctx={window:{}};vm.createContext(ctx);vm.runInContext(src,ctx);return ctx.window.ARDUA_CAMPAIGN_GRAPH};
+          const graph=evalGraph(fs.readFileSync('assets/js/campaign-graph.js','utf8'));
+          const old=evalGraph(cp.execFileSync('git',['show','origin/main:assets/js/campaign-graph.js'],{encoding:'utf8'}));
+          if(graph.version!==5)throw new Error('graph version 5 missing');
+          for(const id of old.baseOrder)if(!graph.baseOrder.includes(id))throw new Error('existing phase removed: '+id);
+          const i=graph.baseOrder.indexOf('first_generation_formation');
+          if(i<0||graph.baseOrder[i-1]!=='atomic_li'||graph.baseOrder[i+1]!=='brown')throw new Error('formation not placed between recombination and first branch');
+          if(JSON.stringify(graph.prerequisites.first_generation_formation?.allOf)!==JSON.stringify(['atomic_li']))throw new Error('formation prerequisite invalid');
+          for(const id of ['brown','he_red','he_orange','carbon_burn'])if(JSON.stringify(graph.prerequisites[id]?.allOf)!==JSON.stringify(['first_generation_formation']))throw new Error(id+' bypasses formation gate');
+          const ctx={window:{ARDUA_CAMPAIGN_GRAPH:graph}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('assets/js/campaign-generations.js','utf8'),ctx);if(ctx.window.ARDUA_GENERATIONS.generationOf('first_generation_formation')!=='first')throw new Error('formation not in First Generation');
+          NODE
+      - name: Validate mechanic semantics
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const engine=fs.readFileSync('assets/js/ardua.js','utf8'),map=fs.readFileSync('assets/js/campaign-map.js','utf8'),mode=fs.readFileSync('assets/js/campaign-mode.js','utf8'),index=fs.readFileSync('index.html','utf8'),css=fs.readFileSync('assets/css/stellar-formation.css','utf8');
+          const checks=[
+            [engine.includes("id:'first_generation_formation'"),'phase missing'],
+            [engine.includes('STELLAR_FORMATION_TOTAL=61'),'61 atom total missing'],
+            [engine.includes("Array(54).fill('H')")&&engine.includes("Array(5).fill('He')"),'primordial composition missing'],
+            [engine.includes('stellarFormationOverlap'),'g overlap rule missing'],
+            [engine.includes('stellarFormationLayout'),'hex reorganization missing'],
+            [engine.includes("s.endEvent==='stellarBirth'"),'custom birth transition missing'],
+            [engine.includes('stellarFormationSnapshot'),'final 61-atom board snapshot missing'],
+            [map.includes("flow(['first_generation_formation'],'generation-formation-flow')"),'map formation node missing'],
+            [map.includes("addPath(byPhase(tail('atomic_li')),formation,'birth')"),'formation guide-in missing'],
+            [map.includes("addPath(formation,birth,'birth')"),'formation guide-out missing'],
+            [mode.includes('version:7'),'save v7 missing'],
+            [mode.includes("'first_generation_formation'"),'save migration missing'],
+            [index.includes('assets/css/stellar-formation.css'),'formation stylesheet not loaded'],
+            [css.includes('.formation-g-field')&&css.includes('.formation-atom'),'formation visual classes missing']
+          ];for(const [ok,msg] of checks)if(!ok)throw new Error(msg);
+          NODE
+      - name: Commit prototype
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-map.js assets/js/campaign-generations.js assets/js/campaign-generations-map.js assets/js/campaign-mode.js assets/css/stellar-formation.css
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "feat: prototype first generation stellar formation"
+          git push origin HEAD:feat/first-generation-formation-test
