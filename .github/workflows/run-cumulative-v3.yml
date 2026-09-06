@@ -25,6 +25,15 @@ jobs:
       - name: Apply migration
         run: node scripts/migrate-cumulative-v3.js
 
+      - name: Harden regression validator
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),p='scripts/validate-cumulative-recipes.js';let s=fs.readFileSync(p,'utf8');
+          const old=`const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));const bridge=cap.indexOf("particle?.kind==='p'");const gate=cap.indexOf("if(s.mode!=='neutron')return");if(bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
+          const next=`const captureStart=s.indexOf('async function captureNeutron(id){');const bridge=s.indexOf("particle?.kind==='p'",captureStart);const gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
+          if(!s.includes(old))throw new Error('validator bridge anchor missing');fs.writeFileSync(p,s.replace(old,next));
+          NODE
+
       - name: Validate implementation
         run: |
           node --check assets/js/ardua.js
