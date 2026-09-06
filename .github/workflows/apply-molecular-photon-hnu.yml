@@ -1,0 +1,33 @@
+name: Apply molecular photon hnu
+on:
+  push:
+    branches:
+      - feat/molecular-photon-hnu
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply patch
+        run: node scripts/patch-molecular-photon-hnu.js
+      - name: Validate syntax
+        run: node --check assets/js/ardua.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate molecular photon invariants
+        run: |
+          grep -F "molecularPhoton:{title:'FÓTON EMITIDO (hν)',text:'Na formação dessas moleculas energia precisa sair do sistema. Essas emissões resfriaram o plasma primordial.'}" assets/js/ardua.js
+          grep -F "await emitMolecularPhoton(x,y);state.locked=false" assets/js/ardua.js
+          grep -F "d.className='molecular-photon';d.textContent='hν'" assets/js/ardua.js
+          grep -F ".molecular-photon{" assets/css/ardua.css
+          test "$(grep -o "emitMolecularPhoton(x,y)" assets/js/ardua.js | wc -l)" -eq 2
+          ! grep -F "reactPrimordialHeHWithHydrogen(m,h){" assets/js/ardua.js | grep -F "emitMolecularPhoton"
+      - name: Commit product change
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/ardua.js assets/css/ardua.css
+          git commit -m "Adiciona emissão hν às primeiras ligações moleculares" || exit 0
+          git push
