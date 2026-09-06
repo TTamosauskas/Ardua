@@ -1,0 +1,27 @@
+/* Stellar formation prototype — 61 representative primordial atoms assemble into the future stellar board. */
+.star-board.stellar-formation-mode{overflow:hidden}
+.star-board.stellar-formation-mode .cells,.star-board.stellar-formation-mode .lines,.star-board.stellar-formation-mode .pieces,.star-board.stellar-formation-mode .stellar-zones,.star-board.stellar-formation-mode .rings,.star-board.stellar-formation-mode .primordial-layer,.star-board.stellar-formation-mode .electron-mesh{opacity:0;pointer-events:none;transition:opacity .55s ease}
+.star-board.stellar-formation-mode.formation-materializing .cells,.star-board.stellar-formation-mode.formation-materializing .lines,.star-board.stellar-formation-mode.formation-materializing .pieces,.star-board.stellar-formation-mode.formation-materializing .rings{opacity:1}
+.stellar-formation-layer{position:absolute;inset:0;z-index:18;overflow:hidden;touch-action:manipulation;user-select:none}
+.stellar-formation-layer::before{content:"";position:absolute;inset:4%;border-radius:50%;background:radial-gradient(circle at 50% 48%,rgba(117,183,255,.06),rgba(25,67,117,.025) 42%,transparent 72%);pointer-events:none}
+.formation-fields,.formation-atoms{position:absolute;inset:0;pointer-events:none}
+.formation-g-field{position:absolute;border:1px solid rgba(235,248,255,.16);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(225,246,255,.035),inset 0 0 16px rgba(229,247,255,.025);transition:border-color .18s ease,box-shadow .18s ease,opacity .18s ease;opacity:.72;pointer-events:none}
+.formation-g-field::after{content:"g";position:absolute;right:8%;top:11%;font:600 7px/1 Inter,system-ui,sans-serif;color:rgba(236,248,255,.26)}
+.formation-g-field.selected{border-color:rgba(245,252,255,.68);box-shadow:0 0 8px rgba(255,255,255,.35),0 0 24px rgba(119,205,255,.18);opacity:1}
+.formation-g-field.compatible{border-color:rgba(151,239,255,.48);box-shadow:0 0 18px rgba(111,225,255,.16);opacity:.96}
+.formation-g-field.blocked{animation:formation-field-block .36s ease}
+@keyframes formation-field-block{50%{border-color:rgba(255,133,133,.72);box-shadow:0 0 20px rgba(255,104,104,.18)}}
+.formation-atom{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;padding:0;border:1px solid rgba(255,255,255,.42);border-radius:50%;display:grid;place-items:center;color:#06111c;font:800 7px/1 Inter,system-ui,sans-serif;box-shadow:inset -5px -6px 9px rgba(0,0,0,.24),0 0 9px rgba(190,232,255,.16);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:4}
+.formation-atom.selected{box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 7px #fff,0 0 17px rgba(90,214,255,.72)}
+.formation-atom.compatible{box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 12px rgba(133,245,255,.62)}
+.formation-atom.reorganizing{filter:brightness(1.24)}
+.formation-hud{position:absolute;left:50%;top:11px;transform:translateX(-50%);z-index:8;width:min(88%,390px);padding:8px 12px;border:1px solid rgba(185,221,247,.15);border-radius:13px;background:rgba(3,11,23,.66);backdrop-filter:blur(7px);text-align:center;pointer-events:none}
+.formation-hud strong{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#e9f7ff}.formation-hud span{display:block;margin-top:3px;font-size:8px;color:#9bb7ce;line-height:1.35}.formation-hud b{color:#dff8ff;font-weight:750}
+.formation-hud .formation-status{color:#a9d9ec}
+.stellar-formation-layer.complete .formation-g-field{border-color:rgba(235,250,255,.44);box-shadow:0 0 28px rgba(152,223,255,.16);opacity:.82}
+.stellar-formation-layer.complete .formation-atom{box-shadow:inset -5px -6px 9px rgba(0,0,0,.22),0 0 8px rgba(255,255,255,.42)}
+.star-board.formation-materializing .stellar-formation-layer{opacity:0;transition:opacity .72s ease}
+.star-board.formation-birth-flash::after{content:"";position:absolute;inset:0;z-index:19;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(245,253,255,.48),rgba(132,211,255,.18) 18%,transparent 54%);animation:formation-birth .9s ease-out both}
+@keyframes formation-birth{from{opacity:0;transform:scale(.72)}35%{opacity:1}to{opacity:0;transform:scale(1.1)}}
+@media(max-width:520px){.formation-atom{width:19px;height:19px;margin:-9.5px 0 0 -9.5px;font-size:6px}.formation-hud{top:7px;padding:7px 9px;width:min(92%,360px)}.formation-hud strong{font-size:8px}.formation-hud span{font-size:7px}}
+@media(prefers-reduced-motion:reduce){.formation-g-field,.formation-atom,.stellar-formation-layer{transition:none}.star-board.formation-birth-flash::after{animation:none}}
