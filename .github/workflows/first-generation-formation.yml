@@ -15,9 +15,19 @@ jobs:
           fetch-depth: 0
       - name: Apply prototype patch
         run: node scripts/patch-first-generation-formation.js
+      - name: Correct generated frame closure
+        run: |
+          python - <<'PY'
+          p='assets/js/ardua.js'
+          s=open(p).read()
+          old="a.el.classList.toggle('reorganizing',!!a.fromLocal)}}}\n }\n if(now-(f.compatibilityAt||0)>130)"
+          new="a.el.classList.toggle('reorganizing',!!a.fromLocal)}}\n }\n if(now-(f.compatibilityAt||0)>130)"
+          if s.count(old)!=1: raise SystemExit('formation frame closure anchor mismatch')
+          open(p,'w').write(s.replace(old,new))
+          PY
       - name: Syntax checks
         run: |
-          node --check assets/js/ardua.js || { nl -ba assets/js/ardua.js | sed -n '3760,3790p'; exit 1; }
+          node --check assets/js/ardua.js
           node --check assets/js/campaign-graph.js
           node --check assets/js/campaign-map.js
           node --check assets/js/campaign-generations.js
