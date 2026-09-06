@@ -38,11 +38,10 @@ function sphereMarkup(key){
 function buildFork(){
  const host=highPanel();if(!host||superCluster())return;
  const mainFlow=[...host.children].find(el=>el.classList?.contains('cosmos-flow'));if(!mainFlow)return;
- const weakPortal=host.querySelector(':scope > .portal[data-portal="weak-s"]');
- const collapseFlow=weakPortal?.nextElementSibling;
+ const collapseFlow=mainFlow.nextElementSibling;
  const supernovaLabel=collapseFlow?.nextElementSibling;
  const supernovaCluster=supernovaLabel?.nextElementSibling;
- if(!weakPortal||!collapseFlow||!supernovaLabel||!supernovaCluster)return;
+ if(!collapseFlow||!supernovaLabel||!supernovaCluster)return;
 
  const precursorFlow=makeFlow('supergiant-precursor');
  moveNodes([S.precursor],precursorFlow);
@@ -63,7 +62,7 @@ function buildFork(){
  const core=document.createElement('div');core.className='convergence advanced-core';core.dataset.junction='advanced-core';core.textContent='Núcleo avançado';
  const sharedFlow=makeFlow('advanced-core-flow');moveNodes(S.shared,sharedFlow);
  mainFlow.replaceWith(precursorFlow);
- after.append(core,sharedFlow,weakPortal,collapseFlow,supernovaLabel,supernovaCluster);
+ after.append(core,sharedFlow,collapseFlow,supernovaLabel,supernovaCluster);
  precursorFlow.after(hub,cluster,after);
  syncAll();
 }
