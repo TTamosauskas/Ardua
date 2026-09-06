@@ -29,9 +29,12 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs'),p='scripts/validate-cumulative-recipes.js';let s=fs.readFileSync(p,'utf8');
-          const old=`const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));const bridge=cap.indexOf("particle?.kind==='p'");const gate=cap.indexOf("if(s.mode!=='neutron')return");if(bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
-          const next=`const captureStart=s.indexOf('async function captureNeutron(id){');const bridge=s.indexOf("particle?.kind==='p'",captureStart);const gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
-          if(!s.includes(old))throw new Error('validator bridge anchor missing');fs.writeFileSync(p,s.replace(old,next));
+          const oldBridge=`const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));const bridge=cap.indexOf("particle?.kind==='p'");const gate=cap.indexOf("if(s.mode!=='neutron')return");if(bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
+          const newBridge=`const captureStart=s.indexOf('async function captureNeutron(id){');const bridge=s.indexOf("particle?.kind==='p'",captureStart);const gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
+          if(!s.includes(oldBridge))throw new Error('validator bridge anchor missing');s=s.replace(oldBridge,newBridge);
+          const oldRecipe=`if(!/\\{id:'pn_d',unlock:'primordial_d',pieces:\\[\\],particles:\\['p','n'\\],out:'D'/.test(s))fail('Receita p+n→D ausente');`;
+          const newRecipe=`if(!s.includes("id:'pn_d'")||!s.includes("particles:['p','n']")||!s.includes("out:'D'"))fail('Receita p+n→D ausente');`;
+          if(!s.includes(oldRecipe))throw new Error('validator recipe anchor missing');fs.writeFileSync(p,s.replace(oldRecipe,newRecipe));
           NODE
 
       - name: Validate implementation
