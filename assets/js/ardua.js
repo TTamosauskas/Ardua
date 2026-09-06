@@ -365,7 +365,7 @@ const PHASES=[
 
  {id:'co',branch:'Grupo do Ferro · Cobalto',title:'Formação de Cobalto',meta:'Fe + n → Fe instável → β− + ν̄ₑ → Co',new:'Co',mode:'neutron',seed:'Fe',path:['Fe','Co'],captures:1,target:4,starterGroups:[['Fe'],['Mn','H'],['Cr','H'],['Ti','He']],allowBackground:['H','He','O','C'],chainRebuild:true,reuseFusion:true,manualDecay:true,objectiveOnlyProgress:true,visual:'ironCore',fill:44,neutronRate:690,endLabel:'FORMAR<br>NÍQUEL',menuTag:'Co',fusionTempMax:8e9},
  {id:'ni_fusion',branch:'Queima de Silício · Níquel',title:'Formação de Níquel',meta:'Rota agregada · rede de queima de Silício → grupo do Ferro',new:'Ni',mode:'fusion',target:4,visual:'ironCore',fill:48,pool:['H','He','Si','Si'],gravityDelay:96,endLabel:'OBSERVAR<br>NEUTRINOS',menuTag:'Ni',fusionTempMax:8e9},
- {id:'nu_f',branch:'Supernova · neutrinos',title:'Neutrinos da Supernova',meta:'Selecione ν → toque em Neônio',new:'F',mode:'neutrino',target:4,visual:'ironCore',fill:20,endLabel:'INICIAR<br>CAPTURAS n',menuTag:'F',fusionTempMax:6e9},
+ {id:'nu_f',branch:'Supernova · neutrinos',title:'Neutrinos da Supernova',meta:'Selecione ν → toque em Neônio',new:'F',mode:'neutrino',target:4,visual:'ironCore',fill:20,endLabel:'DISPERSAR<br>SEMENTES',menuTag:'F',fusionTempMax:6e9},
  {id:'weak_s_cu',branch:'Processo-s fraco · Cobre',title:'Formação de Cobre',meta:'Níquel + n → Cobre',new:'Cu',mode:'neutron',seed:'Ni',path:['Ni','Cu'],captures:1,target:4,starterGroups:[['Ni'],['O','C'],['Be8','He'],['C','He']],weakS:true,chainRebuild:true,visual:'massive',fill:40,neutronRate:760,endLabel:'FORMAR<br>ZINCO',menuTag:'Cu',fusionTempMax:2.5e9},
  {id:'weak_s_zn',branch:'Processo-s fraco · Zinco',title:'Formação de Zinco',meta:'Cobre + n → Zinco',new:'Zn',mode:'neutron',seed:'Cu',path:['Cu','Zn'],captures:1,target:5,starterGroups:[['Cu'],['Ni'],['O','C'],['Be8','He']],weakS:true,chainRebuild:true,visual:'massive',fill:40,neutronRate:740,endLabel:'FORMAR<br>GÁLIO',menuTag:'Zn',fusionTempMax:2.5e9},
  {id:'weak_s_ga',branch:'Processo-s fraco · Gálio',title:'Formação de Gálio',meta:'Zinco + n → Gálio',new:'Ga',mode:'neutron',seed:'Zn',path:['Zn','Ga'],captures:1,target:5,starterGroups:[['Zn'],['Cu'],['Ni'],['O','C']],weakS:true,chainRebuild:true,visual:'massive',fill:40,neutronRate:720,endLabel:'FORMAR<br>GERMÂNIO',menuTag:'Ga',fusionTempMax:2.5e9},
@@ -382,7 +382,7 @@ const PHASES=[
  {id:'gamma_mo',branch:'Microfase · rota de captura',title:'Molibdênio',meta:'Nb + capturas/β− → Mo · rota agregada',new:'Mo',mode:'neutron',seed:'Nb',path:['Nb','Mo'],captures:2,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Nb','Nb','Nb'],neutronRate:1150,micro:true,fusionTempMax:3.5e8},
  {id:'tc',branch:'Estrela AGB · evidência de nucleossíntese',title:'Tecnécio',meta:'Capture nêutrons · forme um núcleo radioativo observado em estrelas',new:'Tc',mode:'neutron',seed:'Mo',path:['Mo','Tc'],captures:2,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Mo','Mo','Mo'],neutronRate:1100,micro:true,fusionTempMax:3.5e8},
  {id:'gamma_ru',branch:'Microfase · rota de captura',title:'Rutênio',meta:'Tc + capturas/β− → Ru · rota agregada',new:'Ru',mode:'neutron',seed:'Tc',path:['Tc','Ru'],captures:2,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Tc','Tc','Tc'],neutronRate:1150,micro:true,fusionTempMax:3.5e8},
- {id:'gamma_process',branch:'Supernova · γ-processo',title:'Tempestade de Fótons',meta:'γ remove nêutrons de sementes pesadas · explore isótopos mais proton-rich',new:'Mo',mode:'gamma',target:3,visual:'ironCore',fill:18,isotopeMode:true,endLabel:'CONTINUAR<br>A FORJA',menuTag:'γ,n',fusionTempMax:4e9},
+ {id:'gamma_process',branch:'Segunda Geração · supernova enriquecida · γ-processo',title:'Tempestade de Fótons',meta:'γ remove nêutrons de sementes pesadas herdadas · explore isótopos mais proton-rich',new:'Mo',mode:'gamma',target:3,visual:'ironCore',fill:18,isotopeMode:true,endLabel:'CONTINUAR<br>A FORJA',menuTag:'γ,n',fusionTempMax:4e9},
  {id:'rh',branch:'Microfase · captura de nêutrons',title:'Ródio',meta:'Ru + n → isótopo instável → β− → Rh',new:'Rh',mode:'neutron',seed:'Ru',path:['Ru','Rh'],captures:1,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Ru','Ru','Ru'],neutronRate:1200,micro:true,fusionTempMax:3.5e8},
  {id:'pd',branch:'Microfase · captura de nêutrons',title:'Paládio',meta:'Rh + n → isótopo instável → β− → Pd',new:'Pd',mode:'neutron',seed:'Rh',path:['Rh','Pd'],captures:1,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Rh','Rh','Rh'],neutronRate:1200,micro:true,fusionTempMax:3.5e8},
  {id:'ag',branch:'Microfase · captura de nêutrons',title:'Prata',meta:'Pd + n → isótopo instável → β− → Ag',new:'Ag',mode:'neutron',seed:'Pd',path:['Pd','Ag'],captures:1,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Pd','Pd','Pd'],neutronRate:1200,micro:true,fusionTempMax:3.5e8},
@@ -403,8 +403,8 @@ const PHASES=[
  {id:'sm',branch:'Microfase · captura de nêutrons',title:'Samário',meta:'Pm + n → isótopo instável → β− → Sm',new:'Sm',mode:'neutron',seed:'Pm',path:['Pm','Sm'],captures:1,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Pm','Pm','Pm'],neutronRate:1200,micro:true,fusionTempMax:3.5e8},
  {id:'pb',mechanicPattern:'s-aggregate',branch:'Região terminal do processo-s',title:'Chumbo',meta:'Muitas capturas e β− são agregadas nesta passagem até Pb',new:'Pb',mode:'neutron',seed:'Sm',captures:4,target:3,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Sm','Sm','Sm'],neutronRate:1400,fusionTempMax:3e8},
  {id:'bi',mechanicPattern:'s-terminal',branch:'Limite do processo-s',title:'Bismuto',meta:'Pb + capturas/β− → Bi · região terminal da rota lenta',new:'Bi',mode:'neutron',seed:'Pb',path:['Pb','Bi'],captures:2,target:2,seedCount:4,visual:'agb',fill:31,pool:['He','C','O','Pb','Pb','Pb'],neutronRate:1450,micro:true,endLabel:'FORMAR<br>SISTEMA BINÁRIO',fusionTempMax:3.5e8},
- {id:'binary_neutron_stars',branch:'Segunda Geração · Sistemas compactos',title:'Sistema binário de estrelas de nêutrons',meta:'Duas estrelas de nêutrons perdem energia orbital e se aproximam até a fusão',new:'Fe',mode:'campaignMilestone',target:0,visual:'kilonova',fill:26,endEvent:'postTransition',endLabel:'FUNDIR<br>SISTEMA',menuTag:'BINÁRIO'},
- {id:'kilonova',branch:'Segunda Geração · Evento de enriquecimento',title:'Kilonova',meta:'A fusão lança matéria extremamente rica em nêutrons e abre o processo-r',new:'Eu',mode:'campaignMilestone',target:0,visual:'kilonova',fill:32,endEvent:'postTransition',endLabel:'INICIAR<br>PROCESSO-R',menuTag:'KILONOVA'},
+ {id:'binary_neutron_stars',branch:'Terceira Geração · Sistemas compactos',title:'Sistema binário de estrelas de nêutrons',meta:'Duas estrelas de nêutrons perdem energia orbital e se aproximam até a fusão',new:'Fe',mode:'campaignMilestone',target:0,visual:'kilonova',fill:26,endEvent:'postTransition',endLabel:'FUNDIR<br>SISTEMA',menuTag:'BINÁRIO'},
+ {id:'kilonova',branch:'Terceira Geração · Evento de enriquecimento',title:'Kilonova',meta:'A fusão lança matéria extremamente rica em nêutrons e abre o processo-r',new:'Eu',mode:'campaignMilestone',target:0,visual:'kilonova',fill:32,endEvent:'postTransition',endLabel:'INICIAR<br>PROCESSO-R',menuTag:'KILONOVA'},
  {id:'eu',mechanicPattern:'r-storm',branch:'Kilonova · início das terras raras',title:'Európio',meta:'Captura rápida de nêutrons · marcador clássico do processo-r',new:'Eu',mode:'neutron',seed:'Sm',captures:3,target:2,seedCount:4,visual:'kilonova',fill:46,pool:['Fe','Ni','Sm','Sm','Sm'],neutronRate:510,rprocess:true},
  {id:'gd',branch:'Kilonova · microfase do processo-r',title:'Gadolínio',meta:'Capturas rápidas em sequência → núcleo rico em nêutrons → cascata β−',new:'Gd',mode:'neutron',seed:'Eu',path:['Eu','Gd'],captures:3,target:1,seedCount:4,visual:'kilonova',fill:46,pool:['Fe','Ni','Eu','Eu','Eu'],neutronRate:490,micro:true,rprocess:true},
  {id:'tb',branch:'Kilonova · microfase do processo-r',title:'Térbio',meta:'Capturas rápidas em sequência → núcleo rico em nêutrons → cascata β−',new:'Tb',mode:'neutron',seed:'Gd',path:['Gd','Tb'],captures:3,target:1,seedCount:4,visual:'kilonova',fill:46,pool:['Fe','Ni','Gd','Gd','Gd'],neutronRate:490,micro:true,rprocess:true},
@@ -435,10 +435,10 @@ const PHASES=[
  {id:'decay_at',branch:'Cadeias radioativas · Astato',title:'Astato',meta:'Fr → At + He',new:'At',mode:'guidedDecay',target:2,starterGroups:[['Fr'],['Ac'],['Ra'],['Th']],chainRebuild:true,objectiveOnlyProgress:true,visual:'interstellar',fill:24,endLabel:'FORMAR<br>ANÃ BRANCA',menuTag:'At'},
  {id:'white',branch:'Remanescentes compactos · Anã branca',title:'Anã branca',meta:'Crie 3 Carbonos e 3 Oxigênios',new:'O',mode:'whiteCompact',target:3,targetC:3,targetO:3,visual:'whiteDwarf',fill:12,endLabel:'CONTINUAR<br>REMANESCENTES',gravityDelay:170,menuTag:'REMNANESCENTE',fusionTempMax:2e7},
  {id:'final_collapse',branch:'Outra estrela massiva chega ao fim',title:'Colapso final',meta:'Comprima o núcleo até a ruptura',new:'Fe',mode:'neutronize',target:6,visual:'ironCore',fill:54,pool:['O','Ne','Mg','Si','S','Ar','Ca','Ti','Cr','Mn','Fe','Fe'],endEvent:'supernova',endLabel:'EXPLODIR<br>SUPERNOVA',gravityDelay:86,menuTag:'SUPERNOVA'},
- {id:'first_enrichment',branch:'Primeira Geração · Supernova',title:'Primeiro Enriquecimento',meta:'C, N, O, Ne, Mg, Si, Fe e sementes do processo-s fraco passam ao meio interestelar',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:18,endEvent:'postTransition',endLabel:'FORMAR<br>SEGUNDA GERAÇÃO',menuTag:'1ª → 2ª'},
- {id:'second_birth',branch:'Segunda Geração · Nascimento estelar',title:'Segunda Geração',meta:'Nasce com H, He e Li + C, N, O e outros produtos herdados da Primeira Geração',new:'C',mode:'campaignMilestone',target:0,visual:'nebula',fill:16,endEvent:'postTransition',endLabel:'EXPLORAR<br>SEGUNDA GERAÇÃO',menuTag:'2ª GERAÇÃO'},
- {id:'second_enrichment',branch:'Segunda Geração · Herança química',title:'Segundo Enriquecimento',meta:'Espalação, AGB e processo-r acrescentam Be/B, produtos-s e núcleos pesados até U',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:20,endEvent:'postTransition',endLabel:'FORMAR<br>TERCEIRA GERAÇÃO',menuTag:'2ª → 3ª'},
- {id:'third_birth',branch:'Terceira Geração · Universo enriquecido',title:'Terceira Geração',meta:'Nasce com CNO, grupo do Ferro, produtos-s e produtos-r herdados de ciclos anteriores',new:'Fe',mode:'campaignMilestone',target:0,visual:'nebula',fill:18,endEvent:'postTransition',endLabel:'EXPLORAR<br>TERCEIRA GERAÇÃO',menuTag:'3ª GERAÇÃO'},
+ {id:'first_enrichment',branch:'Primeira Geração · Supernova',title:'Primeiro Enriquecimento',meta:'C, N, O, Ne, Mg, Si e o grupo do Ferro passam ao meio interestelar',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:18,endEvent:'postTransition',endLabel:'FORMAR<br>SEGUNDA GERAÇÃO',menuTag:'1ª → 2ª'},
+ {id:'second_birth',branch:'Segunda Geração · Nascimento estelar',title:'Segunda Geração',meta:'Nasce com H, He e Li + C, N, O e sementes do grupo do Ferro herdadas da Primeira Geração',new:'C',mode:'campaignMilestone',target:0,visual:'nebula',fill:16,endEvent:'postTransition',endLabel:'USAR<br>AS SEMENTES',menuTag:'2ª GERAÇÃO'},
+ {id:'second_enrichment',branch:'Segunda Geração · Herança química',title:'Segundo Enriquecimento',meta:'Espalação e processos-s acrescentam Be/B, Cu–Kr e núcleos pesados de Rb a Bi ao reservatório químico',new:'Bi',mode:'campaignMilestone',target:0,visual:'interstellar',fill:20,endEvent:'postTransition',endLabel:'FORMAR<br>TERCEIRA GERAÇÃO',menuTag:'2ª → 3ª'},
+ {id:'third_birth',branch:'Terceira Geração · Universo enriquecido',title:'Terceira Geração',meta:'Nasce com CNO, grupo do Ferro e representantes do processo-s herdados de ciclos anteriores',new:'Bi',mode:'campaignMilestone',target:0,visual:'nebula',fill:18,endEvent:'postTransition',endLabel:'EXPLORAR<br>AMBIENTES EXTREMOS',menuTag:'3ª GERAÇÃO'},
  {id:'neutron_star',branch:'Remanescente da Supernova',title:'Estrela de nêutrons',meta:'Matéria comprimida em escala extrema',new:'Fe',mode:'remnant',target:6,visual:'neutronStar',fill:22,endEvent:'postTransition',endLabel:'FORMAR<br>PULSAR',menuTag:'REMNANESCENTE'},
  {id:'pulsar',branch:'Acreção e rotação',title:'Pulsar',meta:'Cada núcleo incorporado acelera o feixe',new:'Fe',mode:'pulsar',target:5,visual:'pulsar',fill:20,endEvent:'postTransition',endLabel:'ACREÇÃO<br>EXTREMA',menuTag:'ROTAÇÃO'},
  {id:'accretion',branch:'A estrela recebe nova matéria',title:'Acreção extrema',meta:'Matéria nova chega continuamente pela periferia',new:'Fe',mode:'accretion',target:6,visual:'accretion',fill:12,feedCap:14,endEvent:'postTransition',endLabel:'INICIAR<br>rp-PROCESS',menuTag:'ACREÇÃO'},
@@ -953,8 +953,8 @@ const ABUNDANCE={
  primordial:[['H',9200],['He',800]],
  fusionBase:[['H',9200],['He',800],['O',30],['C',20]],
  solar:[['H',9100],['He',820],['O',30],['C',20],['Ne',8],['N',7],['Mg',4],['Si',4],['Fe',2],['S',2]],
- enriched:[['H',8600],['He',1100],['O',90],['C',60],['N',28],['Ne',25],['Mg',16],['Si',14],['S',8],['Fe',7],['Na',5],['Al',4],['Ca',2],['P',1],['Ar',1],['Ni',.8],['Cu',.25],['Zn',.2],['Kr',.05]],
- mature:[['H',8200],['He',1250],['O',130],['C',90],['N',36],['Ne',30],['Mg',22],['Si',20],['S',10],['Fe',10],['Sr',1.2],['Ba',.45],['Pb',.2],['Eu',.12],['Pt',.08],['Au',.06],['Th',.025],['U',.02]],
+ enriched:[['H',8600],['He',1100],['O',90],['C',60],['N',28],['Ne',25],['Mg',16],['Si',14],['S',8],['Fe',7],['Na',5],['Al',4],['Ca',2],['P',1],['Ar',1],['Ni',.8],['Co',.25]],
+ mature:[['H',8200],['He',1250],['O',130],['C',90],['N',36],['Ne',30],['Mg',22],['Si',20],['S',10],['Fe',10],['Cu',1.5],['Zn',1.2],['Kr',.45],['Sr',.9],['Ba',.35],['Pb',.18],['Bi',.08]],
  agb:[['H',8000],['He',1500],['C',260],['O',150],['N',45],['Ne',18],['Fe',7],['Sr',2],['Ba',0.7],['Pb',0.25]],
  white:[['C',45],['O',55]],
  remnant:[['Fe',28],['Ni',24],['Si',14],['O',13],['S',7],['Ca',5],['Mg',5],['C',4]],
@@ -1013,7 +1013,10 @@ function phaseAbundance(s=phase()){
   if(s.mode==='whiteCompact')return ABUNDANCE.primordial;
   // Fases de fusão e do Atlas compartilham a mesma base cósmica. O Atlas entrega
   // somente um par do objetivo; o restante volta a ser matéria estelar abundante.
-  if(s.mode==='fusion'||s.mode==='reactionExplore'||s.weakS||s.chainRebuild)return ABUNDANCE.fusionBase;
+  if(s.visual==='agb')return ABUNDANCE.agb;
+  if(s.visual==='kilonova')return ABUNDANCE.kilonova;
+  if(s.weakS)return ABUNDANCE.enriched;
+  if(s.mode==='fusion'||s.mode==='reactionExplore'||s.chainRebuild)return ABUNDANCE.fusionBase;
   if(['remnant','pulsar','accretion','blackhole'].includes(s.mode))return ABUNDANCE.remnant;
   if(s.mode==='collapseFinal')return ABUNDANCE.remnant;
   if(s.mode==='neutronize')return ABUNDANCE.collapse;
@@ -3895,8 +3898,8 @@ function modalPrimaryLine(s=phase()){
 function modalSecondaryLine(s=phase()){
  if(s.id==='first_enrichment')return 'O que foi fabricado dentro da primeira estrela agora pode compor o gás da próxima geração';
  if(s.id==='second_birth')return 'Compare: C, N e O antes precisavam ser fabricados; agora já fazem parte da matéria inicial';
- if(s.id==='second_enrichment')return 'Produtos de AGB, espalação e Kilonova entram no reservatório químico compartilhado';
- if(s.id==='third_birth')return 'A matéria inicial já contém representantes do processo-s e do processo-r';
+ if(s.id==='second_enrichment')return 'Produtos de AGB, weak-s, espalação e supernovas enriquecidas ampliam o reservatório químico';
+ if(s.id==='third_birth')return 'A matéria inicial já contém representantes do processo-s; o processo-r será produzido nos ambientes compactos deste capítulo';
  if(s.mode==='campaignMilestone')return 'Observe a herança química e prossiga para a próxima geração';
  if(s.mode==='reactionExplore')return atlasPhaseInstruction(s);
  if(s.mode==='opening')return 'Inicie o Big Bang';
@@ -3979,8 +3982,9 @@ function phaseFamily(p){
  if(['brown','he_red','he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'].includes(p.id))return 'Estrelas de baixa e média massa';
  if(p.mode==='spallation'||p.mode==='guidedDecay')return p.mode==='guidedDecay'?'Tempo cósmico · radioatividade':'Meio interestelar';
  if(p.mode==='rpProcess')return 'Estrela de nêutrons em acreção · rp-process';
- if(p.mode==='protonCapture'||p.mode==='neutrino'||p.mode==='gamma'||['carbon_burn','carbon_oxygen','oxygen_burn','cr_alpha_fe','ne','na','mg','al','si','p','s','cl','ar','k','ca','sc','ti','v','cr','mn','fe','neutronize','co','ni_fusion'].includes(p.id))return 'Estrelas massivas e supernovas';
- if(p.weakS)return 'Outra estrela massiva · processo-s fraco';
+ if(p.mode==='gamma')return 'Segunda Geração · supernova enriquecida · processo γ';
+ if(p.weakS)return 'Segunda Geração · estrela massiva · processo-s fraco';
+ if(p.mode==='protonCapture'||p.mode==='neutrino'||['carbon_burn','carbon_oxygen','oxygen_burn','cr_alpha_fe','ne','na','mg','al','si','p','s','cl','ar','k','ca','sc','ti','v','cr','mn','fe','neutronize','co','ni_fusion'].includes(p.id))return 'Estrelas massivas e supernovas';
  if(['rb','sr','y','zr','nb','tc','rh','pd','ag','cd','in','sn','sb','te','i','xe','cs','ba','la','ce','pr','nd','pm','sm','pb','bi'].includes(p.id))return 'Estrelas AGB · processo-s e rotas vizinhas';
  if(['eu','gd','tb','dy','ho','er','tm','yb','lu','hf','ta','w','re','os','ir','pt','au','hg','tl','th','u'].includes(p.id))return 'Kilonova · processo-r';
  return 'Remanescentes compactos'

@@ -23,12 +23,8 @@ const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const xseq=ids=>expanded(ids);
 const rpMembers=xseq(G.sequences.rp),rMembers=xseq(G.sequences.r),decayMembers=xseq(G.sequences.decay),quasarMembers=xseq(G.sequences.quasar||[]);
 const stellarHighMembers=uniq([
- ...xseq(G.sequences.high),...xseq(G.sequences.weakS),...xseq(G.sequences.collapse),
- ...xseq(['nu_f','gamma_process','neutron_star','pulsar','accretion','black_hole']),
- ...rpMembers,...rMembers,...decayMembers,...quasarMembers
-]);
-const neutronStarMembers=uniq([
- ...xseq(['neutron_star','pulsar','accretion','binary_neutron_stars','kilonova']),...rpMembers,...rMembers,...decayMembers
+ ...xseq(G.sequences.high),...xseq(G.sequences.collapse),
+ ...xseq(['nu_f','neutron_star','black_hole']),...quasarMembers
 ]);
 const blackHoleMembers=uniq([...xseq(['black_hole']),...quasarMembers]);
 const BRANCH_MEMBERS={
@@ -36,14 +32,13 @@ const BRANCH_MEMBERS={
  stellar:{
   sub:xseq(G.sequences.brown),
   low:uniq([...xseq(G.sequences.red),'white']),
-  mid:uniq([...xseq(G.sequences.mid),...xseq(G.sequences.sprocess),'white']),
+  mid:uniq([...xseq(G.sequences.mid),'white']),
   high:stellarHighMembers
  },
  supernova:{
   enrichment:xseq(['first_enrichment','second_birth']),
   nu:xseq(['nu_f']),
-  gamma:xseq(['gamma_process']),
-  ns:neutronStarMembers,
+  ns:xseq(['neutron_star']),
   bh:blackHoleMembers
  },
  neutron:{
@@ -51,10 +46,17 @@ const BRANCH_MEMBERS={
   accretion:uniq([...xseq(['accretion']),...rpMembers]),
   r:uniq([...xseq(['binary_neutron_stars','kilonova']),...rMembers,...decayMembers])
  },
- spallation:{be:xseq(['spallation_be']),b:xseq(['spallation'])}
+ spallation:{be:xseq(['spallation_be']),b:xseq(['spallation'])},
+ secondgen:{
+  weak:xseq(G.sequences.weakS),
+  s:xseq(G.sequences.sprocess),
+  gamma:xseq(['gamma_process']),
+  spallation:uniq([...xseq(['spallation_be','spallation'])])
+ }
 };
 const PORTAL_MEMBERS={
  s:xseq(G.sequences.sprocess),
+ 's-second':xseq(G.sequences.sprocess),
  'weak-s':xseq(G.sequences.weakS),
  rp:rpMembers,
  r:rMembers
@@ -105,25 +107,30 @@ function buildMap(){
  const neutron=branchCluster('neutron',[
   {key:'pulsar',label:'Pulsar',visual:'sphere-pulsar',image:'supernova',content:flow(['pulsar'])},
   {key:'accretion',label:'Acreção + raios X',visual:'sphere-accretion',image:'blackhole',content:`${flow(['accretion'])}${structural('Explosão de raios X')}${portal('rp-process',G.sequences.rp,false,'rp')}${ambientImage('blackhole','branch-bg branch-bg-right')}`},
-  {key:'r',label:'Kilonova',visual:'sphere-kilonova',image:'kilonova',content:`${flow(['binary_neutron_stars','kilonova'],'kilonova-prelude-flow')}${portal('Processo-r',G.sequences.r,true,'r')}${ambientImage('kilonova','branch-bg branch-bg-left')}`} 
+  {key:'r',label:'Kilonova',visual:'sphere-kilonova',image:'kilonova',content:`${flow(['binary_neutron_stars','kilonova'],'kilonova-prelude-flow')}${portal('Processo-r',G.sequences.r,true,'r')}${flow(G.sequences.decay,'radioactive-after-r')}${ambientImage('kilonova','branch-bg branch-bg-left')}`} 
  ],'neutron-branches');
  const supernova=branchCluster('supernova',[
   {key:'nu',label:'Neutrinos',visual:'sphere-neutrino',image:'supernova',content:flow(['nu_f'])},
-  {key:'gamma',label:'Processo γ',visual:'sphere-gamma',image:'supernova',content:flow(['gamma_process'])},
   {key:'enrichment',label:'Enriquecimento',visual:'sphere-enrichment',image:'supernova',content:flow(['first_enrichment','second_birth'])},
-  {key:'ns',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:`${flow(['neutron_star'])}${neutron}`},
+  {key:'ns',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:flow(['neutron_star'])},
   {key:'bh',label:'Buraco negro',visual:'sphere-blackhole',image:'blackhole',content:`${structural('Formação do buraco negro','blackhole-junction')}${flow(['black_hole'])}${ambientImage('blackhole','branch-bg branch-bg-right')}`}
  ],'supernova-branches');
  const stellar=branchCluster('stellar',[
   {key:'sub',label:'Anã marrom',visual:'sphere-brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
   {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${structural('Evolução de longa vida')}${flow(['white'])}`},
   {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
-  {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${portal('Processo-s fraco',G.sequences.weakS,false,'weak-s')}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
+  {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
  ],'stellar-branches');
  const spallation=branchCluster('spallation',[
   {key:'be',label:'Berílio',visual:'sphere-spallation-be',content:flow(['spallation_be'])},
   {key:'b',label:'Boro',visual:'sphere-spallation-b',content:flow(['spallation'])}
  ],'spallation-branches');
+ const secondgen=branchCluster('secondgen',[
+  {key:'weak',label:'Processo-s fraco',visual:'sphere-high',image:'supernova',content:portal('weak-s · Cu–Kr',G.sequences.weakS,false,'weak-s')},
+  {key:'s',label:'Estrela AGB · processo-s',visual:'sphere-gold',content:portal('processo-s principal · Rb–Bi',G.sequences.sprocess,false,'s-second')},
+  {key:'gamma',label:'Supernova enriquecida · γ',visual:'sphere-gamma',image:'supernova',content:flow(['gamma_process'])},
+  {key:'spallation',label:'Espalação · Be/B',visual:'sphere-spallation-be',content:spallation}
+ ],'second-generation-branches');
  host.innerHTML=`<div class="campaign-shell" id="campaignShell">
  <header class="campaign-head"><div class="campaign-brand"><strong>ARDUA</strong><span>Mapa da campanha</span></div><div class="campaign-mode-chip">${editor?'Editor':'Campanha'}</div><div class="campaign-head-actions"><button type="button" class="campaign-close" id="campaignData">Elementos</button><button type="button" class="campaign-close" id="campaignClose">Voltar</button></div></header>
  <main class="campaign-content" id="campaignContent">
@@ -144,11 +151,13 @@ function buildMap(){
      ${ambientImage('birth','birth-bg')}
      ${stellar}
      <div class="branch-after" data-after-group="stellar" hidden>
-      <section class="cycle-grid">
-       <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos','cosmic-ray-junction')}${spallation}<div class="convergence interstellar-convergence" data-junction="spallation-convergence">Meio interestelar enriquecido</div></article>
-       <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
-      </section>
+      <div class="convergence interstellar-convergence" data-junction="generation-two-birth">Matéria enriquecida vira matéria-prima</div>
+      ${secondgen}
       ${flow(['second_enrichment','third_birth'],'generation-transition-flow')}
+      <section class="third-generation-zone">
+       ${structural('Ambientes compactos · reciclagem extrema','third-generation-junction')}
+       ${neutron}
+      </section>
       <div class="cycle-arrow">Ciclo cósmico</div>
      </div>
     </div>
