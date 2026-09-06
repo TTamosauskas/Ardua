@@ -484,7 +484,7 @@ function configureRelaxedFlow(phases){
  set('atomic_he',4,8);
  set('atomic_h',6,6);
  set('atomic_li',4,12);
- set('first_atomic_bonds',6,6);set('first_nebulae',6,6);
+ set('first_atomic_bonds',4,4);set('first_nebulae',4,4);
  set('brown',4,8,{endLabel:'DEUTÉRIO<br>ESGOTADO',continueAfterComplete:false});
  set('he_red',6,16);set('he_orange',5,20);set('he_yellow',6,24);set('coulomb_intro',3,9);set('stellar_li',4,12);
  set('fragile',5,10);set('c',8,18);set('n',7,16);set('o',8,18);
