@@ -40,6 +40,7 @@ const BRANCH_MEMBERS={
   high:stellarHighMembers
  },
  supernova:{
+  enrichment:xseq(['first_enrichment','second_birth']),
   nu:xseq(['nu_f']),
   gamma:xseq(['gamma_process']),
   ns:neutronStarMembers,
@@ -109,6 +110,7 @@ function buildMap(){
  const supernova=branchCluster('supernova',[
   {key:'nu',label:'Neutrinos',visual:'sphere-neutrino',image:'supernova',content:flow(['nu_f'])},
   {key:'gamma',label:'Processo γ',visual:'sphere-gamma',image:'supernova',content:flow(['gamma_process'])},
+  {key:'enrichment',label:'Enriquecimento',visual:'sphere-enrichment',image:'supernova',content:flow(['first_enrichment','second_birth'])},
   {key:'ns',label:'Estrela de nêutrons',visual:'sphere-remnant',image:'supernova',content:`${flow(['neutron_star'])}${neutron}`},
   {key:'bh',label:'Buraco negro',visual:'sphere-blackhole',image:'blackhole',content:`${structural('Formação do buraco negro','blackhole-junction')}${flow(['black_hole'])}${ambientImage('blackhole','branch-bg branch-bg-right')}`}
  ],'supernova-branches');
@@ -146,6 +148,7 @@ function buildMap(){
        <article class="cycle-panel interstellar"><h2>Meio interestelar</h2>${structural('Raios cósmicos','cosmic-ray-junction')}${spallation}<div class="convergence interstellar-convergence" data-junction="spallation-convergence">Meio interestelar enriquecido</div></article>
        <article class="cycle-panel radio"><h2>Radioatividade</h2>${flow(G.sequences.decay)}</article>
       </section>
+      ${flow(['second_enrichment','third_birth'],'generation-transition-flow')}
       <div class="cycle-arrow">Ciclo cósmico</div>
      </div>
     </div>

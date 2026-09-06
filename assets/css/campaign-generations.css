@@ -13,3 +13,5 @@
 .phase-node[data-generation="third"]{--generation-ring:rgba(218,164,82,.16)}
 .phase-node[data-generation]{box-shadow:0 0 0 1px var(--generation-ring,transparent)}
 @media(max-width:620px){.generation-banner{margin:22px 12px 14px;padding:12px 14px}.generation-banner::before,.generation-banner::after{display:none}.generation-banner>strong{font-size:16px}}
+
+.generation-transition-flow{margin:18px auto 8px;max-width:620px}.branch-choice.sphere-enrichment .branch-sphere-art{box-shadow:inset 0 0 0 1px rgba(214,190,134,.32),0 0 24px rgba(214,190,134,.12)}
