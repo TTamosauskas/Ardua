@@ -435,10 +435,10 @@ const PHASES=[
  {id:'decay_at',branch:'Cadeias radioativas · Astato',title:'Astato',meta:'Fr → At + He',new:'At',mode:'guidedDecay',target:2,starterGroups:[['Fr'],['Ac'],['Ra'],['Th']],chainRebuild:true,objectiveOnlyProgress:true,visual:'interstellar',fill:24,endLabel:'FORMAR<br>ANÃ BRANCA',menuTag:'At'},
  {id:'white',branch:'Remanescentes compactos · Anã branca',title:'Anã branca',meta:'Crie 3 Carbonos e 3 Oxigênios',new:'O',mode:'whiteCompact',target:3,targetC:3,targetO:3,visual:'whiteDwarf',fill:12,endLabel:'CONTINUAR<br>REMANESCENTES',gravityDelay:170,menuTag:'REMNANESCENTE',fusionTempMax:2e7},
  {id:'final_collapse',branch:'Outra estrela massiva chega ao fim',title:'Colapso final',meta:'Comprima o núcleo até a ruptura',new:'Fe',mode:'neutronize',target:6,visual:'ironCore',fill:54,pool:['O','Ne','Mg','Si','S','Ar','Ca','Ti','Cr','Mn','Fe','Fe'],endEvent:'supernova',endLabel:'EXPLODIR<br>SUPERNOVA',gravityDelay:86,menuTag:'SUPERNOVA'},
- {id:'first_enrichment',branch:'Primeira Geração · Supernova',title:'Primeiro Enriquecimento',meta:'A supernova dispersa C, O, Si, Fe e outras sementes para o meio interestelar',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:18,endEvent:'postTransition',endLabel:'FORMAR<br>SEGUNDA GERAÇÃO',menuTag:'1ª → 2ª'},
- {id:'second_birth',branch:'Segunda Geração · Nascimento estelar',title:'Segunda Geração',meta:'Uma nova estrela nasce de matéria já enriquecida pela Primeira Geração',new:'C',mode:'campaignMilestone',target:0,visual:'nebula',fill:16,endEvent:'postTransition',endLabel:'EXPLORAR<br>SEGUNDA GERAÇÃO',menuTag:'2ª GERAÇÃO'},
- {id:'second_enrichment',branch:'Segunda Geração · Herança química',title:'Segundo Enriquecimento',meta:'AGB, espalação e eventos ricos em nêutrons ampliam o inventário químico disponível',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:20,endEvent:'postTransition',endLabel:'FORMAR<br>TERCEIRA GERAÇÃO',menuTag:'2ª → 3ª'},
- {id:'third_birth',branch:'Terceira Geração · Universo enriquecido',title:'Terceira Geração',meta:'Sistemas tardios nascem depois de múltiplos ciclos de enriquecimento estelar',new:'Fe',mode:'campaignMilestone',target:0,visual:'nebula',fill:18,endEvent:'postTransition',endLabel:'EXPLORAR<br>TERCEIRA GERAÇÃO',menuTag:'3ª GERAÇÃO'},
+ {id:'first_enrichment',branch:'Primeira Geração · Supernova',title:'Primeiro Enriquecimento',meta:'C, N, O, Ne, Mg, Si, Fe e sementes do processo-s fraco passam ao meio interestelar',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:18,endEvent:'postTransition',endLabel:'FORMAR<br>SEGUNDA GERAÇÃO',menuTag:'1ª → 2ª'},
+ {id:'second_birth',branch:'Segunda Geração · Nascimento estelar',title:'Segunda Geração',meta:'Nasce com H, He e Li + C, N, O e outros produtos herdados da Primeira Geração',new:'C',mode:'campaignMilestone',target:0,visual:'nebula',fill:16,endEvent:'postTransition',endLabel:'EXPLORAR<br>SEGUNDA GERAÇÃO',menuTag:'2ª GERAÇÃO'},
+ {id:'second_enrichment',branch:'Segunda Geração · Herança química',title:'Segundo Enriquecimento',meta:'Espalação, AGB e processo-r acrescentam Be/B, produtos-s e núcleos pesados até U',new:'Fe',mode:'campaignMilestone',target:0,visual:'interstellar',fill:20,endEvent:'postTransition',endLabel:'FORMAR<br>TERCEIRA GERAÇÃO',menuTag:'2ª → 3ª'},
+ {id:'third_birth',branch:'Terceira Geração · Universo enriquecido',title:'Terceira Geração',meta:'Nasce com CNO, grupo do Ferro, produtos-s e produtos-r herdados de ciclos anteriores',new:'Fe',mode:'campaignMilestone',target:0,visual:'nebula',fill:18,endEvent:'postTransition',endLabel:'EXPLORAR<br>TERCEIRA GERAÇÃO',menuTag:'3ª GERAÇÃO'},
  {id:'neutron_star',branch:'Remanescente da Supernova',title:'Estrela de nêutrons',meta:'Matéria comprimida em escala extrema',new:'Fe',mode:'remnant',target:6,visual:'neutronStar',fill:22,endEvent:'postTransition',endLabel:'FORMAR<br>PULSAR',menuTag:'REMNANESCENTE'},
  {id:'pulsar',branch:'Acreção e rotação',title:'Pulsar',meta:'Cada núcleo incorporado acelera o feixe',new:'Fe',mode:'pulsar',target:5,visual:'pulsar',fill:20,endEvent:'postTransition',endLabel:'ACREÇÃO<br>EXTREMA',menuTag:'ROTAÇÃO'},
  {id:'accretion',branch:'A estrela recebe nova matéria',title:'Acreção extrema',meta:'Matéria nova chega continuamente pela periferia',new:'Fe',mode:'accretion',target:6,visual:'accretion',fill:12,feedCap:14,endEvent:'postTransition',endLabel:'INICIAR<br>rp-PROCESS',menuTag:'ACREÇÃO'},
@@ -953,8 +953,8 @@ const ABUNDANCE={
  primordial:[['H',9200],['He',800]],
  fusionBase:[['H',9200],['He',800],['O',30],['C',20]],
  solar:[['H',9100],['He',820],['O',30],['C',20],['Ne',8],['N',7],['Mg',4],['Si',4],['Fe',2],['S',2]],
- enriched:[['H',8600],['He',1100],['O',90],['C',60],['N',28],['Ne',25],['Mg',16],['Si',14],['S',8],['Fe',7],['Na',5],['Al',4],['Ca',2]],
- mature:[['H',8200],['He',1250],['O',130],['C',90],['N',36],['Ne',30],['Mg',22],['Si',20],['S',10],['Fe',10],['Sr',1.2],['Ba',.45],['Eu',.12],['Au',.06]],
+ enriched:[['H',8600],['He',1100],['O',90],['C',60],['N',28],['Ne',25],['Mg',16],['Si',14],['S',8],['Fe',7],['Na',5],['Al',4],['Ca',2],['P',1],['Ar',1],['Ni',.8],['Cu',.25],['Zn',.2],['Kr',.05]],
+ mature:[['H',8200],['He',1250],['O',130],['C',90],['N',36],['Ne',30],['Mg',22],['Si',20],['S',10],['Fe',10],['Sr',1.2],['Ba',.45],['Pb',.2],['Eu',.12],['Pt',.08],['Au',.06],['Th',.025],['U',.02]],
  agb:[['H',8000],['He',1500],['C',260],['O',150],['N',45],['Ne',18],['Fe',7],['Sr',2],['Ba',0.7],['Pb',0.25]],
  white:[['C',45],['O',55]],
  remnant:[['Fe',28],['Ni',24],['Si',14],['O',13],['S',7],['Ca',5],['Mg',5],['C',4]],
@@ -1003,9 +1003,11 @@ function fusionHistoryGroups(s=phase(),limit=4){
   return groups;
 }
 function phaseAbundance(s=phase()){
-  const campaignHeritage=window.ARDUA_CAMPAIGN?.getState?.().heritage?.level||0,generation=window.ARDUA_GENERATIONS?.generationOf?.(s.id);
-  if(campaignHeritage>=2&&generation==='third')return ABUNDANCE.mature;
-  if(campaignHeritage>=1&&generation==='second')return ABUNDANCE.enriched;
+  // Geração descreve a composição herdada no nascimento, não o ambiente de toda fase.
+  // Os perfis herdados aparecem nos marcos de enriquecimento/nascimento; AGB, Kilonova
+  // e outros ambientes preservam seus perfis físicos específicos.
+  if(['first_enrichment','second_birth','spallation_be','spallation'].includes(s.id))return ABUNDANCE.enriched;
+  if(['second_enrichment','third_birth'].includes(s.id))return ABUNDANCE.mature;
   // Na Anã Branca, matéria nova representa acreção externa: quase toda H/He.
   // Carbono e Oxigênio do objetivo só podem surgir pelas receitas herdadas do jogador.
   if(s.mode==='whiteCompact')return ABUNDANCE.primordial;
@@ -3891,6 +3893,10 @@ function modalPrimaryLine(s=phase()){
  return s.meta||'Explore o processo desta fase';
 }
 function modalSecondaryLine(s=phase()){
+ if(s.id==='first_enrichment')return 'O que foi fabricado dentro da primeira estrela agora pode compor o gás da próxima geração';
+ if(s.id==='second_birth')return 'Compare: C, N e O antes precisavam ser fabricados; agora já fazem parte da matéria inicial';
+ if(s.id==='second_enrichment')return 'Produtos de AGB, espalação e Kilonova entram no reservatório químico compartilhado';
+ if(s.id==='third_birth')return 'A matéria inicial já contém representantes do processo-s e do processo-r';
  if(s.mode==='campaignMilestone')return 'Observe a herança química e prossiga para a próxima geração';
  if(s.mode==='reactionExplore')return atlasPhaseInstruction(s);
  if(s.mode==='opening')return 'Inicie o Big Bang';
