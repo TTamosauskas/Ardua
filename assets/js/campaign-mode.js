@@ -7,19 +7,22 @@ const MAP_KEY='arduaCampaignGraphV1';
 const EDITOR_MODE=window.location.hash.slice(1).toLowerCase()==='editor';
 const nativeGet=Storage.prototype.getItem;
 const nativeSet=Storage.prototype.setItem;
-const FIRST_SEEDS=['C','O','Ne','Mg','Si','Fe'];
-const SECOND_SEEDS=['C','O','Ne','Mg','Si','Fe','Sr','Ba','Eu','Au'];
+const FIRST_GENERATION_PRODUCTS=['C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr'];
+const SECOND_GENERATION_PRODUCTS=['Be','B','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm','Pb','Bi','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Th','U','Pa','Ra','Ac','Fr','Rn','Po','At'];
+const FIRST_SEEDS=FIRST_GENERATION_PRODUCTS;
+const SECOND_SEEDS=[...FIRST_GENERATION_PRODUCTS,...SECOND_GENERATION_PRODUCTS];
 const R_PROCESS_EVIDENCE=['eu','gd','tb','dy','ho','er','tm','yb','lu','hf','ta','w','re','os','ir','pt','au','hg','tl','th','u','decay_pa','decay_ra','decay_ac','decay_fr','decay_rn','decay_po','decay_at'];
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set((xs||[]).filter(Boolean))]}
-function heritageDefaults(){return{level:0,seeds:[]}}
-function defaults(){return{version:4,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
+function heritageDefaults(){return{level:0,seeds:[],sourceGeneration:0}}
+function defaults(){return{version:5,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
 function evidenceSet(completed,activeId){return new Set([...completed,activeId].filter(Boolean))}
 function applyHeritage(next,level){
- const target=Math.max(Number(next.heritage?.level||0),level);next.heritage={level:target,seeds:uniq([...(next.heritage?.seeds||[]),...(target>=2?SECOND_SEEDS:target>=1?FIRST_SEEDS:[])])};
+ const target=Math.max(Number(next.heritage?.level||0),level),seeds=target>=2?SECOND_SEEDS:target>=1?FIRST_SEEDS:[];
+ next.heritage={...heritageDefaults(),...(next.heritage||{}),level:target,sourceGeneration:Math.max(Number(next.heritage?.sourceGeneration||0),target),seeds:uniq([...(next.heritage?.seeds||[]),...seeds])};
 }
 function normalizeState(rawState,inferHistorical=false){
- const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:4,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:5,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
  const seen=evidenceSet(next.completed,next.activeId);
  if(inferHistorical||previousVersion<3){
    const secondEvidence=['final_collapse','nu_f','gamma_process','neutron_star','rb','sr','bi','spallation_be','spallation','eu','u','decay_at','pulsar','accretion','rp_cu','rp_te','stability','black_hole','quasar'].some(id=>seen.has(id));
@@ -27,11 +30,13 @@ function normalizeState(rawState,inferHistorical=false){
    if(secondEvidence){next.completed=uniq([...next.completed,'first_enrichment','second_birth']);next.generation=Math.max(next.generation,2);applyHeritage(next,1)}
    if(thirdEvidence){next.completed=uniq([...next.completed,'second_enrichment','third_birth']);next.generation=Math.max(next.generation,3);applyHeritage(next,2)}
  }
- // Version 4 promotes the former structural labels "binary system" and "kilonova"
- // to real phases. Any save that already reached the r-process must pass them automatically.
+ // Version 4 promoted the former structural labels "binary system" and "kilonova"
+ // to real phases. Any save that already reached the r-process passes them automatically.
  if(previousVersion<4&&R_PROCESS_EVIDENCE.some(id=>seen.has(id))){
    next.completed=uniq([...next.completed,'binary_neutron_stars','kilonova']);
  }
+ // Version 5 expands heritage from a small representative seed set to the products
+ // actually taught in the previous generation. Existing saves are enriched in place.
  if(next.completed.includes('first_enrichment'))applyHeritage(next,1);
  if(next.completed.includes('second_birth'))next.generation=Math.max(next.generation,2);
  if(next.completed.includes('second_enrichment'))applyHeritage(next,2);

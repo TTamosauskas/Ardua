@@ -5,6 +5,10 @@
 .generation-banner>span{display:block;margin-bottom:4px;font-size:10px;font-weight:800;letter-spacing:.19em;text-transform:uppercase;color:#8fa8d3}
 .generation-banner>strong{display:block;font-size:18px;letter-spacing:.035em;color:#eef5ff}
 .generation-banner>small{display:block;max-width:610px;margin:5px auto 0;font-size:11px;line-height:1.45;color:#9eb0cf}
+.generation-context{display:grid;grid-template-columns:112px 1fr;gap:10px;align-items:start;max-width:650px;margin:12px auto 0;padding-top:10px;border-top:1px solid rgba(151,177,224,.13);text-align:left}
+.generation-context b{font-size:9px;letter-spacing:.14em;color:#8fa8d3}.generation-context span{font-size:10px;line-height:1.45;color:#d6e0f2}
+.generation-production{margin-top:7px;padding-top:7px;border-top-color:rgba(151,177,224,.08)}
+.generation-production span{color:#aebed8}
 .generation-banner.generation-first{border-color:rgba(133,175,238,.28)}
 .generation-banner.generation-second{border-color:rgba(190,163,237,.27)}
 .generation-banner.generation-third{border-color:rgba(226,183,112,.27)}
@@ -12,7 +16,8 @@
 .phase-node[data-generation="second"]{--generation-ring:rgba(178,140,226,.16)}
 .phase-node[data-generation="third"]{--generation-ring:rgba(218,164,82,.16)}
 .phase-node[data-generation]{box-shadow:0 0 0 1px var(--generation-ring,transparent)}
-@media(max-width:620px){.generation-banner{margin:22px 12px 14px;padding:12px 14px}.generation-banner::before,.generation-banner::after{display:none}.generation-banner>strong{font-size:16px}}
+.phase-node[data-generation-role="inheritance"]{box-shadow:0 0 0 1px var(--generation-ring,transparent),0 0 18px rgba(214,190,134,.09)}
+@media(max-width:620px){.generation-banner{margin:22px 12px 14px;padding:12px 14px}.generation-banner::before,.generation-banner::after{display:none}.generation-banner>strong{font-size:16px}.generation-context{grid-template-columns:1fr;gap:3px;text-align:center}}
 
 .generation-transition-flow{margin:18px auto 8px;max-width:620px}.branch-choice.sphere-enrichment .branch-sphere-art{box-shadow:inset 0 0 0 1px rgba(214,190,134,.32),0 0 24px rgba(214,190,134,.12)}
 
