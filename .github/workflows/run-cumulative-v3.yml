@@ -25,16 +25,33 @@ jobs:
       - name: Apply migration
         run: node scripts/migrate-cumulative-v3.js
 
-      - name: Harden regression validator
+      - name: Write regression validator
         run: |
-          node - <<'NODE'
-          const fs=require('fs'),p='scripts/validate-cumulative-recipes.js';let s=fs.readFileSync(p,'utf8');
-          const oldBridge=`const cap=s.slice(s.indexOf('async function captureNeutron(id){'),s.indexOf('function neutronTrajectoryCandidate'));const bridge=cap.indexOf("particle?.kind==='p'");const gate=cap.indexOf("if(s.mode!=='neutron')return");if(bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
-          const newBridge=`const captureStart=s.indexOf('async function captureNeutron(id){');const bridge=s.indexOf("particle?.kind==='p'",captureStart);const gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');`;
-          if(!s.includes(oldBridge))throw new Error('validator bridge anchor missing');s=s.replace(oldBridge,newBridge);
-          const oldRecipe=`if(!/\\{id:'pn_d',unlock:'primordial_d',pieces:\\[\\],particles:\\['p','n'\\],out:'D'/.test(s))fail('Receita p+n→D ausente');`;
-          const newRecipe=`if(!s.includes("id:'pn_d'")||!s.includes("particles:['p','n']")||!s.includes("out:'D'"))fail('Receita p+n→D ausente');`;
-          if(!s.includes(oldRecipe))throw new Error('validator recipe anchor missing');fs.writeFileSync(p,s.replace(oldRecipe,newRecipe));
+          cat > scripts/validate-cumulative-recipes.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const fail=m=>{throw new Error(m)};
+          const gsrc=fs.readFileSync('assets/js/campaign-graph.js','utf8'),ctx={window:{}};
+          vm.createContext(ctx);vm.runInContext(gsrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
+          if(JSON.stringify(G.prerequisites.he_yellow)!==JSON.stringify({allOf:['he_orange']}))fail('Anã Amarela deve seguir Anã Laranja');
+          if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('Coulomb deve seguir Anã Amarela');
+          const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
+          if(map.includes("branchCluster('mainseq'"))fail('Fork Laranja/Amarela ainda existe');
+          if(!map.includes('flow(G.sequences.mid)'))fail('Sequência intermediária linear ausente');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          for(const t of ["campaignKnowledgeReached(r.unlock)","campaignKnowledgeReached('primordial_d')",'primordialFusionRecipe','cumulativeParticleInteractionAllowed','ensureCumulativeParticleFuel','reactCumulativeProcessNeutronWithProton','reactCumulativeProcessNeutronMixed'])if(!s.includes(t))fail('Arquitetura cumulativa ausente: '+t);
+          const learnedStart=s.indexOf('function allLearnedNeutronTransitions(){'),learnedEnd=s.indexOf('function neutronTransitionEnvironmentAllows',learnedStart),learned=s.slice(learnedStart,learnedEnd);
+          if(learnedStart<0||learnedEnd<0)fail('Validador de memória de nêutrons perdeu a âncora');
+          if(learned.includes('state.phaseIndex'))fail('Memória de captura depende do índice linear');
+          if(!learned.includes('campaignKnowledgeReached(p.id)'))fail('Memória de captura deve seguir histórico real');
+          const cpiStart=s.indexOf('function cumulativeParticleInteractionAllowed'),cpiEnd=s.indexOf('function ensureCumulativeParticleFuel',cpiStart),cpi=s.slice(cpiStart,cpiEnd);
+          if(cpiStart<0||cpiEnd<0)fail('Camada cumulativa ausente');
+          if(/remnant|pulsar|accretion|blackhole|neutronize/.test(cpi))fail('Camada cumulativa exclui fases posteriores');
+          const captureStart=s.indexOf('async function captureNeutron(id){');
+          const bridge=s.indexOf("particle?.kind==='p'",captureStart),gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);
+          if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o handler específico de captura');
+          const primordial=s.indexOf("id:'pn_d'"),particles=s.indexOf("particles:['p','n']",primordial),deuterium=s.indexOf("out:'D'",primordial);
+          if(primordial<0||particles<primordial||deuterium<primordial)fail('Receita p+n→D ausente');
+          console.log('Cumulative recipe regression validation passed.');
           NODE
 
       - name: Validate implementation
