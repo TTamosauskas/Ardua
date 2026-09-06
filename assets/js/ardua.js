@@ -2922,9 +2922,11 @@ function handleFusionTap(p){
    if(!canStart&&!canSelectAtomForMovement(p))return false;
    state.selected=[cell];if(!objectiveMotifArmFirst(p))tone(canStart?320:300,.04);render();return true;
  }
+ const test=[...selectedSyms(),p.sym],ex=exactRecipe(test);
+ if(ex){state.selected.push(cell);render();objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95);return true}
  if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
- const test=[...selectedSyms(),p.sym];if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
- state.selected.push(cell);render();const ex=exactRecipe(test);if(ex){objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95)}return true;
+ if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
+ state.selected.push(cell);render();return true;
 }
 function neutronSourceSelectedPiece(s=phase()){
  if(!state.selected.length)return null;const id=state.board[state.selected[0]],p=id?state.pieces.get(id):null;return p&&p.sym===neutronGameplay(s).source?p:null;
