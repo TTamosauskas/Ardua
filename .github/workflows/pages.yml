@@ -24,6 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
