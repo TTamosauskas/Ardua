@@ -1,0 +1,15 @@
+/* Stellar generations — structural chapter markers layered over the existing campaign tree. */
+.generation-banner{position:relative;margin:28px auto 18px;max-width:760px;padding:14px 18px 15px;border:1px solid rgba(151,177,224,.24);border-radius:16px;background:linear-gradient(180deg,rgba(13,22,43,.88),rgba(7,12,26,.72));text-align:center;box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.generation-banner::before,.generation-banner::after{content:"";position:absolute;top:50%;width:min(12vw,90px);height:1px;background:linear-gradient(90deg,transparent,rgba(151,177,224,.30))}
+.generation-banner::before{right:100%;transform:rotate(180deg)}.generation-banner::after{left:100%}
+.generation-banner>span{display:block;margin-bottom:4px;font-size:10px;font-weight:800;letter-spacing:.19em;text-transform:uppercase;color:#8fa8d3}
+.generation-banner>strong{display:block;font-size:18px;letter-spacing:.035em;color:#eef5ff}
+.generation-banner>small{display:block;max-width:610px;margin:5px auto 0;font-size:11px;line-height:1.45;color:#9eb0cf}
+.generation-banner.generation-first{border-color:rgba(133,175,238,.28)}
+.generation-banner.generation-second{border-color:rgba(190,163,237,.27)}
+.generation-banner.generation-third{border-color:rgba(226,183,112,.27)}
+.phase-node[data-generation="first"]{--generation-ring:rgba(113,164,235,.16)}
+.phase-node[data-generation="second"]{--generation-ring:rgba(178,140,226,.16)}
+.phase-node[data-generation="third"]{--generation-ring:rgba(218,164,82,.16)}
+.phase-node[data-generation]{box-shadow:0 0 0 1px var(--generation-ring,transparent)}
+@media(max-width:620px){.generation-banner{margin:22px 12px 14px;padding:12px 14px}.generation-banner::before,.generation-banner::after{display:none}.generation-banner>strong{font-size:16px}}
