@@ -2518,7 +2518,7 @@ function tapPrimordialMolecule(id){const m=primordialMoleculeById(id);if(!m||m.l
 function primordialHeHBondAllowed(s=phase()){return s.mode==='primordialMolecule'&&(s.id==='first_atomic_bonds'||campaignKnowledgeReached('first_atomic_bonds'))}
 function canCreatePrimordialHeH(a,b,s=phase()){return primordialHeHBondAllowed(s)&&primordialNeutralAtom(a)&&primordialNeutralAtom(b)&&same([a.sym,b.sym],['He','H'])}
 async function formPrimordialHeH(a,b){
- if(state.locked||!canCreatePrimordialHeH(a,b))return;state.locked=true;state.freeSelected=[];const x=(a.x+b.x)/2,y=(a.y+b.y)/2,motif=await preparePrimordialMoleculeFormationMotif('HeH+',a,b,{x,y});if(!motif){a.x=x;a.y=y;b.x=x;b.y=y;renderPieces();await wait(170)}const formed=createPrimordialMolecule('HeH+',a,b,{credit:true,silent:true});burst(x,y);captureTag(x,y,'HeH⁺');if(motif)await finishPrimordialMoleculeFormationMotif(motif,formed);else tone(520,.12,'triangle',.035);state.locked=false;ensureOpportunity();render();syncPrimordialMoleculeVisuals();checkComplete();
+ if(state.locked||!canCreatePrimordialHeH(a,b))return;state.locked=true;state.freeSelected=[];const x=(a.x+b.x)/2,y=(a.y+b.y)/2,motif=await preparePrimordialMoleculeFormationMotif('HeH+',a,b,{x,y});if(!motif){a.x=x;a.y=y;b.x=x;b.y=y;renderPieces();await wait(170)}const formed=createPrimordialMolecule('HeH+',a,b,{credit:true,silent:true});burst(x,y);captureTag(x,y,'HeH⁺');if(motif)await finishPrimordialMoleculeFormationMotif(motif,formed);else tone(520,.12,'triangle',.035);await emitMolecularPhoton(x,y);state.locked=false;ensureOpportunity();render();syncPrimordialMoleculeVisuals();checkComplete();
 }
 async function reactPrimordialHeHWithHydrogen(m,h){
  const s=phase();if(s.id!=='first_nebulae'||state.locked||m?.type!=='HeH+'||!primordialNeutralAtom(h,'H'))return;const members=m.members.map(id=>state.pieces.get(id)).filter(Boolean),he=members.find(p=>p.sym==='He'),bondH=members.find(p=>p.sym==='H');if(!he||!bondH)return;
@@ -3203,6 +3203,7 @@ const PRODUCT_LESSONS={
  neutrino:{title:'NEUTRINO (νₑ)',text:'Neutrinos têm carga elétrica nula e interagem muito fracamente com a matéria, escapando com facilidade do ambiente.'},
  antineutrino:{title:'ANTINEUTRINO (ν̄ₑ)',text:'O antineutrino eletrônico acompanha processos β− e escapa quase sem interagir com a matéria.'},
  gamma:{title:'FÓTON GAMA (γ)',text:'Raios gama são fótons emitidos por núcleos quando excesso de energia é liberado.'},
+ molecularPhoton:{title:'FÓTON EMITIDO (hν)',text:'Na formação dessas moleculas energia precisa sair do sistema. Essas emissões resfriaram o plasma primordial.'},
  hawking:{title:'RADIAÇÃO HAWKING',text:'O γ visto durante a acreção representa radiação produzida pela matéria aquecida antes do horizonte. A Radiação Hawking é um efeito quântico distinto, emitido pelo horizonte em intensidade extremamente pequena para buracos negros astrofísicos.'},
  coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'},
  waitingPoint:{title:'PONTO DE ESPERA',text:'Alguns núcleos proton-rich desaceleram o rp-process. Continue fazendo ações nucleares: o núcleo pode sofrer β⁺ enquanto a rede procura outra rota.'},
@@ -3261,6 +3262,11 @@ async function emitGamma(x,y,deferLesson=false){
  const anim=d.animate(frames,{duration:1450,easing:'cubic-bezier(.18,.72,.22,1)',fill:'forwards'});tone(980,.14,'sine',.035);await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;d.remove();resolve()};anim.onfinish=finish;setTimeout(finish,1600)});return first
 }
 function findFloatingElectron(){return[...state.primordialParticles.values()].find(p=>p.kind==='e'&&!p.reacting)||null}
+async function emitMolecularPhoton(x,y){
+ const first=!state.productLessons.has('molecularPhoton');const d=document.createElement('div');d.className='molecular-photon';d.textContent='hν';d.style.left=x+'px';d.style.top=y+'px';dom.fx.appendChild(d);
+ const size=starSize(),c=size/2,base=Math.atan2(y-c,x-c)+(Math.random()-.5)*.65,dist=size*.68,side=Math.random()<.5?-1:1;const frames=[{transform:'translate(-50%,-50%) scale(.72)',opacity:0},{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(base+.18*side)*dist*.34}px),calc(-50% + ${Math.sin(base+.18*side)*dist*.34}px)) scale(.92)`,opacity:1},{transform:`translate(calc(-50% + ${Math.cos(base-.12*side)*dist*.68}px),calc(-50% + ${Math.sin(base-.12*side)*dist*.68}px)) scale(.72)`,opacity:.78},{transform:`translate(calc(-50% + ${Math.cos(base)*dist}px),calc(-50% + ${Math.sin(base)*dist}px)) scale(.42)`,opacity:0}];
+ const anim=d.animate(frames,{duration:980,easing:'cubic-bezier(.18,.72,.22,1)',fill:'forwards'});tone(760,.08,'sine',.022);if(first){await wait(170);await teachProductOnce('molecularPhoton',x,y)}await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;d.remove();resolve()};anim.onfinish=finish;setTimeout(finish,1120)});return first
+}
 async function emitGammaPair(x,y,deferLesson=false){
  const first=!state.productLessons.has('gamma');if(first&&!deferLesson)await teachProductOnce('gamma',x,y);const size=starSize(),a=Math.random()*Math.PI*2,dist=size*.82,els=[];
  for(const dir of [0,Math.PI]){const d=document.createElement('div');d.className='gamma-emission';d.textContent='γ';d.addEventListener('click',ev=>{ev.stopPropagation();focusParticleInfo('gamma')});d.style.left=x+'px';d.style.top=y+'px';dom.fx.appendChild(d);els.push(d);const ang=a+dir;requestAnimationFrame(()=>{d.style.transition='transform .72s cubic-bezier(.18,.72,.22,1),opacity .72s ease';d.style.transform=`translate(calc(-50% + ${Math.cos(ang)*dist}px),calc(-50% + ${Math.sin(ang)*dist}px)) scale(.42)`;d.style.opacity='0'})}
