@@ -406,8 +406,8 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .star-board:not(.primordial-mode) .primordial-particle.electron::after,
 .star-board:not(.primordial-mode) .primordial-particle.neutronfree::after,
 .neutron::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.star-board:not(.primordial-mode) .primordial-particle.candidate{opacity:.76}
 .star-board:not(.primordial-mode) .primordial-particle.selected,
-.star-board:not(.primordial-mode) .primordial-particle.candidate,
 .star-board:not(.primordial-mode) .primordial-particle.reacting,
 .star-board:not(.primordial-mode) .primordial-particle.dragging{opacity:1}
 .neutron{
@@ -416,5 +416,5 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
   font-size:clamp(9px,calc(var(--cellSize)*.27),12px);
   opacity:.40;
 }
-.neutron.candidate,.neutron.selected,.star-board.neutron-active .neutron{opacity:1}
+.neutron.candidate{opacity:.76}.neutron.selected,.star-board.neutron-active .neutron{opacity:1}
 

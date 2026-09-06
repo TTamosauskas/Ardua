@@ -1345,7 +1345,7 @@ function createParticleReactionProduct(sym,x,y,opts={}){
 }
 async function settleParticleReactionProduct(spawn){
  if(!spawn?.piece||isPrimordial())return spawn?.piece||null;const piece=spawn.piece;
- if(spawn.ejected){const c=starSize()/2,dx=piece.x-c,dy=piece.y-c,d=Math.hypot(dx,dy)||1,reach=Math.max(starSize()*1.30,Math.hypot(window.innerWidth,window.innerHeight)*.72);piece.x=c+dx/d*reach;piece.y=c+dy/d*reach;renderPieces();await wait(540);state.pieces.delete(piece.id);renderPieces();return null}
+ if(spawn.ejected){const c=starSize()/2,dx=piece.x-c,dy=piece.y-c,d=Math.hypot(dx,dy),a=d>.001?Math.atan2(dy,dx):Math.random()*Math.PI*2,reach=Math.max(starSize()*1.30,Math.hypot(window.innerWidth,window.innerHeight)*.72);piece.x=c+Math.cos(a)*reach;piece.y=c+Math.sin(a)*reach;renderPieces();await wait(540);state.pieces.delete(piece.id);renderPieces();return null}
  const target=pos(coords[spawn.cell]);piece.x=target.x;piece.y=target.y;renderPieces();await wait(320);return piece
 }
 function stopPrimordialDrift(){if(state.primordialDriftTimer){clearInterval(state.primordialDriftTimer);state.primordialDriftTimer=null}}
