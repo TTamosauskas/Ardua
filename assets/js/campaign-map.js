@@ -28,7 +28,7 @@ const stellarHighMembers=uniq([
  ...rpMembers,...rMembers,...decayMembers,...quasarMembers
 ]);
 const neutronStarMembers=uniq([
- ...xseq(['neutron_star','pulsar','accretion']),...rpMembers,...rMembers,...decayMembers
+ ...xseq(['neutron_star','pulsar','accretion','binary_neutron_stars','kilonova']),...rpMembers,...rMembers,...decayMembers
 ]);
 const blackHoleMembers=uniq([...xseq(['black_hole']),...quasarMembers]);
 const BRANCH_MEMBERS={
@@ -49,7 +49,7 @@ const BRANCH_MEMBERS={
  neutron:{
   pulsar:xseq(['pulsar']),
   accretion:uniq([...xseq(['accretion']),...rpMembers]),
-  r:uniq([...rMembers,...decayMembers])
+  r:uniq([...xseq(['binary_neutron_stars','kilonova']),...rMembers,...decayMembers])
  },
  spallation:{be:xseq(['spallation_be']),b:xseq(['spallation'])}
 };
@@ -105,7 +105,7 @@ function buildMap(){
  const neutron=branchCluster('neutron',[
   {key:'pulsar',label:'Pulsar',visual:'sphere-pulsar',image:'supernova',content:flow(['pulsar'])},
   {key:'accretion',label:'Acreção + raios X',visual:'sphere-accretion',image:'blackhole',content:`${flow(['accretion'])}${structural('Explosão de raios X')}${portal('rp-process',G.sequences.rp,false,'rp')}${ambientImage('blackhole','branch-bg branch-bg-right')}`},
-  {key:'r',label:'Kilonova',visual:'sphere-kilonova',image:'kilonova',content:`${structural('Sistema binário de estrelas de nêutrons','binary-junction')}${structural('Kilonova','kilonova-junction')}${portal('Processo-r',G.sequences.r,true,'r')}${ambientImage('kilonova','branch-bg branch-bg-left')}`}
+  {key:'r',label:'Kilonova',visual:'sphere-kilonova',image:'kilonova',content:`${flow(['binary_neutron_stars','kilonova'],'kilonova-prelude-flow')}${portal('Processo-r',G.sequences.r,true,'r')}${ambientImage('kilonova','branch-bg branch-bg-left')}`} 
  ],'neutron-branches');
  const supernova=branchCluster('supernova',[
   {key:'nu',label:'Neutrinos',visual:'sphere-neutrino',image:'supernova',content:flow(['nu_f'])},

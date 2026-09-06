@@ -9,22 +9,28 @@ const nativeGet=Storage.prototype.getItem;
 const nativeSet=Storage.prototype.setItem;
 const FIRST_SEEDS=['C','O','Ne','Mg','Si','Fe'];
 const SECOND_SEEDS=['C','O','Ne','Mg','Si','Fe','Sr','Ba','Eu','Au'];
+const R_PROCESS_EVIDENCE=['eu','gd','tb','dy','ho','er','tm','yb','lu','hf','ta','w','re','os','ir','pt','au','hg','tl','th','u','decay_pa','decay_ra','decay_ac','decay_fr','decay_rn','decay_po','decay_at'];
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set((xs||[]).filter(Boolean))]}
 function heritageDefaults(){return{level:0,seeds:[]}}
-function defaults(){return{version:3,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
+function defaults(){return{version:4,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
 function evidenceSet(completed,activeId){return new Set([...completed,activeId].filter(Boolean))}
 function applyHeritage(next,level){
  const target=Math.max(Number(next.heritage?.level||0),level);next.heritage={level:target,seeds:uniq([...(next.heritage?.seeds||[]),...(target>=2?SECOND_SEEDS:target>=1?FIRST_SEEDS:[])])};
 }
 function normalizeState(rawState,inferHistorical=false){
- const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:3,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:4,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const seen=evidenceSet(next.completed,next.activeId);
  if(inferHistorical||previousVersion<3){
-   const seen=evidenceSet(next.completed,next.activeId);
    const secondEvidence=['final_collapse','nu_f','gamma_process','neutron_star','rb','sr','bi','spallation_be','spallation','eu','u','decay_at','pulsar','accretion','rp_cu','rp_te','stability','black_hole','quasar'].some(id=>seen.has(id));
    const thirdEvidence=['bi','u','decay_at','pulsar','accretion','rp_cu','rp_te','stability','black_hole','quasar'].some(id=>seen.has(id));
    if(secondEvidence){next.completed=uniq([...next.completed,'first_enrichment','second_birth']);next.generation=Math.max(next.generation,2);applyHeritage(next,1)}
    if(thirdEvidence){next.completed=uniq([...next.completed,'second_enrichment','third_birth']);next.generation=Math.max(next.generation,3);applyHeritage(next,2)}
+ }
+ // Version 4 promotes the former structural labels "binary system" and "kilonova"
+ // to real phases. Any save that already reached the r-process must pass them automatically.
+ if(previousVersion<4&&R_PROCESS_EVIDENCE.some(id=>seen.has(id))){
+   next.completed=uniq([...next.completed,'binary_neutron_stars','kilonova']);
  }
  if(next.completed.includes('first_enrichment'))applyHeritage(next,1);
  if(next.completed.includes('second_birth'))next.generation=Math.max(next.generation,2);
@@ -38,7 +44,7 @@ function legacyMigration(){
  const max=Number.isInteger(legacy.maxUnlockedPhaseIndex)?legacy.maxUnlockedPhaseIndex:(Number.isInteger(legacy.campaignPhaseIndex)?legacy.campaignPhaseIndex:(legacy.phaseIndex||0));
  const completed=G?G.runtimeOrder.slice(0,Math.max(0,max)).filter(id=>G.baseIndex[id]!==undefined):[];
  const active=(G&&G.runtimeOrder[Math.max(0,Math.min(G.runtimeOrder.length-1,max))])||'bigbang';
- const next=normalizeState({...defaults(),introduced:max>0,activeId:active,completed},true);
+ const next=normalizeState({...defaults(),version:0,introduced:max>0,activeId:active,completed},true);
  if(!EDITOR_MODE)nativeSet.call(localStorage,MAP_KEY,JSON.stringify(next));return next;
 }
 let graphState=legacyMigration();

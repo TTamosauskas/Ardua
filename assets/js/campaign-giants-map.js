@@ -59,9 +59,10 @@ function buildFork(){
  cluster.append(f,spheres,panels);
 
  const after=document.createElement('div');after.className='branch-after giant-after';after.dataset.afterGroup='giant';after.hidden=true;
- const core=document.createElement('div');core.className='convergence giant-agb';core.dataset.junction='giant-agb';core.textContent='Convergência AGB';
+ const core=document.createElement('div');core.className='convergence giant-agb';core.dataset.junction='giant-agb';core.textContent='Herança estelar';
+ const generation=document.createElement('div');generation.className='generation-subchapter generation-second';generation.innerHTML='<span>2ª GERAÇÃO</span><strong>Nova estrela AGB</strong><small>Sementes produzidas pela Primeira Geração alimentam a captura lenta de nêutrons.</small>';
  mainFlow.replaceWith(precursorFlow);
- after.append(core,agb,portal,whiteFlow);
+ after.append(core,generation,agb,portal,whiteFlow);
  precursorFlow.after(hub,cluster,after);
 
  const atomicFlow=map.querySelector('.phase-node[data-phase="atomic_li"]')?.closest('.cosmos-flow');
