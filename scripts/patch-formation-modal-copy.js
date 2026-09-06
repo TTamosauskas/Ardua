@@ -1,0 +1,11 @@
+const fs=require('fs');
+const path='assets/js/ardua.js';
+let src=fs.readFileSync(path,'utf8');
+const oldPrimary="if(s.mode==='stellarFormation')return '18 duplas de H → 1 vaga final → H automático → hexágono de 37 H';";
+const newPrimary="if(s.mode==='stellarFormation')return 'Atraia moleculas com a gravidade';";
+const oldSecondary="if(s.mode==='stellarFormation')return 'Selecione duplas e aglomerados quando seus campos g se sobrepuserem. As duplas vagam à frente dos hexágonos em formação; ao restar uma vaga, o H final entra automaticamente.';";
+const newSecondary="if(s.mode==='stellarFormation')return '';";
+if(!src.includes(oldPrimary))throw new Error('texto primário original do modal não encontrado');
+if(!src.includes(oldSecondary))throw new Error('texto secundário original do modal não encontrado');
+src=src.replace(oldPrimary,newPrimary).replace(oldSecondary,newSecondary);
+fs.writeFileSync(path,src);
