@@ -16,6 +16,6 @@ const defs=Object.freeze({
  third:Object.freeze({id:'third',number:3,title:'Terceira Geração',short:'3ª geração',description:'Sistemas formados depois de múltiplos ciclos de enriquecimento químico.',members:Object.freeze(expand(third))})
 });
 const membership=new Map();for(const d of Object.values(defs))for(const id of d.members)if(!membership.has(id))membership.set(id,d.id);
-G.generations=defs;G.generationOrder=Object.freeze(['first','second','third']);G.generationOf=id=>membership.get(id)||null;
-window.ARDUA_GENERATIONS=defs;
+const api=Object.freeze({defs,order:Object.freeze(['first','second','third']),generationOf:id=>membership.get(id)||null});
+window.ARDUA_GENERATIONS=api;
 })();
