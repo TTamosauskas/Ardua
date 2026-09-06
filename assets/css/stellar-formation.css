@@ -31,3 +31,10 @@
 .star-board.formation-birth-flash::after{content:"";position:absolute;inset:0;z-index:19;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(245,253,255,.48),rgba(132,211,255,.18) 18%,transparent 54%);animation:formation-birth .9s ease-out both}
 @keyframes formation-birth{from{opacity:0;transform:scale(.72)}35%{opacity:1}to{opacity:0;transform:scale(1.1)}}
 @media(prefers-reduced-motion:reduce){.formation-g-field,.formation-atom,.stellar-formation-layer{transition:none}.formation-atom.formation-auto-h,.star-board.formation-birth-flash::after{animation:none}}
+
+
+/* Formation completion action stays outside the finished hexagon. */
+.star-shell.formation-ready-shell{min-height:calc(var(--starSize) + 70px);align-items:flex-start}
+.star-board.stellar-formation-mode.formation-stabilized{overflow:visible}
+.star-board.stellar-formation-mode.formation-stabilized .center-action.stage-end{top:auto;bottom:-58px;width:min(78%,300px);height:48px;border-radius:999px;padding:8px 18px;transform:translate(-50%,0) scale(.94)}
+.star-board.stellar-formation-mode.formation-stabilized .center-action.stage-end.show{transform:translate(-50%,0) scale(1)}
