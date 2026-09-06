@@ -1333,6 +1333,21 @@ function outside(i){const p=pos(coords[i]),c=starSize()/2,a=Math.atan2(p.y-c,p.x
 function elementStyle(sym){const c=E[sym].c;return`radial-gradient(circle at 36% 30%,${c[0]},${c[1]} 44%,${c[2]} 76%)`}
 function freePoint(pad=42){const size=starSize(),c=size/2;for(let tries=0;tries<30;tries++){const x=pad+Math.random()*(size-pad*2),y=pad+Math.random()*(size-pad*2);if(Math.hypot(x-c,y-c)>52)return{x,y}}return{x:c+90,y:c}}
 function createFreePiece(sym,x=null,y=null,opts={}){const pt=(x===null||y===null)?freePoint():{x,y},id=state.nextId++,piece={id,sym,cell:null,free:true,x:pt.x,y:pt.y,captures:0,matterState:opts.matterState||'nucleus',boundElectrons:Number(opts.boundElectrons||0),massNumber:opts.massNumber??E[sym]?.mass??null,longRadioactive:!!opts.longRadioactive,lineage:normalizeMatterLineage(opts.lineage?.length?opts.lineage:freshMatterLineage())};armIntrinsicInstability(piece);state.pieces.set(id,piece);return piece}
+function nearestOpenStellarCell(x,y){
+ const open=activeCells().filter(i=>state.board[i]===null);if(!open.length)return null;
+ return open.reduce((best,cell)=>{const a=pos(coords[best]),b=pos(coords[cell]);return Math.hypot(b.x-x,b.y-y)<Math.hypot(a.x-x,a.y-y)?cell:best},open[0])
+}
+function createParticleReactionProduct(sym,x,y,opts={}){
+ if(isPrimordial())return{piece:createFreePiece(sym,x,y,opts),cell:null,ejected:false};
+ const cell=nearestOpenStellarCell(x,y);
+ if(cell===null){const piece=createFreePiece(sym,x,y,opts);piece.stellarEjecting=true;return{piece,cell:null,ejected:true}}
+ const piece=createPiece(sym,cell,false,opts);piece.x=x;piece.y=y;return{piece,cell,ejected:false}
+}
+async function settleParticleReactionProduct(spawn){
+ if(!spawn?.piece||isPrimordial())return spawn?.piece||null;const piece=spawn.piece;
+ if(spawn.ejected){const c=starSize()/2,dx=piece.x-c,dy=piece.y-c,d=Math.hypot(dx,dy),a=d>.001?Math.atan2(dy,dx):Math.random()*Math.PI*2,reach=Math.max(starSize()*1.30,Math.hypot(window.innerWidth,window.innerHeight)*.72);piece.x=c+Math.cos(a)*reach;piece.y=c+Math.sin(a)*reach;renderPieces();await wait(540);state.pieces.delete(piece.id);renderPieces();return null}
+ const target=pos(coords[spawn.cell]);piece.x=target.x;piece.y=target.y;renderPieces();await wait(320);return piece
+}
 function stopPrimordialDrift(){if(state.primordialDriftTimer){clearInterval(state.primordialDriftTimer);state.primordialDriftTimer=null}}
 function startPrimordialDrift(){
  stopPrimordialDrift();const s=phase();if(s.mode==='opening'||!state.primordialParticles.size)return;
@@ -1342,7 +1357,7 @@ function startPrimordialDrift(){
    const freeProtons=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting);
    state.primordialParticles.forEach(p=>{
      if(p.reacting||p.dragging||p.throwing||state.primordialSelected===p.id)return;
-     if(stellar&&advanceCoreOrbitParticle(p))return;
+     if(stellar&&advanceStellarShellParticle(p))return;
      let step=7+Math.random()*9,a=Math.random()*Math.PI*2;
      if(stellar&&p.kind==='p'){
        // Prótons livres continuam vagando, mas passam um pouco mais de tempo no interior.
@@ -1370,13 +1385,13 @@ function stellarCoreAnchor(){
  if(piece&&!piece.free)return{x:piece.x,y:piece.y,cell:centerCell,piece};
  const q=pos(coords[centerCell]);return{x:q.x,y:q.y,cell:centerCell,piece:null};
 }
-function coreOrbitRadius(kind,id){return Math.max(22,cellSize()*.60)+(id%3)*4+(kind==='e'?5:0)}
-function primeCoreOrbitParticle(p,anchor=stellarCoreAnchor()){
- if(!p||!anchor)return false;const dx=p.x-anchor.x,dy=p.y-anchor.y;p.coreOrbiting=true;p.coreOrbitAngle=Math.atan2(dy||1,dx||1);p.coreOrbitRadius=coreOrbitRadius(p.kind,p.id);p.x=anchor.x+Math.cos(p.coreOrbitAngle)*p.coreOrbitRadius;p.y=anchor.y+Math.sin(p.coreOrbitAngle)*p.coreOrbitRadius;return true;
+function stellarShellOrbitRadius(kind,id){const size=starSize(),jitter=((id%7)-3)*size*.0045,kindBias=kind==='e'?size*.010:kind==='n'?-size*.005:0;return Math.max(size*.435,Math.min(size*.495,size*.468+jitter+kindBias))}
+function primeStellarShellParticle(p,kind=p?.kind||'n'){
+ if(!p||!['p','n','e'].includes(kind))return false;const c=starSize()/2,dx=p.x-c,dy=p.y-c;p.shellOrbiting=true;p.shellOrbitAngle=Math.atan2(dy||1,dx||1);p.shellOrbitRadius=stellarShellOrbitRadius(kind,p.id);p.shellOrbitDirection=p.id%2?1:-1;return true;
 }
-function advanceCoreOrbitParticle(p){
- if(isPrimordial()||!p||!['p','n','e'].includes(p.kind))return false;const anchor=stellarCoreAnchor(),dx=p.x-anchor.x,dy=p.y-anchor.y,d=Math.hypot(dx,dy),threshold=Math.max(30,cellSize()*.78);
- if(!p.coreOrbiting&&d>threshold)return false;if(!p.coreOrbiting)primeCoreOrbitParticle(p,anchor);p.coreOrbitAngle=(p.coreOrbitAngle||0)+(p.kind==='e'?.34:p.kind==='p'?.18:.14);p.coreOrbitRadius=p.coreOrbitRadius||coreOrbitRadius(p.kind,p.id);p.x=anchor.x+Math.cos(p.coreOrbitAngle)*p.coreOrbitRadius;p.y=anchor.y+Math.sin(p.coreOrbitAngle)*p.coreOrbitRadius;return true;
+function stellarShellTarget(p,kind=p?.kind||'n'){if(!p)return null;if(!p.shellOrbiting)primeStellarShellParticle(p,kind);const c=starSize()/2,a=p.shellOrbitAngle||0,r=p.shellOrbitRadius||stellarShellOrbitRadius(kind,p.id);return{x:c+Math.cos(a)*r,y:c+Math.sin(a)*r}}
+function advanceStellarShellParticle(p,kind=p?.kind||'n',angularStep=null){
+ if(isPrimordial()||!p||!['p','n','e'].includes(kind))return false;if(!p.shellOrbiting)primeStellarShellParticle(p,kind);const c=starSize()/2,dx=p.x-c,dy=p.y-c,d=Math.hypot(dx,dy)||1,targetR=stellarShellOrbitRadius(kind,p.id),currentA=Math.atan2(dy,dx),dir=p.shellOrbitDirection||1,step=angularStep??(kind==='e'?.12:kind==='p'?.075:.055),radial=d+(targetR-d)*.28;p.shellOrbitRadius=targetR;p.shellOrbitAngle=currentA+dir*step;p.x=c+Math.cos(p.shellOrbitAngle)*radial;p.y=c+Math.sin(p.shellOrbitAngle)*radial;return true;
 }
 function clearPrimordialParticles(){stopPrimordialDrift();cancelParticleDrag();state.primordialParticles.clear();state.primordialSelected=null;if(dom.primordial)dom.primordial.innerHTML=''}
 function primordialNeutronsStable(s=phase()){return s.mode==='opening'||s.mode==='primordialNuclear'||s.mode==='atomicRecombination'}
@@ -1408,11 +1423,11 @@ function finishParticleDrag(id,ev,cancel=false){
  const d=state.particleDrag;if(!d||d.id!==id||d.pointerId!==ev.pointerId)return false;if(d.holdTimer)clearTimeout(d.holdTimer);const p=state.primordialParticles.get(id),wasActive=d.active;state.particleDrag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}
  if(!p)return wasActive;if(wasActive){ev.preventDefault();ev.stopPropagation();p.dragging=false;p.suppressTapUntil=performance.now()+520;const v=cancel?{x:0,y:0}:{x:d.vx,y:d.vy};if(Math.hypot(v.x,v.y)>.06)animateParticleThrow(id,v.x,v.y);else{p.throwing=false;renderPrimordialParticles();startPrimordialDrift()}return true}return false
 }
-function createPrimordialParticle(kind,x=null,y=null,target=null){const pt=(x===null||y===null)?freePoint(25):{x,y},id=state.nextPrimordialId++,p={id,kind,x:pt.x,y:pt.y,reacting:false};if(kind==='n'){p.unstable=!primordialNeutronsStable();p.bornRound=state.nuclearRound;p.lifetimeRounds=primordialNeutronLifetime()}if(target){p.targetX=target.x;p.targetY=target.y}if(!isPrimordial()&&['p','n','e'].includes(kind)){const a=stellarCoreAnchor(),d=Math.hypot(p.x-a.x,p.y-a.y);if(d<Math.max(30,cellSize()*.78))primeCoreOrbitParticle(p,a)}state.primordialParticles.set(id,p);return p}
+function createPrimordialParticle(kind,x=null,y=null,target=null){const pt=(x===null||y===null)?freePoint(25):{x,y},id=state.nextPrimordialId++,p={id,kind,x:pt.x,y:pt.y,reacting:false};if(kind==='n'){p.unstable=!primordialNeutronsStable();p.bornRound=state.nuclearRound;p.lifetimeRounds=primordialNeutronLifetime()}if(target){p.targetX=target.x;p.targetY=target.y}if(!isPrimordial()&&['p','n','e'].includes(kind))primeStellarShellParticle(p,kind);state.primordialParticles.set(id,p);return p}
 function countFloatingParticle(kind){let n=0;state.primordialParticles.forEach(p=>{if(p.kind===kind)n++});return n}
 function spawnFloatingParticle(kind,x=null,y=null){
- const start=(x===null||y===null)?freePoint(25):{x,y},p=createPrimordialParticle(kind,start.x,start.y),dest=p.coreOrbiting?{x:p.x,y:p.y}:freePoint(30);p.reacting=true;renderPrimordialParticles();
- requestAnimationFrame(()=>{if(!p.coreOrbiting){p.x=dest.x;p.y=dest.y}renderPrimordialParticles()});
+ const start=(x===null||y===null)?freePoint(25):{x,y},p=createPrimordialParticle(kind,start.x,start.y),shell=!isPrimordial()&&['p','n','e'].includes(kind),dest=shell?stellarShellTarget(p,kind):freePoint(30);p.reacting=true;renderPrimordialParticles();
+ requestAnimationFrame(()=>{p.x=dest.x;p.y=dest.y;renderPrimordialParticles()});
  setTimeout(()=>{const q=state.primordialParticles.get(p.id);if(q){q.reacting=false;renderPrimordialParticles();startPrimordialDrift()}},420);return p
 }
 function ensurePrimordialParticleMix({p=0,e=0,n=0}={}){for(const [kind,min] of Object.entries({p,e,n}))while(countFloatingParticle(kind)<min)createPrimordialParticle(kind)}
@@ -2386,7 +2401,7 @@ async function reactCumulativeProcessNeutronWithProton(proton,n){
  const x=(proton.x+n.x)/2,y=(proton.y+n.y)/2;state.locked=true;state.primordialSelected=null;state.selectedNeutron=null;
  await objectiveInteractionImpact(`cumulative:${phase().id}:p+n>D`,[objectiveInteractionPrimordialToken(proton),objectiveInteractionNeutronToken(n)],'D',{x,y},'γ','FUSÃO');
  state.primordialParticles.delete(proton.id);state.neutrons.delete(n.id);renderPrimordialParticles();renderNeutrons();
- const out=createFreePiece('D',x,y,{massNumber:2});out.newborn=true;state.created.D=(state.created.D||0)+1;state.discovered.add('D');focusPieceInfo(out);burst(x,y);await emitGamma(x,y);await afterNuclearAction({advanceRound:true});
+ const spawn=createParticleReactionProduct('D',x,y,{massNumber:2}),out=spawn.piece;out.newborn=true;state.created.D=(state.created.D||0)+1;state.discovered.add('D');focusPieceInfo(out);burst(x,y);await emitGamma(x,y);await settleParticleReactionProduct(spawn);await afterNuclearAction({advanceRound:true});
  setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();
 }
 async function reactCumulativeBoardMixed(r,piece,particle){
@@ -2424,14 +2439,14 @@ function tapPrimordialParticle(id){
 }
 async function reactPrimordialParticlePair(r,a,b){
  if(state.locked||!a||!b||a.reacting||b.reacting)return;const s=phase(),x=(a.x+b.x)/2,y=(a.y+b.y)/2,goal=r.out===s.new&&primordialGoalCount(s)<Math.max(1,s.target||1);state.locked=true;state.primordialSelected=null;const motif=goal?await objectiveInteractionPrelude(`primordial:${s.id}:${r.out}`,[objectiveInteractionPrimordialToken(a),objectiveInteractionPrimordialToken(b)],r.out,{x,y}):null;
- a.reacting=true;b.reacting=true;if(!motif){a.x=x;a.y=y;b.x=x;b.y=y;renderPrimordialParticles();await wait(260)}state.primordialParticles.delete(a.id);state.primordialParticles.delete(b.id);renderPrimordialParticles();const out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive});out.newborn=true;focusPieceInfo(out);state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);recordFlow(r.out===s.new?2:1);if(motif)await objectiveInteractionRevealPiece(motif,out,{x,y});else render();burst(x,y);await handleReactionEmissions(r,out);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
+ a.reacting=true;b.reacting=true;if(!motif){a.x=x;a.y=y;b.x=x;b.y=y;renderPrimordialParticles();await wait(260)}state.primordialParticles.delete(a.id);state.primordialParticles.delete(b.id);renderPrimordialParticles();const spawn=createParticleReactionProduct(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive}),out=spawn.piece;out.newborn=true;focusPieceInfo(out);state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);recordFlow(r.out===s.new?2:1);if(motif)await objectiveInteractionRevealPiece(motif,out,{x,y});else render();burst(x,y);await handleReactionEmissions(r,out);await settleParticleReactionProduct(spawn);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
 }
 async function reactPrimordialMixed(r,piece,particle){
  if(state.locked||!piece||!particle||particle.reacting)return;const s=phase(),x=piece.x,y=piece.y,goal=r.out===s.new&&primordialGoalCount(s)<Math.max(1,s.target||1);state.locked=true;state.freeSelected=[];state.primordialSelected=null;const motif=goal?await objectiveInteractionPrelude(`primordial:${s.id}:${r.out}`,[objectiveInteractionPieceToken(piece),objectiveInteractionPrimordialToken(particle)],r.out,{x,y}):null;
  particle.reacting=true;if(!motif){particle.x=x;particle.y=y;renderPrimordialParticles();await wait(220)}state.primordialParticles.delete(particle.id);state.pieces.delete(piece.id);renderPrimordialParticles();renderPieces();const out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive});out.newborn=true;focusPieceInfo(out);state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);recordFlow(r.out===s.new?2:1);if(motif)await objectiveInteractionRevealPiece(motif,out,{x,y});else render();burst(x,y);await handleReactionEmissions(r,out);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
 }
 async function recombineHydrogenParticles(a,b){
- if(state.locked||a.reacting||b.reacting)return;const p=a.kind==='p'?a:b,e=a.kind==='e'?a:b;if(!p||!e)return;const s=phase(),x=(p.x+e.x)/2,y=(p.y+e.y)/2;state.locked=true;state.primordialSelected=null;const motif=await objectiveInteractionPrelude(`atomic:${s.id}:H`,[objectiveInteractionPrimordialToken(p),objectiveInteractionPrimordialToken(e)],'H',{x,y});p.reacting=true;e.reacting=true;state.primordialParticles.delete(p.id);state.primordialParticles.delete(e.id);renderPrimordialParticles();const h=createFreePiece('H',x,y,{matterState:'atom',boundElectrons:1,massNumber:1});h.newborn=true;focusPieceInfo(h);state.created.H=(state.created.H||0)+1;state.discovered.add('H');recordFlow(1);if(motif)await objectiveInteractionRevealPiece(motif,h,{x,y});else render();burst(x,y);await emitGamma(x,y);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(h.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
+ if(state.locked||a.reacting||b.reacting)return;const p=a.kind==='p'?a:b,e=a.kind==='e'?a:b;if(!p||!e)return;const s=phase(),x=(p.x+e.x)/2,y=(p.y+e.y)/2;state.locked=true;state.primordialSelected=null;const motif=await objectiveInteractionPrelude(`atomic:${s.id}:H`,[objectiveInteractionPrimordialToken(p),objectiveInteractionPrimordialToken(e)],'H',{x,y});p.reacting=true;e.reacting=true;state.primordialParticles.delete(p.id);state.primordialParticles.delete(e.id);renderPrimordialParticles();const spawn=createParticleReactionProduct('H',x,y,{matterState:'atom',boundElectrons:1,massNumber:1}),h=spawn.piece;h.newborn=true;focusPieceInfo(h);state.created.H=(state.created.H||0)+1;state.discovered.add('H');recordFlow(1);if(motif)await objectiveInteractionRevealPiece(motif,h,{x,y});else render();burst(x,y);await emitGamma(x,y);await settleParticleReactionProduct(spawn);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(h.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
 }
 async function bindElectronToPiece(piece,electron){
  if(state.locked||!pieceCanBindElectron(piece)||!electron||electron.kind!=='e')return;const s=phase(),x=piece.x,y=piece.y,nextBound=Math.min(E[piece.sym].n,Number(piece.boundElectrons||0)+1),finalNeutral=nextBound>=E[piece.sym].n,objectiveNeutral=s.mode==='atomicRecombination'&&piece.sym===s.new&&finalNeutral;state.locked=true;state.freeSelected=[];state.primordialSelected=null;const key=`atomic:${s.id}:${piece.sym}:e`;const motif=objectiveNeutral?await objectiveInteractionPrelude(key,[objectiveInteractionPieceToken(piece),objectiveInteractionPrimordialToken(electron)],piece.sym,{x,y}):null;if(!objectiveNeutral)await objectiveInteractionImpact(key,[objectiveInteractionPieceToken(piece),objectiveInteractionPrimordialToken(electron)],piece.sym,{x,y},'e⁻','CAPTURA');electron.reacting=true;state.primordialParticles.delete(electron.id);renderPrimordialParticles();piece.boundElectrons=nextBound;piece.matterState='atom';piece.newborn=true;focusPieceInfo(piece);recordFlow(1);if(pieceCharge(piece)===0){state.created[piece.sym]=(state.created[piece.sym]||0)+1;state.discovered.add(piece.sym)}if(motif)await objectiveInteractionRevealPiece(motif,piece,{x,y});else renderPieces();burst(piece.x,piece.y);await emitGamma(piece.x,piece.y);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(piece.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;render();checkComplete()
@@ -3644,19 +3659,20 @@ function spawnNeutron(){
  const size=starSize(),c=size/2,a=Math.random()*Math.PI*2,r=size*.46,id=state.nextN++,x=c+Math.cos(a)*r,y=c+Math.sin(a)*r,speed=.9+Math.random()*.65;
  state.neutrons.set(id,{id,x,y,vx:-Math.cos(a)*speed+(Math.random()-.5)*.35,vy:-Math.sin(a)*speed+(Math.random()-.5)*.35,generated:false});renderNeutrons();return true
 }
-function placeNeutronOnCoreOrbit(n,force=false){
- const anchor=stellarCoreAnchor(),dx=n.x-anchor.x,dy=n.y-anchor.y,d=Math.hypot(dx,dy),threshold=Math.max(30,cellSize()*.78);if(!force&&!n.coreOrbiting&&d>threshold)return false;if(!n.coreOrbiting){n.coreOrbiting=true;n.coreOrbitAngle=Math.atan2(dy||1,dx||1);n.coreOrbitRadius=Math.max(23,cellSize()*.62)+(n.id%3)*4}n.coreOrbitAngle=(n.coreOrbitAngle||0)+.16;n.x=anchor.x+Math.cos(n.coreOrbitAngle)*n.coreOrbitRadius;n.y=anchor.y+Math.sin(n.coreOrbitAngle)*n.coreOrbitRadius;return true;
+function placeNeutronOnStellarShell(n,force=false){
+ if(!n)return false;if(force&&!n.shellOrbiting)primeStellarShellParticle(n,'n');return advanceStellarShellParticle(n,'n',.012)
 }
 function spawnGeneratedNeutron(x,y){
   if(!['neutronize','neutron'].includes(phase().mode))return;
   const id=state.nextN++,a=Math.random()*Math.PI*2,speed=1.0+Math.random()*.8,n={id,x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,generated:true};
-  const anchor=stellarCoreAnchor();if(Math.hypot(x-anchor.x,y-anchor.y)<Math.max(30,cellSize()*.78))placeNeutronOnCoreOrbit(n,true);state.neutrons.set(id,n);
+  primeStellarShellParticle(n,'n');state.neutrons.set(id,n);
   renderNeutrons();
 }
 function moveNeutrons(){
  const s=phase();if(!['neutron','neutronize'].includes(s.mode))return;const c=starSize()/2,limit=starSize()*.44;
  for(const n of state.neutrons.values()){
-   if(placeNeutronOnCoreOrbit(n))continue;
+   if(state.selectedNeutron===n.id)continue;
+   if(placeNeutronOnStellarShell(n))continue;
    n.x+=(n.vx||0);n.y+=(n.vy||0);
    const dx=n.x-c,dy=n.y-c,d=Math.hypot(dx,dy)||1;
    if(d>limit){const nx=dx/d,ny=dy/d,dot=(n.vx||0)*nx+(n.vy||0)*ny;n.vx=(n.vx||0)-2*dot*nx;n.vy=(n.vy||0)-2*dot*ny;n.x=c+nx*limit;n.y=c+ny*limit}
