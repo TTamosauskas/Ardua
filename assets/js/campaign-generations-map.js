@@ -15,7 +15,8 @@ function ensureBefore(target,key,subtitle=''){
 function annotate(){
  map.querySelectorAll('.phase-node[data-phase]').forEach(el=>{const id=el.dataset.phase,key=GEN.generationOf(id),role=GEN.roleOf(id);if(key)el.dataset.generation=key;else delete el.dataset.generation;el.dataset.generationRole=role});
  const stellar=[...map.querySelectorAll('.branch-cluster[data-branch-group="stellar"]')].find(el=>el.getClientRects().length)||map.querySelector('.branch-cluster[data-branch-group="stellar"]');
- ensureBefore(stellar,'first','A primeira estrela nasce quase só com H, He e Li e precisa fabricar as sementes pesadas que o Universo ainda não possui.');
+ const firstFormation=map.querySelector('[data-phase="first_generation_formation"]');
+ ensureBefore(firstFormation||stellar,'first','A primeira estrela nasce quase só com H, He e Li e precisa fabricar as sementes pesadas que o Universo ainda não possui.');
  const second=map.querySelector('.second-generation-branches');
  ensureBefore(second,'second','Metais produzidos pela Primeira Geração passam a existir desde o nascimento e tornam capturas sobre sementes pesadas uma nova possibilidade.');
  const third=map.querySelector('.third-generation-zone')||map.querySelector('.neutron-branches');

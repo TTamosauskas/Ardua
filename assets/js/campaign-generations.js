@@ -6,7 +6,7 @@ const expand=ids=>ids.flatMap(id=>G.atlas.filter(a=>a.anchor===id).map(a=>a.id).
 const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const seq=name=>G.sequences?.[name]||[];
 const prologue=uniq(['bigbang','primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td',...seq('atomic')]);
-const first=uniq([...seq('brown'),...seq('red'),...seq('mid'),...seq('high'),...seq('collapse'),'nu_f','first_enrichment']);
+const first=uniq(['first_generation_formation',...seq('brown'),...seq('red'),...seq('mid'),...seq('high'),...seq('collapse'),'nu_f','first_enrichment']);
 const second=uniq(['second_birth',...seq('interstellar'),...seq('weakS'),...seq('sprocess'),'gamma_process','second_enrichment']);
 const third=uniq(['third_birth','pulsar','accretion','binary_neutron_stars','kilonova',...seq('r'),...seq('decay'),...seq('rp')]);
 const remnants=new Set(['white','neutron_star','black_hole','quasar']);
@@ -18,6 +18,7 @@ const defs=Object.freeze({
 });
 const membership=new Map();for(const d of Object.values(defs))for(const id of d.members)if(!membership.has(id))membership.set(id,d.id);
 const transitions=new Set(['first_enrichment','second_birth','second_enrichment','third_birth']);
+const formations=new Set(['first_generation_formation']);
 const modelNote='As gerações representam etapas pedagógicas de enriquecimento químico; na natureza, populações estelares e processos podem se sobrepor.';
 const api=Object.freeze({
  defs,
@@ -25,7 +26,7 @@ const api=Object.freeze({
  modelNote,
  generationOf:id=>membership.get(id)||null,
  birthComposition:key=>Object.freeze([...(defs[key]?.birthSymbols||[])]),
- roleOf:id=>remnants.has(id)?'remnant':transitions.has(id)?'inheritance':'production'
+ roleOf:id=>remnants.has(id)?'remnant':formations.has(id)?'formation':transitions.has(id)?'inheritance':'production'
 });
 window.ARDUA_GENERATIONS=api;
 })();
