@@ -3869,7 +3869,7 @@ function stellarFormationCells(spec=stellarFormationSpec()){
 function stellarFormationLayout(n,spec=stellarFormationSpec()){
  const scale=cellSize()*.58,ids=stellarFormationCells(spec).slice(0,Math.max(1,Math.min(spec.total,n))),pts=ids.map(i=>{const c=coords[i];return{x:scale*Math.sqrt(3)*(c.q+c.r/2),y:scale*1.5*c.r,cell:i}}),cx=pts.reduce((a,p)=>a+p.x,0)/pts.length,cy=pts.reduce((a,p)=>a+p.y,0)/pts.length;return pts.map(p=>({x:p.x-cx,y:p.y-cy,cell:p.cell}));
 }
-function stellarFormationAtomSize(spec=stellarFormationSpec()){const minCell=spec.radius>=5?28:36;return Math.max(minCell,Math.min(72,starSize()*.88/(2*spec.radius+1)))}
+function stellarFormationAtomSize(spec=stellarFormationSpec(),s=phase()){const radius=s?.id==='first_generation_formation'?4:spec.radius,minCell=radius>=5?28:36;return Math.max(minCell,Math.min(72,starSize()*.88/(2*radius+1)))}
 function stellarFormationSeedBondDistance(spec=stellarFormationSpec()){return stellarFormationAtomSize(spec)}
 function stellarFormationSeedLayout(count,spec=stellarFormationSpec()){if(count<=1)return[{x:0,y:0}];const d=stellarFormationSeedBondDistance(spec);return[{x:-d/2,y:0},{x:d/2,y:0}]}
 
