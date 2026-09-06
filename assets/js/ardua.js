@@ -2495,20 +2495,20 @@ function invalidPrimordial(id){const el=dom.primordial.querySelector(`[data-id="
 function primordialMoleculeById(id){return state.primordialMolecules?.get(Number(id))||null}
 function primordialMoleculeForPiece(piece){return piece?.moleculeId?primordialMoleculeById(piece.moleculeId):null}
 function primordialNeutralAtom(piece,sym=null){return !!piece&&piece.free&&!piece.moleculeId&&(!sym||piece.sym===sym)&&piece.matterState==='atom'&&pieceCharge(piece)===0}
-function primordialMoleculeBondDistance(){return Math.max(42,Math.min(54,cellSize()*.82))}
+function primordialMoleculeBondDistance(){return Math.max(32,Math.min(40,cellSize()*.64))}
 function syncPrimordialMoleculeVisuals(){
- const live=new Set();for(const m of state.primordialMolecules?.values?.()||[]){for(const id of m.members){const el=dom.pieces.querySelector(`[data-id="${id}"]`);if(el){el.dataset.molecule=m.type;live.add(el)}}}
- dom.pieces.querySelectorAll('[data-molecule]').forEach(el=>{if(!live.has(el))delete el.dataset.molecule});
+ const live=new Set();for(const m of state.primordialMolecules?.values?.()||[]){for(const id of m.members){const el=dom.pieces.querySelector(`[data-id="${id}"]`);if(el){el.dataset.molecule=m.type;el.classList.toggle('molecule-inert',!!m.locked);el.setAttribute('aria-disabled',m.locked?'true':'false');if(m.locked)el.tabIndex=-1;else el.removeAttribute('tabindex');live.add(el)}}}
+ dom.pieces.querySelectorAll('[data-molecule]').forEach(el=>{if(!live.has(el)){delete el.dataset.molecule;el.classList.remove('molecule-inert');el.removeAttribute('aria-disabled');el.removeAttribute('tabindex')}});
 }
 function positionPrimordialMolecule(m){const a=state.pieces.get(m.members[0]),b=state.pieces.get(m.members[1]);if(!a||!b)return;const d=primordialMoleculeBondDistance(),dx=Math.cos(m.angle)*d/2,dy=Math.sin(m.angle)*d/2;a.x=m.x-dx;a.y=m.y-dy;b.x=m.x+dx;b.y=m.y+dy}
 function createPrimordialMolecule(type,a,b,{credit=true,silent=false}={}){
- if(!a||!b)return null;const id=state.nextPrimordialMoleculeId++,m={id,type,members:[a.id,b.id],x:(a.x+b.x)/2,y:(a.y+b.y)/2,angle:Math.atan2(b.y-a.y,b.x-a.x)||Math.random()*Math.PI*2};
+ if(!a||!b)return null;const id=state.nextPrimordialMoleculeId++,m={id,type,members:[a.id,b.id],x:(a.x+b.x)/2,y:(a.y+b.y)/2,angle:Math.atan2(b.y-a.y,b.x-a.x)||Math.random()*Math.PI*2,locked:!!(credit&&phase().mode==='primordialMolecule'&&type===phase().new)};
  for(const p of [a,b]){p.moleculeId=id;p.moleculeType=type;p.matterState='atom'}state.primordialMolecules.set(id,m);positionPrimordialMolecule(m);
  if(credit){state.created[type]=(state.created[type]||0)+1;recordFlow(1)}renderPieces();syncPrimordialMoleculeVisuals();if(!silent){burst(m.x,m.y);captureTag(m.x,m.y,type==='HeH+'?'HeH⁺':'H₂');tone(type==='HeH+'?520:390,.12,'triangle',.035)}startPrimordialMoleculeDrift();return m;
 }
 function dissolvePrimordialMolecule(m){if(!m)return;state.primordialMolecules.delete(m.id);for(const id of m.members){const p=state.pieces.get(id);if(p){delete p.moleculeId;delete p.moleculeType}}syncPrimordialMoleculeVisuals()}
-function selectedPrimordialMolecule(){for(const id of state.freeSelected||[]){const p=state.pieces.get(id),m=primordialMoleculeForPiece(p);if(m)return m}return null}
-function tapPrimordialMolecule(id){const m=primordialMoleculeById(id);if(!m||state.locked||state.phaseDone)return;const selected=m.members.every(pid=>state.freeSelected.includes(pid));state.freeSelected=selected?[]:[...m.members];tone(selected?240:340,.045,'sine',.022);render();syncPrimordialMoleculeVisuals()}
+function selectedPrimordialMolecule(){for(const id of state.freeSelected||[]){const p=state.pieces.get(id),m=primordialMoleculeForPiece(p);if(m&&!m.locked)return m}return null}
+function tapPrimordialMolecule(id){const m=primordialMoleculeById(id);if(!m||m.locked||state.locked||state.phaseDone)return;const selected=m.members.every(pid=>state.freeSelected.includes(pid));state.freeSelected=selected?[]:[...m.members];tone(selected?240:340,.045,'sine',.022);render();syncPrimordialMoleculeVisuals()}
 function primordialHeHBondAllowed(s=phase()){return s.mode==='primordialMolecule'&&(s.id==='first_atomic_bonds'||campaignKnowledgeReached('first_atomic_bonds'))}
 function canCreatePrimordialHeH(a,b,s=phase()){return primordialHeHBondAllowed(s)&&primordialNeutralAtom(a)&&primordialNeutralAtom(b)&&same([a.sym,b.sym],['He','H'])}
 async function formPrimordialHeH(a,b){
@@ -2880,19 +2880,45 @@ function primordialProducerToward(sym){
  for(const r of producers){const next=nextPrimordialReactionToward(r,new Set());if(next)return next}
  return producers[0];
 }
-function primordialNextRecipeLine(s=phase()){
- if(s.mode==='primordialNuclear')return primordialContextualReaction(s)?.label||s.meta||'';
- if(s.id==='atomic_h')return 'p + e⁻ → H + γ';
- if(s.id==='atomic_he'){
+function primordialAtomicCreationLine(sym){
+ if(sym==='H')return 'p + e⁻ → H + γ';
+ if(sym==='He'){
    const ion=[...state.pieces.values()].find(p=>p.free&&p.sym==='He'&&pieceCharge(p)>0);
    if(ion)return Number(ion.boundElectrons||0)===0?'⁴He²⁺ + e⁻ → He⁺ + γ':'He⁺ + e⁻ → He + γ';
    return primordialProducerToward('He')?.label||'Reconstrua um núcleo de ⁴He';
  }
- if(s.id==='atomic_li'){
+ if(sym==='Li'){
    const ion=[...state.pieces.values()].find(p=>p.free&&p.sym==='Li'&&pieceCharge(p)>0);
    if(ion){const e=Number(ion.boundElectrons||0);return e===0?'⁷Li³⁺ + e⁻ → Li²⁺ + γ':e===1?'Li²⁺ + e⁻ → Li⁺ + γ':'Li⁺ + e⁻ → Li + γ'}
    return primordialProducerToward('Li')?.label||'Reconstrua um núcleo de ⁷Li';
  }
+ return '';
+}
+function primordialMoleculeNextRecipeLine(s=phase()){
+ const neutral=sym=>[...state.pieces.values()].find(p=>primordialNeutralAtom(p,sym)),h=neutral('H'),he=neutral('He');
+ if(s.id==='first_atomic_bonds'){
+   if(h&&he)return 'He + H → HeH⁺';
+   if(!h)return primordialAtomicCreationLine('H');
+   return primordialAtomicCreationLine('He');
+ }
+ if(s.id==='first_nebulae'){
+   const heh=[...state.primordialMolecules.values()].find(m=>m.type==='HeH+'&&!m.locked);
+   if(heh&&h)return 'HeH⁺ + H → H₂';
+   if(!heh){
+     if(!h)return primordialAtomicCreationLine('H');
+     if(!he)return primordialAtomicCreationLine('He');
+     return 'He + H → HeH⁺';
+   }
+   return primordialAtomicCreationLine('H');
+ }
+ return '';
+}
+function primordialNextRecipeLine(s=phase()){
+ if(s.mode==='primordialNuclear')return primordialContextualReaction(s)?.label||s.meta||'';
+ if(s.mode==='primordialMolecule')return primordialMoleculeNextRecipeLine(s);
+ if(s.id==='atomic_h')return primordialAtomicCreationLine('H');
+ if(s.id==='atomic_he')return primordialAtomicCreationLine('He');
+ if(s.id==='atomic_li')return primordialAtomicCreationLine('Li');
  return '';
 }
 function guidedDecayMap(s=phase()){return GUIDED_DECAYS[s.id]||null}
@@ -3033,7 +3059,7 @@ function updateObjective(){
  if(s.mode==='neutron'){const g=neutronGameplay(s),extras=[];if(g.requiresSource)extras.push(`fonte ${Math.min(1,state.neutronSourceActivations)}/1`);if(g.requiresBranch)extras.push(`ramificação ${Math.min(1,state.neutronBranchesObserved)}/1`);if(g.requiresFreezeout)extras.push(`freeze-out ${Math.min(1,state.neutronFreezeouts)}/1`);$('goalText').textContent=`Crie ${s.target} ${E[s.new].name} — ${made}/${s.target}${extras.length?' · '+extras.join(' · '):''}`;setFormula(conciseRecipeLine(s));return}
  $('goalText').textContent=s.mode==='fusion'?`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} por Fusão — ${made}/${s.target}`:`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));
 }
-function applyVisual(){const s=phase(),v=s.visual,root=document.documentElement,styles={nebula:['#fff3bc','#ffae5f','#4d2e82','rgba(255,126,72,.27)',.96],brownDwarf:['#ffe0a6','#9f532d','#351d31','rgba(169,86,47,.30)',.72],redDwarf:['#fff0ca','#ff7757','#6c2231','rgba(255,84,65,.38)',.84],orangeDwarf:['#fff6ce','#ffad56','#8c3e28','rgba(255,145,67,.42)',.91],yellowDwarf:['#fffbe0','#ffd66e','#a25228','rgba(255,199,81,.48)',1],whiteDwarf:['#ffffff','#dff2ff','#819bc2','rgba(210,237,255,.62)',.72],solar:['#fff9ce','#ffd06c','#9a4e28','rgba(255,192,83,.4)',1],redGiant:['#fff0b0','#ff7e48','#771d28','rgba(255,80,46,.48)',1.06],agb:['#ffe7a3','#f06d42','#6c2148','rgba(255,88,55,.42)',1.04],massive:['#eff8ff','#93c8ff','#3340a1','rgba(99,160,255,.48)',1.02],supergiant:['#fff','#b1d6ff','#4b4ac7','rgba(111,158,255,.58)',1.07],advanced:['#fffbd7','#ffb64f','#8d2843','rgba(255,132,67,.62)',1.08],ironCore:['#fff','#ff975a','#521722','rgba(255,72,47,.65)',1.08],kilonova:['#fff','#a6d8ff','#9e54d8','rgba(177,110,255,.6)',.96],interstellar:['#dfeaff','#6686c9','#18254d','rgba(85,129,215,.28)',.96],neutronStar:['#eaf9ff','#78baff','#1a2d80','rgba(104,178,255,.55)',.90],pulsar:['#fff','#89c9ff','#203ca3','rgba(128,199,255,.68)',.90],accretion:['#fff6cf','#ffb24e','#491d42','rgba(255,142,61,.58)',.92],xrayBurst:['#fffbe6','#8fd6ff','#44206d','rgba(132,206,255,.68)',.94],collapseFinal:['#fff','#ff8b62','#270b18','rgba(255,74,57,.66)',.88],blackHole:['#1b2543','#070914','#000','rgba(89,126,255,.20)',.90]};const a=styles[v]||styles.solar,prebang=s.mode==='opening'&&!state.bigBangColorized;document.body.classList.toggle('prebang',prebang);document.body.classList.toggle('bigbang-phase',s.mode==='opening');const spaceColors={bigBang:'#e10b17',primordialH:'#9f0814',primordialHe:'#4e0710',primordialLi:'#160307'};root.style.setProperty('--spaceBg',prebang?'#fff':(spaceColors[v]||'#000'));root.style.setProperty('--primordialGlow',prebang?'rgba(255,255,255,0)':v==='bigBang'?'rgba(255,210,130,.58)':v==='primordialH'?'rgba(255,80,40,.36)':v==='primordialHe'?'rgba(201,41,31,.28)':'rgba(112,24,29,.20)');dom.star.classList.toggle('primordial-mode',isPrimordial(s));dom.star.classList.toggle('spallation-mode',['spallation','neutrino','gamma'].includes(s.mode));dom.star.classList.toggle('decay-mode',s.mode==='guidedDecay');dom.star.classList.toggle('electron-network',s.mode==='guidedDecay'||s.mode==='whiteCompact');dom.star.classList.toggle('white-electron-network',s.mode==='whiteCompact');dom.star.classList.toggle('white-structure',s.mode==='whiteCompact');dom.star.classList.toggle('cumulative-shells',s.mode!=='fusion'&&s.mode!=='whiteCompact'&&fusionSandboxAllowed(s)&&stratificationStrength(s)>0);root.style.setProperty('--starA',a[0]);root.style.setProperty('--starB',a[1]);root.style.setProperty('--starC',a[2]);
+function applyVisual(){const s=phase(),v=s.visual,root=document.documentElement,styles={nebula:['#fff3bc','#ffae5f','#4d2e82','rgba(255,126,72,.27)',.96],brownDwarf:['#ffe0a6','#9f532d','#351d31','rgba(169,86,47,.30)',.72],redDwarf:['#fff0ca','#ff7757','#6c2231','rgba(255,84,65,.38)',.84],orangeDwarf:['#fff6ce','#ffad56','#8c3e28','rgba(255,145,67,.42)',.91],yellowDwarf:['#fffbe0','#ffd66e','#a25228','rgba(255,199,81,.48)',1],whiteDwarf:['#ffffff','#dff2ff','#819bc2','rgba(210,237,255,.62)',.72],solar:['#fff9ce','#ffd06c','#9a4e28','rgba(255,192,83,.4)',1],redGiant:['#fff0b0','#ff7e48','#771d28','rgba(255,80,46,.48)',1.06],agb:['#ffe7a3','#f06d42','#6c2148','rgba(255,88,55,.42)',1.04],massive:['#eff8ff','#93c8ff','#3340a1','rgba(99,160,255,.48)',1.02],supergiant:['#fff','#b1d6ff','#4b4ac7','rgba(111,158,255,.58)',1.07],advanced:['#fffbd7','#ffb64f','#8d2843','rgba(255,132,67,.62)',1.08],ironCore:['#fff','#ff975a','#521722','rgba(255,72,47,.65)',1.08],kilonova:['#fff','#a6d8ff','#9e54d8','rgba(177,110,255,.6)',.96],interstellar:['#dfeaff','#6686c9','#18254d','rgba(85,129,215,.28)',.96],neutronStar:['#eaf9ff','#78baff','#1a2d80','rgba(104,178,255,.55)',.90],pulsar:['#fff','#89c9ff','#203ca3','rgba(128,199,255,.68)',.90],accretion:['#fff6cf','#ffb24e','#491d42','rgba(255,142,61,.58)',.92],xrayBurst:['#fffbe6','#8fd6ff','#44206d','rgba(132,206,255,.68)',.94],collapseFinal:['#fff','#ff8b62','#270b18','rgba(255,74,57,.66)',.88],blackHole:['#1b2543','#070914','#000','rgba(89,126,255,.20)',.90]};const a=styles[v]||styles.solar,prebang=s.mode==='opening'&&!state.bigBangColorized;document.body.classList.toggle('prebang',prebang);document.body.classList.toggle('bigbang-phase',s.mode==='opening');const spaceColors={bigBang:'#e10b17',primordialH:'#9f0814',primordialHe:'#4e0710',primordialLi:'#160307'};root.style.setProperty('--spaceBg',prebang?'#fff':(spaceColors[v]||'#000'));root.style.setProperty('--primordialGlow',prebang?'rgba(255,255,255,0)':v==='bigBang'?'rgba(255,210,130,.58)':v==='primordialH'?'rgba(255,80,40,.36)':v==='primordialHe'?'rgba(201,41,31,.28)':'rgba(112,24,29,.20)');dom.star.classList.toggle('primordial-mode',isPrimordial(s));dom.star.classList.toggle('primordial-molecule-mode',s.mode==='primordialMolecule');dom.star.classList.toggle('spallation-mode',['spallation','neutrino','gamma'].includes(s.mode));dom.star.classList.toggle('decay-mode',s.mode==='guidedDecay');dom.star.classList.toggle('electron-network',s.mode==='guidedDecay'||s.mode==='whiteCompact');dom.star.classList.toggle('white-electron-network',s.mode==='whiteCompact');dom.star.classList.toggle('white-structure',s.mode==='whiteCompact');dom.star.classList.toggle('cumulative-shells',s.mode!=='fusion'&&s.mode!=='whiteCompact'&&fusionSandboxAllowed(s)&&stratificationStrength(s)>0);root.style.setProperty('--starA',a[0]);root.style.setProperty('--starB',a[1]);root.style.setProperty('--starC',a[2]);
   let glow=a[3];
   if(s.mode==='whiteCompact'){
     const ratio=Math.min(1,state.absorbed/Math.max(1,s.target||1));
