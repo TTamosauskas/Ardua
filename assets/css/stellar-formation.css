@@ -1,4 +1,4 @@
-/* Stellar formation prototype — 18 H-H pairs + 1 isolated H assemble into a 37-cell stellar hexagon. */
+/* Stellar formation prototype — 18 H-H pairs assemble; a hidden final H auto-completes the 37-cell hexagon. */
 .star-board.stellar-formation-mode{overflow:hidden}
 .star-board.stellar-formation-mode .star-core{opacity:0}
 .star-board.stellar-formation-mode.formation-stabilized .star-core{opacity:1}
@@ -8,21 +8,26 @@
 .stellar-formation-layer::before{content:"";position:absolute;inset:4%;border-radius:50%;background:radial-gradient(circle at 50% 48%,rgba(117,183,255,.06),rgba(25,67,117,.025) 42%,transparent 72%);opacity:0;transition:opacity .7s ease;pointer-events:none}
 .stellar-formation-layer.complete::before{opacity:1}
 .formation-fields,.formation-atoms{position:absolute;inset:0;pointer-events:none}
-.formation-g-field{position:absolute;border:1px solid rgba(235,248,255,.16);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(225,246,255,.035),inset 0 0 16px rgba(229,247,255,.025);transition:border-color .18s ease,box-shadow .18s ease,opacity .18s ease;opacity:.72;pointer-events:none}
+.formation-g-field{position:absolute;border:1px solid rgba(235,248,255,.16);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(225,246,255,.035),inset 0 0 16px rgba(229,247,255,.025);transition:border-color .18s ease,box-shadow .18s ease,opacity .18s ease;opacity:.72;pointer-events:none;z-index:1}
+.formation-g-field.formation-cluster{z-index:1}
+.formation-g-field.formation-pair{z-index:7}
 .formation-g-field::after{content:"g";position:absolute;right:8%;top:11%;font:600 7px/1 Inter,system-ui,sans-serif;color:rgba(236,248,255,.26)}
 .formation-g-field.selected{border-color:rgba(245,252,255,.68);box-shadow:0 0 8px rgba(255,255,255,.35),0 0 24px rgba(119,205,255,.18);opacity:1}
 .formation-g-field.compatible{border-color:rgba(151,239,255,.48);box-shadow:0 0 18px rgba(111,225,255,.16);opacity:.96}
 .formation-g-field.blocked{animation:formation-field-block .36s ease}
 @keyframes formation-field-block{50%{border-color:rgba(255,133,133,.72);box-shadow:0 0 20px rgba(255,104,104,.18)}}
-.formation-atom{position:absolute;width:clamp(39px,9.7vw,49px);height:clamp(39px,9.7vw,49px);margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;color:#07080b;font:950 clamp(20px,5.4vw,28px)/1 Inter,system-ui,sans-serif;letter-spacing:-.045em;box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:width .55s ease,height .55s ease,box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:4}
+.formation-atom{position:absolute;width:var(--formationAtomSize,36px);height:var(--formationAtomSize,36px);margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;color:#07080b;font:950 calc(var(--formationAtomSize,36px)*.56)/1 Inter,system-ui,sans-serif;letter-spacing:-.045em;box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:width .55s ease,height .55s ease,box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:2}
+.formation-atom.formation-cluster{z-index:2}
+.formation-atom.formation-pair{z-index:9}
 .formation-atom.selected{outline:5px solid #43f28a;outline-offset:1px;box-shadow:0 0 24px rgba(67,242,138,.48),inset 0 0 18px rgba(255,255,255,.18),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .formation-atom.compatible{outline:3px solid rgba(67,242,138,.92);outline-offset:1px;box-shadow:0 0 16px rgba(67,242,138,.28),inset 0 0 18px rgba(255,255,255,.18),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .formation-atom.reorganizing{filter:brightness(1.24)}
+.formation-atom.formation-auto-h{pointer-events:none;cursor:default;animation:formation-auto-h .72s cubic-bezier(.18,.82,.28,1) both}
+@keyframes formation-auto-h{0%{opacity:0;transform:translate(-50%,-50%) scale(.18);filter:brightness(2.2)}58%{opacity:1;transform:translate(-50%,-50%) scale(1.14);filter:brightness(1.45)}100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:brightness(1)}}
 .formation-hud{display:none!important}
 .stellar-formation-layer.complete .formation-g-field{border-color:rgba(235,250,255,.44);box-shadow:0 0 28px rgba(152,223,255,.16);opacity:.82}
-.stellar-formation-layer.complete .formation-atom{width:var(--cellSize);height:var(--cellSize);font-size:calc(var(--cellSize)*.56);box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
+.stellar-formation-layer.complete .formation-atom{width:var(--formationAtomSize,36px);height:var(--formationAtomSize,36px);font-size:calc(var(--formationAtomSize,36px)*.56);box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .star-board.formation-materializing .stellar-formation-layer{opacity:0;transition:opacity .72s ease}
 .star-board.formation-birth-flash::after{content:"";position:absolute;inset:0;z-index:19;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(245,253,255,.48),rgba(132,211,255,.18) 18%,transparent 54%);animation:formation-birth .9s ease-out both}
 @keyframes formation-birth{from{opacity:0;transform:scale(.72)}35%{opacity:1}to{opacity:0;transform:scale(1.1)}}
-@media(max-width:520px){.formation-atom{font-size:clamp(20px,5.4vw,28px)}}
-@media(prefers-reduced-motion:reduce){.formation-g-field,.formation-atom,.stellar-formation-layer{transition:none}.star-board.formation-birth-flash::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.formation-g-field,.formation-atom,.stellar-formation-layer{transition:none}.formation-atom.formation-auto-h,.star-board.formation-birth-flash::after{animation:none}}
