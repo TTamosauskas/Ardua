@@ -293,32 +293,61 @@ function drawMid(){
 }
 function drawHigh(){
  connectTrail(G.sequences.high,'high');
- const weakPortal=portalSummary('weak-s');addPath(byPhase(tail('co')),weakPortal,'high');
- if(portalOpen('weak-s')){addPath(weakPortal,portalFirst('weak-s'),'high');connectTrail(G.sequences.weakS,'high');addPath(portalLast('weak-s'),byPhase('neutronize'),'high')}else addPath(weakPortal,byPhase('neutronize'),'high');
+ addPath(byPhase(tail('co')),byPhase('neutronize'),'high');
  connectTrail(G.sequences.collapse,'high');
- const collapse=byPhase(tail('final_collapse'));connectBranchJunction(collapse,'supernova',{nu:'high',gamma:'high',ns:'compact',bh:'compact'});
+ const collapse=byPhase(tail('final_collapse'));connectBranchJunction(collapse,'supernova',{nu:'high',enrichment:'interstellar',ns:'compact',bh:'compact'});
  const s=activeBranch('supernova');
  if(s==='nu'){connectActiveSphere('supernova','nu_f','high');connectIds(expanded(['nu_f']),'high')}
- if(s==='gamma')connectActiveSphere('supernova','gamma_process','high');
+ if(s==='enrichment'){
+  connectActiveSphere('supernova','first_enrichment','interstellar');
+  connectIds(expanded(['first_enrichment','second_birth']),'interstellar');
+  const secondHub=[...map.querySelectorAll('[data-junction="generation-two-birth"]')].find(isVisible);addPath(byPhase('second_birth'),secondHub,'interstellar',.55);
+ }
  if(s==='bh'){
   const sphere=branchSphereEl('supernova','bh'),junction=[...map.querySelectorAll('.blackhole-junction')].find(isVisible),bh=byPhase('black_hole');
   addPath(sphere,junction,'compact',.35);addPath(junction,bh,'compact',.5);
  }
- if(s==='ns'){
-  connectActiveSphere('supernova','neutron_star','compact');
-  const neutron=byPhase(tail('neutron_star'));connectBranchJunction(neutron,'neutron',{pulsar:'compact',accretion:'compact',r:'r'});
-  const n=activeBranch('neutron');
-  if(n==='pulsar')connectActiveSphere('neutron','pulsar','compact');
-  if(n==='accretion'){
-   connectActiveSphere('neutron','accretion','compact');
-   const rpPortal=portalSummary('rp');addPath(byPhase(tail('accretion')),rpPortal,'compact');
-   if(portalOpen('rp')){addPath(rpPortal,portalFirst('rp'),'compact');connectTrail(G.sequences.rp,'compact')}
-  }
-  if(n==='r'){
-   const sphere=branchSphereEl('neutron','r'),binary=[...map.querySelectorAll('.binary-junction')].find(isVisible),kilo=[...map.querySelectorAll('.kilonova-junction')].find(isVisible),rPortal=portalSummary('r');
-   addPath(sphere,binary,'r',.35);addPath(binary,kilo,'r');addPath(kilo,rPortal,'r');
-   if(portalOpen('r')){addPath(rPortal,portalFirst('r'),'r');connectTrail(G.sequences.r,'r');addPath(portalLast('r'),byPhase('decay_pa'),'radio',.55)}else addPath(rPortal,byPhase('decay_pa'),'radio',.55);
-  }
+ if(s==='ns')connectActiveSphere('supernova','neutron_star','compact');
+}
+
+function drawSecondGeneration(){
+ const hub=[...map.querySelectorAll('[data-junction="generation-two-birth"]')].find(isVisible);if(!hub)return;
+ connectBranchJunction(hub,'secondgen',{weak:'high',s:'mid',gamma:'r',spallation:'interstellar'});
+ const branch=activeBranch('secondgen');
+ if(branch==='weak'){
+  const sphere=branchSphereEl('secondgen','weak'),portal=portalSummary('weak-s');addPath(sphere,portal,'high',.34);
+  if(portalOpen('weak-s')){addPath(portal,portalFirst('weak-s'),'high');connectTrail(G.sequences.weakS,'high')}
+ }
+ if(branch==='s'){
+  const sphere=branchSphereEl('secondgen','s'),portal=portalSummary('s-second');addPath(sphere,portal,'mid',.34);
+  if(portalOpen('s-second')){addPath(portal,portalFirst('s-second'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s-second'),byPhase('second_enrichment'),'mid',.55)}
+ }
+ if(branch==='gamma')connectActiveSphere('secondgen','gamma_process','r');
+ if(branch==='spallation'){
+  const sphere=branchSphereEl('secondgen','spallation');connectBranchJunction(sphere,'spallation',{be:'interstellar',b:'interstellar'});
+  const sp=activeBranch('spallation');
+  if(sp==='be')connectActiveSphere('spallation','spallation_be','interstellar');
+  if(sp==='b')connectActiveSphere('spallation','spallation','interstellar');
+ }
+ connectIds(expanded(['second_enrichment','third_birth']),'converge');
+}
+
+function drawThirdGeneration(){
+ const entry=byPhase('third_birth'),junction=[...map.querySelectorAll('.third-generation-junction')].find(isVisible);if(!junction)return;
+ addPath(entry,junction,'compact',.55);
+ connectBranchJunction(junction,'neutron',{pulsar:'compact',accretion:'compact',r:'r'});
+ const branch=activeBranch('neutron');
+ if(branch==='pulsar')connectActiveSphere('neutron','pulsar','compact');
+ if(branch==='accretion'){
+  connectActiveSphere('neutron','accretion','compact');
+  const rpPortal=portalSummary('rp');addPath(byPhase(tail('accretion')),rpPortal,'compact');
+  if(portalOpen('rp')){addPath(rpPortal,portalFirst('rp'),'compact');connectTrail(G.sequences.rp,'compact')}
+ }
+ if(branch==='r'){
+  const sphere=branchSphereEl('neutron','r'),binary=byPhase('binary_neutron_stars'),kilo=byPhase('kilonova'),rPortal=portalSummary('r');
+  addPath(sphere,binary,'r',.34);addPath(binary,kilo,'r');addPath(kilo,rPortal,'r');
+  if(portalOpen('r')){addPath(rPortal,portalFirst('r'),'r');connectTrail(G.sequences.r,'r')}
+  const firstDecay=byPhase('decay_pa');if(firstDecay){addPath(portalLast('r'),firstDecay,'radio',.55);connectTrail(G.sequences.decay,'radio')}
  }
 }
 
@@ -340,13 +369,8 @@ function drawLinks(){
  if(s==='mid')drawMid()
  if(s==='high'){connectActiveSphere('stellar','carbon_burn','high');drawHigh()}
 
- connectTrail(G.sequences.decay,'radio');
- const cosmic=[...map.querySelectorAll('.cosmic-ray-junction')].find(isVisible),spallationConvergence=[...map.querySelectorAll('[data-junction="spallation-convergence"]')].find(isVisible);
- for(const sourceId of ['c','n','o','final_collapse','white','u']){const source=byPhase(tail(sourceId));if(source&&cosmic){addPath(source,cosmic,'interstellar',.68);break}}
- if(cosmic)connectBranchJunction(cosmic,'spallation',{be:'interstellar',b:'interstellar'});
- const sp=activeBranch('spallation');
- if(sp==='be'){connectActiveSphere('spallation','spallation_be','interstellar');addPath(byPhase('spallation_be'),spallationConvergence,'interstellar',.5)}
- if(sp==='b'){connectActiveSphere('spallation','spallation','interstellar');addPath(byPhase('spallation'),spallationConvergence,'interstellar',.5)}
+ drawSecondGeneration();
+ drawThirdGeneration();
 }
 function scheduleLinks(){if(linkFrame)cancelAnimationFrame(linkFrame);linkFrame=requestAnimationFrame(()=>requestAnimationFrame(drawLinks))}
 
