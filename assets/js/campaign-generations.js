@@ -18,7 +18,7 @@ const defs=Object.freeze({
 });
 const membership=new Map();for(const d of Object.values(defs))for(const id of d.members)if(!membership.has(id))membership.set(id,d.id);
 const transitions=new Set(['first_enrichment','second_birth','second_enrichment','third_birth']);
-const formations=new Set(['first_generation_formation']);
+const formations=new Set(['first_generation_formation','brown_formation','low_mass_formation','intermediate_mass_formation','giant_formation','high_mass_formation']);
 const modelNote='As gerações representam etapas pedagógicas de enriquecimento químico; na natureza, populações estelares e processos podem se sobrepor.';
 const api=Object.freeze({
  defs,

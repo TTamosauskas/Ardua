@@ -1,4 +1,4 @@
-/* Stellar formation prototype — 18 H-H pairs assemble; a hidden final H auto-completes the 37-cell hexagon. */
+/* Reusable stellar formation — H-H pairs assemble into 2–5-layer centered stellar hexagons; the final H enters automatically. */
 .star-board.stellar-formation-mode{overflow:hidden}
 .star-board.stellar-formation-mode .star-core{opacity:0}
 .star-board.stellar-formation-mode.formation-stabilized .star-core{opacity:1}
