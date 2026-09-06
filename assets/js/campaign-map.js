@@ -33,7 +33,6 @@ const neutronStarMembers=uniq([
 const blackHoleMembers=uniq([...xseq(['black_hole']),...quasarMembers]);
 const BRANCH_MEMBERS={
  primordial:{tritium:xseq(G.sequences.primordialLeft),helium3:xseq(G.sequences.primordialRight)},
- mainseq:{orange:xseq(['he_orange']),yellow:xseq(['he_yellow'])},
  stellar:{
   sub:xseq(G.sequences.brown),
   low:uniq([...xseq(G.sequences.red),'white']),
@@ -102,10 +101,6 @@ function buildMap(){
   {key:'tritium',label:'Trítio',visual:'sphere-tritium',content:flow(G.sequences.primordialLeft)},
   {key:'helium3',label:'Hélio-3',visual:'sphere-helium',content:flow(G.sequences.primordialRight)}
  ],'primordial-branches');
- const mainseq=branchCluster('mainseq',[
-  {key:'orange',label:'Anã laranja',visual:'sphere-orange',content:flow(['he_orange'])},
-  {key:'yellow',label:'Anã amarela',visual:'sphere-yellow',content:flow(['he_yellow'])}
- ],'mainseq-branches');
  const neutron=branchCluster('neutron',[
   {key:'pulsar',label:'Pulsar',visual:'sphere-pulsar',image:'supernova',content:flow(['pulsar'])},
   {key:'accretion',label:'Acreção + raios X',visual:'sphere-accretion',image:'blackhole',content:`${flow(['accretion'])}${structural('Explosão de raios X')}${portal('rp-process',G.sequences.rp,false,'rp')}${ambientImage('blackhole','branch-bg branch-bg-right')}`},
@@ -120,7 +115,7 @@ function buildMap(){
  const stellar=branchCluster('stellar',[
   {key:'sub',label:'Anã marrom',visual:'sphere-brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
   {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${structural('Evolução de longa vida')}${flow(['white'])}`},
-  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${mainseq}<div class="convergence mainseq-convergence" data-junction="mainseq-convergence">Evolução estelar</div>${flow(['coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'])}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
+  {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
   {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${portal('Processo-s fraco',G.sequences.weakS,false,'weak-s')}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
  ],'stellar-branches');
  const spallation=branchCluster('spallation',[
@@ -192,10 +187,6 @@ function inferAncestorBranches(){
   else if(BRANCH_MEMBERS.primordial.helium3.includes(active))branchSelection.primordial='helium3';
   else if(done.has(tail('primordial_he3d')))branchSelection.primordial='helium3';
   else if(done.has(tail('primordial_td')))branchSelection.primordial='tritium';
- }
- if(!branchSelection.mainseq){
-  if(active==='he_yellow'||done.has('he_yellow'))branchSelection.mainseq='yellow';
-  else if(active==='he_orange'||done.has('he_orange'))branchSelection.mainseq='orange';
  }
  if(!branchSelection.stellar){
   if(active==='white')branchSelection.stellar=done.has('bi')?'mid':'low';
@@ -283,12 +274,8 @@ function connectActiveSphere(group,firstId,cls){
 
 function drawMid(){
  const midSphere=branchSphereEl('stellar','mid');
- connectBranchJunction(midSphere,'mainseq',{orange:'mid',yellow:'mid'});
- const m=activeBranch('mainseq'),convergence=[...map.querySelectorAll('[data-junction="mainseq-convergence"]')].find(isVisible);
- if(m==='orange'){connectActiveSphere('mainseq','he_orange','mid');addPath(byPhase(tail('he_orange')),convergence,'mid',.48)}
- if(m==='yellow'){connectActiveSphere('mainseq','he_yellow','mid');addPath(byPhase(tail('he_yellow')),convergence,'mid',.48)}
- if(convergence)addPath(convergence,byPhase('coulomb_intro'),'mid',.5);
- connectTrail(['coulomb_intro','stellar_convection','stellar_li'],'mid');
+ addPath(midSphere,byPhase('he_orange'),'mid',.40);
+ connectTrail(['he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li'],'mid');
  const sPortal=portalSummary('s');
  if(portalOpen('s')){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}
 }

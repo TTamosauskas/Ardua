@@ -1422,7 +1422,12 @@ function snapshotFreePieces(){const size=starSize();return[...state.pieces.value
 function countFree(sym,predicate=null){let n=0;state.pieces.forEach(p=>{if(p.free&&p.sym===sym&&(!predicate||predicate(p)))n++});return n}
 function primordialGoalCount(s=phase()){return isPrimordial(s)&&s.mode!=='opening'?(state.created[s.new]||0):(state.created[s.new]||0)}
 function primordialReactionById(id){return PRIMORDIAL_NUCLEAR_REACTIONS.find(r=>r.id===id)||null}
-function learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>{const i=phaseIndexById.get(r.unlock);return i!==undefined&&state.phaseIndex>=i})}
+function campaignKnowledgeReached(id){
+ const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);
+ if(aware)return gs.activeId===id||gs.completed.includes(id);
+ const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>=i
+}
+function learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>campaignKnowledgeReached(r.unlock))}
 function primordialReactionReady(r){
  if(!r)return false;
  const pc=counts(r.pieces||[]),fc=counts(r.particles||[]);
@@ -1454,7 +1459,7 @@ function primordialMixedReaction(pieceSym,particleKind){return learnedPrimordial
 function primordialPieceReaction(syms){return learnedPrimordialNuclearReactions().find(r=>r.particles.length===0&&r.pieces.length===syms.length&&same(r.pieces,syms))||null}
 function primordialPossiblePieceRecipes(syms){const c=counts(syms);return learnedPrimordialNuclearReactions().filter(r=>{if(r.particles.length||r.pieces.length<syms.length)return false;const rc=counts(r.pieces);return Object.entries(c).every(([k,v])=>(rc[k]||0)>=v)})}
 function atomicRecipeUnlock(sym){return sym==='He'?'atomic_he':sym==='H'?'atomic_h':sym==='Li'?'atomic_li':null}
-function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym),i=id?phaseIndexById.get(id):undefined;return i!==undefined&&state.phaseIndex>=i}
+function atomicRecombinationLearned(sym){const id=atomicRecipeUnlock(sym);return !!id&&campaignKnowledgeReached(id)}
 function pieceCharge(p){return Math.max(0,Number(E[p?.sym]?.n||0)-Number(p?.boundElectrons||0))}
 function pieceCanBindElectron(p){return !!p&&p.free&&['H','He','Li'].includes(p.sym)&&atomicRecombinationLearned(p.sym)&&pieceCharge(p)>0}
 function primordialMassForSym(sym){return({H:1,D:2,T:3,He3:3,He:4,Li:7})[sym]??E[sym]?.mass??null}
@@ -2013,11 +2018,16 @@ function recipeEnvironmentAllows(r,s=phase()){
 }
 function fusionRecipeLearned(r){return !!r&&learnedFusionRecipes().some(x=>x===r||(x.out===r.out&&same(x.ing,r.ing)))}
 function fusionRecipeCompatible(r,s=phase()){return fusionRecipeLearned(r)&&recipeEnvironmentAllows(r,s)}
+function primordialFusionRecipe(r){return{...r,ing:[...(r.pieces||[])],primordialCarry:true}}
 function activeFusionRecipes(){
   const s=phase(),map=new Map();
   for(const r of learnedFusionRecipes()){
     if(!recipeEnvironmentAllows(r,s))continue;
     map.set(recipeKey(r),r);
+  }
+  if(fusionSandboxAllowed(s))for(const pr of learnedPrimordialNuclearReactions()){
+    if(pr.particles.length||pr.pieces.length<2)continue;
+    const r=primordialFusionRecipe(pr);map.set(recipeKey(r),r);
   }
   return[...map.values()]
 }
@@ -2350,8 +2360,13 @@ function tapStellarProton(id){
  if(capture&&selectedTarget&&protonCaptureRoute(selectedTarget,s)){state.primordialSelected=id;render();setTimeout(()=>attemptProtonCapture(selectedCell,id),70);return}
  state.primordialSelected=id;state.selected=[];tone(340,.04);render()
 }
+function cumulativeParticleInteractionAllowed(s=phase()){return !!s&&s.mode!=='opening'&&learnedPrimordialNuclearReactions().length>0}
+function ensureCumulativeParticleFuel(s=phase()){
+ if(!s||isPrimordial(s)||!cumulativeParticleInteractionAllowed(s))return;
+ ensurePrimordialParticleMix({p:2,n:2,e:atomicRecombinationLearned('H')?2:0});startPrimordialDrift();
+}
 function renderPrimordialParticles(){
- if(!dom.primordial)return;const s=phase(),primordialActive=isPrimordial(s)&&s.mode!=='opening',canUseStellarProton=!!stellarProtonRecipe(s)||protonCaptureAvailable(s),selectedParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedPiece=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,selectedBoardPiece=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;dom.primordial.classList.toggle('active',(primordialActive||canUseStellarProton)&&!state.locked);const existing=new Map([...dom.primordial.querySelectorAll('.primordial-particle')].map(el=>[+el.dataset.id,el]));
+ if(!dom.primordial)return;const s=phase(),primordialActive=isPrimordial(s)&&s.mode!=='opening',canUseCumulative=cumulativeParticleInteractionAllowed(s),canUseStellarProton=!!stellarProtonRecipe(s)||protonCaptureAvailable(s),selectedParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedPiece=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,selectedBoardPiece=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;dom.primordial.classList.toggle('active',(primordialActive||canUseStellarProton||canUseCumulative)&&!state.locked);const existing=new Map([...dom.primordial.querySelectorAll('.primordial-particle')].map(el=>[+el.dataset.id,el]));
  const foregroundFree=new Set();
  if(!isPrimordial(s))for(const kind of ['p','n','e']){const free=[...state.primordialParticles.values()].filter(p=>p.kind===kind&&!p.reacting).sort((a,b)=>((b.id===state.primordialSelected)-(a.id===state.primordialSelected))||a.id-b.id);free.slice(0,2).forEach(p=>foregroundFree.add(p.id))}
  state.primordialParticles.forEach((p,id)=>{let el=existing.get(id);if(!el){el=document.createElement('button');el.type='button';el.dataset.id=id;el.addEventListener('contextmenu',ev=>ev.preventDefault());el.addEventListener('pointerdown',ev=>armParticleDrag(id,el,ev));el.addEventListener('pointermove',ev=>moveParticleDrag(id,ev));el.addEventListener('pointerup',ev=>finishParticleDrag(id,ev,false));el.addEventListener('pointercancel',ev=>finishParticleDrag(id,ev,true));el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const q=state.primordialParticles.get(id);if(q&&performance.now()<(q.suppressTapUntil||0))return;tapPrimordialParticle(id)});dom.primordial.appendChild(el)}const cls=p.kind==='p'?'proton':p.kind==='pos'?'positron':p.kind==='n'?'neutronfree':'electron',label=p.kind==='p'?'+':p.kind==='pos'?'e⁺':p.kind==='n'?'n':'−';let candidate=false,interactive=false;
@@ -2359,14 +2374,45 @@ function renderPrimordialParticles(){
      if(selectedPiece){candidate=!!primordialMixedReaction(selectedPiece.sym,p.kind)||(p.kind==='e'&&pieceCanBindElectron(selectedPiece));interactive=candidate||state.primordialSelected===id}
      else if(selectedParticle&&selectedParticle.id!==id){candidate=!!primordialParticlePairReaction([selectedParticle.kind,p.kind])||(atomicRecombinationLearned('H')&&same([selectedParticle.kind,p.kind],['p','e']));interactive=candidate||state.primordialSelected===id}
      else{interactive=learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned))||(p.kind==='p'&&atomicRecombinationLearned('H'))}
-   }else if(canUseStellarProton&&!p.reacting){
-     if(p.kind==='p'&&selectedBoardPiece){candidate=!!((stellarProtonRecipe(s)&&selectedBoardPiece.sym==='H')||(protonCaptureAvailable(s)&&protonCaptureRoute(selectedBoardPiece,s)));interactive=candidate}
-     else interactive=p.kind==='p';
+   }else if((canUseStellarProton||canUseCumulative)&&!p.reacting){
+     if(selectedBoardPiece){candidate=!!primordialMixedReaction(selectedBoardPiece.sym,p.kind)||(p.kind==='p'&&((stellarProtonRecipe(s)&&selectedBoardPiece.sym==='H')||(protonCaptureAvailable(s)&&protonCaptureRoute(selectedBoardPiece,s))));interactive=candidate}
+     else if(selectedParticle&&selectedParticle.id!==id){candidate=!!primordialParticlePairReaction([selectedParticle.kind,p.kind])||(atomicRecombinationLearned('H')&&same([selectedParticle.kind,p.kind],['p','e']));interactive=candidate||state.primordialSelected===id}
+     else{interactive=learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))||(p.kind==='e'&&['H','He','Li'].some(atomicRecombinationLearned))||(p.kind==='p'&&canUseStellarProton)}
    }
    const reserve=!isPrimordial(s)&&['p','n','e'].includes(p.kind)&&!p.reacting&&!foregroundFree.has(id);el.className=`primordial-particle ${cls}${p.kind==='n'&&p.unstable?' unstable':''}${state.primordialSelected===id?' selected':''}${candidate?' candidate':''}${p.reacting?' reacting':''}${p.dragging?' dragging':''}${p.throwing?' throwing':''}${p.coulombDeflect?' coulomb-deflect':''}${p.tunneling?' tunneling':''}${reserve?' particle-reserve':''}`;el.textContent=label;el.style.pointerEvents=reserve?'none':'auto';el.setAttribute('aria-hidden',reserve?'true':'false');el.dataset.mechanical=interactive&&!reserve?'1':'0';el.style.left=p.x+'px';el.style.top=p.y+'px';existing.delete(id)});existing.forEach(el=>el.remove())
 }
+async function reactCumulativeProcessNeutronWithProton(proton,n){
+ const r=primordialParticlePairReaction(['p','n']);if(!r||state.locked||!proton||!n)return;
+ const x=(proton.x+n.x)/2,y=(proton.y+n.y)/2;state.locked=true;state.primordialSelected=null;state.selectedNeutron=null;
+ await objectiveInteractionImpact(`cumulative:${phase().id}:p+n>D`,[objectiveInteractionPrimordialToken(proton),objectiveInteractionNeutronToken(n)],'D',{x,y},'γ','FUSÃO');
+ state.primordialParticles.delete(proton.id);state.neutrons.delete(n.id);renderPrimordialParticles();renderNeutrons();
+ const out=createFreePiece('D',x,y,{massNumber:2});out.newborn=true;state.created.D=(state.created.D||0)+1;state.discovered.add('D');focusPieceInfo(out);burst(x,y);await emitGamma(x,y);await afterNuclearAction({advanceRound:true});
+ setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();
+}
+async function reactCumulativeBoardMixed(r,piece,particle){
+ if(!r||state.locked||!piece||!particle||particle.reacting)return;const x=piece.x,y=piece.y;state.locked=true;state.selected=[];state.primordialSelected=null;
+ await objectiveInteractionImpact(`cumulative:${phase().id}:${piece.sym}+${particle.kind}>${r.out}`,[objectiveInteractionPieceToken(piece),objectiveInteractionPrimordialToken(particle)],r.out,{x,y},particle.kind,'CAPTURA');
+ particle.reacting=true;state.primordialParticles.delete(particle.id);renderPrimordialParticles();piece.sym=r.out;piece.massNumber=r.mass??E[r.out]?.mass??null;piece.captures=0;piece.newborn=true;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);focusPieceInfo(piece);burst(x,y);await handleReactionEmissions(r,piece);await afterNuclearAction({advanceRound:true});
+ setTimeout(()=>{const q=state.pieces.get(piece.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();
+}
+async function reactCumulativeProcessNeutronMixed(r,piece,n){
+ if(!r||state.locked||!piece||!n)return;const x=piece.x,y=piece.y,wasFree=!!piece.free;state.locked=true;state.selected=[];state.freeSelected=[];state.selectedNeutron=null;
+ await objectiveInteractionImpact(`cumulative:${phase().id}:${piece.sym}+n>${r.out}`,[objectiveInteractionPieceToken(piece),objectiveInteractionNeutronToken(n)],r.out,{x,y},'n','CAPTURA');state.neutrons.delete(n.id);renderNeutrons();let out=piece;
+ if(wasFree){state.pieces.delete(piece.id);out=createFreePiece(r.out,x,y,{massNumber:r.mass,longRadioactive:!!r.longRadioactive})}else{out.sym=r.out;out.massNumber=r.mass??E[r.out]?.mass??null;out.captures=0}
+ out.newborn=true;state.created[r.out]=(state.created[r.out]||0)+1;state.discovered.add(r.out);focusPieceInfo(out);burst(x,y);await handleReactionEmissions(r,out);await afterNuclearAction({advanceRound:true});setTimeout(()=>{const q=state.pieces.get(out.id);if(q){q.newborn=false;renderPieces()}},300);state.locked=false;ensureOpportunity();render();
+}
 function tapPrimordialParticle(id){
- const s=phase();const preview=state.primordialParticles.get(id);if(preview)focusParticleInfo(preview.kind,id);if(!isPrimordial(s)){if(stellarProtonRecipe(s)||protonCaptureAvailable(s))return tapStellarProton(id);return}if(s.mode==='opening'||state.locked||state.phaseDone)return;const p=state.primordialParticles.get(id);if(!p||p.reacting||p.dragging)return;
+ const s=phase();const preview=state.primordialParticles.get(id);if(preview)focusParticleInfo(preview.kind,id);if(!isPrimordial(s)){
+ const p=preview;if(!p||p.reacting||p.dragging||state.locked||state.phaseDone)return;
+ const processN=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;
+ if(processN&&p.kind==='p'&&primordialParticlePairReaction(['p','n']))return reactCumulativeProcessNeutronWithProton(p,processN);
+ const free=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null;if(free){if(p.kind==='e'&&pieceCanBindElectron(free))return bindElectronToPiece(free,p);const mixed=primordialMixedReaction(free.sym,p.kind);if(mixed)return reactPrimordialMixed(mixed,free,p)}
+ const board=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;if(board){const mixed=primordialMixedReaction(board.sym,p.kind);if(mixed)return reactCumulativeBoardMixed(mixed,board,p)}
+ if(state.primordialSelected===id){state.primordialSelected=null;render();return}
+ if(state.primordialSelected!==null){const first=state.primordialParticles.get(state.primordialSelected);if(first){if(atomicRecombinationLearned('H')&&same([first.kind,p.kind],['p','e']))return recombineHydrogenParticles(first,p);const pair=primordialParticlePairReaction([first.kind,p.kind]);if(pair)return reactPrimordialParticlePair(pair,first,p)}}
+ if(cumulativeParticleInteractionAllowed(s)&&learnedPrimordialNuclearReactions().some(r=>r.particles.includes(p.kind))){state.primordialSelected=id;tone(p.kind==='e'?460:p.kind==='n'?420:340,.04);render();return}
+ if(p.kind==='p'&&(stellarProtonRecipe(s)||protonCaptureAvailable(s)))return tapStellarProton(id);return
+}if(s.mode==='opening'||state.locked||state.phaseDone)return;const p=state.primordialParticles.get(id);if(!p||p.reacting||p.dragging)return;
  const selectedPiece=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null;
  if(selectedPiece){if(p.kind==='e'&&pieceCanBindElectron(selectedPiece))return bindElectronToPiece(selectedPiece,p);const mixed=primordialMixedReaction(selectedPiece.sym,p.kind);if(mixed)return reactPrimordialMixed(mixed,selectedPiece,p);state.freeSelected=[];invalidPrimordial(id);render();return}
  if(state.primordialSelected===id){state.primordialSelected=null;render();return}
@@ -2943,8 +2989,9 @@ async function activateNeutronSource(source,helium,s=phase()){
 }
 
 
-function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(state.convectionArmed&&handleConvectionTap(p))return;if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
+function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);if(state.convectionArmed&&handleConvectionTap(p))return;if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
  const armedProton=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;
+ if(armedProton){const mixed=primordialMixedReaction(p.sym,armedProton.kind);if(mixed){state.selected=[p.cell];render();reactCumulativeBoardMixed(mixed,p,armedProton);return}}
  if(armedProton?.kind==='p'){
    const protonRecipe=stellarProtonRecipe(s),pid=armedProton.id;
    if(p.sym==='H'&&protonRecipe){state.selected=[p.cell];render();setTimeout(()=>fuseHydrogenWithProton(p.cell,pid,protonRecipe),70);return}
@@ -3417,7 +3464,7 @@ function ensureNeutronMechanicOpportunity(s=phase()){
  if(empties.length<2)return false;for(const c of empties){const h=(neigh[c]||[]).find(x=>state.board[x]===null&&x!==c&&activeSet().has(x));if(h!==undefined){createPiece(g.source,c,true);createPiece('He',h,true);renderPieces();return true}}return false;
 }
 function ensureOpportunity(){
-  const s=phase();if(ensureNeutronMechanicOpportunity(s))return;
+  const s=phase();ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;
   if(isPrimordial(s))return;
   if(s.mode==='reactionExplore')return ensureAtlasOpportunity(s);
   if(s.mode==='neutron'){
@@ -3532,10 +3579,10 @@ function phaseNeutronTransitions(s=phase()){
  return out;
 }
 function allLearnedNeutronTransitions(){
- // A memória é global; a compatibilidade continua dependente do ambiente de captura.
  const map=new Map();
- for(let i=0;i<=state.phaseIndex;i++){
-   const p=PHASES[i],cls=neutronProcessClass(p);if(!cls)continue;
+ for(const p of PHASES){
+   if(!campaignKnowledgeReached(p.id))continue;
+   const cls=neutronProcessClass(p);if(!cls)continue;
    for(const tr of phaseNeutronTransitions(p))map.set(`${tr.from}>${tr.to}@${cls}`,{...tr,processClass:cls})
  }
  return[...map.values()]
@@ -3557,7 +3604,7 @@ function neutronFoundationTransition(s=phase()){
 }
 function neutronTransitionFor(p,s=phase()){if(!p||s.mode!=='neutron')return null;if(p.neutronBetaPending&&neutronGameplay(s).pattern!=='branch')return null;const foundation=neutronFoundationTransition(s);return currentNeutronTransition(p.sym,s)||(foundation&&p.sym===foundation.from?foundation:null)||learnedNeutronTransitions(s).slice().reverse().find(tr=>tr.from===p.sym)||null}
 function neutronEligible(p,s=phase()){return !!neutronTransitionFor(p,s)}
-function universalNeutronCaptureEligible(p){return !!(state.neutronCaptureUnlocked&&p&&p.sym==='H')}
+function universalNeutronCaptureEligible(p){return !!(campaignKnowledgeReached('primordial_d')&&p&&p.sym==='H')}
 function currentSeedEligible(p,s=phase()){return !!(p&&phaseNeutronTransitions(s).some(tr=>tr.from===p.sym))}
 function ensureSeed(){
  const s=phase();if(s.mode!=='neutron')return false;
@@ -3619,9 +3666,12 @@ function moveNeutrons(){
 
 function renderNeutrons(){const s=phase();if(!['neutron','neutronize'].includes(s.mode)){dom.neutrons.innerHTML='';return}const sp=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null,partner=s.mode==='neutron'&&(neutronEligible(sp,s)||universalNeutronCaptureEligible(sp)),visible=new Set([...state.neutrons.values()].sort((a,b)=>((b.id===state.selectedNeutron)-(a.id===state.selectedNeutron))||a.id-b.id).slice(0,2).map(n=>n.id));const existing=new Map([...dom.neutrons.querySelectorAll('.neutron')].map(el=>[+el.dataset.id,el]));state.neutrons.forEach((n,id)=>{let el=existing.get(id);if(!el){el=document.createElement('button');el.dataset.id=id;el.textContent='n';el.addEventListener('click',ev=>{ev.stopPropagation();captureNeutron(id)});dom.neutrons.appendChild(el)}const selected=state.selectedNeutron===id,reserve=!visible.has(id);el.className='neutron'+(selected?' selected':partner?' candidate':'')+(s.mode==='neutronize'?' passive':'')+(reserve?' particle-reserve':'');el.style.pointerEvents=reserve?'none':'auto';el.setAttribute('aria-hidden',reserve?'true':'false');el.style.left=n.x+'px';el.style.top=n.y+'px';existing.delete(id)});existing.forEach(el=>el.remove())}
 async function captureNeutron(id){
- focusParticleInfo('n',id);if(state.locked||phase().mode!=='neutron')return;
- const n=state.neutrons.get(id);if(!n)return;
- const s=phase();
+ focusParticleInfo('n',id);if(state.locked)return;
+ const n=state.neutrons.get(id);if(!n)return;const s=phase(),particle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,free=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,board=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;
+ if(particle?.kind==='p'&&primordialParticlePairReaction(['p','n'])){reactCumulativeProcessNeutronWithProton(particle,n);return}
+ if(free){const r=primordialMixedReaction(free.sym,'n');if(r){reactCumulativeProcessNeutronMixed(r,free,n);return}}
+ if(board){const r=primordialMixedReaction(board.sym,'n');if(r){reactCumulativeProcessNeutronMixed(r,board,n);return}}
+ if(s.mode!=='neutron')return;
  if(!state.selected.length){state.selectedNeutron=state.selectedNeutron===id?null:id;tone(360,.05,'sine',.025);render();return}
  const cell=state.selected[0],pid=state.board[cell],p=pid?state.pieces.get(pid):null,tr=neutronTransitionFor(p,s),ng=neutronGameplay(s);
  if(p?.neutronBetaPending&&ng.pattern==='branch'){
@@ -3767,7 +3817,7 @@ function endPhaseAction(){
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()
 }
 function advancePhase(){const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}
-function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.blackHoleSelected=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render()}
+function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.blackHoleSelected=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;ensureCumulativeParticleFuel(s);const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render()}
 function modalPrimaryLine(s=phase()){
  if(s.mode==='reactionExplore')return atlasSymbolicLine(s);
  if(s.mode==='opening')return 'Universo quente e denso → expansão';
