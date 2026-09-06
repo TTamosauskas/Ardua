@@ -420,6 +420,11 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 
 
 
+/* Primordial molecule scale: neutral atoms use the same footprint as the ⁴He nucleus shown in the atomic era. */
+.star-board.primordial-mode.primordial-molecule-mode .atom.atomic-piece{width:clamp(39px,9.7vw,49px);height:clamp(39px,9.7vw,49px)}
+.star-board.primordial-mode .atom.molecule-inert{pointer-events:none!important;cursor:default!important;outline:none!important}
+.star-board.primordial-mode .atom.molecule-inert.selected,.star-board.primordial-mode .atom.molecule-inert.candidate{outline:none!important;box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 16px rgba(147,220,255,.22),0 7px 15px rgba(0,0,0,.22)}
+
 /* Primordial molecular pairs */
 .star-board.primordial-mode .atom[data-molecule]{animation:none!important;margin-top:0!important;transition:left .48s ease,top .48s ease,box-shadow .18s ease,filter .18s ease;filter:brightness(1.04)}
 .star-board.primordial-mode .atom[data-molecule="HeH+"]{box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 16px rgba(147,220,255,.24),0 7px 15px rgba(0,0,0,.22)}
