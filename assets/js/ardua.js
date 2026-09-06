@@ -1541,7 +1541,7 @@ function fillPrimordialStage(){
    // Cada fase molecular começa com o conjunto mínimo pedido. O restante precisa ser
    // reconstruído com as receitas nucleares e de recombinação já aprendidas.
    clearPrimordialParticles();state.primordialMolecules.clear();state.freeSelected=[];
-   ensurePrimordialParticleMix({p:12,e:18,n:10});
+   const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:0};ensurePrimordialParticleMix(molecularFuel);
    const atom=(sym,x=null,y=null)=>createFreePiece(sym,x,y,{matterState:'atom',boundElectrons:Number(E[sym]?.n||0),massNumber:primordialMassForSym(sym)});
    if(s.id==='first_atomic_bonds'){atom('H');atom('He')}
    else if(s.id==='first_nebulae'){const pt=freePoint(72),he=atom('He',pt.x-24,pt.y),hBond=atom('H',pt.x+24,pt.y);atom('H');createPrimordialMolecule('HeH+',he,hBond,{credit:false,silent:true})}
@@ -3034,7 +3034,7 @@ function updateObjective(){
  if(s.mode==='stellarFormation'){const f=state.stellarFormation,largest=f?Math.max(0,...[...f.groups.values()].map(g=>g.members.length)):0;$('goalText').textContent=`Reúna os 61 átomos primordiais — maior aglomerado ${largest}/61`;setFormula('Una dois grupos somente quando seus campos g se sobrepuserem');return}
  if(s.mode==='reactionExplore'){const sp=atlasSpec(s),done=state.atlasProgress||0;if(sp?.category==='inaccessible')$('goalText').textContent=`Teste a aproximação ${s.target} vezes — ${done}/${s.target}`;else if(sp?.category==='fragment')$('goalText').textContent=`Observe ${s.target} fragmentações completas — ${done}/${s.target}`;else $('goalText').textContent=`Complete ${s.target} observações desta reação — ${done}/${s.target}`;setFormula(atlasNextRecipeLine(s));return}
  if(s.mode==='opening'){$('goalText').textContent='Inicie o Big Bang';setFormula(conciseRecipeLine(s));return}
- if(s.mode==='primordialMolecule'){const made=primordialGoalCount(s);if(s.id==='first_atomic_bonds')$('goalText').textContent=`Forme Hidreto de Hélio ${made}/${s.target}`;else $('goalText').textContent='Crie gás primordial';setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='primordialMolecule'){const made=primordialGoalCount(s);if(s.id==='first_atomic_bonds')$('goalText').textContent=`Forme Hidreto de Hélio ${made}/${s.target}`;else $('goalText').textContent=`Crie gás primordial ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.mode==='primordialNuclear'){const made=primordialGoalCount(s);$('goalText').textContent=`Forme ${s.target} ${s.target===1?'núcleo':'núcleos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.mode==='atomicRecombination'){const made=primordialGoalCount(s);$('goalText').textContent=`Forme ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
  if(s.id==='coulomb_intro'){const made=state.created.He||0;$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão — ${made}/${s.target}`;setFormula('Hélio-3 + Hélio-3 → Hélio-4 + 2 prótons');return}
@@ -3596,7 +3596,7 @@ function ensureNeutronMechanicOpportunity(s=phase()){
 }
 function ensureOpportunity(){
   const s=phase();ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;
-  if(isPrimordial(s)){if(s.mode==='primordialMolecule')ensurePrimordialParticleMix({p:10,e:16,n:8});return;}
+  if(isPrimordial(s))return;
   if(s.mode==='reactionExplore')return ensureAtlasOpportunity(s);
   if(s.mode==='neutron'){
     if(s.chainRebuild){
