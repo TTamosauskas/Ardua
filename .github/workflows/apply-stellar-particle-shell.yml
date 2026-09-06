@@ -12,6 +12,7 @@ on:
     paths:
       - .github/workflows/apply-stellar-particle-shell.yml
       - scripts/apply-stellar-particle-shell.py
+      - scripts/refine-stellar-particle-shell.py
 
 permissions:
   contents: write
@@ -26,8 +27,17 @@ jobs:
           ref: fix/stellar-particle-shell
           fetch-depth: 0
 
-      - name: Apply stellar particle patch
-        run: python3 scripts/apply-stellar-particle-shell.py
+      - name: Ensure base stellar particle patch
+        shell: bash
+        run: |
+          if grep -q "function nearestOpenStellarCell" assets/js/ardua.js; then
+            echo "Base stellar particle patch already present"
+          else
+            python3 scripts/apply-stellar-particle-shell.py
+          fi
+
+      - name: Apply final refinements
+        run: python3 scripts/refine-stellar-particle-shell.py
 
       - name: Check JavaScript syntax
         run: node --check assets/js/ardua.js
@@ -52,6 +62,19 @@ jobs:
           node tests/validate-static.js
           git checkout -- tests/validate-static.js
 
+      - name: Validate stellar particle implementation
+        shell: bash
+        run: |
+          grep -q "function createParticleReactionProduct" assets/js/ardua.js
+          grep -q "function advanceStellarShellParticle" assets/js/ardua.js
+          grep -q "createParticleReactionProduct('H'" assets/js/ardua.js
+          grep -q "createParticleReactionProduct('D'" assets/js/ardua.js
+          grep -q "Math.random()*Math.PI*2" assets/js/ardua.js
+          grep -q "primordial-particle.candidate{opacity:.76}" assets/css/ardua.css
+          grep -q "neutron.candidate{opacity:.76}" assets/css/ardua.css
+          ! grep -q "advanceCoreOrbitParticle" assets/js/ardua.js
+          ! grep -q "placeNeutronOnCoreOrbit" assets/js/ardua.js
+
       - name: Commit implementation
         shell: bash
         run: |
@@ -61,6 +84,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No implementation changes to commit"
           else
-            git commit -m "feat: materialize stellar particle products and orbit shell"
+            git commit -m "fix: refine stellar particle shell behavior"
             git push origin HEAD:fix/stellar-particle-shell
           fi
