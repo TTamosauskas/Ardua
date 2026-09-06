@@ -1,7 +1,7 @@
 /* Stellar formation prototype — 61 representative primordial atoms assemble into the future stellar board. */
 .star-board.stellar-formation-mode{overflow:hidden}
 .star-board.stellar-formation-mode .cells,.star-board.stellar-formation-mode .lines,.star-board.stellar-formation-mode .pieces,.star-board.stellar-formation-mode .stellar-zones,.star-board.stellar-formation-mode .rings,.star-board.stellar-formation-mode .primordial-layer,.star-board.stellar-formation-mode .electron-mesh{opacity:0;pointer-events:none;transition:opacity .55s ease}
-.star-board.stellar-formation-mode.formation-materializing .pieces{opacity:1}
+.star-board.stellar-formation-mode.formation-materializing .cells,.star-board.stellar-formation-mode.formation-materializing .lines,.star-board.stellar-formation-mode.formation-materializing .pieces,.star-board.stellar-formation-mode.formation-materializing .rings{opacity:1}
 .stellar-formation-layer{position:absolute;inset:0;z-index:18;overflow:hidden;touch-action:manipulation;user-select:none}
 .stellar-formation-layer::before{content:"";position:absolute;inset:4%;border-radius:50%;background:radial-gradient(circle at 50% 48%,rgba(117,183,255,.06),rgba(25,67,117,.025) 42%,transparent 72%);pointer-events:none}
 .formation-fields,.formation-atoms{position:absolute;inset:0;pointer-events:none}
