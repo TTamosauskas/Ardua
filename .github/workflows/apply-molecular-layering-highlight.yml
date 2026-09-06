@@ -1,0 +1,33 @@
+name: Apply molecular layering and highlight
+on:
+  push:
+    branches:
+      - fix/molecular-layering-highlight
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply patch
+        run: node scripts/patch-molecular-layering-highlight.js
+      - name: Validate syntax
+        run: node --check assets/js/ardua.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate requested invariants
+        run: |
+          grep -F "Forme Moléculas \${made}/\${s.target}" assets/js/ardua.js
+          grep -F "canCreatePrimordialHeH(selectedFree,p,s)" assets/js/ardua.js
+          grep -F ".star-board.primordial-mode.primordial-molecule-mode .atom[data-molecule]{z-index:1" assets/css/ardua.css
+          grep -F ".star-board.primordial-mode.primordial-molecule-mode .atom:not([data-molecule]){z-index:2}" assets/css/ardua.css
+          grep -F "const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:0}" assets/js/ardua.js
+          grep -F "set('first_atomic_bonds',4,4);set('first_nebulae',4,4);" assets/js/ardua.js
+      - name: Commit product change
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/ardua.js assets/css/ardua.css
+          git commit -m "Refina objetivo, camadas e seleção molecular" || exit 0
+          git push
