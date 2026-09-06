@@ -13,6 +13,7 @@ const NAMES=Object.freeze({
  o:'Captura alfa: Oxigênio',
  spallation_be:'Espalação: Berílio',
  spallation:'Espalação: Boro',
+ high_mass_formation:'Formação da Estrela de Alta Massa',
  ne:'Forja de Neônio',
  na:'Síntese de Sódio',
  mg:'Síntese de Magnésio',
