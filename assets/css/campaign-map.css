@@ -38,6 +38,7 @@
 .branch-spheres{position:relative;z-index:5;display:grid;justify-items:center;align-items:start;gap:18px 12px;width:100%;margin:0 auto;padding:8px 0 18px}
 .primordial-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:390px}
 .stellar-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:690px;align-items:end}
+.second-generation-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:690px;align-items:end}
 .supernova-branches>.branch-spheres{grid-template-columns:repeat(3,minmax(0,1fr));max-width:520px}
 .neutron-branches>.branch-spheres{grid-template-columns:repeat(2,minmax(0,1fr));max-width:390px}
 .branch-choice{--sphere:#6e8aa5;--sphere-size:88px;appearance:none;border:0;background:transparent;color:#b9cada;width:100%;min-width:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;cursor:pointer;opacity:.5;transition:opacity .18s ease,transform .18s ease,color .18s ease}
@@ -60,7 +61,7 @@
 .branch-panel{position:relative;width:100%;min-height:100px;padding:8px 0 20px}.branch-panel[hidden]{display:none!important}
 .branch-panel>.cosmos-flow,.branch-panel>.portal,.branch-panel>.epoch-label,.branch-panel>.branch-cluster{position:relative;z-index:4}
 .stellar-branches{margin-top:4px}.stellar-branches>.branch-panels{max-width:620px}
-.supernova-branches,.neutron-branches{margin-top:18px;margin-bottom:8px}.supernova-branches>.branch-panels,.neutron-branches>.branch-panels{max-width:560px}
+.supernova-branches,.neutron-branches,.second-generation-branches{margin-top:18px;margin-bottom:8px}.supernova-branches>.branch-panels,.neutron-branches>.branch-panels{max-width:560px}.second-generation-branches>.branch-panels{max-width:600px}
 
 .portal{position:relative;z-index:4;width:min(460px,100%);margin:12px auto;border:1px solid rgba(152,196,228,.15);border-radius:13px;background:rgba(2,8,17,.48);overflow:visible}.portal[open]{background:rgba(4,15,28,.62)}.portal summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:10px 11px;color:#e8f4ff;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.portal summary::-webkit-details-marker{display:none}.portal summary::before{content:"◎";font-size:18px;color:var(--map-violet);filter:drop-shadow(0 0 7px currentColor)}.portal summary::after{content:"+";margin-left:auto;font-size:14px;color:#819ab1}.portal[open] summary::after{content:"−"}.portal-body{padding:0 8px 12px}.portal .cosmos-flow{gap:9px}.portal .phase-node{width:min(250px,calc(100vw - 64px));padding-top:5px;padding-bottom:5px}.portal .phase-node strong{font-size:9px}
 
@@ -73,7 +74,7 @@
  .campaign-head{grid-template-columns:1fr auto;padding:12px}.campaign-mode-chip{display:none}.campaign-head-actions{gap:5px}.campaign-close{padding:7px 9px;font-size:8px}.campaign-brand span{display:none}.campaign-brand strong{font-size:19px}
  .campaign-content{width:100%;padding:74px 10px 90px}.campaign-head-actions #campaignData{display:none}
  .branch-cluster{max-width:100%;margin-bottom:24px;padding-top:20px}.branch-fork-node{margin-bottom:15px}.branch-spheres{gap:13px 4px;padding-inline:0}.branch-choice strong{font-size:7px;max-width:78px;letter-spacing:.055em}
- .stellar-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:100%}.primordial-branches>.branch-spheres,.neutron-branches>.branch-spheres{max-width:330px}.supernova-branches>.branch-spheres{max-width:350px}
+ .stellar-branches>.branch-spheres,.second-generation-branches>.branch-spheres{grid-template-columns:repeat(4,minmax(0,1fr));max-width:100%}.primordial-branches>.branch-spheres,.neutron-branches>.branch-spheres{max-width:330px}.supernova-branches>.branch-spheres{max-width:350px}
  .sphere-brown{--sphere-size:46px}.sphere-red{--sphere-size:58px}.sphere-gold{--sphere-size:68px}.sphere-high{--sphere-size:88px}.sphere-tritium{--sphere-size:68px}.sphere-helium{--sphere-size:76px}
  .phase-node{width:min(250px,calc(100vw - 34px))}.portal{width:min(94vw,460px)}.portal .phase-node{width:min(240px,calc(100vw - 56px))}
  .birth-bg{right:-100px;width:240px;height:180px}.branch-bg{width:230px;height:180px;opacity:.14}.branch-bg-left{left:-105px}.branch-bg-right{right:-105px}
