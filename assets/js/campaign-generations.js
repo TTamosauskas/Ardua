@@ -5,7 +5,7 @@ const G=window.ARDUA_CAMPAIGN_GRAPH;if(!G)return;
 const expand=ids=>ids.flatMap(id=>G.atlas.filter(a=>a.anchor===id).map(a=>a.id).concat(id));
 const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const seq=name=>G.sequences?.[name]||[];
-const prologue=uniq(['bigbang','primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td',...seq('atomic')]);
+const prologue=uniq(['bigbang','primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td',...seq('atomic'),...seq('molecular')]);
 const first=uniq(['first_generation_formation',...seq('brown'),...seq('red'),...seq('mid'),...seq('high'),...seq('collapse'),'nu_f','first_enrichment']);
 const second=uniq(['second_birth',...seq('interstellar'),...seq('weakS'),...seq('sprocess'),'gamma_process','second_enrichment']);
 const third=uniq(['third_birth','pulsar','accretion','binary_neutron_stars','kilonova',...seq('r'),...seq('decay'),...seq('rp')]);

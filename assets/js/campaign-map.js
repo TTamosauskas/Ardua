@@ -146,6 +146,8 @@ function buildMap(){
     <div class="branch-after" data-after-group="primordial" hidden>
      <div class="convergence" data-junction="primordial-he4">Hélio-4</div>
      ${flow(G.sequences.atomic)}
+     ${structural('Primeiras moléculas')}
+     ${flow(G.sequences.molecular,'molecular-primordial-flow')}
      ${structural('Era Atômica')}
      ${flow(['first_generation_formation'],'generation-formation-flow')}
      <div class="stellar-birth" data-junction="stellar-birth"><i></i><strong>Massa inicial da nova estrela</strong></div>
@@ -361,8 +363,9 @@ function drawLinks(){
  if(p==='tritium'){connectActiveSphere('primordial','primordial_t','primordial');connectTrail(G.sequences.primordialLeft,'primordial');addPath(byPhase(tail('primordial_td')),byPhase('primordial_li'),'primordial')}
  if(p==='helium3'){connectActiveSphere('primordial','primordial_he3','primordial');connectTrail(G.sequences.primordialRight,'primordial');addPath(byPhase(tail('primordial_he3d')),byPhase('primordial_li'),'primordial')}
  connectTrail(G.sequences.atomic,'primordial');
+ addPath(byPhase(tail('atomic_li')),byPhase('first_atomic_bonds'),'primordial');connectTrail(G.sequences.molecular,'primordial');
 
- const formation=byPhase('first_generation_formation'),birth=[...map.querySelectorAll('[data-junction="stellar-birth"]')].find(isVisible);addPath(byPhase(tail('atomic_li')),formation,'birth');addPath(formation,birth,'birth');
+ const formation=byPhase('first_generation_formation'),birth=[...map.querySelectorAll('[data-junction="stellar-birth"]')].find(isVisible);addPath(byPhase(tail('first_nebulae')),formation,'birth');addPath(formation,birth,'birth');
  connectBranchJunction(birth,'stellar',{sub:'sub',low:'low',mid:'mid',high:'high'});
  const s=activeBranch('stellar');
  if(s==='sub'){connectActiveSphere('stellar','brown','sub');connectTrail(G.sequences.brown,'sub')}
