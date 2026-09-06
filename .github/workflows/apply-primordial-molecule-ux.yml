@@ -1,0 +1,56 @@
+name: Apply primordial molecule UX
+on:
+  push:
+    branches:
+      - fix/primordial-molecule-ux
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply UX patch
+        run: node scripts/patch-primordial-molecule-ux.js
+      - name: Syntax checks
+        run: node --check assets/js/ardua.js
+      - name: Validate cumulative recipe architecture
+        run: node scripts/validate-cumulative-recipes.js
+      - name: Validate molecular UX invariants
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const js=fs.readFileSync('assets/js/ardua.js','utf8');
+          const css=fs.readFileSync('assets/css/ardua.css','utf8');
+          const need=(ok,msg)=>{if(!ok)throw new Error(msg)};
+          need(js.includes("function primordialMoleculeBondDistance(){return Math.max(32,Math.min(40,cellSize()*.64))}"),'bond distance was not reduced');
+          need(js.includes("locked:!!(credit&&phase().mode==='primordialMolecule'&&type===phase().new)"),'target molecule lock missing');
+          need(js.includes("if(!m||m.locked||state.locked||state.phaseDone)return"),'locked molecules remain tappable');
+          need(js.includes("if(m&&!m.locked)return m"),'locked molecule can become selected');
+          need(js.includes("function primordialAtomicCreationLine(sym)"),'atomic rebuild guidance helper missing');
+          need(js.includes("function primordialMoleculeNextRecipeLine(s=phase())"),'molecular recipe guidance missing');
+          need(js.includes("if(s.mode==='primordialMolecule')return primordialMoleculeNextRecipeLine(s)"),'molecular phase does not use dynamic recipe guidance');
+          need(js.includes("if(h&&he)return 'He + H → HeH⁺'"),'HeH+ objective recipe missing');
+          need(js.includes("if(heh&&h)return 'HeH⁺ + H → H₂'"),'H2 objective recipe missing');
+          need(js.includes("return primordialProducerToward('He')?.label||'Reconstrua um núcleo de ⁴He'"),'helium rebuild does not fall back through learned primordial recipes');
+          need(js.includes("dom.star.classList.toggle('primordial-molecule-mode',s.mode==='primordialMolecule')"),'molecular visual scope class missing');
+          need(!js.includes("createFreePiece('HeH+'")&&!js.includes("createFreePiece('H2'"),'molecule became an artificial standalone circle');
+          const nucleus='width:clamp(39px,9.7vw,49px);height:clamp(39px,9.7vw,49px)';
+          need(css.includes('.star-board.primordial-mode .atom.nucleus-piece{'+nucleus+'}'),'reference 4He nucleus size changed unexpectedly');
+          need(css.includes('.star-board.primordial-mode.primordial-molecule-mode .atom.atomic-piece{'+nucleus+'}'),'molecular H/He do not match the 4He nucleus footprint');
+          need(css.includes('.atom.molecule-inert{pointer-events:none!important'),'completed objective pair remains pointer-selectable');
+          console.log('Molecular UX invariants OK');
+          NODE
+      - name: Diff check
+        run: git diff --check
+      - name: Commit product changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/css/ardua.css
+          git commit -m "Refina UX das primeiras moléculas"
+          git push origin HEAD:fix/primordial-molecule-ux
