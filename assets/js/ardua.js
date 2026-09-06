@@ -3864,7 +3864,7 @@ function stellarFormationCells(){
 function stellarFormationLayout(n){
  const scale=cellSize()*.58,ids=stellarFormationCells().slice(0,Math.max(1,Math.min(STELLAR_FORMATION_TOTAL,n))),pts=ids.map(i=>{const c=coords[i];return{x:scale*Math.sqrt(3)*(c.q+c.r/2),y:scale*1.5*c.r,cell:i}}),cx=pts.reduce((a,p)=>a+p.x,0)/pts.length,cy=pts.reduce((a,p)=>a+p.y,0)/pts.length;return pts.map(p=>({x:p.x-cx,y:p.y-cy,cell:p.cell}));
 }
-function stellarFormationSeedBondDistance(){return Math.max(30,Math.min(42,window.innerWidth*.08))}
+function stellarFormationSeedBondDistance(){return Math.max(39,Math.min(49,window.innerWidth*.097))}
 function stellarFormationSeedLayout(count){if(count<=1)return[{x:0,y:0}];const d=stellarFormationSeedBondDistance();return[{x:-d/2,y:0},{x:d/2,y:0}]}
 
 function stellarFormationFieldRadius(g){const pts=stellarFormationLayout(g.members.length),extent=Math.max(0,...pts.map(p=>Math.hypot(p.x,p.y)));return Math.max(24,Math.min(starSize()*.43,extent+22+Math.sqrt(g.members.length)*2.4))}
