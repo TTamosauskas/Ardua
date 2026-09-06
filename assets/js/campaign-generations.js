@@ -6,9 +6,9 @@ const expand=ids=>ids.flatMap(id=>G.atlas.filter(a=>a.anchor===id).map(a=>a.id).
 const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const seq=name=>G.sequences?.[name]||[];
 const prologue=uniq(['bigbang','primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td',...seq('atomic')]);
-const first=uniq([...seq('brown'),...seq('red'),...seq('mid'),...seq('high'),...seq('weakS'),...seq('collapse'),...seq('supernovaSide'),'white','neutron_star']);
-const second=uniq([...seq('interstellar'),...seq('sprocess'),...seq('r'),...seq('decay')]);
-const third=uniq(['pulsar','accretion',...seq('rp'),'black_hole','quasar']);
+const first=uniq([...seq('brown'),...seq('red'),...seq('mid'),...seq('high'),...seq('weakS'),...seq('collapse'),...seq('supernovaSide'),'white','neutron_star','first_enrichment']);
+const second=uniq(['second_birth',...seq('interstellar'),...seq('sprocess'),...seq('r'),...seq('decay'),'second_enrichment']);
+const third=uniq(['third_birth','pulsar','accretion',...seq('rp'),'black_hole','quasar']);
 const defs=Object.freeze({
  prologue:Object.freeze({id:'prologue',title:'Universo Primordial',short:'Prólogo',description:'A matéria-prima cósmica surge antes das estrelas.',members:Object.freeze(expand(prologue))}),
  first:Object.freeze({id:'first',number:1,title:'Primeira Geração',short:'1ª geração',description:'Primeiras estrelas formadas a partir da matéria primordial.',members:Object.freeze(expand(first))}),
@@ -16,6 +16,6 @@ const defs=Object.freeze({
  third:Object.freeze({id:'third',number:3,title:'Terceira Geração',short:'3ª geração',description:'Sistemas formados depois de múltiplos ciclos de enriquecimento químico.',members:Object.freeze(expand(third))})
 });
 const membership=new Map();for(const d of Object.values(defs))for(const id of d.members)if(!membership.has(id))membership.set(id,d.id);
-G.generations=defs;G.generationOrder=Object.freeze(['first','second','third']);G.generationOf=id=>membership.get(id)||null;
-window.ARDUA_GENERATIONS=defs;
+const api=Object.freeze({defs,order:Object.freeze(['first','second','third']),generationOf:id=>membership.get(id)||null});
+window.ARDUA_GENERATIONS=api;
 })();
