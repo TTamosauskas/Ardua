@@ -1,0 +1,39 @@
+name: Audit cumulative recipes
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/audit-cumulative.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Inspect cumulative reaction paths
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('assets/js/ardua.js','utf8');
+          const names=[
+            'learnedFusionRecipes','activeFusionRecipes','phaseFusionRecipes','fusionSandboxAllowed',
+            'learnedPrimordialNuclearReactions','primordialMixedReaction','tapPrimordialParticle',
+            'renderPrimordialParticles','tapNeutron','renderNeutrons','spawnGeneratedNeutron',
+            'stellarProtonRecipe','protonCaptureAvailable','universalNeutronCaptureEligible'
+          ];
+          function extract(name){
+            let a=s.indexOf(`function ${name}(`);if(a<0)a=s.indexOf(`const ${name}=`);if(a<0){console.log(`\n=== ${name}: MISSING ===`);return}
+            let b=s.indexOf('\nfunction ',a+10);let c=s.indexOf('\nconst ',a+10);
+            if(b<0)b=s.length;if(c>0&&c<b)c=c;else c=b;
+            let end=Math.min(b,c,a+12000);console.log(`\n=== ${name} ===\n`+s.slice(a,end));
+          }
+          names.forEach(extract);
+          for(const q of ["particles:['p','n']","particles:[\"p\",\"n\"]","out:'D'","sym==='D'","kind==='n'","selectedNeutron"]){
+            console.log(`\n=== SEARCH ${q} ===`);let i=-1,count=0;while((i=s.indexOf(q,i+1))>=0&&count++<12)console.log(s.slice(Math.max(0,i-550),Math.min(s.length,i+1000)));
+          }
+          NODE
