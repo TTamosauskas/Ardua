@@ -9,4 +9,5 @@ const oldGraphLine=` src=replaceOnce(src,'"stellar_li","fragile"','"stellar_li",
 const newGraphLine=` if(!src.includes('"stellar_li","fragile"'))throw new Error('graph giant formation order: match ausente');\n src=src.replace('"stellar_li","fragile"','"stellar_li","giant_formation","fragile"');`;
 if(!src.includes(oldGraphLine))throw new Error('graph line to patch not found');
 src=src.replace(oldGraphLine,newGraphLine);
+src=src.replace('/* Stellar formation prototype — 18 H-H pairs + 1 isolated H assemble into a 37-cell stellar hexagon. */','/* Stellar formation prototype — 18 H-H pairs assemble; a hidden final H auto-completes the 37-cell hexagon. */');
 fs.writeFileSync(path,src);
