@@ -27,7 +27,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs'),vm=require('vm'),cp=require('child_process');
           function graphFrom(code){const box={window:{}};vm.runInNewContext(code,box);return box.window.ARDUA_CAMPAIGN_GRAPH}
-          const before=graphFrom(cp.execFileSync('git',['show','feat/generation-enrichment:assets/js/campaign-graph.js'],{encoding:'utf8'}));
+          const before=graphFrom(cp.execFileSync('git',['show','origin/feat/generation-enrichment:assets/js/campaign-graph.js'],{encoding:'utf8'}));
           const after=graphFrom(fs.readFileSync('assets/js/campaign-graph.js','utf8'));
           const missing=before.baseOrder.filter(id=>!after.baseOrder.includes(id));if(missing.length)throw new Error('existing phases removed: '+missing.join(','));
           for(const id of ['binary_neutron_stars','kilonova'])if(!after.baseOrder.includes(id))throw new Error('missing '+id);
