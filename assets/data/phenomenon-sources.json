@@ -403,9 +403,9 @@
     "imagePath": "assets/images/phenomena/explosive-nucleosynthesis.jpg",
     "imageWikiResolvedTitle": "Nucleossíntese de supernova",
     "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Keplers_supernova.jpg",
-    "imageLicense": "Public domain",
+    "imageLicense": "",
     "imageLicenseUrl": "",
-    "imageArtist": "NASA/ESA/JHU/R.Sankrit & W.Blair"
+    "imageArtist": ""
   },
   "Processo-s": {
     "wikiTitle": "Processo s",
@@ -433,29 +433,29 @@
   },
   "rp-process": {
     "wikiTitle": "Processo rp",
-    "imageWikiTitle": "Erupção de raio X",
+    "imageWikiTitle": "Binário de raio X",
     "slug": "rp-process",
     "wikiResolvedTitle": "Processo rp",
     "wikiUrl": "https://pt.wikipedia.org/wiki/Processo_rp",
     "imagePath": "assets/images/phenomena/rp-process.jpg",
-    "imageWikiResolvedTitle": "Erupção de raio X",
-    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Crab_Nebula.jpg",
-    "imageLicense": "Public domain",
-    "imageLicenseUrl": "",
-    "imageArtist": "NASA , ESA , J. Hester and A. Loll (Arizona State University)"
+    "imageWikiResolvedTitle": "Binário de raio X",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Microquasar_GRO_J1655-40.jpg",
+    "imageLicense": "CC BY 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "imageArtist": "ESA, NASA, and Felix Mirabel (French Atomic Energy Commission and Institute for Astronomy and Space Physics/Conicet of Argentina)"
   },
   "Waiting point": {
     "wikiTitle": "Processo rp",
-    "imageWikiTitle": "Erupção de raio X",
+    "imageWikiTitle": "Binário de raio X",
     "slug": "waiting-point",
     "wikiResolvedTitle": "Processo rp",
     "wikiUrl": "https://pt.wikipedia.org/wiki/Processo_rp",
     "imagePath": "assets/images/phenomena/waiting-point.jpg",
-    "imageWikiResolvedTitle": "Erupção de raio X",
-    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Crab_Nebula.jpg",
-    "imageLicense": "Public domain",
-    "imageLicenseUrl": "",
-    "imageArtist": "NASA , ESA , J. Hester and A. Loll (Arizona State University)"
+    "imageWikiResolvedTitle": "Binário de raio X",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Microquasar_GRO_J1655-40.jpg",
+    "imageLicense": "CC BY 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "imageArtist": "ESA, NASA, and Felix Mirabel (French Atomic Energy Commission and Institute for Astronomy and Space Physics/Conicet of Argentina)"
   },
   "Freeze-out": {
     "wikiTitle": "Processo r",
@@ -546,12 +546,13 @@
     "slug": "kilonova",
     "wikiResolvedTitle": "Kilonova",
     "wikiUrl": "https://pt.wikipedia.org/wiki/Kilonova",
-    "imagePath": "assets/images/phenomena/kilonova.jpg",
-    "imageWikiResolvedTitle": "Kilonova",
-    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Crab_Nebula.jpg",
-    "imageLicense": "Public domain",
-    "imageLicenseUrl": "",
-    "imageArtist": "NASA , ESA , J. Hester and A. Loll (Arizona State University)"
+    "imagePath": "assets/images/phenomena/kilonova.png",
+    "imageWikiResolvedTitle": "GW170817",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:GW170817_signal.png",
+    "imageLicense": "CC BY-SA 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "imageArtist": "LIGO Scientific Collaboration and Virgo Collaboration",
+    "imageWikiTitle": "GW170817"
   },
   "Buraco Negro": {
     "wikiTitle": "Buraco negro",
