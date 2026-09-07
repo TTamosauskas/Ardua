@@ -1,0 +1,257 @@
+/* Ardua — in-place element detail inside Descobertas. */
+#menuModal.discoveries-view.element-detail-view .card{
+  overflow:auto;
+}
+
+.element-discovery-detail{
+  width:100%;
+  padding:0 0 4px;
+}
+.element-discovery-detail[hidden]{display:none!important}
+.element-discovery-head{
+  position:sticky;
+  top:-14px;
+  z-index:9;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 14px;
+  padding:10px 0 12px;
+  border-bottom:1px solid rgba(139,190,222,.14);
+  background:linear-gradient(180deg,rgba(11,20,37,.985),rgba(11,20,37,.94));
+  backdrop-filter:blur(14px);
+}
+.element-discovery-head>strong{
+  color:#b9d8ed;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.element-detail-back{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:11px;
+  background:rgba(255,255,255,.055);
+  color:#f5fbff;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.element-detail-back:hover{
+  border-color:rgba(112,205,244,.38);
+  background:rgba(74,169,216,.11);
+}
+.element-detail-back:active{transform:translateY(1px)}
+.element-detail-back span{font-size:16px;line-height:1}
+
+.element-wiki-figure{
+  margin:0 0 14px;
+  overflow:hidden;
+  border:1px solid rgba(139,190,222,.16);
+  border-radius:16px;
+  background:rgba(2,7,15,.76);
+  box-shadow:0 12px 34px rgba(0,0,0,.24);
+}
+.element-wiki-image-shell{
+  overflow:hidden;
+  border:1px solid rgba(139,190,222,.16);
+  border-radius:16px;
+  background:rgba(2,7,15,.76);
+}
+.element-wiki-image{
+  display:block;
+  width:100%;
+  max-height:300px;
+  object-fit:contain;
+  background:#030711;
+}
+.element-wiki-image-placeholder{
+  min-height:190px;
+  display:grid;
+  place-items:center;
+  color:#6f879e;
+  background:radial-gradient(circle at 50% 42%,rgba(91,169,208,.10),rgba(4,9,18,.96) 66%);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+.element-wiki-figure figcaption{
+  padding:7px 10px 8px;
+  border-top:1px solid rgba(139,190,222,.10);
+  color:#71899f;
+  font-size:8px;
+  line-height:1.3;
+  letter-spacing:.045em;
+  text-align:right;
+}
+
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info{
+  display:grid;
+  grid-template-columns:minmax(104px,128px) minmax(0,1fr);
+  align-items:stretch;
+  gap:14px;
+  min-height:132px;
+  margin:0;
+}
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-tile{
+  width:100%;
+  min-width:0;
+  height:100%;
+  min-height:132px;
+  color:#07101a!important;
+}
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-z,
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-symbol,
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-name,
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-mass{
+  color:#07101a!important;
+}
+.element-wiki-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.element-wiki-copy h3{
+  margin:0 0 8px;
+  color:#f4f9ff;
+  font-size:20px;
+  line-height:1.08;
+  letter-spacing:-.02em;
+}
+.element-wiki-copy p{
+  margin:0;
+  color:#cbd8e7;
+  font-size:11px;
+  line-height:1.65;
+}
+
+.element-related-phases{
+  margin-top:13px;
+  padding:12px;
+  border:1px solid rgba(151,177,224,.14);
+  border-radius:15px;
+  background:rgba(255,255,255,.025);
+}
+.element-related-phases>strong{
+  display:block;
+  margin-bottom:9px;
+  color:#e6f0fa;
+  font-size:11px;
+  line-height:1.3;
+  font-weight:900;
+}
+.element-related-phases>div{
+  display:grid;
+  gap:7px;
+}
+.element-phase-chip{
+  width:100%;
+  min-height:42px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:3px;
+  padding:8px 10px;
+  border:1px solid rgba(112,205,244,.20);
+  border-radius:11px;
+  background:rgba(68,154,201,.07);
+  color:#d9efff;
+  text-align:left;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.element-phase-chip:hover{
+  border-color:rgba(112,205,244,.42);
+  background:rgba(68,154,201,.13);
+  transform:translateY(-1px);
+}
+.element-phase-chip strong{
+  color:#eaf7ff;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:850;
+}
+.element-phase-chip small{
+  color:#87a2ba;
+  font-size:8px;
+  line-height:1.35;
+}
+.element-phase-empty{
+  color:#8298ad;
+  font-size:10px;
+  line-height:1.45;
+}
+
+.element-source-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.element-source-btn{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 12px;
+  border:1px solid rgba(112,205,244,.24);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(72,169,215,.12),rgba(37,91,132,.07));
+  color:#e4f5ff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.055em;
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.element-source-btn:hover{
+  border-color:rgba(112,205,244,.46);
+  background:linear-gradient(180deg,rgba(72,169,215,.20),rgba(37,91,132,.11));
+  transform:translateY(-1px);
+}
+
+.element-wiki-loading{
+  display:grid;
+  gap:14px;
+}
+.element-wiki-loading .element-wiki-image-placeholder{
+  animation:elementWikiPulse 1.3s ease-in-out infinite alternate;
+}
+@keyframes elementWikiPulse{from{opacity:.48}to{opacity:.88}}
+
+@media(max-width:700px){
+  .element-discovery-head{top:-14px;margin-bottom:12px}
+  .element-wiki-image{max-height:235px}
+  .element-wiki-image-placeholder{min-height:150px}
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info{
+    grid-template-columns:96px minmax(0,1fr);
+    gap:11px;
+  }
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-tile{min-height:122px}
+  .element-wiki-copy h3{font-size:18px}
+  .element-wiki-copy p{font-size:10.5px;line-height:1.58}
+}
+
+@media(max-width:420px){
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info{
+    grid-template-columns:84px minmax(0,1fr);
+    gap:9px;
+  }
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info .info-tile{min-height:116px}
+  .element-wiki-copy h3{font-size:17px;margin-bottom:6px}
+  .element-wiki-copy p{font-size:10px;line-height:1.52}
+  .element-source-actions{grid-template-columns:1fr}
+}
