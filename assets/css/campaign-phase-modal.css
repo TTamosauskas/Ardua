@@ -1,15 +1,17 @@
-/* Ardua — campaign phase preview reuses the native stellar portrait modal. */
+/* Ardua — dedicated campaign phase preview in the native stellar portrait language. */
 #campaignMap .map-detail{display:none!important}
-#stellarIntro{z-index:560}
-#stellarIntro .stellar-card{width:min(100%,440px)}
-#stellarIntro .intro-kicker{font-size:10px;line-height:1.35;color:#9eb2cf;letter-spacing:.085em;text-transform:none;font-weight:850}
-#stellarIntro .stellar-card h2{margin-top:7px;font-size:clamp(25px,6.4vw,31px);line-height:1.02;text-transform:uppercase}
-#stellarIntro .intro-sub{margin-top:7px;color:#dce7f6;font-size:12px;font-weight:820;line-height:1.35}
+#stellarIntro,#campaignPhasePreview{z-index:560}
+#stellarIntro .stellar-card,#campaignPhasePreview .stellar-card{width:min(100%,440px)}
+#stellarIntro .intro-kicker,#campaignPhasePreview .intro-kicker{font-size:10px;line-height:1.35;color:#9eb2cf;letter-spacing:.085em;text-transform:none;font-weight:850}
+#stellarIntro .stellar-card h2,#campaignPhasePreview .stellar-card h2{margin-top:7px;font-size:clamp(25px,6.4vw,31px);line-height:1.02;text-transform:uppercase}
+#stellarIntro .intro-sub,#campaignPhasePreview .intro-sub{margin-top:7px;color:#dce7f6;font-size:12px;font-weight:820;line-height:1.35}
 #stellarIntro .intro-line{display:none!important}
-#stellarIntro .stellar-portrait{margin-top:16px;margin-bottom:14px}
+#stellarIntro .stellar-portrait,#campaignPhasePreview .stellar-portrait{margin-top:16px;margin-bottom:14px}
+#campaignPhasePreview{background:rgba(4,7,16,.74);backdrop-filter:blur(9px)}
+#campaignPhasePreview .campaign-phase-preview-card{pointer-events:auto}
 .phase-modal-actions{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:8px;align-items:stretch}
 .phase-modal-actions .stellar-start{height:48px;padding:0 14px;border-radius:15px}
 .phase-modal-actions .stellar-start:disabled{opacity:.34;cursor:default;filter:grayscale(.35)}
-.phase-modal-close{height:48px;border:1px solid rgba(255,255,255,.15);border-radius:15px;background:rgba(255,255,255,.055);color:#edf5ff;font-weight:900;cursor:pointer}
+.phase-modal-close{height:48px;border:1px solid rgba(255,255,255,.15);border-radius:15px;background:rgba(255,255,255,.055);color:#edf5ff;font-weight:900;cursor:pointer;touch-action:manipulation}
 .phase-modal-close:hover,.phase-modal-close:focus-visible{border-color:rgba(138,216,255,.48);background:rgba(255,255,255,.085);outline:none}
-@media(max-height:650px){#stellarIntro .stellar-portrait{height:145px;margin:10px 0 11px}.phase-modal-actions .stellar-start,.phase-modal-close{height:44px}}
+@media(max-height:650px){#stellarIntro .stellar-portrait,#campaignPhasePreview .stellar-portrait{height:145px;margin:10px 0 11px}.phase-modal-actions .stellar-start,.phase-modal-close{height:44px}}
