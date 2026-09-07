@@ -27,6 +27,9 @@ jobs:
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
 
+      - name: Validate phenomena discoveries
+        run: node scripts/validate-phenomena-discoveries.mjs
+
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
 
