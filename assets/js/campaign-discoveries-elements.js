@@ -65,8 +65,9 @@ async function enforceElementCreationGate(){
  const serial=++creationGateSerial,src=await sourceMeta();if(serial!==creationGateSerial)return;
  const first=firstCreationPhases(src.phases),done=new Set(C.getState?.().completed||[]),editor=!!C.editor;let visible=0;
  catalog.querySelectorAll('.el-card').forEach(elementCard=>{
-  const sym=elementCard.querySelector('.s')?.textContent?.trim()||'',required=first.get(sym)||[],show=editor||required.some(id=>done.has(id));
-  elementCard.hidden=!show;if(show)visible++;
+  const sym=elementCard.querySelector('.s')?.textContent?.trim()||'',required=first.get(sym)||[],show=editor||required.some(id=>done.has(id)),shouldHide=!show;
+  if(elementCard.hidden!==shouldHide)elementCard.hidden=shouldHide;
+  if(show)visible++;
  });
  const empties=[...catalog.querySelectorAll(':scope > .discovery-empty')];
  if(visible)empties.forEach(el=>el.remove());
