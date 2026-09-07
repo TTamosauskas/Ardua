@@ -15,7 +15,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  sync-elements:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Fetch Wikipedia element image shard
+        run: node scripts/fetch-element-wikipedia-shard.mjs ${{ matrix.shard }} 8 .element-shard
+
+      - name: Upload element image shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-shard-${{ matrix.shard }}
+          path: .element-shard
+          retention-days: 1
+
   deploy:
+    needs: sync-elements
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,8 +45,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
-      - name: Sync Wikipedia element images
-        run: node scripts/sync-element-wikipedia-images.mjs
+      - name: Download element image shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: element-shard-*
+          path: .element-shards
+
+      - name: Merge Wikipedia element images
+        run: node scripts/merge-element-wikipedia-shards.mjs .element-shards
 
       - name: Persist synchronized element images
         run: |
