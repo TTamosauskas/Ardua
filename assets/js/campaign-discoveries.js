@@ -11,19 +11,52 @@ const firstSeparator=phaseMenu?.nextElementSibling?.classList?.contains('menu-se
 let activeTab='reactions';
 
 const PHENOMENA=[
- {key:'process:s',glyph:'s',title:'Processo-s',group:'Processos',text:'Capturas lentas de nêutrons intercaladas com decaimentos.',infer:['rb','sr','bi']},
- {key:'process:r',glyph:'r',title:'Processo-r',group:'Processos',text:'Capturas rápidas durante fluxos intensos de nêutrons.',infer:['eu','u']},
- {key:'process:rp',glyph:'p',title:'rp-process',group:'Processos',text:'Capturas rápidas de prótons em uma estrela de nêutrons em acreção.',infer:['rp_cu','rp_te']},
- {key:'phenomenon:tripleAlpha',glyph:'3α',title:'Triplo-alfa',group:'Fenômenos',text:'Berílio-8 instável recebe outro Hélio e forma Carbono.',infer:['c']},
- {key:'phenomenon:stellarConvection',glyph:'↕',title:'Convecção Estelar',group:'Fenômenos',text:'Correntes de plasma transportam matéria e energia entre diferentes regiões da estrela.'},
- {key:'phenomenon:waitingPoint',glyph:'β⁺',title:'Waiting point',group:'Fenômenos',text:'Um núcleo proton-rich interrompe temporariamente a sequência de capturas.'},
- {key:'phenomenon:freezeout',glyph:'n↓',title:'Freeze-out',group:'Fenômenos',text:'O fluxo de nêutrons cai e os decaimentos passam a dominar.'},
- {key:'phenomenon:supernova',glyph:'✦',title:'Supernova',group:'Eventos cósmicos',text:'Uma explosão estelar dispersa matéria enriquecida.',infer:['final_collapse']},
- {key:'phenomenon:neutronStar',glyph:'NS',title:'Estrela de Nêutrons',group:'Eventos cósmicos',text:'Remanescente compacto sustentado por matéria extremamente densa.',infer:['neutron_star']},
- {key:'phenomenon:blackHole',glyph:'●',title:'Buraco Negro',group:'Eventos cósmicos',text:'Colapso extremo com formação de um horizonte de eventos.',infer:['black_hole']},
- {key:'phenomenon:hawkingRadiation',glyph:'hν',title:'Radiação Hawking',group:'Fenômenos',text:'Efeito quântico extremamente tênue associado ao horizonte de eventos de um buraco negro.'},
+ {key:'particle:proton',glyph:'p⁺',title:'Prótons',group:'Partículas',text:'Núcleos de Hidrogênio com carga elétrica positiva. São uma das matérias-primas fundamentais das reações de fusão.',phases:['primordial_d'],infer:['bigbang','primordial_d']},
+ {key:'particle:neutron',glyph:'n',title:'Nêutrons',group:'Partículas',text:'Partículas eletricamente neutras do núcleo atômico. Participam da formação de isótopos e dos processos de captura de nêutrons.',phases:['primordial_d'],infer:['primordial_d']},
+ {key:'particle:electron',glyph:'e⁻',title:'Elétrons',group:'Partículas',text:'Partículas de carga negativa que formam a nuvem eletrônica dos átomos e tornam possível a química da matéria.',phases:['atomic_he'],infer:['atomic_he','atomic_h','atomic_li']},
+
+ {key:'star:brownDwarf',glyph:'BD',title:'Anã Marrom',group:'Estrelas',text:'Objeto subestelar com massa insuficiente para sustentar a fusão estável de Hidrogênio como uma estrela comum.',phases:['brown'],infer:['brown']},
+ {key:'star:redDwarf',glyph:'M',title:'Anã Vermelha',group:'Estrelas',text:'Estrela de baixa massa, fria e longeva, capaz de consumir seu combustível de Hidrogênio muito lentamente.',phases:['he_red'],infer:['he_red']},
+ {key:'star:orangeDwarf',glyph:'K',title:'Anã Laranja',group:'Estrelas',text:'Estrela de sequência principal de massa intermediária-baixa, mais quente que uma anã vermelha e mais fria que uma estrela semelhante ao Sol.',phases:['he_orange'],infer:['he_orange']},
+ {key:'star:yellowDwarf',glyph:'G',title:'Anã Amarela',group:'Estrelas',text:'Estrela de sequência principal do tipo solar, sustentada pela fusão de Hidrogênio em seu núcleo.',phases:['he_yellow'],infer:['he_yellow']},
+ {key:'star:whiteDwarf',glyph:'WD',title:'Anã Branca',group:'Estrelas',text:'Remanescente estelar compacto formado quando uma estrela de massa baixa ou intermediária encerra suas principais etapas de fusão.',phases:['white'],infer:['white']},
+ {key:'star:redGiant',glyph:'RG',title:'Gigante Vermelha',group:'Estrelas',text:'Estrela evoluída com envelope muito expandido e superfície relativamente fria, após o esgotamento do Hidrogênio central.',phases:['c'],infer:['c']},
+ {key:'star:yellowGiant',glyph:'YG',title:'Gigante Amarela',group:'Estrelas',text:'Estrela gigante de temperatura superficial intermediária, em uma etapa avançada de evolução estelar.',phases:['n'],infer:['n']},
+ {key:'star:blueGiant',glyph:'BG',title:'Gigante Azul',group:'Estrelas',text:'Estrela gigante quente e luminosa, com elevada temperatura superficial e evolução relativamente rápida.',phases:['o'],infer:['o']},
+ {key:'star:whiteGiant',glyph:'WG',title:'Gigante Branca',group:'Estrelas',text:'Ramo quente da fase gigante representado na campanha, associado a uma superfície de alta temperatura e evolução avançada.',phases:['fragile'],infer:['fragile']},
+ {key:'star:redSupergiant',glyph:'RSG',title:'Supergigante Vermelha',group:'Estrelas',text:'Estrela massiva evoluída com raio enorme e envelope frio, capaz de avançar por sucessivas etapas de fusão nuclear.',phases:['ne'],infer:['ne']},
+ {key:'star:yellowSupergiant',glyph:'YSG',title:'Supergigante Amarela',group:'Estrelas',text:'Estrela massiva e muito luminosa em uma faixa intermediária de temperatura superficial.',phases:['oxygen_burn'],infer:['oxygen_burn']},
+ {key:'star:blueSupergiant',glyph:'BSG',title:'Supergigante Azul',group:'Estrelas',text:'Estrela massiva extremamente quente e luminosa, em uma fase avançada de evolução.',phases:['cl'],infer:['cl']},
+ {key:'star:agb',glyph:'AGB',title:'Estrela AGB',group:'Estrelas',text:'Estrela do ramo assintótico das gigantes, com camadas de queima nuclear e ambiente favorável ao processo-s.',phases:['rb'],infer:['rb','sr']},
+
+ {key:'phenomenon:coulombBarrier',glyph:'Z₁Z₂',title:'Barreira de Coulomb',group:'Processos estelares',text:'A repulsão elétrica entre núcleos positivos precisa ser vencida ou atravessada por tunelamento quântico para a fusão ocorrer.',phases:['coulomb_intro'],infer:['coulomb_intro']},
+ {key:'phenomenon:stellarConvection',glyph:'↕',title:'Convecção Estelar',group:'Processos estelares',text:'Correntes de plasma transportam matéria e energia entre diferentes regiões da estrela.',phases:['stellar_convection'],infer:['stellar_convection']},
+
+ {key:'phenomenon:tripleAlpha',glyph:'3α',title:'Triplo-alfa',group:'Processos nucleares',text:'Berílio-8 instável recebe outro Hélio e forma Carbono.',phases:['c'],infer:['c']},
+ {key:'phenomenon:spallation',glyph:'✧',title:'Espalação',group:'Processos nucleares',text:'Colisões energéticas fragmentam núcleos mais pesados e produzem núcleos leves, como Berílio e Boro.',phases:['spallation_be'],infer:['spallation_be','spallation']},
+ {key:'phenomenon:decay',glyph:'β',title:'Decaimento',group:'Processos nucleares',text:'Núcleos instáveis transformam-se espontaneamente em estados mais estáveis, emitindo partículas ou radiação.',phases:['decay_pa'],infer:['decay_pa','decay_ra','decay_ac','decay_fr','decay_rn','decay_po','decay_at']},
+ {key:'process:s',glyph:'s',title:'Processo-s',group:'Processos nucleares',text:'Capturas lentas de nêutrons intercaladas com decaimentos.',phases:['rb'],infer:['rb','sr','bi']},
+ {key:'process:r',glyph:'r',title:'Processo-r',group:'Processos nucleares',text:'Capturas rápidas durante fluxos intensos de nêutrons.',phases:['eu'],infer:['eu','u']},
+ {key:'process:rp',glyph:'p',title:'rp-process',group:'Processos nucleares',text:'Capturas rápidas de prótons em uma estrela de nêutrons em acreção.',phases:['rp_cu'],infer:['rp_cu','rp_te']},
+ {key:'phenomenon:waitingPoint',glyph:'β⁺',title:'Waiting point',group:'Processos nucleares',text:'Um núcleo proton-rich interrompe temporariamente a sequência de capturas.',phases:['stability'],infer:['stability']},
+ {key:'phenomenon:freezeout',glyph:'n↓',title:'Freeze-out',group:'Processos nucleares',text:'O fluxo de nêutrons cai e os decaimentos passam a dominar.',infer:['u','decay_pa']},
+
+ {key:'radiation:xray',glyph:'X',title:'Raios X',group:'Radiação',text:'Radiação eletromagnética energética produzida em ambientes extremos, como matéria aquecida em torno de objetos compactos.',phases:['accretion'],infer:['accretion']},
+ {key:'radiation:gamma',glyph:'γ',title:'Raios gama',group:'Radiação',text:'Fótons de energia muito alta emitidos por transições nucleares e por alguns dos eventos mais energéticos do Universo.',phases:['gamma_process'],infer:['gamma_process']},
+
+ {key:'phenomenon:supernova',glyph:'✦',title:'Supernova',group:'Remanescentes e eventos',text:'Uma explosão estelar dispersa matéria enriquecida.',phases:['final_collapse'],infer:['final_collapse']},
+ {key:'phenomenon:neutronStar',glyph:'NS',title:'Estrela de Nêutrons',group:'Remanescentes e eventos',text:'Remanescente compacto sustentado por matéria extremamente densa.',phases:['neutron_star'],infer:['neutron_star']},
+ {key:'phenomenon:pulsar',glyph:'PSR',title:'Pulsar',group:'Remanescentes e eventos',text:'Estrela de nêutrons magnetizada em rápida rotação que produz feixes periódicos de radiação.',phases:['pulsar'],infer:['pulsar']},
+ {key:'phenomenon:accretionDisk',glyph:'◎',title:'Disco de acreção',group:'Remanescentes e eventos',text:'Matéria em órbita perde energia e forma um disco aquecido enquanto espirala em direção a um objeto compacto.',phases:['accretion'],infer:['accretion']},
+ {key:'phenomenon:kilonova',glyph:'KN',title:'Kilonova',group:'Remanescentes e eventos',text:'Transiente luminoso produzido pela fusão de objetos compactos, associado à síntese de muitos elementos pesados pelo processo-r.',phases:['kilonova'],infer:['kilonova']},
+ {key:'phenomenon:blackHole',glyph:'●',title:'Buraco Negro',group:'Remanescentes e eventos',text:'Colapso extremo com formação de um horizonte de eventos.',phases:['black_hole'],infer:['black_hole']},
+ {key:'phenomenon:hawkingRadiation',glyph:'hν',title:'Radiação Hawking',group:'Remanescentes e eventos',text:'Efeito quântico extremamente tênue associado ao horizonte de eventos de um buraco negro.',infer:['black_hole']},
  {key:'phenomenon:plannedChain',glyph:'×',title:'Cadeia planejada',group:'Domínio',text:'Uma continuação nuclear já estava geometricamente preparada antes da reação inicial.'}
 ];
+
+const phaseDiscoveryEntries=new Map();
+for(const entry of PHENOMENA)for(const id of entry.phases||[]){const list=phaseDiscoveryEntries.get(id)||[];list.push(entry);phaseDiscoveryEntries.set(id,list)}
+window.ARDUA_PHASE_DISCOVERIES=Object.freeze(Object.fromEntries([...phaseDiscoveryEntries].map(([id,entries])=>[id,Object.freeze(entries.map(({key,title,group})=>Object.freeze({key,title,group}))) ])));
 
 function saveData(){try{return JSON.parse(localStorage.getItem('stellarForgeV1013')||'{}')||{}}catch(e){return{}}}
 function completedSet(){return new Set(C?.getState?.().completed||[])}
@@ -58,6 +91,17 @@ function emptyState(host,text){
  if(el)el.textContent=text;
 }
 function clearEmpty(host){host?.querySelector(':scope > .discovery-empty')?.remove()}
+
+function persistPhaseDiscoveries(completed){
+ if(editor)return;
+ const data=saveData(),rewards=new Set(data.rewardDiscoveries||[]);let changed=false;
+ for(const entry of PHENOMENA){
+  if(!(entry.phases||[]).some(id=>completed.has(id))||rewards.has(entry.key))continue;
+  rewards.add(entry.key);changed=true;
+ }
+ if(!changed)return;
+ try{localStorage.setItem('stellarForgeV1013',JSON.stringify({...data,rewardDiscoveries:[...rewards]}))}catch(_e){}
+}
 
 function filterElements(data,completed){
  const host=$('catalog');if(!host)return;
@@ -120,7 +164,8 @@ function renderPhenomena(data,completed){
 }
 function prepareDiscoveries(){
  ensureTabs();ensurePhaseIds();
- const data=saveData(),completed=completedSet();
+ const completed=completedSet();persistPhaseDiscoveries(completed);
+ const data=saveData();
  filterElements(data,completed);filterEngineReactions(data);renderTrailReactions(completed);renderPhenomena(data,completed);switchTab(activeTab);
 }
 function openDiscoveries(){
@@ -136,6 +181,6 @@ function leaveDiscoveriesView(){
 keepMapLabels();new MutationObserver(keepMapLabels).observe(closeBtn,{childList:true,subtree:true});
 dataBtn.addEventListener('click',()=>requestAnimationFrame(openDiscoveries));
 closeMenu?.addEventListener('click',()=>setTimeout(leaveDiscoveriesView,0));
-window.addEventListener('ardua:campaign-progress',()=>{if(modal.classList.contains('discoveries-view'))prepareDiscoveries()});
+window.addEventListener('ardua:campaign-progress',()=>{const completed=completedSet();persistPhaseDiscoveries(completed);if(modal.classList.contains('discoveries-view'))prepareDiscoveries()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('discoveries-view')){modal.classList.remove('show');leaveDiscoveriesView()}});
 })();
