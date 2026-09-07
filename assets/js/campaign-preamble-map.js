@@ -100,10 +100,13 @@ function drawPreambleLinks(){
  const w=content.clientWidth,h=content.scrollHeight;layer.setAttribute('viewBox',`0 0 ${w} ${h}`);layer.setAttribute('width',w);layer.setAttribute('height',h);
  if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
  const banner=map.querySelector('.primordial-generation-banner');
- add(map.querySelector('.singularity-map'),banner,'root',.48);
- add(banner,node(linearIds[0]),'primordial',.45);
- for(let i=1;i<linearIds.length;i++)add(node(linearIds[i-1]),node(linearIds[i]),i>=linearIds.length-2?'sub':'primordial');
- add(node('brown'),firstGeneration,'birth',.52);
+ add(map.querySelector('.singularity-map'),banner,'preamble-red',.48);
+ add(banner,node(linearIds[0]),'preamble-red',.45);
+ for(let i=1;i<linearIds.length;i++){
+  const cls=i<=primordialIds.length-1?'preamble-red':'preamble-orange';
+  add(node(linearIds[i-1]),node(linearIds[i]),cls);
+ }
+ add(node('brown'),firstGeneration,'preamble-orange',.52);
  add(firstGeneration,birth,'birth',.48);
 }
 function schedule(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>requestAnimationFrame(drawPreambleLinks))}
