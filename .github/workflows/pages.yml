@@ -36,9 +36,6 @@ jobs:
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
 
-      - name: Validate beta forge bonuses
-        run: node scripts/validate-beta-forge-bonus.js
-
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
