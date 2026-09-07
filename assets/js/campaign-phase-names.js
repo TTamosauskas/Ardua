@@ -7,6 +7,7 @@ if(!G||!C)return;
 const NAMES=Object.freeze({
  primordial_he3d:'Hélio-4 via Hélio-3',
  primordial_td:'Hélio-4 via Trítio',
+ brown_formation:'Protoestrelas',
  fragile:'Berílio-8 transitório',
  c:'Triplo-alfa: Carbono',
  n:'Enriquecimento em Nitrogênio',
