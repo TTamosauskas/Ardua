@@ -1,4 +1,4 @@
-/* Ardua — synchronize the objective-recipe motif with player choices and visual beats. */
+/* Ardua — single-owner recipe motif: note 1 → note 2 → note 3 → resolving chord. */
 (()=>{
 'use strict';
 const board=document.getElementById('starBoard'),formula=document.getElementById('formulaText'),phaseTitle=document.getElementById('phaseTitle');
@@ -47,76 +47,96 @@ function canonicalFormulaToken(text){
  return canonicalSymbol(n);
 }
 function formulaText(){const clone=formula.cloneNode(true);clone.querySelectorAll('.science-tag').forEach(x=>x.remove());return clone.textContent?.trim()||''}
-function reactants(){
- const left=formulaText().split(/→|->/)[0]||'',parts=left.split(/\s+\+\s+/).map(canonicalFormulaToken).filter(Boolean);
- return parts.slice(0,2);
-}
+function reactants(){const left=formulaText().split(/→|->/)[0]||'';return left.split(/\s+\+\s+/).map(canonicalFormulaToken).filter(Boolean).slice(0,2)}
 function hash(text=''){let h=17;for(const ch of String(text))h=(h*31+ch.charCodeAt(0))>>>0;return h}
 function rootForCurrentFormula(){return ROOTS[hash(`${window.ARDUA_CAMPAIGN?.getState?.().activeId||''}|${formulaText()}`)%ROOTS.length]}
+function phaseSignature(){return`${window.ARDUA_CAMPAIGN?.getState?.().activeId||''}|${phaseTitle?.textContent||''}`}
+
 let audioCtx=null;
+const activeVoices=new Set();
 function audio(){
  try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;audioCtx??=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch(_e){return null}
 }
-function voice(f,d,type,gain){
- const ctx=audio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;o.type=type;o.frequency.setValueAtTime(f,now);g.gain.setValueAtTime(gain,now);o.connect(g);g.connect(ctx.destination);o.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+d);o.stop(now+d+.025)}catch(_e){}
+function releaseVoices(seconds=.03){
+ const ctx=audioCtx;if(!ctx)return;const now=ctx.currentTime;
+ for(const v of [...activeVoices]){
+  try{const current=Math.max(.0001,Number(v.gain.gain.value||.0001));v.gain.gain.cancelScheduledValues(now);v.gain.gain.setValueAtTime(current,now);v.gain.gain.exponentialRampToValueAtTime(.0001,now+seconds);v.osc.stop(now+seconds+.018)}catch(_e){}
+ }
+}
+function voice(freq,duration,type,gain,startDelay=.032){
+ const ctx=audio();if(!ctx)return;try{
+  const osc=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+startDelay,attack=.012,release=Math.max(.055,duration*.34);
+  osc.type=type;osc.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(gain,start+attack);g.gain.setValueAtTime(gain,start+Math.max(attack,duration-release));g.gain.exponentialRampToValueAtTime(.0001,start+duration);
+  osc.connect(g);g.connect(ctx.destination);const item={osc,gain:g};activeVoices.add(item);osc.onended=()=>activeVoices.delete(item);osc.start(start);osc.stop(start+duration+.02);
+ }catch(_e){}
 }
 function playNote(index,root){
- const f=[root,root*1.25,root*1.5][Math.max(0,Math.min(2,index))],third=index===2,d=third ? .31 : .27;
- voice(f,d,'triangle',third ? .188 : .181);voice(f*2,d*.84,'sine',third ? .039 : .037);
+ releaseVoices(.026);const ratio=[1,1.25,1.5][Math.max(0,Math.min(2,index))],f=root*ratio,d=index===2?.235:.215;
+ voice(f,d,'triangle',index===2?.184:.176,.032);voice(f*2,d*.82,'sine',index===2?.036:.034,.032);
 }
 function playChord(root){
- for(const f of [root,root*1.25,root*1.5]){voice(f,.56,'triangle',.055);voice(f*2,.46,'sine',.0115)}voice(root*2,.58,'triangle',.027);
+ releaseVoices(.038);const delay=.044;
+ for(const f of [root,root*1.25,root*1.5]){voice(f,.46,'triangle',.052,delay);voice(f*2,.38,'sine',.0105,delay)}voice(root*2,.48,'triangle',.024,delay);
 }
-function serial(){return Number(window.ARDUA_AUDIO_POLISH?.standardNoteSerial?.()||0)}
-let first=null,phaseSig='';
-function reset(){first=null}
-function syncPhase(){const s=`${window.ARDUA_CAMPAIGN?.getState?.().activeId||''}|${phaseTitle?.textContent||''}`;if(s!==phaseSig){phaseSig=s;reset()}}
-syncPhase();
-if(phaseTitle)new MutationObserver(syncPhase).observe(phaseTitle,{childList:true,subtree:true,characterData:true});
-window.addEventListener('ardua:campaign-progress',syncPhase);
 
-function matchingSlot(token,pair,skip=-1){for(let i=0;i<pair.length;i++)if(i!==skip&&pair[i]===token)return i;return-1}
 document.addEventListener('pointerdown',()=>audio(),{capture:true,passive:true});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')audio()},{capture:true});
+
+let sessionSerial=0,phaseSig=phaseSignature(),motif=null,chordTimer=0;
+function freshMotif(pair=reactants()){
+ clearTimeout(chordTimer);chordTimer=0;motif={session:++sessionSerial,pair:[...pair],root:rootForCurrentFormula(),step:0,first:null,second:null,lastAt:0,chordPending:false,done:false};return motif;
+}
+function resetMotif({release=true}={}){clearTimeout(chordTimer);chordTimer=0;motif=null;if(release)releaseVoices(.025)}
+function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;resetMotif()}}
+if(phaseTitle)new MutationObserver(syncPhase).observe(phaseTitle,{childList:true,subtree:true,characterData:true});
+window.addEventListener('ardua:campaign-progress',syncPhase);
+function matchingSlot(token,pair,skip=-1){for(let i=0;i<pair.length;i++)if(i!==skip&&pair[i]===token)return i;return-1}
+function startFirst(el,token,key,pair,slot){
+ const m=freshMotif(pair),session=m.session;
+ setTimeout(()=>{
+  syncPhase();if(!motif||motif.session!==session)return;
+  const selected=el.isConnected&&el.classList.contains('selected');if(!selected){resetMotif({release:false});return}
+  motif.first={key,token,slot};motif.step=1;motif.lastAt=performance.now();playNote(0,motif.root);
+ },0);
+}
+function acceptSecond(token,key,slot){
+ if(!motif||motif.step!==1||motif.first?.key===key)return;
+ motif.second={key,token,slot};motif.step=2;motif.lastAt=performance.now();playNote(1,motif.root);
+}
+function emitThird(){
+ if(!motif||motif.step!==2)return;motif.step=3;motif.lastAt=performance.now();playNote(2,motif.root);if(motif.chordPending)scheduleChord();
+}
+function scheduleChord(){
+ if(!motif||motif.step!==3||chordTimer)return;const session=motif.session,elapsed=performance.now()-motif.lastAt,wait=Math.max(0,185-elapsed);
+ chordTimer=setTimeout(()=>{chordTimer=0;if(!motif||motif.session!==session||motif.step!==3)return;motif.step=4;motif.done=true;motif.lastAt=performance.now();playChord(motif.root)},wait);
+}
+
 document.addEventListener('click',e=>{
  const el=e.target instanceof Element?e.target.closest(SELECTOR):null;if(!el||!board.contains(el))return;syncPhase();
  const pair=reactants();if(pair.length<2)return;const token=tokenOf(el),key=keyOf(el);if(!token)return;
- const preSelected=el.classList.contains('selected'),before=serial(),formulaRoot=first?.root||rootForCurrentFormula();
- if(preSelected){if(first?.key===key)reset();return}
- const remaining=first?matchingSlot(token,pair,first.slot):-1,secondIntent=!!first&&first.key!==key&&remaining>=0;
- const firstSlot=first ? -1 : matchingSlot(token,pair,-1);
- setTimeout(()=>{
-  syncPhase();const engineHandled=serial()>before;
-  if(secondIntent){
-   if(!engineHandled)playNote(1,formulaRoot);
-   first={...first,secondKey:key,secondSlot:remaining,root:formulaRoot};
-   return;
-  }
-  if(firstSlot<0)return;
-  const becameSelected=el.isConnected&&el.classList.contains('selected');
-  if(!becameSelected)return;
-  first={key,slot:firstSlot,token,root:formulaRoot};
-  if(!engineHandled)playNote(0,formulaRoot);
- },0);
+ const preSelected=el.classList.contains('selected');
+ if(preSelected){if(motif?.first?.key===key&&motif.step===1)resetMotif();return}
+ if(!motif||motif.done||motif.pair.join('|')!==pair.join('|')){
+  const slot=matchingSlot(token,pair);if(slot>=0)startFirst(el,token,key,pair,slot);return;
+ }
+ if(motif.step===0)return;
+ if(motif.step===1){const slot=matchingSlot(token,motif.pair,motif.first?.slot??-1);if(slot>=0)acceptSecond(token,key,slot)}
 },true);
 
-function stageRoot(stage){
- const saved=Number(stage.dataset.recipeSyncRoot||0);if(saved)return saved;
- const interaction=stage.classList.contains('objective-interaction-stage'),root=interaction?(first?.root||rootForCurrentFormula()):(Number(window.ARDUA_AUDIO_POLISH?.motifRoot?.()||0)||rootForCurrentFormula());
- stage.dataset.recipeSyncRoot=String(root);return root;
-}
 function inspectStage(stage){
- if(!(stage instanceof Element)||!stage.classList.contains('objective-motif-stage'))return;
- const root=stageRoot(stage),nodes=[...stage.querySelectorAll('.objective-motif-nucleus:not(.result)')];
- if(!stage.dataset.recipeThirdPlayed&&nodes.length>=2&&nodes.slice(0,2).every(n=>n.classList.contains('aligned'))){stage.dataset.recipeThirdPlayed='1';playNote(2,root)}
- if(stage.classList.contains('objective-interaction-stage')&&!stage.dataset.recipeChordPlayed){
-  const result=stage.querySelector('.objective-motif-nucleus.result'),settling=nodes.some(n=>n.classList.contains('settling'));
-  if((result&&(result.classList.contains('visible')||result.isConnected))||settling){stage.dataset.recipeChordPlayed='1';playChord(root);setTimeout(reset,80)}
- }
+ if(!(stage instanceof Element)||!stage.classList.contains('objective-motif-stage')||!motif)return;
+ if(!stage.dataset.recipeSession)stage.dataset.recipeSession=String(motif.session);
+ if(Number(stage.dataset.recipeSession)!==motif.session)return;
+ const nodes=[...stage.querySelectorAll('.objective-motif-nucleus:not(.result)')],aligned=nodes.length>=2&&nodes.slice(0,2).every(n=>n.classList.contains('aligned'));
+ const result=stage.querySelector('.objective-motif-nucleus.result'),settling=nodes.some(n=>n.classList.contains('settling')),resolved=stage.classList.contains('objective-interaction-stage')&&((result&&(result.classList.contains('visible')||result.isConnected))||settling);
+ if(resolved){stage.dataset.recipeChordQueued='1';motif.chordPending=true}
+ if(aligned&&!stage.dataset.recipeThirdPlayed&&motif.step===2){stage.dataset.recipeThirdPlayed='1';emitThird()}
+ if(motif.chordPending&&motif.step===3)scheduleChord();
 }
 const stageObserver=new MutationObserver(muts=>{
  const stages=new Set();for(const m of muts){const owner=m.target instanceof Element?m.target.closest('.objective-motif-stage'):null;if(owner)stages.add(owner);for(const n of m.addedNodes)if(n instanceof Element){if(n.classList.contains('objective-motif-stage'))stages.add(n);n.querySelectorAll?.('.objective-motif-stage').forEach(x=>stages.add(x))}}
  stages.forEach(inspectStage);
 });
 stageObserver.observe(board,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+window.addEventListener('blur',()=>releaseVoices(.02));
 })();
