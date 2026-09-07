@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,GEN=window.ARDUA_GENERATIONS;
-const map=$('campaignMap'),head=map?.querySelector('.campaign-head'),actions=head?.querySelector('.campaign-head-actions'),dataBtn=$('campaignData'),closeBtn=$('campaignClose');
+const map=$('campaignMap'),head=map?.querySelector('.campaign-head'),actions=head?.querySelector('.campaign-head-actions'),dataBtn=$('campaignData'),closeBtn=$('campaignClose'),detail=$('mapDetail');
 if(!C||!G||!map||!head||!actions)return;
 const SOUND_KEY='arduaSoundtrackEnabledV1';
 
@@ -20,7 +20,7 @@ if(!menu){
  <section class="campaign-home-menu-card" role="dialog" aria-modal="true" aria-labelledby="campaignHomeMenuTitle">
   <header><strong id="campaignHomeMenuTitle">Menu</strong><button type="button" class="campaign-home-menu-close" data-home-close aria-label="Fechar menu">×</button></header>
   <div class="campaign-home-menu-actions">
-   <button type="button" id="campaignHomeDiscoveries"><span>Descobertas</span><small>Reações, elementos e fenômenos</small></button>
+   <button type="button" id="campaignHomeDiscoveries"><span>Descobertas</span><small>Elementos e fenômenos</small></button>
    <button type="button" id="campaignHomeReturn"><span>Voltar à fase</span><small>Retorna à atividade em andamento</small></button>
    <button type="button" id="campaignHomeSound"><span></span><small>Controla somente a trilha sonora</small></button>
   </div>
@@ -79,54 +79,55 @@ function syncChapterVisibility(){
  if(changed)requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 
-const EARLY_TIME=Object.freeze({
- bigbang:'instante inicial',
- primordial_d:'≈ 2 minutos depois',
- primordial_t:'≈ 3 minutos depois',
- primordial_he3:'≈ 3 minutos depois',
- primordial_he3d:'≈ 4 minutos depois',
- primordial_td:'≈ 4 minutos depois',
- primordial_li:'≈ 20 minutos depois',
- atomic_he:'≈ 380 mil anos depois',
- atomic_h:'≈ 380 mil anos depois',
- atomic_li:'≈ 380 mil anos depois',
- first_atomic_bonds:'≈ 100–400 mil anos depois',
- first_nebulae:'≈ 100 milhões de anos depois',
- brown_formation:'≈ 100–200 milhões de anos depois',
- brown:'≈ 100–200 milhões de anos depois',
- first_generation_formation:'≈ 200 milhões de anos depois',
- low_mass_formation:'≈ 200 milhões de anos depois',
- intermediate_mass_formation:'≈ 200 milhões de anos depois',
- high_mass_formation:'≈ 200 milhões de anos depois'
+const PHASE_TIME=Object.freeze({
+ bigbang:'Instante inicial do Big Bang',
+ primordial_d:'2 minutos depois do Big Bang',
+ primordial_t:'3 minutos depois do Big Bang',
+ primordial_he3:'3 minutos depois do Big Bang',
+ primordial_he3d:'4 minutos depois do Big Bang',
+ primordial_td:'4 minutos depois do Big Bang',
+ primordial_li:'20 minutos depois do Big Bang',
+ atomic_he:'380 mil anos depois do Big Bang',
+ atomic_h:'380 mil anos depois do Big Bang',
+ atomic_li:'380 mil anos depois do Big Bang',
+ first_atomic_bonds:'100–400 mil anos depois do Big Bang',
+ first_nebulae:'100 milhões de anos depois do Big Bang',
+ brown_formation:'100–200 milhões de anos depois do Big Bang',
+ brown:'100–200 milhões de anos depois do Big Bang',
+ first_generation_formation:'200 milhões de anos depois do Big Bang',
+ low_mass_formation:'200 milhões de anos depois do Big Bang',
+ intermediate_mass_formation:'200 milhões de anos depois do Big Bang',
+ high_mass_formation:'200 milhões de anos depois do Big Bang'
 });
-function nextPlayableId(){
- const st=C.getState(),done=new Set(st.completed||[]);
- if(!st.introduced)return'bigbang';
- if(st.activeId&&st.activeId!=='bigbang'&&!done.has(st.activeId)&&C.isUnlocked(st.activeId))return st.activeId;
- return (G.runtimeOrder||[]).find(id=>id!=='bigbang'&&!done.has(id)&&C.isUnlocked(id))||st.activeId||'bigbang';
-}
 function timeFor(id){
- if(EARLY_TIME[id])return EARLY_TIME[id];
+ if(PHASE_TIME[id])return PHASE_TIME[id];
  const generation=GEN?.generationOf?.(id);
- if(generation==='first')return'≥ 200 milhões de anos depois';
- if(generation==='second')return'≥ 500 milhões de anos depois';
- if(generation==='third')return'≥ 1 bilhão de anos depois';
- return'eras cósmicas depois';
+ if(generation==='first')return'Mais de 200 milhões de anos depois do Big Bang';
+ if(generation==='second')return'Mais de 500 milhões de anos depois do Big Bang';
+ if(generation==='third')return'Mais de 1 bilhão de anos depois do Big Bang';
+ return'Eras cósmicas depois do Big Bang';
 }
-let footer=$('campaignTimeFooter');
-if(!footer){footer=document.createElement('div');footer.id='campaignTimeFooter';footer.className='campaign-time-footer';footer.setAttribute('aria-live','polite');map.appendChild(footer)}
-function syncTimeFooter(){
- const id=nextPlayableId(),text=timeFor(id);
- if(footer.dataset.phaseTime===id&&footer.dataset.timeText===text)return;
- footer.dataset.phaseTime=id;footer.dataset.timeText=text;footer.innerHTML=`<strong>${text}</strong>`;
+$('campaignTimeFooter')?.remove();
+let detailPhaseId='';
+function syncDetailTime(){
+ if(!detail||!detail.classList.contains('show')||!detailPhaseId)return;
+ const title=detail.querySelector(':scope > h3'),actionsEl=detail.querySelector(':scope > .detail-actions');if(!title||!actionsEl)return;
+ let time=detail.querySelector(':scope > .phase-cosmic-time');
+ if(!time){time=document.createElement('div');time.className='phase-cosmic-time';actionsEl.before(time)}
+ const text=timeFor(detailPhaseId);if(time.dataset.phase===detailPhaseId&&time.textContent===text)return;
+ time.dataset.phase=detailPhaseId;time.textContent=text;
 }
 
 let syncFrame=0;
-function syncAll(){syncFrame=0;syncPhaseStates();syncChapterVisibility();syncTimeFooter();syncReturn()}
+function syncAll(){syncFrame=0;syncPhaseStates();syncChapterVisibility();syncReturn();syncDetailTime()}
 function scheduleSync(){if(syncFrame)cancelAnimationFrame(syncFrame);syncFrame=requestAnimationFrame(syncAll)}
 window.addEventListener('ardua:campaign-progress',scheduleSync);
 window.addEventListener('resize',scheduleSync);
-map.addEventListener('click',()=>setTimeout(scheduleSync,0));
+map.addEventListener('click',e=>{
+ const phase=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;
+ if(phase){detailPhaseId=phase.dataset.phase||'';setTimeout(syncDetailTime,0)}
+ setTimeout(scheduleSync,0);
+});
 new MutationObserver(scheduleSync).observe(map,{subtree:true,childList:true});
 new MutationObserver(scheduleSync).observe(map,{attributes:true,attributeFilter:['class']});
 setTimeout(syncAll,0);setTimeout(syncAll,180);
