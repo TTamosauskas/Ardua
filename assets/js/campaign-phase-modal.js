@@ -42,10 +42,11 @@ if(!preview){
  document.body.appendChild(preview);
 }
 const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
-let previewId='',bypassMapPhase=false;
+let previewId='',bypassMapPhase=false,suppressMapClicksUntil=0;
 function renderPreview(id){if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent=completed(id)?'REVISITAR':'EXPLORAR';launch.disabled=!unlocked(id);preview.dataset.phaseId=id}
 async function openPreview(id){renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
 function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
+function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
 function visibleNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||map.querySelector(`.phase-node[data-phase="${id}"]`)}
 function dismissEngineIntro(){if(engineIntro?.classList.contains('show'))setTimeout(()=>engineStart?.click(),0)}
 function launchPreview(){
@@ -53,11 +54,22 @@ function launchPreview(){
  bypassMapPhase=true;node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));bypassMapPhase=false;
  const hiddenLaunch=map.querySelector(`#mapDetail [data-launch="${id}"]`);hiddenLaunch?.click();setTimeout(dismissEngineIntro,35);setTimeout(dismissEngineIntro,140);
 }
-function activateButton(el,fn){if(!el)return;let lastPointer=0;el.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;lastPointer=performance.now();e.preventDefault();e.stopPropagation();fn()});el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(performance.now()-lastPointer<600)return;fn()})}
-activateButton(close,closePreview);activateButton(launch,launchPreview);
-preview.addEventListener('click',e=>{if(e.target===preview)closePreview()});
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.contains('show')){e.preventDefault();closePreview()}});
-map.addEventListener('click',e=>{if(bypassMapPhase)return;const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;e.preventDefault();e.stopImmediatePropagation();openPreview(node.dataset.phase)},true);
+function activateButton(el,fn){
+ if(!el)return;
+ el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.stopPropagation()});
+ el.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.stopPropagation()});
+ el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();fn()});
+}
+activateButton(close,closePreviewAfterGesture);activateButton(launch,launchPreview);
+preview.addEventListener('pointerdown',e=>e.stopPropagation());
+preview.addEventListener('pointerup',e=>e.stopPropagation());
+preview.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.target===preview)closePreviewAfterGesture()});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.contains('show')){e.preventDefault();closePreviewAfterGesture()}});
+map.addEventListener('click',e=>{
+ if(bypassMapPhase)return;
+ if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
+ const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;e.preventDefault();e.stopImmediatePropagation();openPreview(node.dataset.phase)
+},true);
 
 /* The map owns the screen whenever it is visible. */
 function yieldEngineIntro(){if(map.classList.contains('show'))dismissEngineIntro()}
