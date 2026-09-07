@@ -1,0 +1,57 @@
+/* Ardua — focused phase visual polish loaded last. */
+
+/* Optical centering for the small free-particle controls used in stellar phases. */
+.primordial-particle.proton,
+.primordial-particle.electron,
+.primordial-particle.neutronfree,
+.neutron{
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  text-indent:0!important;
+  line-height:1!important;
+}
+.atom.proton-piece .sym{
+  left:0!important;
+  top:50%!important;
+  width:100%!important;
+  padding:0!important;
+  text-align:center!important;
+  transform:translateY(-50%)!important;
+}
+
+/* Keep the existing two-pulse recipe cue clearly legible. */
+.formula-line.recipe-intro-flash{animation:recipeIntroFlash .62s ease-in-out 2}
+
+/* Discoveries: close from the upper-right corner; the legacy bottom action stays hidden in this view. */
+#menuModal.discoveries-view #closeMenu{display:none!important}
+#menuModal.discoveries-view .card>h2{padding-right:46px}
+.discoveries-close-x{
+  position:sticky;
+  top:0;
+  z-index:30;
+  margin-left:auto;
+  margin-bottom:-36px;
+  width:36px;
+  height:36px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:11px;
+  background:rgba(9,18,34,.88);
+  backdrop-filter:blur(12px);
+  color:#fff;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.24);
+}
+.discoveries-close-x:hover,.discoveries-close-x:focus-visible{
+  border-color:rgba(138,216,255,.48);
+  background:rgba(24,43,67,.96);
+  outline:none;
+}
+#menuModal:not(.discoveries-view) .discoveries-close-x{display:none!important}
