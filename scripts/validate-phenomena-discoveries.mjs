@@ -7,44 +7,27 @@ const discoveries=await fs.readFile(path.join(root,'assets/js/campaign-discoveri
 const modal=await fs.readFile(path.join(root,'assets/js/campaign-phase-modal.js'),'utf8');
 
 const expected=Object.freeze({
- 'Anã Marrom':'brown',
- 'Anã Vermelha':'he_red',
- 'Anã Branca':'white',
- 'Anã Laranja':'he_orange',
- 'Anã Amarela':'he_yellow',
- 'Gigante Vermelha':'c',
- 'Gigante Amarela':'n',
- 'Gigante Azul':'o',
- 'Gigante Branca':'fragile',
- 'Supergigante Vermelha':'ne',
- 'Supergigante Amarela':'oxygen_burn',
- 'Supergigante Azul':'cl',
- 'Estrela AGB':'rb',
- 'Espalação':'spallation_be',
- 'Prótons':'primordial_d',
- 'Disco de acreção':'accretion',
- 'Nêutrons':'primordial_d',
- 'Elétrons':'atomic_he',
- 'Convecção Estelar':'stellar_convection',
- 'Barreira de Coulomb':'coulomb_intro',
- 'Pulsar':'pulsar',
- 'Raios X':'accretion',
- 'Decaimento':'decay_pa',
- 'Kilonova':'kilonova',
- 'Raios gama':'gamma_process'
+ 'Anã Marrom':['brown'], 'Anã Vermelha':['he_red'], 'Anã Branca':['white'], 'Anã Laranja':['he_orange'], 'Anã Amarela':['he_yellow'],
+ 'Gigante Vermelha':['c'], 'Gigante Amarela':['n'], 'Gigante Azul':['o'], 'Gigante Branca':['fragile'],
+ 'Supergigante Vermelha':['ne'], 'Supergigante Amarela':['oxygen_burn'], 'Supergigante Azul':['cl'], 'Estrela AGB':['rb'],
+ 'Espalação':['spallation_be'], 'Prótons':['primordial_d'], 'Disco de acreção':['accretion'], 'Nêutrons':['primordial_d'], 'Elétrons':['atomic_he'],
+ 'Convecção Estelar':['stellar_convection'], 'Barreira de Coulomb':['coulomb_intro'], 'Pulsar':['pulsar'], 'Raios X':['accretion'], 'Decaimento':['decay_pa'], 'Kilonova':['kilonova'], 'Raios gama':['gamma_process'],
+ 'Big Bang':['bigbang'], 'Nucleossíntese primordial':['primordial_d'], 'Recombinação cósmica':['atomic_he'],
+ 'Neutrinos':['nu_f','neutronize'], 'Pósitrons':['he_orange'], 'Antineutrinos':['co'], 'Raios cósmicos':['spallation_be'],
+ 'Tunelamento quântico':['coulomb_intro'], 'Neutronização / captura eletrônica':['neutronize'], 'Pressão de degenerescência eletrônica':['white'],
+ 'Fotodesintegração':['gamma_process'], 'Colapso gravitacional':['first_generation_formation','final_collapse'], 'Nucleossíntese explosiva':['ni_fusion','final_collapse']
 });
 
-for(const [title,phase] of Object.entries(expected)){
+for(const [title,phases] of Object.entries(expected)){
  const titleToken=`title:'${title}'`;
- const phaseToken=`phases:['${phase}']`;
  const titleAt=discoveries.indexOf(titleToken);
  if(titleAt<0)throw new Error(`Descoberta ausente: ${title}`);
- const entryEnd=discoveries.indexOf('},',titleAt);
- const entry=discoveries.slice(titleAt,entryEnd<0?undefined:entryEnd+2);
- if(!entry.includes(phaseToken))throw new Error(`${title}: fase esperada ${phase}`);
+ const lineStart=discoveries.lastIndexOf('\n',titleAt)+1,lineEnd=discoveries.indexOf('\n',titleAt);
+ const entry=discoveries.slice(lineStart,lineEnd<0?undefined:lineEnd);
+ for(const phase of phases)if(!entry.includes(`'${phase}'`))throw new Error(`${title}: fase esperada ${phase}`);
 }
 
-for(const token of ['Partículas','Estrelas','Processos estelares','Processos nucleares','Radiação','Remanescentes e eventos']){
+for(const token of ['Cosmologia','Partículas','Estrelas','Processos estelares','Processos nucleares','Radiação','Remanescentes e eventos']){
  if(!discoveries.includes(`group:'${token}'`))throw new Error(`Grupo ausente: ${token}`);
 }
 if(!discoveries.includes('window.ARDUA_PHASE_DISCOVERIES='))throw new Error('Mapa público de descobertas por fase ausente');
