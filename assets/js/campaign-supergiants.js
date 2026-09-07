@@ -10,6 +10,7 @@ const routes=Object.freeze({
  blue:Object.freeze(['cl','ar','k','ca','sc','ti'])
 });
 const shared=Object.freeze(['v','cr','mn','cr_alpha_fe','fe','ni_fusion','co']);
+const entry='high_mass_formation';
 const precursor='carbon_burn';
 const tail=id=>A.tail(id);
 
@@ -21,6 +22,7 @@ for(const ids of Object.values(routes)){
 G.prerequisites[shared[0]]={anyOf:Object.values(routes).map(ids=>[tail(ids[ids.length-1])])};
 
 window.ARDUA_SUPERGIANTS=Object.freeze({
+ entry,
  precursor,
  routes,
  shared,

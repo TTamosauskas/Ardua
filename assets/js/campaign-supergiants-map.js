@@ -44,7 +44,7 @@ function buildFork(){
  if(!collapseFlow||!supernovaLabel||!supernovaCluster)return;
 
  const precursorFlow=makeFlow('supergiant-precursor');
- moveNodes([S.precursor],precursorFlow);
+ moveNodes([S.entry,S.precursor],precursorFlow);
 
  const hub=document.createElement('div');hub.className='epoch-label supergiant-junction';hub.innerHTML='<strong>Supergigante</strong>';
  const cluster=document.createElement('section');cluster.className='branch-cluster supergiant-branches';cluster.dataset.branchGroup='supergiant';

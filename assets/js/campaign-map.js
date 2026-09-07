@@ -289,8 +289,8 @@ function connectActiveSphere(group,firstId,cls){
 
 function drawMid(){
  const midSphere=branchSphereEl('stellar','mid');
- addPath(midSphere,byPhase('he_orange'),'mid',.40);
- connectTrail(['he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li'],'mid');
+ addPath(midSphere,byPhase(G.sequences.mid[0]),'mid',.40);
+ connectTrail(G.sequences.mid.slice(0,6),'mid');
  const sPortal=portalSummary('s');
  if(portalOpen('s')){addPath(sPortal,portalFirst('s'),'mid');connectTrail(G.sequences.sprocess,'mid');addPath(portalLast('s'),byPhase('white'),'mid')}
 }
@@ -368,10 +368,10 @@ function drawLinks(){
  const formation=byPhase('first_generation_formation'),birth=[...map.querySelectorAll('[data-junction="stellar-birth"]')].find(isVisible);addPath(byPhase(tail('first_nebulae')),formation,'birth');addPath(formation,birth,'birth');
  connectBranchJunction(birth,'stellar',{sub:'sub',low:'low',mid:'mid',high:'high'});
  const s=activeBranch('stellar');
- if(s==='sub'){connectActiveSphere('stellar','brown','sub');connectTrail(G.sequences.brown,'sub')}
- if(s==='low'){connectActiveSphere('stellar','he_red','low');connectTrail(G.sequences.red,'low');addPath(byPhase(tail('he_red')),byPhase('white'),'converge',.5)}
+ if(s==='sub'){connectActiveSphere('stellar',G.sequences.brown[0],'sub');connectTrail(G.sequences.brown,'sub')}
+ if(s==='low'){connectActiveSphere('stellar',G.sequences.red[0],'low');connectTrail(G.sequences.red,'low');addPath(byPhase(tail('he_red')),byPhase('white'),'converge',.5)}
  if(s==='mid')drawMid()
- if(s==='high'){connectActiveSphere('stellar','carbon_burn','high');drawHigh()}
+ if(s==='high'){connectActiveSphere('stellar',G.sequences.high[0],'high');drawHigh()}
 
  drawSecondGeneration();
  drawThirdGeneration();
