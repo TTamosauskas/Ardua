@@ -2059,20 +2059,16 @@ function learnedFusionRecipes(){
 const STELLAR_SANDBOX_VISUALS=new Set(['redGiant','massive','supergiant','advanced','ironCore','agb','whiteDwarf']);
 const WHITE_DWARF_COMPATIBLE_OUTPUTS=new Set(['D','He3','He','Be8','C','N','O']);
 function fusionSandboxAllowed(s=phase()){
-  // Depois que uma fusão foi aprendida, ela continua acessível nas fases que usam a
-  // grade nuclear. Modos primordiais e remanescentes compactos mantêm seus gestos próprios.
-  if(!s||isPrimordial(s)||s.mode==='opening')return false;
-  if(['remnant','pulsar','accretion','blackhole','neutronize'].includes(s.mode))return false;
+  // Contrato cumulativo: toda fase que apresenta a grade nuclear mantém disponíveis
+  // as receitas de fusão já aprendidas. A fase atual define o objetivo, e não apaga
+  // o repertório anterior. Fases primordiais e de formação têm gestos próprios.
+  if(!s||isPrimordial(s)||s.mode==='opening'||s.mode==='stellarFormation'||s.mode==='campaignMilestone')return false;
   return true;
 }
 function recipeEnvironmentAllows(r,s=phase()){
-  if(!r||!fusionSandboxAllowed(s))return false;
-  // Estas três rotas são abstrações didáticas exclusivas de suas estrelas de origem.
-  if(r===BROWN_FUSION)return s.id==='brown';
-  if(r===RED_UNSTABLE_FUSION)return s.id==='he_red';
-  if(r===RED_STABLE_FUSION)return s.id==='he_red';
-  // Receitas de fusão já aprendidas permanecem jogáveis; temperatura segue como contexto científico.
-  return true;
+  // Uma receita aprendida permanece executável sempre que seus ingredientes estão
+  // presentes na grade e o gesto de fusão está disponível nesta superfície.
+  return !!r&&fusionSandboxAllowed(s);
 }
 function fusionRecipeLearned(r){return !!r&&learnedFusionRecipes().some(x=>x===r||(x.out===r.out&&same(x.ing,r.ing)))}
 function fusionRecipeCompatible(r,s=phase()){return fusionRecipeLearned(r)&&recipeEnvironmentAllows(r,s)}
@@ -2362,7 +2358,7 @@ function handleConvectionTap(p){
 }
 
 function fusionCandidateCells(){const set=new Set();state.selected.forEach(i=>neigh[i].forEach(n=>set.add(n)));state.selected.forEach(i=>set.delete(i));const cur=selectedSyms();return[...set].filter(i=>{const id=state.board[i];if(!id)return false;return possibleRecipes([...cur,state.pieces.get(id).sym]).length>0})}
-function candidateCells(){const s=phase();if(state.convectionArmed&&state.selected.length===1)return convectionDestinationCells();if(s.mode==='neutronize'||isPostMode()||!state.selected.length)return[];if(s.id==='he_red'){const firstId=state.board[state.selected[0]],first=firstId?state.pieces.get(firstId):null;if(!first)return[];if(first.sym==='H')return[];if(first.sym!=='HeU')return[];return activeCells().filter(i=>{const id=state.board[i];return id&&state.pieces.get(id)?.sym==='HeU'})}if(s.mode==='reactionExplore')return[...new Set([...atlasCandidateCells(s),...fusionCandidateCells()])];return fusionCandidateCells()}
+function candidateCells(){const s=phase();if(state.convectionArmed&&state.selected.length===1)return convectionDestinationCells();if(!state.selected.length)return[];if(s.id==='he_red'){const firstId=state.board[state.selected[0]],first=firstId?state.pieces.get(firstId):null;if(!first)return[];if(first.sym==='H')return[];if(first.sym!=='HeU')return[];return activeCells().filter(i=>{const id=state.board[i];return id&&state.pieces.get(id)?.sym==='HeU'})}if(s.mode==='reactionExplore')return[...new Set([...atlasCandidateCells(s),...fusionCandidateCells()])];return fusionCandidateCells()}
 function superNum(n){const map={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(x=>map[x]||x).join('')}
 function pieceDisplaySymbol(p){if(p?.atlasLabel)return p.atlasLabel;const e=E[p.sym],base=e?.symbol||p.sym;if(p?.neutronBetaPending)return `${base}*`;if(p?.neutronShellOpen)return `${base}◌`;if(p.matterState==='atom'){const q=pieceCharge(p);return q>0?`${p.sym}${q===1?'⁺':superNum(q)+'⁺'}`:p.sym}if(['D','T','He3','Be7'].includes(p.sym))return base;if(p.massNumber&&(p.rpIsotope||['H','He','Li'].includes(p.sym)))return `${superNum(p.massNumber)}${p.sym}`;return base}
 function pieceSymbolScale(p,shownSym){
@@ -3111,6 +3107,18 @@ function handleFusionTap(p){
  if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
  state.selected.push(cell);render();return true;
 }
+function cumulativeFusionTapAvailable(p,s=phase()){
+ if(!fusionSandboxAllowed(s)||!p||p.free||p.cell===null||p.cell===undefined)return false;
+ // Uma mecânica explicitamente armada conserva prioridade sobre o mesmo toque.
+ if(state.selectedNeutron!==null||state.selectedCosmic!==null||state.primordialSelected!==null||state.blackHoleSelected||state.convectionArmed)return false;
+ const cell=p.cell;
+ if(state.selected.length){
+   if(state.selected.includes(cell))return true;
+   if(!state.selected.some(x=>(neigh[x]||[]).includes(cell)))return false;
+   return possibleRecipes([...selectedSyms(),p.sym]).length>0;
+ }
+ return possibleRecipes([p.sym]).some(r=>!!connectedRecipeCluster(r,[cell]));
+}
 function neutronSourceSelectedPiece(s=phase()){
  if(!state.selected.length)return null;const id=state.board[state.selected[0]],p=id?state.pieces.get(id):null;return p&&p.sym===neutronGameplay(s).source?p:null;
 }
@@ -3126,7 +3134,7 @@ async function activateNeutronSource(source,helium,s=phase()){
 }
 
 
-function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);if(state.convectionArmed&&handleConvectionTap(p))return;if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
+function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);if(state.convectionArmed&&handleConvectionTap(p))return;if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode!=='reactionExplore'&&cumulativeFusionTapAvailable(p,s)&&handleFusionTap(p))return;if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
  const armedProton=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;
  if(armedProton){const mixed=primordialMixedReaction(p.sym,armedProton.kind);if(mixed){state.selected=[p.cell];render();reactCumulativeBoardMixed(mixed,p,armedProton);return}}
  if(armedProton?.kind==='p'){
@@ -3733,9 +3741,9 @@ function allLearnedNeutronTransitions(){
 }
 function neutronTransitionEnvironmentAllows(tr,s=phase()){
  const cls=neutronProcessClass(s);if(!cls||!tr)return false;
- // Processo-s fraco e AGB permanecem redes distintas no gameplay; o processo-r é
- // ainda mais extremo. A receita é lembrada, mas só fica executável na família compatível.
- return tr.processClass===cls
+ // Memória cumulativa: em qualquer fase que forneça o gesto de captura de nêutrons,
+ // transições já aprendidas continuam selecionáveis quando o núcleo reagente reaparece.
+ return true
 }
 function learnedNeutronTransitions(s=phase()){return allLearnedNeutronTransitions().filter(tr=>neutronTransitionEnvironmentAllows(tr,s))}
 function currentNeutronTransition(sym,s=phase()){return phaseNeutronTransitions(s).find(tr=>tr.from===sym)||null}
