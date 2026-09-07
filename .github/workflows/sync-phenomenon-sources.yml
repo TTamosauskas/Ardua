@@ -1,6 +1,6 @@
 name: Sync phenomenon Wikipedia sources
 
-# source-sync-v2
+# source-sync-v3
 on:
   workflow_dispatch:
   push:
@@ -25,6 +25,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
+      - name: Refine representative image articles
+        run: node scripts/refine-phenomenon-image-sources.mjs
+
       - name: Fetch Wikipedia phenomenon image shard
         run: node scripts/fetch-phenomenon-wikipedia-shard.mjs ${{ matrix.shard }} 12 .phenomenon-shard
 
@@ -42,6 +45,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+
+      - name: Refine representative image articles
+        run: node scripts/refine-phenomenon-image-sources.mjs
 
       - name: Download phenomenon image shards
         uses: actions/download-artifact@v4
@@ -64,6 +70,6 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add assets/data/phenomenon-sources.json assets/images/phenomena assets/js/campaign-discoveries-phenomena.js
-            git commit -m "Sincroniza imagens Wikipedia dos fenômenos"
+            git commit -m "Refina imagens locais dos fenômenos"
             git push
           fi
