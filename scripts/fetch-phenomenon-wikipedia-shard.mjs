@@ -25,7 +25,7 @@ async function request(url,{binary=false}={}){
 }
 function stripHtml(value=''){return String(value).replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim()}
 function extFor(type,url){const t=String(type||'').toLowerCase();if(t.includes('jpeg'))return'jpg';if(t.includes('png'))return'png';if(t.includes('webp'))return'webp';if(t.includes('gif'))return'gif';if(t.includes('svg'))return'svg';const m=new URL(url).pathname.match(/\.([a-z0-9]{2,5})(?:\/|$)/i);return(m?.[1]||'img').toLowerCase().replace('jpeg','jpg')}
-function editorialImage(name=''){const n=String(name).toLowerCase();if(!/\.(?:jpe?g|png|webp|gif|svg|tiff?)$/i.test(n))return false;return !/(commons-logo|wiktionary|wikidata|wikipedia-logo|nuvola|crystal.clear|question.book|question.mark|ambox|portal|edit-|merge|redirect|disambig|flag.of|symbol|icon|pictogram|padlock|semi-protection|protection-shackle|featured.article|star.of.life|increase2|decrease2|replace.this.image|magnify-clip)/i.test(n)}
+function editorialImage(name=''){const n=String(name).toLowerCase();if(!/\.(?:jpe?g|png|webp|gif|svg|tiff?)$/i.test(n))return false;return !/(commons-logo|wiktionary|wikidata|wikipedia-logo|nuvola|crystal.clear|question.book|question.mark|ambox|portal|edit-|merge|redirect|disambig|flag.of|symbol|icon|pictogram|padlock|lock[-_. ]|semi-protection|protection-shackle|featured.article|star.of.life|increase2|decrease2|replace.this.image|magnify-clip)/i.test(n)}
 async function articleQuery(title){
  const data=await request(`${api}?${params({action:'query',redirects:'1',prop:'info|pageprops|pageimages',inprop:'url',piprop:'name',titles:title})}`);
  const page=data?.query?.pages?.[0]||null;
@@ -39,7 +39,7 @@ async function resolveArticle(title){
 }
 async function fallbackPageImage(title){
  const parsed=await request(`${api}?${params({action:'parse',redirects:'1',prop:'images',page:title})}`),images=parsed?.parse?.images||[];
- return images.find(editorialImage)||images.find(x=>/\.(?:jpe?g|png|webp|gif|svg)$/i.test(String(x)))||'';
+ return images.find(editorialImage)||'';
 }
 async function imageInfo(fileName){
  const data=await request(`${api}?${params({action:'query',prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:'900',titles:`File:${fileName}`})}`);
@@ -48,14 +48,14 @@ async function imageInfo(fileName){
 
 const metadata={};
 for(const [title,cfg] of entries){
- const page=await resolveArticle(cfg.wikiTitle||title);
- let pageimage=page.pageimage||'';
- if(!pageimage){pageimage=await fallbackPageImage(page.title||cfg.wikiTitle||title);if(!pageimage)throw new Error(`${title}: artigo sem imagem editorial utilizável (${page.title})`);console.log(`${title}: fallback ${pageimage}`)}
+ const page=await resolveArticle(cfg.wikiTitle||title),imagePage=cfg.imageWikiTitle?await resolveArticle(cfg.imageWikiTitle):page;
+ let pageimage=imagePage.pageimage||'';
+ if(!pageimage){pageimage=await fallbackPageImage(imagePage.title||cfg.imageWikiTitle||cfg.wikiTitle||title);if(!pageimage)throw new Error(`${title}: artigo sem imagem editorial utilizável (${imagePage.title})`);console.log(`${title}: fallback ${pageimage}`)}
  const ii=await imageInfo(pageimage);if(!ii)throw new Error(`${title}: metadados da imagem ausentes (${pageimage})`);
  const imageUrl=ii.thumburl||ii.url,response=await request(imageUrl,{binary:true}),ext=extFor(response.headers.get('content-type'),imageUrl),filename=`${cfg.slug}.${ext}`;
  await fs.writeFile(path.join(imageDir,filename),Buffer.from(await response.arrayBuffer()));
  const meta=ii.extmetadata||{};
- metadata[title]={wikiResolvedTitle:page.title,wikiUrl:page.fullurl,imagePath:`assets/images/phenomena/${filename}`,filename,imageSourceUrl:ii.descriptionurl||ii.url,imageLicense:stripHtml(meta.LicenseShortName?.value||meta.License?.value||''),imageLicenseUrl:meta.LicenseUrl?.value||'',imageArtist:stripHtml(meta.Artist?.value||meta.Credit?.value||'')};
+ metadata[title]={wikiResolvedTitle:page.title,wikiUrl:page.fullurl,imagePath:`assets/images/phenomena/${filename}`,filename,imageWikiResolvedTitle:imagePage.title,imageSourceUrl:ii.descriptionurl||ii.url,imageLicense:stripHtml(meta.LicenseShortName?.value||meta.License?.value||''),imageLicenseUrl:meta.LicenseUrl?.value||'',imageArtist:stripHtml(meta.Artist?.value||meta.Credit?.value||'')};
  console.log(`[${shard}/${shards}] ${title}: ${page.title} -> ${filename}`);await sleep(650);
 }
 await fs.writeFile(path.join(outDir,'metadata.json'),JSON.stringify(metadata,null,2)+'\n');
