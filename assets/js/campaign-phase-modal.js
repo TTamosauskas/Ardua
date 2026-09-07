@@ -28,6 +28,7 @@ function segmentFor(id){if(EARLY_SEGMENTS[id])return EARLY_SEGMENTS[id];const ro
 function visualFor(id){const v=meta(id).visual;if(v)return v;if(id==='bigbang')return'bigBang';if(id.startsWith('primordial_'))return id==='primordial_li'?'primordialLi':(id.includes('he')?'primordialHe':'primordialH');if(id.startsWith('atomic_'))return id==='atomic_li'?'primordialLi':(id==='atomic_he'?'primordialHe':'primordialH');return'nebula'}
 function completed(id){return new Set(C.getState?.().completed||[]).has(id)}
 function unlocked(id){return !!C.isUnlocked?.(id)}
+function discoveriesFor(id){return window.ARDUA_PHASE_DISCOVERIES?.[id]||[]}
 
 let preview=$('campaignPhasePreview');
 if(!preview){
@@ -36,14 +37,18 @@ if(!preview){
   <div class="intro-kicker" data-phase-segment></div>
   <h2 data-phase-title></h2>
   <p class="intro-sub" data-phase-time></p>
+  <p class="phase-preview-discoveries" data-phase-discoveries hidden></p>
   <div class="stellar-portrait" aria-hidden="true"><div class="stellar-art nebula" data-phase-art></div></div>
   <div class="phase-modal-actions"><button type="button" class="phase-modal-close" data-phase-preview-close>FECHAR</button><button type="button" class="stellar-start" data-phase-preview-launch>EXPLORAR</button></div>
  </div>`;
  document.body.appendChild(preview);
 }
-const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
+const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),discoveries=preview.querySelector('[data-phase-discoveries]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
 let previewId='',bypassMapPhase=false,suppressMapClicksUntil=0;
-function renderPreview(id){if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent=completed(id)?'REVISITAR':'EXPLORAR';launch.disabled=!unlocked(id);preview.dataset.phaseId=id}
+function renderPreview(id){
+ if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent=completed(id)?'REVISITAR':'EXPLORAR';launch.disabled=!unlocked(id);preview.dataset.phaseId=id;
+ const entries=discoveriesFor(id);if(discoveries){discoveries.hidden=!entries.length;discoveries.textContent=entries.length?`Descobertas da fase: ${entries.map(x=>x.title).join(' · ')}`:''}
+}
 async function openPreview(id){renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
 function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
 function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
