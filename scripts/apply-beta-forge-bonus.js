@@ -65,9 +65,6 @@ once(
 'reset beta bonus by phase');
 
 fs.writeFileSync(path,s);
-
 patchFile('index.html','<link rel="stylesheet" href="assets/css/phase-polish.css"/>','<link rel="stylesheet" href="assets/css/phase-polish.css"/>\n<link rel="stylesheet" href="assets/css/beta-bonus.css"/>','beta bonus CSS');
 patchFile('index.html','<script src="assets/js/ardua.js"></script>','<script src="assets/js/ardua.js"></script>\n<script src="assets/js/beta-bonus-ui.js"></script>','beta bonus UI');
-patchFile('.github/workflows/pages.yml','      - name: Validate cumulative recipe architecture\n        run: node scripts/validate-cumulative-recipes.js','      - name: Validate cumulative recipe architecture\n        run: node scripts/validate-cumulative-recipes.js\n\n      - name: Validate beta forge bonuses\n        run: node scripts/validate-beta-forge-bonus.js','beta bonus deploy validator');
-
 console.log('Beta forge bonus mechanics applied.');
