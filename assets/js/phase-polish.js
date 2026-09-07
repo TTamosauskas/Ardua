@@ -36,6 +36,19 @@ document.addEventListener('click',e=>{
  if(el)scheduleRecipeFlash(190);
 },true);
 
+/* A nucleus waiting for beta decay is rendered by the engine with an asterisk in its symbol. Keep that physical waiting state visibly trembling until the beta transition resolves. */
+const pieces=$('pieces');
+function syncBetaWaitingVisuals(){
+ pieces?.querySelectorAll('.atom').forEach(atom=>{
+  const symbol=atom.querySelector('.sym')?.textContent?.trim()||'';
+  atom.classList.toggle('beta-waiting',symbol.endsWith('*'));
+ });
+}
+if(pieces){
+ new MutationObserver(syncBetaWaitingVisuals).observe(pieces,{subtree:true,childList:true,characterData:true});
+ syncBetaWaitingVisuals();
+}
+
 /* Discoveries uses a persistent top-right close control and keeps the legacy close action as its behavior bridge. */
 const modal=$('menuModal'),card=modal?.querySelector('.card'),legacyClose=$('closeMenu');
 if(modal&&card&&legacyClose){
