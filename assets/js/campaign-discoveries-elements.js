@@ -98,8 +98,7 @@ function stripDelimited(text,re){
  return out;
 }
 function cleanWikiIntro(text){
- const chunks=String(text||'').replace(/\r/g,'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
- let intro=chunks.find(x=>x.length>60)||chunks[0]||'';
+ let intro=String(text||'').replace(/\r/g,' ').trim();
  intro=stripDelimited(intro,/\([^()]*\)/g);
  intro=stripDelimited(intro,/\[[^\[\]]*\]/g);
  intro=stripDelimited(intro,/\{[^{}]*\}/g);
@@ -113,22 +112,35 @@ function cleanWikiIntro(text){
   .trim();
  return intro;
 }
+function firstWikiParagraph(html){
+ try{
+  const doc=new DOMParser().parseFromString(String(html||''),'text/html');
+  const candidates=[...doc.querySelectorAll('.mw-parser-output > p')];
+  const paragraph=candidates.find(p=>String(p.textContent||'').replace(/\s+/g,' ').trim().length>40);
+  if(!paragraph)return'';
+  paragraph.querySelectorAll('sup,.reference,.mw-ref,.mw-editsection,.mw-valign-text-top,.mw-valign-text-bottom').forEach(el=>el.remove());
+  return cleanWikiIntro(paragraph.textContent||'');
+ }catch(_e){return''}
+}
+function firstExtractParagraph(text){
+ const first=String(text||'').replace(/\r/g,'').split(/\n\s*\n/).map(x=>x.trim()).find(x=>x.length>40)||'';
+ return cleanWikiIntro(first);
+}
 function wikiFallbackUrl(name){return `https://pt.wikipedia.org/wiki/${encodeURIComponent(String(name||'').trim().replace(/\s+/g,'_'))}`}
 async function wikiData(d){
  const key=d.sym;if(wikiCache.has(key))return wikiCache.get(key);
  const title=WIKI_TITLES[d.sym]||d.name;
- const params=new URLSearchParams({
-  origin:'*',action:'query',format:'json',formatversion:'2',redirects:'1',
-  prop:'extracts|pageimages|info',inprop:'url',exintro:'1',explaintext:'1',
-  piprop:'thumbnail',pithumbsize:'900',titles:title
- });
- const promise=fetch(`${WIKI_API}?${params.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki unavailable'))).then(json=>{
-  const page=json?.query?.pages?.[0]||{};
+ const parseParams=new URLSearchParams({origin:'*',action:'parse',format:'json',formatversion:'2',redirects:'1',prop:'text|displaytitle',page:title});
+ const metaParams=new URLSearchParams({origin:'*',action:'query',format:'json',formatversion:'2',redirects:'1',prop:'pageimages|info|extracts',inprop:'url',exintro:'1',explaintext:'1',piprop:'thumbnail',pithumbsize:'900',titles:title});
+ const parseReq=fetch(`${WIKI_API}?${parseParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki parse unavailable'))).catch(()=>null);
+ const metaReq=fetch(`${WIKI_API}?${metaParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki metadata unavailable'))).catch(()=>null);
+ const promise=Promise.all([parseReq,metaReq]).then(([parsed,meta])=>{
+  const page=meta?.query?.pages?.[0]||{},resolvedTitle=page.title||parsed?.parse?.title||title;
   return{
-   title:page.title||title,
-   url:page.fullurl||wikiFallbackUrl(page.title||title),
+   title:resolvedTitle,
+   url:page.fullurl||wikiFallbackUrl(resolvedTitle),
    image:page.thumbnail?.source||'',
-   intro:cleanWikiIntro(page.extract)||d.fact||''
+   intro:firstWikiParagraph(parsed?.parse?.text)||firstExtractParagraph(page.extract)||d.fact||''
   };
  }).catch(()=>({title,url:wikiFallbackUrl(title),image:'',intro:d.fact||''}));
  wikiCache.set(key,promise);return promise;
@@ -148,7 +160,7 @@ function ensureDetail(){
  detail.id='elementDiscoveryDetail';
  detail.className='element-discovery-detail';
  detail.hidden=true;
- detail.innerHTML=`<header class="element-discovery-head"><strong>Elemento</strong><button type="button" class="element-detail-back" data-element-detail-back><span aria-hidden="true">←</span> Voltar</button></header><div id="elementDiscoveryBody"></div>`;
+ detail.innerHTML=`<header class="element-discovery-head"><strong data-element-detail-title></strong><button type="button" class="element-detail-back" data-element-detail-back aria-label="Voltar para elementos"><span aria-hidden="true">←</span></button></header><div id="elementDiscoveryBody"></div>`;
  const tabs=$('discoveriesTabs');
  (tabs||heading)?.insertAdjacentElement('afterend',detail);
  detail.addEventListener('click',e=>{
@@ -185,31 +197,34 @@ function openPhase(id){
   (visible||nodes[0])?.click();
  },40);
 }
+function atomicTile(d,gradient,weight){
+ return`<div class="info-tile element-atomic-square" style="background:${gradient}"><span class="info-z">${esc(d.z)}</span><strong class="info-symbol">${esc(d.sym)}</strong><span class="info-mass">${esc(weight)}</span></div>`;
+}
 function loadingMarkup(d,gradient,weight){
  return`<div class="element-wiki-loading">
   <div class="element-wiki-image-shell"><div class="element-wiki-image-placeholder">WIKIPÉDIA</div></div>
   <div class="info-panel discovery-element-info element-wiki-info">
-   <div class="info-tile" style="background:${gradient}"><span class="info-z">${esc(d.z)}</span><strong class="info-symbol">${esc(d.sym)}</strong><span class="info-name">${esc(d.name)}</span><span class="info-mass">${esc(weight)}</span></div>
-   <div class="element-wiki-copy"><h3>${esc(d.name)}</h3><p>Carregando o texto do artigo…</p></div>
+   ${atomicTile(d,gradient,weight)}
+   <div class="element-wiki-copy"><p>Carregando o primeiro parágrafo do artigo…</p></div>
   </div>
  </div>`;
 }
 function phaseMarkup(phases){
  if(!phases.length)return'<span class="element-phase-empty">A trilha irá revelar fases relacionadas a este elemento conforme a campanha avança.</span>';
- return phases.map(p=>`<button type="button" class="element-phase-chip" data-element-phase="${esc(p.id)}"><strong>${esc(phaseTitle(p.id,p.title))}</strong>${p.meta?`<small>${esc(p.meta)}</small>`:''}</button>`).join('');
+ return phases.map(p=>`<button type="button" class="element-phase-chip" data-element-phase="${esc(p.id)}">${esc(phaseTitle(p.id,p.title))}</button>`).join('');
 }
 async function showElementDetail(elementCard){
  const d=detailData(elementCard),host=ensureDetail(),body=$('elementDiscoveryBody');if(!d.sym||!body)return;
  const src=await sourceMeta(),colors=src.colors[d.sym]||['#f7fbff','#b9cbe1','#667b94'],weight=src.weights[d.sym]||'—',phases=relatedPhases(d.sym,src.phases),gradient=`radial-gradient(circle at 30% 20%,${colors[0]},${colors[1]} 46%,${colors[2]} 100%)`;
- setDetailMode(true);host.dataset.open='1';host.dataset.sym=d.sym;host.hidden=false;host.setAttribute('aria-busy','true');body.innerHTML=loadingMarkup(d,gradient,weight);card.scrollTo({top:0,behavior:'auto'});
+ setDetailMode(true);host.dataset.open='1';host.dataset.sym=d.sym;host.hidden=false;host.setAttribute('aria-busy','true');const title=host.querySelector('[data-element-detail-title]');if(title)title.textContent=d.name;body.innerHTML=loadingMarkup(d,gradient,weight);card.scrollTo({top:0,behavior:'auto'});
  const wiki=await wikiData(d);
  if(host.hidden||host.dataset.sym!==d.sym)return;
  host.removeAttribute('aria-busy');
- const image=wiki.image?`<img class="element-wiki-image" src="${esc(wiki.image)}" alt="${esc(d.name)} — imagem do artigo da Wikipédia" loading="eager" referrerpolicy="no-referrer">`:`<div class="element-wiki-image-placeholder">${esc(d.sym)}</div>`;
- body.innerHTML=`<figure class="element-wiki-figure">${image}<figcaption>Imagem do artigo da Wikipédia</figcaption></figure>
+ const image=wiki.image?`<img class="element-wiki-image" src="${esc(wiki.image)}" alt="${esc(d.name)}" loading="eager" referrerpolicy="no-referrer">`:`<div class="element-wiki-image-placeholder">${esc(d.sym)}</div>`;
+ body.innerHTML=`<figure class="element-wiki-figure">${image}</figure>
   <div class="info-panel discovery-element-info element-wiki-info">
-   <div class="info-tile" style="background:${gradient}"><span class="info-z">${esc(d.z)}</span><strong class="info-symbol">${esc(d.sym)}</strong><span class="info-name">${esc(d.name)}</span><span class="info-mass">${esc(weight)}</span></div>
-   <div class="element-wiki-copy"><h3>${esc(d.name)}</h3><p>${esc(wiki.intro)}</p></div>
+   ${atomicTile(d,gradient,weight)}
+   <div class="element-wiki-copy"><p>${esc(wiki.intro)}</p></div>
   </div>
   <div class="element-related-phases"><strong>Aparece em:</strong><div>${phaseMarkup(phases)}</div></div>
   <div class="element-source-actions">
