@@ -37,7 +37,7 @@ function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;
 if(phaseTitle)new MutationObserver(syncPhase).observe(phaseTitle,{childList:true,subtree:true,characterData:true});window.addEventListener('ardua:campaign-progress',syncPhase);
 function matchingSlot(token,pair,skip=-1){for(let i=0;i<pair.length;i++)if(i!==skip&&pair[i]===token)return i;return-1}
 function currentStage(){return[...board.querySelectorAll('.objective-motif-stage')].at(-1)||null}
-function highlightedStage(stage=currentStage()){if(!(stage instanceof Element))return null;const nodes=[...stage.querySelectorAll('.objective-motif-nucleus:not(.result)')];return nodes.length>=2?stage:null}
+function highlightedStage(stage=currentStage()){if(!(stage instanceof Element))return null;const nodes=[...stage.querySelectorAll('.objective-motif-nucleus:not(.result)')];return nodes.length>=2&&nodes.slice(0,2).every(n=>n.classList.contains('aligned'))?stage:null}
 function markFirst(token,key,slot,root){const pair=reactants(),m=freshMotif(pair,root);m.first={token,key,slot};m.step=1;playFrequency(m.root);return m}
 function markSecond(token,key,slot){if(!motif||motif.step!==1||motif.first?.key===key)return false;motif.second={token,key,slot};motif.step=2;playNote(1,motif.root);queueMicrotask(()=>emitThirdForHighlight(currentStage()));return true}
 function emitThirdForHighlight(stage){if(!motif||motif.step!==2)return false;const ready=highlightedStage(stage);if(!ready||ready.dataset.recipeThirdPlayed==='1')return false;ready.dataset.recipeThirdPlayed='1';ready.dataset.recipeSession=String(motif.session);motif.step=3;playNote(2,motif.root);return true}
