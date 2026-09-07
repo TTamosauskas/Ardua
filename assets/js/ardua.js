@@ -608,10 +608,17 @@ function configureNeutronGameplay(phases){
  const byId=new Map(phases.map(p=>[p.id,p])),set=(ids,pattern,extra={})=>{for(const id of ids){const p=byId.get(id);if(p)Object.assign(p,{neutronPattern:pattern,...extra})}};
  set(['weak_s_cu','weak_s_ge'],'drizzle');
  set(['weak_s_zn'],'source22',{neutronSource:'Ne22',neutronSourceProduct:'Mg',neutronSourceBurst:6,requiresNeutronSource:true});
- set(['weak_s_ga','weak_s_se','nb','la','nd'],'betaWait',{neutronBetaRounds:2});
+ // Tempo β em rodadas é uma escala relativa da rota/isótopo representado, não uma meia-vida literal do elemento.
+ set(['weak_s_ga'],'betaWait',{neutronBetaRounds:3});
+ set(['weak_s_se'],'betaWait',{neutronBetaRounds:1});
+ set(['nb'],'betaWait',{neutronBetaRounds:2});
+ set(['la'],'betaWait',{neutronBetaRounds:3});
+ set(['nd'],'betaWait',{neutronBetaRounds:4});
  set(['weak_s_br','gamma_mo','pd','sn','cs'],'pulse',{neutronPulseSize:4,neutronPulseInterval:1550});
  set(['weak_s_kr','gamma_ru','cd','te'],'pulseStrong',{neutronPulseSize:6,neutronPulseInterval:1900});
- set(['rb','rh','sb'],'branch',{neutronBetaRounds:2,requiresNeutronBranch:true});
+ set(['rb'],'branch',{neutronBetaRounds:2,requiresNeutronBranch:true});
+ set(['rh'],'branch',{neutronBetaRounds:3,requiresNeutronBranch:true});
+ set(['sb'],'branch',{neutronBetaRounds:4,requiresNeutronBranch:true});
  set(['sr','y','zr'],'shell',{neutronShellExposure:2});
  set(['tc','ag','in','i','xe','pr','pm','sm'],'source13',{neutronSource:'C13',neutronSourceProduct:'O',neutronSourceBurst:4,requiresNeutronSource:true});
  set(['ba','ce'],'shell',{neutronShellExposure:3});
@@ -2386,11 +2393,13 @@ function renderPieces(){
    dom.pieces.appendChild(el)
   }
   const e=E[p.sym],s=phase(),cap=(s.mode==='neutron'&&neutronEligible(p,s)&&p.captures>0)?`<span class="cap">n ${p.captures}/${s.captures}</span>`:'';
-  el.style.background=elementStyle(p.sym);const shownSym=pieceDisplaySymbol(p);el.style.setProperty('--symScale',pieceSymbolScale(p,shownSym));el.innerHTML=`<span class="sym">${shownSym}</span>${cap}`;
+  el.style.background=elementStyle(p.sym);const shownSym=pieceDisplaySymbol(p);el.style.setProperty('--symScale',pieceSymbolScale(p,shownSym));
+  if(p.neutronBetaPending){const total=Math.max(1,p.neutronBetaTotalRounds||neutronGameplay(s).betaRounds),start=p.neutronBetaStartRound??Math.max(0,(p.neutronBetaReadyRound??state.nuclearRound)-total),progress=Math.max(0,Math.min(1,(state.nuclearRound-start)/total));el.style.setProperty('--beta-progress',`${Math.round(progress*100)}%`);el.dataset.betaRemaining=String(Math.max(0,(p.neutronBetaReadyRound??state.nuclearRound)-state.nuclearRound));el.dataset.betaRounds=String(total)}else{el.style.removeProperty('--beta-progress');delete el.dataset.betaRemaining;delete el.dataset.betaRounds}
+  const betaRing=p.neutronBetaPending?'<span class="beta-progress-ring" aria-hidden="true"></span>':'';el.innerHTML=`<span class="sym">${shownSym}</span>${cap}${betaRing}`;
   const selectedPrimordialParticle=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null,selectedFree=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null,primordialParticleTarget=primordial&&p.free&&selectedPrimordialParticle&&(!!primordialMixedReaction(p.sym,selectedPrimordialParticle.kind)||(selectedPrimordialParticle.kind==='e'&&pieceCanBindElectron(p))),primordialPieceTarget=primordial&&p.free&&!p.moleculeId&&selectedFree&&selectedFree.id!==p.id&&(primordialPossiblePieceRecipes([selectedFree.sym,p.sym]).length>0||canCreatePrimordialHeH(selectedFree,p,s)),primordialMoleculeTarget=primordial&&primordialHeHMoleculeTarget(p,selectedFree,s),selected=primordial?state.freeSelected.includes(id):state.selected.includes(p.cell),neutronPartner=s.mode==='neutron'&&state.selectedNeutron!==null&&(neutronEligible(p,s)||universalNeutronCaptureEligible(p)),particleTarget=['spallation','neutrino','gamma'].includes(s.mode)&&state.selectedCosmic!==null&&particleTargets(s).includes(p.sym),stellarProtonTarget=!primordial&&selectedPrimordialParticle?.kind==='p'&&((stellarProtonRecipe(s)&&p.sym==='H')||(protonCaptureAvailable(s)&&!!protonCaptureRoute(p,s))),blackHoleTarget=s.mode==='blackhole'&&state.blackHoleSelected&&!selected,decayReady=(s.mode==='decayGarden'&&p.decayTrack&&p.decayIndex<p.decayTrack.length-1)||(s.mode==='guidedDecay'&&!!guidedTransitionFor(p,s))||(s.id==='co'&&p.sym==='FeU'&&p.radioactiveReady);
   const partner=(!primordial&&candidates.has(p.cell))||primordialParticleTarget||primordialPieceTarget||primordialMoleculeTarget||neutronPartner||particleTarget||stellarProtonTarget||blackHoleTarget;
   const matterClass=p.matterState==='atom'?' atomic-piece':' nucleus-piece';
-  el.className='atom'+matterClass+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=p.x+'px';el.style.top=p.y+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
+  el.className='atom'+matterClass+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.neutronBetaPending?' beta-waiting':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=p.x+'px';el.style.top=p.y+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
  });existing.forEach(el=>el.remove())
 }
 async function decayFloatingNeutron(n){
@@ -2946,7 +2955,16 @@ function guidedDecayTopRecipeLine(s=phase()){
 }
 function neutronPhaseNextRecipeLine(s=phase()){
  const g=neutronGameplay(s),sourceLine=neutronSourceLabel(s);if(g.requiresSource&&state.neutronSourceActivations<1&&sourceLine)return sourceLine;
- const pending=[...state.pieces.values()].find(p=>p.neutronBetaPending);if(pending)return g.pattern==='branch'?`${pending.sym}* · capture outro n ou aguarde β−`:`${pending.sym}* · aguarde β− enquanto reconstrói a cadeia`;
+ const pendingAll=[...state.pieces.values()].filter(p=>p.neutronBetaPending);
+ if(pendingAll.length){
+   const status=pendingAll.length===1?`${pieceDisplaySymbol(pendingAll[0])} decaindo`:`${pendingAll.length} núcleos decaindo`;
+   const fmtNeutron=tr=>`${E[tr.from]?.name||tr.from} + Nêutron → ${E[tr.to]?.name||tr.to}`;
+   const liveSeed=s.seed?[...state.pieces.values()].find(p=>p.sym===s.seed&&!p.neutronBetaPending):null,direct=liveSeed?neutronTransitionFor(liveSeed,s):null;
+   if(direct)return `${status} • ${fmtNeutron(direct)}`;
+   const rebuild=s.seed?nextExecutableActionTowardSymbol(s.seed,s,new Set()):null;
+   if(rebuild){const next=rebuild.kind==='neutron'?fmtNeutron(rebuild.transition):guidanceActionLine(rebuild);if(next)return `${status} • ${next}`}
+   return `${status} • β− em andamento`;
+ }
  if(s.id==='co'){
    if([...state.pieces.values()].some(p=>p.sym==='FeU'&&p.radioactiveReady))return 'Fe instável → Co';
    if(speciesCount('Fe')>0)return 'Fe + n → Fe instável';
@@ -3766,9 +3784,9 @@ function ensureSeed(){
  if(!empties.length)return false;
  const cell=empties[0],p=createPiece(s.seed,cell,true);renderPieces();requestAnimationFrame(()=>{const q=pos(coords[cell]);p.x=q.x;p.y=q.y;renderPieces()});return true;
 }
-function clearNeutronPending(piece){if(!piece)return;piece.neutronBetaPending=false;piece.neutronBetaReadyRound=null;piece.neutronBetaTransition=null;piece.neutronShellExposure=0;piece.neutronShellOpen=false}
+function clearNeutronPending(piece){if(!piece)return;piece.neutronBetaPending=false;piece.neutronBetaReadyRound=null;piece.neutronBetaStartRound=null;piece.neutronBetaTotalRounds=null;piece.neutronBetaTransition=null;piece.neutronShellExposure=0;piece.neutronShellOpen=false}
 function scheduleNeutronBeta(piece,s,tr){
- const g=neutronGameplay(s);piece.captures=0;piece.neutronBetaPending=true;piece.neutronBetaTransition={...tr};piece.neutronBetaReadyRound=state.nuclearRound+g.betaRounds;state.neutronBetaWaits++;state.selected=[];captureTag(piece.x,piece.y,`β− em ${g.betaRounds} rodadas`);tone(590,.08,'sine',.028);renderPieces();
+ const g=neutronGameplay(s);piece.captures=0;piece.neutronBetaPending=true;piece.neutronBetaTransition={...tr};piece.neutronBetaStartRound=state.nuclearRound;piece.neutronBetaTotalRounds=g.betaRounds;piece.neutronBetaReadyRound=state.nuclearRound+g.betaRounds;state.neutronBetaWaits++;state.selected=[];captureTag(piece.x,piece.y,`β− iniciado`);tone(590,.08,'sine',.028);renderPieces();
 }
 async function resolvePendingNeutronBetas(){
  const s=phase();if(s.mode!=='neutron')return;const pending=[...state.pieces.values()].filter(p=>p.neutronBetaPending&&state.nuclearRound>=(p.neutronBetaReadyRound??Infinity));

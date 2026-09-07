@@ -76,3 +76,18 @@
   outline:none;
 }
 #menuModal:not(.discoveries-view) .discoveries-close-x{display:none!important}
+
+
+/* Parallel beta decay: abstract circular progress, intentionally without numeric time. */
+.atom.beta-waiting{overflow:visible!important}
+.atom.beta-waiting .beta-progress-ring{
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  pointer-events:none;
+  background:conic-gradient(rgba(157,225,255,.96) var(--beta-progress,0%),rgba(157,225,255,.12) 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
+  filter:drop-shadow(0 0 4px rgba(125,210,255,.42));
+}
+@media(prefers-reduced-motion:reduce){.atom.beta-waiting .beta-progress-ring{filter:none}}
