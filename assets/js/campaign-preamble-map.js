@@ -30,6 +30,10 @@ const PREAMBLE_TITLES=Object.freeze({
  brown_formation:'Protoestrelas',
  brown:'Anã Marrom'
 });
+const primordialIds=['primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td','primordial_li'];
+const atomicIds=['atomic_he','atomic_h','atomic_li'];
+const gasIds=['first_atomic_bonds','first_nebulae','brown_formation','brown'];
+const linearIds=[...primordialIds,...atomicIds,...gasIds];
 const titleFor=id=>PREAMBLE_TITLES[id]||window.ARDUA_PHASE_NAMES?.[id]||phaseMenu?.querySelector(`.phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||id;
 const existing=new Map([...map.querySelectorAll('.phase-node[data-phase]')].map(el=>[el.dataset.phase,el]));
 function phaseNode(id){
@@ -40,10 +44,10 @@ function phaseNode(id){
  return el;
 }
 function flow(ids,cls=''){
- const el=document.createElement('div');el.className=`cosmos-flow ${cls}`.trim();
+ const el=document.createElement('div');el.className=`cosmos-flow ${cls}`.trim();el.dataset.phaseGroup=ids.join(',');
  ids.forEach(id=>el.appendChild(phaseNode(id)));return el;
 }
-function chapter(title){const el=document.createElement('div');el.className='epoch-label preamble-chapter';el.innerHTML=`<strong>${title}</strong>`;return el}
+function chapter(title,ids){const el=document.createElement('div');el.className='epoch-label preamble-chapter';el.dataset.phaseGroup=ids.join(',');el.innerHTML=`<strong>${title}</strong>`;return el}
 function universeBanner(){
  const el=document.createElement('section');el.className='generation-banner generation-primordial primordial-generation-banner';el.dataset.generationBanner='primordial';
  el.innerHTML='<strong>Universo Primordial</strong><small>Do plasma quente aos primeiros átomos, gases e objetos subestelares.</small>';return el;
@@ -63,18 +67,13 @@ firstGeneration.classList.add('generation-banner','generation-first','generation
 firstGeneration.dataset.generationBanner='first';
 firstGeneration.innerHTML='<span>1ª GERAÇÃO</span><strong>Primeira Geração Estelar</strong><small>As primeiras estrelas verdadeiras passam a nascer em diferentes faixas de massa.</small>';
 
-const primordialIds=['primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td','primordial_li'];
-const atomicIds=['atomic_he','atomic_h','atomic_li'];
-const gasIds=['first_atomic_bonds','first_nebulae','brown_formation','brown'];
-const linearIds=[...primordialIds,...atomicIds,...gasIds];
-
 zone.replaceChildren(
  universeBanner(),
- chapter('PRIMEIROS MINUTOS'),
+ chapter('PRIMEIROS MINUTOS',primordialIds),
  flow(primordialIds,'primordial-linear-flow'),
- chapter('PRIMEIROS ÁTOMOS'),
+ chapter('PRIMEIROS ÁTOMOS',atomicIds),
  flow(atomicIds,'atomic-linear-flow'),
- chapter('PRIMEIROS GASES'),
+ chapter('PRIMEIROS GASES',gasIds),
  flow(gasIds,'primordial-gas-flow'),
  firstGeneration,
  birth,
@@ -84,7 +83,7 @@ zone.replaceChildren(
 );
 
 const layer=document.createElementNS('http://www.w3.org/2000/svg','svg');
-layer.id='campaignPreambleLinks';layer.classList.add('campaign-links','campaign-preamble-links');layer.setAttribute('aria-hidden','true');
+layer.id='campaignPreambleLinks';layer.classList.add('campaign-links','campaign-preamble-links');layer.setAttribute('aria-hidden','true');layer.dataset.guideLayer='preamble';
 content.appendChild(layer);
 function visible(el){return !!el&&el.getClientRects().length>0}
 function center(el,edge='center'){
@@ -95,9 +94,9 @@ function add(from,to,cls='primordial',bend=.5){
  p.setAttribute('d',`M ${a.x.toFixed(1)} ${a.y.toFixed(1)} C ${a.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`);p.setAttribute('class',`campaign-link preamble-link ${cls}`);layer.appendChild(p);
 }
 function node(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(visible)||null}
-let timer=0;
+let frame=0;
 function drawPreambleLinks(){
- clearTimeout(timer);timer=0;layer.innerHTML='';
+ frame=0;layer.innerHTML='';
  const w=content.clientWidth,h=content.scrollHeight;layer.setAttribute('viewBox',`0 0 ${w} ${h}`);layer.setAttribute('width',w);layer.setAttribute('height',h);
  if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
  const banner=map.querySelector('.primordial-generation-banner');
@@ -107,10 +106,14 @@ function drawPreambleLinks(){
  add(node('brown'),firstGeneration,'birth',.52);
  add(firstGeneration,birth,'birth',.48);
 }
-function schedule(){clearTimeout(timer);timer=setTimeout(drawPreambleLinks,45)}
+function schedule(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>requestAnimationFrame(drawPreambleLinks))}
 new MutationObserver(schedule).observe(baseLinks,{childList:true});
-new MutationObserver(schedule).observe(map,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
+new MutationObserver(schedule).observe(map,{attributes:true,attributeFilter:['class']});
+new MutationObserver(schedule).observe(zone,{childList:true,subtree:true});
+if(window.ResizeObserver)new ResizeObserver(schedule).observe(content);
 window.addEventListener('resize',schedule);
+window.addEventListener('load',schedule);
 window.addEventListener('ardua:campaign-progress',schedule);
+map.addEventListener('transitionend',schedule);
 schedule();
 })();
