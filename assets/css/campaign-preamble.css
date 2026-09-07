@@ -59,7 +59,8 @@
   background:linear-gradient(90deg,transparent,rgba(151,177,224,.30));
   box-shadow:none;
 }
-.generation-phase-banner.phase-node::before{right:100%;left:auto;transform:rotate(180deg)}
+/* The preamble SVG already connects into the card; keep only the right decorative continuation. */
+.generation-phase-banner.phase-node::before{display:none!important}
 .generation-phase-banner.phase-node::after{left:100%;right:auto}
 .generation-phase-banner.phase-node>span{display:block;margin-bottom:4px;font-size:10px;font-weight:800;letter-spacing:.19em;text-transform:uppercase;color:#8fa8d3}
 .generation-phase-banner.phase-node>strong{display:block;font-size:18px;line-height:1.2;letter-spacing:.035em;color:#eef5ff}
