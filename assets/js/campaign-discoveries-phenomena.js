@@ -10,6 +10,13 @@ if(!document.querySelector('link[data-ardua-phenomena-style]')){
 }
 
 const WIKI_API='https://pt.wikipedia.org/w/api.php';
+const PHENOMENON_SOURCES_URL=new URL('assets/data/phenomenon-sources.json',document.baseURI).href;
+let phenomenonSourcesPromise=null;
+function phenomenonSources(){
+ if(phenomenonSourcesPromise)return phenomenonSourcesPromise;
+ phenomenonSourcesPromise=fetch(PHENOMENON_SOURCES_URL,{cache:'force-cache'}).then(r=>r.ok?r.json():Promise.reject(new Error('phenomenon sources unavailable'))).catch(()=>({}));
+ return phenomenonSourcesPromise;
+}
 const cache=new Map();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WIKI_ALIASES=Object.freeze({
@@ -127,7 +134,7 @@ async function resolveTitle(title){
 async function wikiData(title,glyph){
  if(cache.has(title))return cache.get(title);
  const promise=(async()=>{
-  const requested=WIKI_ALIASES[title]||title,resolved=await resolveTitle(requested);
+  const sources=await phenomenonSources(),cfg=sources[title]||{},requested=cfg.wikiTitle||WIKI_ALIASES[title]||title,resolved=await resolveTitle(requested);
   const parseParams=new URLSearchParams({origin:'*',action:'parse',format:'json',formatversion:'2',redirects:'1',prop:'text',page:resolved});
   const metaParams=new URLSearchParams({origin:'*',action:'query',format:'json',formatversion:'2',redirects:'1',prop:'info|extracts|pageimages',inprop:'url',exintro:'1',explaintext:'1',piprop:'thumbnail',pithumbsize:'900',titles:resolved});
   const [parsed,meta]=await Promise.all([
@@ -136,11 +143,11 @@ async function wikiData(title,glyph){
   ]),page=meta?.query?.pages?.[0]||{},html=parsed?.parse?.text||'';
   return{
    title:page.title||parsed?.parse?.title||resolved,
-   url:page.fullurl||wikiFallbackUrl(resolved),
-   image:normalizeImage(page.thumbnail?.source)||firstArticleImage(html),
+   url:cfg.wikiUrl||page.fullurl||wikiFallbackUrl(resolved),
+   image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:(normalizeImage(page.thumbnail?.source)||firstArticleImage(html)),
    intro:firstWikiParagraph(html)||firstExtractParagraph(page.extract)||''
   };
- })().catch(()=>({title,url:wikiFallbackUrl(WIKI_ALIASES[title]||title),image:'',intro:'',glyph}));
+ })().catch(async()=>{const sources=await phenomenonSources(),cfg=sources[title]||{};return{title,url:cfg.wikiUrl||wikiFallbackUrl(cfg.wikiTitle||WIKI_ALIASES[title]||title),image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'',intro:'',glyph}});
  cache.set(title,promise);return promise;
 }
 
