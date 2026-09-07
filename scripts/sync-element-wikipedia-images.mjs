@@ -16,7 +16,7 @@ async function request(url,{binary=false}={}){
  for(let attempt=0;attempt<7;attempt++){
   const r=await fetch(url,{headers});
   if(r.ok)return binary?r:await r.json();
-  if((r.status===429||r.status>=500)&&attempt<6){const retry=Number(r.headers.get('retry-after')||0)*1000;await sleep(Math.max(retry,700*(attempt+1)));continue}
+  if((r.status===429||r.status>=500)&&attempt<6){const retry=Number(r.headers.get('retry-after')||0)*1000;await sleep(Math.max(retry,900*(attempt+1)));continue}
   throw new Error(`${r.status} ${url}`);
  }
 }
@@ -63,7 +63,7 @@ for(const [sym,cfg] of entries){
  const page=pages.get(sym);if(page.pageimage)continue;
  const fallback=await fallbackPageImage(page.title||cfg.wikiTitle);
  if(!fallback)throw new Error(`${sym}: artigo sem imagem editorial utilizável (${page.title})`);
- page.pageimage=fallback;console.log(`${sym}: usando imagem editorial de fallback ${fallback}`);await sleep(120);
+ page.pageimage=fallback;console.log(`${sym}: usando imagem editorial de fallback ${fallback}`);await sleep(180);
 }
 
 const imageInfo=new Map();
@@ -77,26 +77,24 @@ for(const batch of chunks(entries)){
  }
 }
 
-let cursor=0;const failures=[];
-async function worker(){
- while(cursor<entries.length){
-  const [sym,cfg]=entries[cursor++],ii=imageInfo.get(sym),imageUrl=ii.thumburl||ii.url;
-  try{
-   const response=await request(imageUrl,{binary:true}),ext=extFor(response.headers.get('content-type'),imageUrl),filename=`${sym}.${ext}`;
-   await removeOld(sym);await fs.writeFile(path.join(imageDir,filename),Buffer.from(await response.arrayBuffer()));
-   const meta=ii.extmetadata||{};
-   Object.assign(cfg,{
-    imagePath:`assets/images/elements/${filename}`,
-    imageSourceUrl:ii.descriptionurl||ii.url,
-    imageLicense:stripHtml(meta.LicenseShortName?.value||meta.License?.value||''),
-    imageLicenseUrl:meta.LicenseUrl?.value||'',
-    imageArtist:stripHtml(meta.Artist?.value||meta.Credit?.value||'')
-   });
-   console.log(`${sym}: ${cfg.wikiResolvedTitle} -> ${filename}`);
-  }catch(error){failures.push(`${sym}: ${error?.message||error}`);console.error(error)}
- }
+const failures=[];
+for(const [sym,cfg] of entries){
+ const ii=imageInfo.get(sym),imageUrl=ii.thumburl||ii.url;
+ try{
+  const response=await request(imageUrl,{binary:true}),ext=extFor(response.headers.get('content-type'),imageUrl),filename=`${sym}.${ext}`;
+  await removeOld(sym);await fs.writeFile(path.join(imageDir,filename),Buffer.from(await response.arrayBuffer()));
+  const meta=ii.extmetadata||{};
+  Object.assign(cfg,{
+   imagePath:`assets/images/elements/${filename}`,
+   imageSourceUrl:ii.descriptionurl||ii.url,
+   imageLicense:stripHtml(meta.LicenseShortName?.value||meta.License?.value||''),
+   imageLicenseUrl:meta.LicenseUrl?.value||'',
+   imageArtist:stripHtml(meta.Artist?.value||meta.Credit?.value||'')
+  });
+  console.log(`${sym}: ${cfg.wikiResolvedTitle} -> ${filename}`);
+ }catch(error){failures.push(`${sym}: ${error?.message||error}`);console.error(error)}
+ await sleep(420);
 }
-await Promise.all(Array.from({length:3},worker));
 if(failures.length)throw new Error(`Falhas na sincronização:\n${failures.join('\n')}`);
 
 await fs.writeFile(dataPath,JSON.stringify(sources,null,2)+'\n');
