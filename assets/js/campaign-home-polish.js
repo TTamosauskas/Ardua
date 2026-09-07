@@ -128,5 +128,6 @@ window.addEventListener('ardua:campaign-progress',scheduleSync);
 window.addEventListener('resize',scheduleSync);
 map.addEventListener('click',()=>setTimeout(scheduleSync,0));
 new MutationObserver(scheduleSync).observe(map,{subtree:true,childList:true});
+new MutationObserver(scheduleSync).observe(map,{attributes:true,attributeFilter:['class']});
 setTimeout(syncAll,0);setTimeout(syncAll,180);
 })();
