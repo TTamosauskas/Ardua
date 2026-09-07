@@ -93,4 +93,5 @@ if(intro)new MutationObserver(applyAll).observe(intro,{attributes:true,attribute
 window.addEventListener('ardua:campaign-progress',applyAll);
 window.ARDUA_PHASE_NAMES=NAMES;
 applyAll();setTimeout(applyAll,0);
+window.ARDUA_PREPARE_PREAMBLE_MAP?.();
 })();
