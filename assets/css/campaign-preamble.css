@@ -14,13 +14,10 @@
 .preamble-chapter{margin:11px auto 2px;min-width:220px}
 .primordial-linear-flow,.atomic-linear-flow,.primordial-gas-flow{padding-top:11px;padding-bottom:18px}
 
-/* Preamble titles stay fully legible; state is communicated by the node marker instead of dimming the whole label. */
-.primordial-linear-flow .phase-node.locked,
-.primordial-linear-flow .phase-node.revealed,
-.atomic-linear-flow .phase-node.locked,
-.atomic-linear-flow .phase-node.revealed,
-.primordial-gas-flow .phase-node.locked,
-.primordial-gas-flow .phase-node.revealed{opacity:1}
+/* Preamble titles stay fully legible; progress state lives in the marker/halo instead of dimming the label. */
+.primordial-linear-flow .phase-node,
+.atomic-linear-flow .phase-node,
+.primordial-gas-flow .phase-node{opacity:1}
 .primordial-linear-flow .phase-node.locked::before,
 .atomic-linear-flow .phase-node.locked::before,
 .primordial-gas-flow .phase-node.locked::before{opacity:.24}
