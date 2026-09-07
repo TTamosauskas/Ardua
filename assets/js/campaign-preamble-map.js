@@ -15,12 +15,29 @@ if(originals){
 const zone=map.querySelector('.primordial-zone');
 if(!zone)return;
 const phaseMenu=document.getElementById('phaseMenu');
-const titleFor=id=>window.ARDUA_PHASE_NAMES?.[id]||phaseMenu?.querySelector(`.phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||id;
+const PREAMBLE_TITLES=Object.freeze({
+ primordial_d:'Forme Deutério',
+ primordial_t:'Forme Trítio',
+ primordial_he3:'Forme Hélio-3',
+ primordial_he3d:'Hélio-4 via Hélio-3',
+ primordial_td:'Hélio-4 via Trítio',
+ primordial_li:'Forme Lítio-7',
+ atomic_he:'Forme átomos de Hélio',
+ atomic_h:'Forme átomos de Hidrogênio',
+ atomic_li:'Forme átomos de Lítio',
+ first_atomic_bonds:'Primeiras Ligações Atômicas',
+ first_nebulae:'Primeiras Nebulosas',
+ brown_formation:'Protoestrelas',
+ brown:'Anã Marrom'
+});
+const titleFor=id=>PREAMBLE_TITLES[id]||window.ARDUA_PHASE_NAMES?.[id]||phaseMenu?.querySelector(`.phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||id;
 const existing=new Map([...map.querySelectorAll('.phase-node[data-phase]')].map(el=>[el.dataset.phase,el]));
 function phaseNode(id){
  let el=existing.get(id);
- if(el)return el;
- el=document.createElement('button');el.type='button';el.className='phase-node locked';el.dataset.phase=id;el.innerHTML=`<strong>${titleFor(id)}</strong>`;existing.set(id,el);return el;
+ if(!el){el=document.createElement('button');el.type='button';el.className='phase-node locked';el.dataset.phase=id;existing.set(id,el)}
+ let strong=el.querySelector(':scope > strong');if(!strong){strong=document.createElement('strong');el.appendChild(strong)}
+ strong.textContent=titleFor(id);
+ return el;
 }
 function flow(ids,cls=''){
  const el=document.createElement('div');el.className=`cosmos-flow ${cls}`.trim();
@@ -29,7 +46,7 @@ function flow(ids,cls=''){
 function chapter(title){const el=document.createElement('div');el.className='epoch-label preamble-chapter';el.innerHTML=`<strong>${title}</strong>`;return el}
 function universeBanner(){
  const el=document.createElement('section');el.className='generation-banner generation-primordial primordial-generation-banner';el.dataset.generationBanner='primordial';
- el.innerHTML='<span>UNIVERSO PRIMORDIAL</span><strong>Universo Primordial</strong><small>Do plasma quente aos primeiros átomos, gases e objetos subestelares.</small>';return el;
+ el.innerHTML='<strong>Universo Primordial</strong><small>Do plasma quente aos primeiros átomos, gases e objetos subestelares.</small>';return el;
 }
 
 const stellar=zone.querySelector('.branch-cluster[data-branch-group="stellar"]');
@@ -49,10 +66,11 @@ firstGeneration.innerHTML='<span>1ª GERAÇÃO</span><strong>Primeira Geração 
 const primordialIds=['primordial_d','primordial_t','primordial_he3','primordial_he3d','primordial_td','primordial_li'];
 const atomicIds=['atomic_he','atomic_h','atomic_li'];
 const gasIds=['first_atomic_bonds','first_nebulae','brown_formation','brown'];
+const linearIds=[...primordialIds,...atomicIds,...gasIds];
 
 zone.replaceChildren(
  universeBanner(),
- chapter('PLASMA PRIMORDIAL'),
+ chapter('PRIMEIROS MINUTOS'),
  flow(primordialIds,'primordial-linear-flow'),
  chapter('PRIMEIROS ÁTOMOS'),
  flow(atomicIds,'atomic-linear-flow'),
@@ -64,8 +82,6 @@ zone.replaceChildren(
  stellar,
  stellarAfter
 );
-
-const proto=phaseNode('brown_formation')?.querySelector('strong');if(proto)proto.textContent='Protoestrelas';
 
 const layer=document.createElementNS('http://www.w3.org/2000/svg','svg');
 layer.id='campaignPreambleLinks';layer.classList.add('campaign-links','campaign-preamble-links');layer.setAttribute('aria-hidden','true');
@@ -85,11 +101,11 @@ function drawPreambleLinks(){
  const w=content.clientWidth,h=content.scrollHeight;layer.setAttribute('viewBox',`0 0 ${w} ${h}`);layer.setAttribute('width',w);layer.setAttribute('height',h);
  if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
  const banner=map.querySelector('.primordial-generation-banner');
- add(map.querySelector('.singularity-map'),banner,'root',.48);add(banner,node('primordial_d'),'primordial',.45);
- for(let i=1;i<primordialIds.length;i++)add(node(primordialIds[i-1]),node(primordialIds[i]),'primordial');
- add(node('first_nebulae'),node('brown_formation'),'primordial');
- add(node('brown_formation'),node('brown'),'sub');
- add(node('brown'),firstGeneration,'birth',.52);add(firstGeneration,birth,'birth',.48);
+ add(map.querySelector('.singularity-map'),banner,'root',.48);
+ add(banner,node(linearIds[0]),'primordial',.45);
+ for(let i=1;i<linearIds.length;i++)add(node(linearIds[i-1]),node(linearIds[i]),i>=linearIds.length-2?'sub':'primordial');
+ add(node('brown'),firstGeneration,'birth',.52);
+ add(firstGeneration,birth,'birth',.48);
 }
 function schedule(){clearTimeout(timer);timer=setTimeout(drawPreambleLinks,45)}
 new MutationObserver(schedule).observe(baseLinks,{childList:true});
