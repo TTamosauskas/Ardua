@@ -1,3 +1,4 @@
+// Valida o catálogo expandido de 38 descobertas científicas e suas associações de fase.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
