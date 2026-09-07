@@ -24,6 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
+      - name: Check engine syntax
+        run: node --check assets/js/ardua.js
+
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
 
@@ -35,6 +38,9 @@ jobs:
 
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
+
+      - name: Validate parallel beta-decay gameplay
+        run: node scripts/validate-beta-parallel.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
