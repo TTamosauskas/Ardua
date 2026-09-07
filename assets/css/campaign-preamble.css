@@ -1,0 +1,51 @@
+/* Ardua — linear primordial chronology and three-way first-generation mass fork. */
+
+/* More legible campaign motto. */
+.campaign-brand strong::after{
+  font-size:clamp(9px,1.05vw,11px)!important;
+  letter-spacing:.24em!important;
+  line-height:1.35!important;
+}
+
+/* Primordial chapter card uses the same visual language as stellar-generation cards. */
+.primordial-generation-banner{margin-top:8px;margin-bottom:20px;border-color:rgba(112,205,244,.28)}
+.primordial-generation-banner>span{color:#8fcfea}
+.primordial-generation-banner>strong{font-size:clamp(17px,2.2vw,20px)}
+.preamble-chapter{margin:11px auto 2px;min-width:220px}
+.primordial-linear-flow,.atomic-linear-flow,.primordial-gas-flow{padding-top:11px;padding-bottom:18px}
+
+/* The first-generation card doubles as the playable formation phase. */
+.generation-phase-banner.phase-node{
+  display:block;
+  width:min(760px,calc(100vw - 44px));
+  max-width:760px;
+  margin:28px auto 18px;
+  padding:14px 18px 15px;
+  border:1px solid rgba(133,175,238,.28);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(13,22,43,.88),rgba(7,12,26,.72));
+  color:#eef5ff;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease;
+}
+.generation-phase-banner.phase-node::before{display:none}
+.generation-phase-banner.phase-node>span{display:block;margin-bottom:4px;font-size:10px;font-weight:800;letter-spacing:.19em;text-transform:uppercase;color:#8fa8d3}
+.generation-phase-banner.phase-node>strong{display:block;font-size:18px;line-height:1.2;letter-spacing:.035em;color:#eef5ff}
+.generation-phase-banner.phase-node>small{display:block;max-width:610px;margin:5px auto 0;font-size:11px;line-height:1.45;color:#9eb0cf}
+.generation-phase-banner.phase-node:hover{transform:translateY(-2px);border-color:rgba(138,216,255,.48);background:linear-gradient(180deg,rgba(20,35,61,.94),rgba(9,17,33,.82))}
+.generation-phase-banner.phase-node.available{opacity:1;box-shadow:inset 0 0 0 1px rgba(94,233,255,.18),0 0 24px rgba(94,233,255,.08)}
+.generation-phase-banner.phase-node.current{opacity:1;border-color:rgba(94,233,255,.58);box-shadow:inset 0 0 0 1px rgba(94,233,255,.20),0 0 28px rgba(94,233,255,.12)}
+.generation-phase-banner.phase-node.completed{opacity:.88;border-color:rgba(189,252,131,.34)}
+.generation-phase-banner.phase-node.locked{opacity:.28;cursor:default}
+
+/* The first stellar mass choice is now exactly three branches. */
+.stellar-branches>.branch-spheres{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:560px!important}
+
+@media(max-width:620px){
+  .campaign-brand strong::after{font-size:8px!important;letter-spacing:.20em!important}
+  .primordial-generation-banner{margin-inline:12px}
+  .generation-phase-banner.phase-node{margin:22px 12px 14px;width:calc(100% - 24px);padding:12px 14px}
+  .generation-phase-banner.phase-node>strong{font-size:16px}
+}
