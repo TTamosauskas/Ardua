@@ -58,7 +58,7 @@ let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0;
 function pairKey(pair){return(pair||[]).join('|')}
 function freshMotif(pair=reactants(),root=rootForCurrentFormula()){motif={session:++sessionSerial,pair:[...pair],root:Number(root)||rootForCurrentFormula(),ratios:ratiosForProduct(),step:0,first:null,second:null,done:false};return motif}
 function resetMotif({stop=true}={}){motif=null;if(stop)stopReplicaVoices()}
-function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;resetMotif()}}
+function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;if(motif?.step>=3)return;resetMotif()}}
 if(phaseTitle)new MutationObserver(syncPhase).observe(phaseTitle,{childList:true,subtree:true,characterData:true});window.addEventListener('ardua:campaign-progress',syncPhase);
 function matchingSlot(token,pair,skip=-1){for(let i=0;i<pair.length;i++)if(i!==skip&&pair[i]===token)return i;return-1}
 function currentStage(){return[...board.querySelectorAll('.objective-motif-stage')].at(-1)||null}
