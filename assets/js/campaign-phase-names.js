@@ -50,22 +50,24 @@ function menuTitleFor(id){
  if(i<0)return'';
  return menuButtons()[i]?.querySelector('strong')?.textContent?.trim()||'';
 }
-function displayName(id){return NAMES[id]||menuTitleFor(id)||id}
+function preferredName(id){return window.ARDUA_FORGE_NAMES?.[id]||NAMES[id]||''}
+function displayName(id){return preferredName(id)||menuTitleFor(id)||id}
 function applyMenuNames(){
  const buttons=menuButtons();
  buttons.forEach((button,index)=>{
-  const id=G.runtimeOrder?.[index],name=NAMES[id];
+  const id=G.runtimeOrder?.[index],name=preferredName(id);
   if(!name)return;
   const strong=button.querySelector('strong');if(strong&&strong.textContent!==name)strong.textContent=name;
  });
 }
 function applyCurrentName(){
- const id=activeId(),name=NAMES[id],el=document.getElementById('phaseTitle');
+ const id=activeId(),name=preferredName(id),el=document.getElementById('phaseTitle');
  if(name&&el&&el.textContent!==name)el.textContent=name;
 }
 function introName(id){
  const name=displayName(id);
  if(!name)return'';
+ if(window.ARDUA_FORGE_NAMES?.[id])return name.toUpperCase();
  if(weakS.has(id))return `PROCESSO-S FRACO · ${name.replace(/^Formação de /i,'')}`;
  if(sProcess.has(id))return `PROCESSO-S · ${name.replace(/^Estrela AGB · /i,'')}`;
  if(rProcess.has(id))return `PROCESSO-R · ${name.replace(/^Formação de /i,'')}`;
@@ -76,7 +78,7 @@ function introName(id){
 function applyIntroName(){
  const id=activeId(),el=document.getElementById('introTitle');if(!id||!el)return;
  const current=(el.textContent||'').trim().toUpperCase();
- const shouldRename=GENERIC_INTROS.has(current)||weakS.has(id)||sProcess.has(id)||rProcess.has(id)||rpProcess.has(id)||decays.has(id)||Object.hasOwn(NAMES,id);
+ const shouldRename=!!window.ARDUA_FORGE_NAMES?.[id]||GENERIC_INTROS.has(current)||weakS.has(id)||sProcess.has(id)||rProcess.has(id)||rpProcess.has(id)||decays.has(id)||Object.hasOwn(NAMES,id);
  if(!shouldRename)return;
  const next=introName(id);if(next&&el.textContent!==next)el.textContent=next;
 }
@@ -91,6 +93,7 @@ if(phaseTitle)new MutationObserver(applyAll).observe(phaseTitle,{childList:true,
 if(introTitle)new MutationObserver(applyAll).observe(introTitle,{childList:true,subtree:true,characterData:true});
 if(intro)new MutationObserver(applyAll).observe(intro,{attributes:true,attributeFilter:['class','aria-hidden']});
 window.addEventListener('ardua:campaign-progress',applyAll);
+window.addEventListener('ardua:forge-names',applyAll);
 window.ARDUA_PHASE_NAMES=NAMES;
 applyAll();setTimeout(applyAll,0);
 window.ARDUA_PREPARE_PREAMBLE_MAP?.();
