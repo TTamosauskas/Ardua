@@ -38,6 +38,15 @@ function extFor(type,url){
  const m=new URL(url).pathname.match(/\.([a-z0-9]{2,5})(?:\/|$)/i);return(m?.[1]||'img').toLowerCase().replace('jpeg','jpg');
 }
 async function removeOld(sym){for(const name of await fs.readdir(imageDir))if(name.startsWith(`${sym}.`))await fs.rm(path.join(imageDir,name),{force:true})}
+function editorialImage(name=''){
+ const n=String(name).toLowerCase();
+ if(!/\.(?:jpe?g|png|webp|gif|svg|tiff?)$/i.test(n))return false;
+ return !/(commons-logo|wiktionary|wikidata|wikipedia-logo|nuvola|crystal.clear|question.book|question.mark|ambox|portal|edit-|merge|redirect|disambig|flag.of|symbol|icon|pictogram|padlock|semi-protection|protection-shackle|featured.article|star.of.life|increase2|decrease2|replace.this.image|magnify-clip)/i.test(n);
+}
+async function fallbackPageImage(title){
+ const parsed=await request(`${api}?${params({action:'parse',redirects:'1',prop:'images',page:title})}`),images=parsed?.parse?.images||[];
+ return images.find(editorialImage)||images.find(x=>/\.(?:jpe?g|png|webp|gif|svg)$/i.test(String(x)))||'';
+}
 
 const entries=Object.entries(sources),pages=new Map();
 for(const batch of chunks(entries)){
@@ -47,9 +56,14 @@ for(const batch of chunks(entries)){
   const page=pageFor(cfg.wikiTitle,result);
   if(!page||page.missing)throw new Error(`${sym}: artigo ausente (${cfg.wikiTitle})`);
   if(page.pageprops?.disambiguation!==undefined)throw new Error(`${sym}: título resolve para desambiguação (${page.title})`);
-  if(!page.pageimage)throw new Error(`${sym}: artigo sem imagem principal (${page.title})`);
   pages.set(sym,page);cfg.wikiResolvedTitle=page.title;cfg.wikiUrl=page.fullurl;
  }
+}
+for(const [sym,cfg] of entries){
+ const page=pages.get(sym);if(page.pageimage)continue;
+ const fallback=await fallbackPageImage(page.title||cfg.wikiTitle);
+ if(!fallback)throw new Error(`${sym}: artigo sem imagem editorial utilizável (${page.title})`);
+ page.pageimage=fallback;console.log(`${sym}: usando imagem editorial de fallback ${fallback}`);await sleep(120);
 }
 
 const imageInfo=new Map();
@@ -86,7 +100,7 @@ await Promise.all(Array.from({length:3},worker));
 if(failures.length)throw new Error(`Falhas na sincronização:\n${failures.join('\n')}`);
 
 await fs.writeFile(dataPath,JSON.stringify(sources,null,2)+'\n');
-const attribution=['# Imagens dos elementos — créditos','', 'As imagens desta pasta são cópias locais das imagens principais dos artigos correspondentes da Wikipédia/Wikimedia. Licenças e créditos abaixo foram obtidos dos metadados do arquivo no momento da sincronização.','', '| Símbolo | Artigo | Fonte da imagem | Licença | Crédito |','|---|---|---|---|---|'];
+const attribution=['# Imagens dos elementos — créditos','', 'As imagens desta pasta são cópias locais das imagens principais ou, quando o artigo carece de `pageimage`, da primeira imagem editorial útil do artigo correspondente da Wikipédia/Wikimedia. Licenças e créditos abaixo foram obtidos dos metadados do arquivo no momento da sincronização.','', '| Símbolo | Artigo | Fonte da imagem | Licença | Crédito |','|---|---|---|---|---|'];
 for(const [sym,cfg] of entries){
  const esc=s=>String(s||'').replace(/\|/g,'\\|').replace(/\n/g,' ');
  attribution.push(`| ${sym} | [${esc(cfg.wikiResolvedTitle)}](${cfg.wikiUrl}) | [arquivo](${cfg.imageSourceUrl}) | ${cfg.imageLicenseUrl?`[${esc(cfg.imageLicense||'licença')}](${cfg.imageLicenseUrl})`:esc(cfg.imageLicense)} | ${esc(cfg.imageArtist)} |`);
