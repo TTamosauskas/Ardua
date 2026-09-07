@@ -1,0 +1,68 @@
+name: Sync phenomenon Wikipedia sources
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/sync-phenomenon-sources.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phenomenon-source-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-phenomena:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Fetch Wikipedia phenomenon image shard
+        run: node scripts/fetch-phenomenon-wikipedia-shard.mjs ${{ matrix.shard }} 12 .phenomenon-shard
+
+      - name: Upload phenomenon image shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: phenomenon-shard-${{ matrix.shard }}
+          path: .phenomenon-shard
+          include-hidden-files: true
+          retention-days: 1
+
+  persist:
+    needs: sync-phenomena
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Download phenomenon image shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: phenomenon-shard-*
+          path: .phenomenon-shards
+
+      - name: Merge Wikipedia phenomenon images
+        run: node scripts/merge-phenomenon-wikipedia-shards.mjs .phenomenon-shards
+
+      - name: Route phenomenon UI to local images
+        run: node scripts/patch-phenomenon-local-images.mjs
+
+      - name: Validate phenomenon sources
+        run: node scripts/validate-phenomenon-sources.mjs
+
+      - name: Persist synchronized phenomenon images
+        run: |
+          if [[ -n "$(git status --porcelain -- assets/data/phenomenon-sources.json assets/images/phenomena assets/js/campaign-discoveries-phenomena.js)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/data/phenomenon-sources.json assets/images/phenomena assets/js/campaign-discoveries-phenomena.js
+            git commit -m "Sincroniza imagens Wikipedia dos fenômenos"
+            git push
+          fi
