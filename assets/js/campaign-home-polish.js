@@ -115,7 +115,11 @@ function timeFor(id){
 }
 let footer=$('campaignTimeFooter');
 if(!footer){footer=document.createElement('div');footer.id='campaignTimeFooter';footer.className='campaign-time-footer';footer.setAttribute('aria-live','polite');map.appendChild(footer)}
-function syncTimeFooter(){const id=nextPlayableId(),text=timeFor(id);footer.dataset.phaseTime=id;footer.innerHTML=`<strong>${text}</strong>`}
+function syncTimeFooter(){
+ const id=nextPlayableId(),text=timeFor(id);
+ if(footer.dataset.phaseTime===id&&footer.dataset.timeText===text)return;
+ footer.dataset.phaseTime=id;footer.dataset.timeText=text;footer.innerHTML=`<strong>${text}</strong>`;
+}
 
 let syncFrame=0;
 function syncAll(){syncFrame=0;syncPhaseStates();syncChapterVisibility();syncTimeFooter();syncReturn()}
