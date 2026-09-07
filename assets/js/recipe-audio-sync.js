@@ -5,6 +5,24 @@ const board=document.getElementById('starBoard'),formula=document.getElementById
 if(!board||!formula)return;
 const SELECTOR='.atom,.primordial-particle,.cosmic-ray,.neutron';
 const ROOTS=[196,220,247,262,294,330];
+
+/* Stretch the engine's own objective-motif waits, so audio and animation share
+   exactly the same expanded cadence. The two waits before the ingredient
+   highlight are doubled; the two waits from highlight to union are tripled. */
+if(!window.__arduaRecipeCadenceHook){
+ const nativeSetTimeout=window.setTimeout.bind(window);
+ const cadence=new Map([[105,210],[75,150],[28,56],[32,64],[285,855],[115,345],[70,210],[42,126]]);
+ Object.defineProperty(window,'__arduaRecipeCadenceHook',{value:true,configurable:false,enumerable:false});
+ window.setTimeout=function(handler,delay,...args){
+  const ms=Number(delay),scaled=cadence.get(ms);
+  if(scaled){
+   const stack=String(new Error().stack||''),motifActive=!!document.querySelector('.objective-motif-stage');
+   if(stack.includes('objectiveMotifConverge')||motifActive)return nativeSetTimeout(handler,scaled,...args);
+  }
+  return nativeSetTimeout(handler,delay,...args);
+ };
+}
+
 const ELEMENT_NAMES={hidrogenio:'H',helio:'He',litio:'Li',berilio:'Be',boro:'B',carbono:'C',nitrogenio:'N',oxigenio:'O',fluor:'F',neonio:'Ne',sodio:'Na',magnesio:'Mg',aluminio:'Al',silicio:'Si',fosforo:'P',enxofre:'S',cloro:'Cl',argonio:'Ar',potassio:'K',calcio:'Ca',escandio:'Sc',titanio:'Ti',vanadio:'V',cromo:'Cr',manganes:'Mn',ferro:'Fe',cobalto:'Co',niquel:'Ni',cobre:'Cu',zinco:'Zn',galio:'Ga',germanio:'Ge',arsenio:'As',selenio:'Se',bromo:'Br',criptonio:'Kr',rubidio:'Rb',estroncio:'Sr',itrio:'Y',zirconio:'Zr',niobio:'Nb',molibdenio:'Mo',tecnecio:'Tc',rutenio:'Ru',rodio:'Rh',paladio:'Pd',prata:'Ag',cadmio:'Cd',indio:'In',estanho:'Sn',antimonio:'Sb',telurio:'Te',iodo:'I',xenonio:'Xe',cesio:'Cs',bario:'Ba',lantanio:'La',cerio:'Ce',praseodimio:'Pr',neodimio:'Nd',promecio:'Pm',samario:'Sm',europio:'Eu',gadolinio:'Gd',terbio:'Tb',disprosio:'Dy',holmio:'Ho',erbio:'Er',tulio:'Tm',iterbio:'Yb',lutecio:'Lu',hafnio:'Hf',tantalo:'Ta',tungstenio:'W',renio:'Re',osmio:'Os',iridio:'Ir',platina:'Pt',ouro:'Au',mercurio:'Hg',talio:'Tl',chumbo:'Pb',bismuto:'Bi',torio:'Th',uranio:'U'};
 const SYMBOLS=new Map(Object.values(ELEMENT_NAMES).map(s=>[s.toLowerCase(),s]));
 Object.assign(ELEMENT_NAMES,{deuterio:'D',tritio:'T','helio-3':'He3','carbono-13':'C13','neonio-22':'Ne22'});
@@ -51,7 +69,7 @@ function emitThirdForHighlight(stage){if(!motif||motif.step!==2)return false;con
 function engineNote(freq){syncPhase();engineCueSerial++;const pair=reactants();if(pair.length<2)return;const f=Number(freq)||rootForCurrentFormula();if(!motif||motif.done||pairKey(motif.pair)!==pairKey(pair)){const m=freshMotif(pair,f);m.step=1;m.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===0){motif.root=f;motif.step=1;motif.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===1){motif.second={token:pair[1],key:'engine:second',slot:1};motif.step=2;playFrequency(f);queueMicrotask(()=>emitThirdForHighlight(currentStage()))}}
 function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios)}
 function engineChordFinal(){if(motif?.done)playFinalAccent(motif.root)}
-window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
+window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,cadence:Object.freeze({note2To3:'2x',note3ToChord:'3x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
 
 document.addEventListener('click',e=>{const el=e.target instanceof Element?e.target.closest(SELECTOR):null;if(!el||!board.contains(el))return;syncPhase();const pair=reactants();if(pair.length<2)return;const token=tokenOf(el),key=keyOf(el);if(!token)return;const preSelected=el.classList.contains('selected'),preCandidate=el.classList.contains('candidate'),currentPairKey=pairKey(pair);let targetIntent=false;if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey)targetIntent=matchingSlot(token,pair)>=0;else if(motif.step===1)targetIntent=matchingSlot(token,motif.pair,motif.first?.slot??-1)>=0&&(preCandidate||!preSelected);if(targetIntent)window.ARDUA_AUDIO_POLISH?.armSelectionMute?.(90);const beforeCue=engineCueSerial,beforeStages=board.querySelectorAll('.objective-motif-stage').length;setTimeout(()=>{syncPhase();if(engineCueSerial>beforeCue)return;const nowSelected=el.isConnected&&el.classList.contains('selected'),stageCount=board.querySelectorAll('.objective-motif-stage').length,newStage=stageCount>beforeStages;if(preSelected){if(motif?.first?.key===key&&motif.step===1&&!nowSelected)resetMotif();return}if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey){const slot=matchingSlot(token,pair);if(slot>=0&&nowSelected)markFirst(token,key,slot,rootForCurrentFormula());return}if(motif.step===1){const slot=matchingSlot(token,motif.pair,motif.first?.slot??-1);if(slot>=0&&(preCandidate||nowSelected||newStage)){markSecond(token,key,slot);return}}emitThirdForHighlight(currentStage())},0)},true);
 
