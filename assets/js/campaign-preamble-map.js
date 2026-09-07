@@ -2,8 +2,8 @@
 (()=>{
 'use strict';
 const G=window.ARDUA_CAMPAIGN_GRAPH,C=window.ARDUA_CAMPAIGN,A=window.ARDUA_REQUIRED_ATLAS;
-const map=document.getElementById('campaignMap'),links=document.getElementById('campaignLinks'),content=document.getElementById('campaignContent');
-if(!G||!C||!A||!map||!links||!content)return;
+const map=document.getElementById('campaignMap'),baseLinks=document.getElementById('campaignLinks'),content=document.getElementById('campaignContent');
+if(!G||!C||!A||!map||!baseLinks||!content)return;
 
 const originals=window.ARDUA_PREAMBLE_ORIGINALS;
 if(originals){
@@ -16,7 +16,6 @@ const zone=map.querySelector('.primordial-zone');
 if(!zone)return;
 const phaseMenu=document.getElementById('phaseMenu');
 const titleFor=id=>window.ARDUA_PHASE_NAMES?.[id]||phaseMenu?.querySelector(`.phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||id;
-const stateClasses=['locked','revealed','available','completed','current'];
 const existing=new Map([...map.querySelectorAll('.phase-node[data-phase]')].map(el=>[el.dataset.phase,el]));
 function phaseNode(id){
  let el=existing.get(id);
@@ -39,7 +38,6 @@ const birth=zone.querySelector('[data-junction="stellar-birth"]');
 const birthImage=zone.querySelector('.birth-bg');
 if(!stellar||!stellarAfter||!birth)return;
 
-// Brown dwarf leaves the mass fork and becomes part of the linear prologue.
 stellar.querySelector('.branch-choice[data-branch-open="sub"]')?.remove();
 stellar.querySelector('.branch-panel[data-branch-panel="sub"]')?.remove();
 
@@ -67,40 +65,34 @@ zone.replaceChildren(
  stellarAfter
 );
 
-// Keep the requested display label independent from the engine's internal phase title.
 const proto=phaseNode('brown_formation')?.querySelector('strong');if(proto)proto.textContent='Protoestrelas';
 
+const layer=document.createElementNS('http://www.w3.org/2000/svg','svg');
+layer.id='campaignPreambleLinks';layer.classList.add('campaign-links','campaign-preamble-links');layer.setAttribute('aria-hidden','true');
+content.appendChild(layer);
 function visible(el){return !!el&&el.getClientRects().length>0}
 function center(el,edge='center'){
  if(!visible(el))return null;const r=el.getBoundingClientRect(),c=content.getBoundingClientRect();let y=r.top-c.top+r.height/2;if(edge==='top')y=r.top-c.top;if(edge==='bottom')y=r.bottom-c.top;return{x:r.left-c.left+r.width/2,y};
 }
 function add(from,to,cls='primordial',bend=.5){
  const a=center(from,'bottom'),b=center(to,'top');if(!a||!b)return;const dy=b.y-a.y,mid=a.y+dy*bend,p=document.createElementNS('http://www.w3.org/2000/svg','path');
- p.setAttribute('d',`M ${a.x.toFixed(1)} ${a.y.toFixed(1)} C ${a.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`);p.setAttribute('class',`campaign-link preamble-link ${cls}`);links.appendChild(p);
+ p.setAttribute('d',`M ${a.x.toFixed(1)} ${a.y.toFixed(1)} C ${a.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${mid.toFixed(1)}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`);p.setAttribute('class',`campaign-link preamble-link ${cls}`);layer.appendChild(p);
 }
 function node(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(visible)||null}
-let drawing=false,timer=0;
+let timer=0;
 function drawPreambleLinks(){
- if(drawing)return;drawing=true;clearTimeout(timer);timer=0;
- links.querySelectorAll('.preamble-link').forEach(p=>p.remove());
- if(map.classList.contains('show')&&map.classList.contains('trail-revealed')){
-  // Replace legacy shortcuts with the new chronology.
-  links.querySelectorAll('.campaign-link.root,.campaign-link.birth').forEach(p=>p.remove());
-  const banner=map.querySelector('.primordial-generation-banner');
-  add(map.querySelector('.singularity-map'),banner,'root',.48);add(banner,node('primordial_d'),'primordial',.45);
-  for(let i=1;i<primordialIds.length;i++)add(node(primordialIds[i-1]),node(primordialIds[i]),'primordial');
-  add(node('first_nebulae'),node('brown_formation'),'primordial');
-  add(node('brown_formation'),node('brown'),'sub');
-  add(node('brown'),firstGeneration,'birth',.52);add(firstGeneration,birth,'birth',.48);
- }
- drawing=false;
+ clearTimeout(timer);timer=0;layer.innerHTML='';
+ const w=content.clientWidth,h=content.scrollHeight;layer.setAttribute('viewBox',`0 0 ${w} ${h}`);layer.setAttribute('width',w);layer.setAttribute('height',h);
+ if(!map.classList.contains('show')||!map.classList.contains('trail-revealed'))return;
+ const banner=map.querySelector('.primordial-generation-banner');
+ add(map.querySelector('.singularity-map'),banner,'root',.48);add(banner,node('primordial_d'),'primordial',.45);
+ for(let i=1;i<primordialIds.length;i++)add(node(primordialIds[i-1]),node(primordialIds[i]),'primordial');
+ add(node('first_nebulae'),node('brown_formation'),'primordial');
+ add(node('brown_formation'),node('brown'),'sub');
+ add(node('brown'),firstGeneration,'birth',.52);add(firstGeneration,birth,'birth',.48);
 }
-function schedule(){clearTimeout(timer);timer=setTimeout(drawPreambleLinks,35)}
-new MutationObserver(muts=>{
- if(drawing)return;
- const baseChange=muts.some(m=>[...m.addedNodes,...m.removedNodes].some(n=>n.nodeType===1&&!n.classList?.contains('preamble-link')));
- if(baseChange)schedule();
-}).observe(links,{childList:true});
+function schedule(){clearTimeout(timer);timer=setTimeout(drawPreambleLinks,45)}
+new MutationObserver(schedule).observe(baseLinks,{childList:true});
 new MutationObserver(schedule).observe(map,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
 window.addEventListener('resize',schedule);
 window.addEventListener('ardua:campaign-progress',schedule);
