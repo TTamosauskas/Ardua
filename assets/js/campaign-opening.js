@@ -5,6 +5,7 @@ const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,map=document.getElem
 if(!C||!map||!trail||!detail)return;
 const root=map.querySelector('.singularity-map'),rootSection=root?.closest('.cosmos-root'),label=rootSection?.querySelector('.singularity-map-label');
 if(!root||!rootSection)return;
+const TRAIL_OPEN_MS=720;
 const EXPLOSION_MS=4600;
 const loadState=C.getState();
 const firstCosmicRun=!loadState.introduced;
@@ -72,6 +73,12 @@ function openCurrentPhaseDetail(){
   detail.classList.add('show');
  },90);
 }
+function openTrailBeforeBurst(){
+ map.classList.add('bigbang-revealing','trail-revealed');
+ trail.setAttribute('aria-hidden','false');
+ trail.classList.remove('trail-arrive');void trail.offsetWidth;trail.classList.add('trail-arrive');
+ window.dispatchEvent(new Event('resize'));
+}
 function finishBigBang(){
  if(firstCosmicRun){
   C.setIntroduced(true);C.setActive('primordial_d');C.markCompleted('bigbang');
@@ -80,23 +87,25 @@ function finishBigBang(){
  }
  finished=true;root.setAttribute('data-state','completed');
  document.documentElement.classList.remove('ardua-awaiting-bigbang');
- map.classList.remove('awaiting-bigbang','bigbang-expanding');
- map.classList.add('bigbang-complete','bigbang-revealing','trail-revealed');
- trail.setAttribute('aria-hidden','false');trail.classList.remove('trail-arrive');
+ map.classList.remove('awaiting-bigbang','bigbang-expanding','bigbang-revealing');
+ map.classList.add('bigbang-complete','trail-revealed');
+ trail.setAttribute('aria-hidden','false');
  if(label){label.hidden=false;label.querySelector('strong').textContent='Big Bang'}
  window.dispatchEvent(new Event('resize'));
- setTimeout(()=>map.classList.remove('bigbang-revealing'),1250);
- setTimeout(openCurrentPhaseDetail,760);
+ setTimeout(openCurrentPhaseDetail,420);
 }
 function beginBigBang(e){
  if(C.editor||started||finished)return;
  started=true;e.preventDefault();e.stopImmediatePropagation();
  window.ARDUA_MUSIC?.play?.();window.ARDUA_MUSIC?.sync?.();
  detail.classList.remove('show');
- map.classList.add('bigbang-expanding');
  root.setAttribute('aria-label','Big Bang em expansão');
- makeBurst();
- setTimeout(finishBigBang,EXPLOSION_MS);
+ openTrailBeforeBurst();
+ setTimeout(()=>{
+  map.classList.add('bigbang-expanding');
+  makeBurst();
+ },TRAIL_OPEN_MS);
+ setTimeout(finishBigBang,TRAIL_OPEN_MS+EXPLOSION_MS);
 }
 
 root.addEventListener('click',beginBigBang,true);
