@@ -20,6 +20,13 @@
 .phase-node[data-generation-role="inheritance"]{box-shadow:0 0 0 1px var(--generation-ring,transparent),0 0 18px rgba(214,190,134,.09)}
 .phase-node[data-generation-role="remnant"]{box-shadow:0 0 0 1px rgba(155,170,193,.15);opacity:.96}
 .second-generation-branches,.third-generation-zone{margin-top:18px}
+
+/* Keep generation landmarks equally compact: details live in the phases themselves. */
+.generation-banner.generation-second .generation-context,
+.generation-banner.generation-third .generation-context,
+.generation-banner.generation-second .generation-model-note,
+.generation-banner.generation-third .generation-model-note{display:none!important}
+
 @media(max-width:620px){.generation-banner{margin:22px 12px 14px;padding:12px 14px}.generation-banner::before,.generation-banner::after{display:none}.generation-banner>strong{font-size:16px}.generation-context{grid-template-columns:1fr;gap:3px;text-align:center}}
 
 .generation-transition-flow{margin:18px auto 8px;max-width:620px}.branch-choice.sphere-enrichment .branch-sphere-art{box-shadow:inset 0 0 0 1px rgba(214,190,134,.32),0 0 24px rgba(214,190,134,.12)}
