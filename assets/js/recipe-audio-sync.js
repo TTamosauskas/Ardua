@@ -61,8 +61,8 @@ function voice(f,d,type,gain){
  const ctx=audio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;o.type=type;o.frequency.setValueAtTime(f,now);g.gain.setValueAtTime(gain,now);o.connect(g);g.connect(ctx.destination);o.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+d);o.stop(now+d+.025)}catch(_e){}
 }
 function playNote(index,root){
- const f=[root,root*1.25,root*1.5][Math.max(0,Math.min(2,index))],third=index===2,d=third?.31:.27;
- voice(f,d,'triangle',third?.188:.181);voice(f*2,d*.84,'sine',third?.039:.037);
+ const f=[root,root*1.25,root*1.5][Math.max(0,Math.min(2,index))],third=index===2,d=third ? .31 : .27;
+ voice(f,d,'triangle',third ? .188 : .181);voice(f*2,d*.84,'sine',third ? .039 : .037);
 }
 function playChord(root){
  for(const f of [root,root*1.25,root*1.5]){voice(f,.56,'triangle',.055);voice(f*2,.46,'sine',.0115)}voice(root*2,.58,'triangle',.027);
@@ -84,7 +84,7 @@ document.addEventListener('click',e=>{
  const preSelected=el.classList.contains('selected'),before=serial(),formulaRoot=first?.root||rootForCurrentFormula();
  if(preSelected){if(first?.key===key)reset();return}
  const remaining=first?matchingSlot(token,pair,first.slot):-1,secondIntent=!!first&&first.key!==key&&remaining>=0;
- const firstSlot=first? -1:matchingSlot(token,pair,-1);
+ const firstSlot=first ? -1 : matchingSlot(token,pair,-1);
  setTimeout(()=>{
   syncPhase();const engineHandled=serial()>before;
   if(secondIntent){
