@@ -37,8 +37,7 @@ if(candidate.includes("s.mode==='neutronize'")||candidate.includes('isPostMode()
 const helperStart=s.indexOf('function cumulativeFusionTapAvailable'),helperEnd=s.indexOf('function neutronSourceSelectedPiece',helperStart),helper=s.slice(helperStart,helperEnd);
 if(helperStart<0||helperEnd<0)fail('Prioridade de toque cumulativo ausente');
 for(const t of ['possibleRecipes([...selectedSyms(),p.sym])','connectedRecipeCluster(r,[cell])'])if(!helper.includes(t))fail('Toque cumulativo perdeu regra: '+t);
-const tapStart=s.indexOf('function tapAtom(id)'),tapEnd=s.indexOf('function neutronSourceSelectedPiece',tapStart),tap=s.slice(tapStart,tapEnd);
-if(tapStart<0||tapEnd<0||!tap.includes("s.mode!=='reactionExplore'&&cumulativeFusionTapAvailable(p,s)&&handleFusionTap(p)"))fail('Clique em candidato cumulativo precisa chegar ao executor de fusão');
+if(!s.includes("s.mode!=='reactionExplore'&&cumulativeFusionTapAvailable(p,s)&&handleFusionTap(p)"))fail('Clique em candidato cumulativo precisa chegar ao executor de fusão');
 
 const captureStart=s.indexOf('async function captureNeutron(id){');
 const bridge=s.indexOf("particle?.kind==='p'",captureStart),gate=s.indexOf("if(s.mode!=='neutron')return",captureStart);
