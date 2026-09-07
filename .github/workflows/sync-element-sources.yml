@@ -1,0 +1,62 @@
+name: Sync element Wikipedia sources
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: element-source-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-elements:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Fetch Wikipedia element image shard
+        run: node scripts/fetch-element-wikipedia-shard.mjs ${{ matrix.shard }} 16 .element-shard
+
+      - name: Upload element image shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-shard-${{ matrix.shard }}
+          path: .element-shard
+          include-hidden-files: true
+          retention-days: 1
+
+  persist:
+    needs: sync-elements
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Download element image shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: element-shard-*
+          path: .element-shards
+
+      - name: Merge Wikipedia element images
+        run: node scripts/merge-element-wikipedia-shards.mjs .element-shards
+
+      - name: Validate element sources
+        run: node scripts/validate-element-sources.mjs
+
+      - name: Persist synchronized element images
+        run: |
+          if [[ -n "$(git status --porcelain -- assets/data/element-sources.json assets/images/elements)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/data/element-sources.json assets/images/elements
+            git commit -m "Sincroniza imagens Wikipedia dos elementos"
+            git push
+          fi
