@@ -1,0 +1,80 @@
+/* Ardua — focused polish for the campaign home/map surface. */
+
+/* Header: brand + one hamburger control. */
+.campaign-map .campaign-brand>span,
+.campaign-map .campaign-mode-chip,
+.campaign-map #campaignData,
+.campaign-map #campaignClose,
+.campaign-map .cycle-arrow{display:none!important}
+.campaign-map .campaign-head{grid-template-columns:minmax(0,1fr) auto!important}
+.campaign-map .campaign-head-actions{justify-self:end}
+.campaign-home-menu-trigger{
+  width:52px;
+  height:52px;
+  min-height:52px;
+  padding:0!important;
+  display:grid!important;
+  place-items:center;
+  border:1px solid rgba(165,198,225,.31);
+  border-radius:16px!important;
+  background:rgba(4,13,25,.68)!important;
+  color:#eaf5ff!important;
+  cursor:pointer;
+}
+.campaign-home-menu-trigger:hover,.campaign-home-menu-trigger:focus-visible{border-color:var(--map-cyan);outline:none;box-shadow:0 0 18px rgba(94,233,255,.15)}
+
+/* Requested breathing room below the fixed header. */
+.campaign-content{margin-top:25px!important}
+
+/* Keep the full guide line above atmospheric layers while phase controls remain on top. */
+.campaign-preamble-links{z-index:3!important;opacity:1!important}
+.campaign-preamble-links .campaign-link{opacity:.9!important;stroke-width:2.25!important;filter:drop-shadow(0 0 6px rgba(99,205,255,.72))!important}
+.campaign-preamble-links .campaign-link.birth{stroke-width:2.5!important}
+
+/* Chapter markers appear only when their phase group has reached the playable trail. */
+.epoch-label[hidden],.preamble-chapter[hidden]{display:none!important}
+
+/* Map hamburger sheet. */
+.campaign-home-menu{position:fixed;inset:0;z-index:470;display:none;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top) + 78px) 14px 18px}
+.campaign-home-menu.show{display:flex}
+.campaign-home-menu-backdrop{position:absolute;inset:0;background:rgba(3,7,16,.68);backdrop-filter:blur(10px)}
+.campaign-home-menu-card{
+  position:relative;
+  width:min(100%,552px);
+  border:1px solid rgba(165,198,225,.24);
+  border-radius:20px;
+  padding:12px;
+  background:linear-gradient(180deg,rgba(12,28,47,.96),rgba(4,12,24,.94));
+  box-shadow:0 24px 70px rgba(0,0,0,.5);
+  backdrop-filter:blur(22px);
+}
+.campaign-home-menu-card>header{display:flex;align-items:center;justify-content:space-between;padding:2px 3px 10px 6px}
+.campaign-home-menu-card>header strong{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#fff}
+.campaign-home-menu-close{width:34px;height:34px;border:1px solid rgba(255,255,255,.13);border-radius:11px;background:rgba(255,255,255,.055);color:#fff;font-size:23px;line-height:1;cursor:pointer}
+.campaign-home-menu-actions{display:grid;gap:7px}
+.campaign-home-menu-actions>button{
+  width:100%;min-height:58px;border:1px solid rgba(255,255,255,.12);border-radius:15px;padding:10px 13px;
+  background:rgba(255,255,255,.045);color:#fff;text-align:left;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.campaign-home-menu-actions>button:hover,.campaign-home-menu-actions>button:focus-visible{background:rgba(255,255,255,.085);border-color:rgba(138,216,255,.42);outline:none}
+.campaign-home-menu-actions>button:active{transform:scale(.988)}
+.campaign-home-menu-actions>button:disabled{opacity:.35;cursor:default}
+.campaign-home-menu-actions span{display:block;font-size:14px;font-weight:900}
+.campaign-home-menu-actions small{display:block;margin-top:3px;color:#aebbd6;font-size:10px;line-height:1.25}
+
+/* Dynamic cosmic-time footer. */
+.campaign-time-footer{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 16px);z-index:32;transform:translateX(-50%);
+  min-width:190px;max-width:calc(100vw - 28px);padding:8px 14px;border:1px solid rgba(137,180,220,.18);border-radius:999px;
+  background:rgba(3,10,21,.76);backdrop-filter:blur(13px);box-shadow:0 8px 28px rgba(0,0,0,.22);text-align:center;pointer-events:none;
+  color:#c8d9ea;font-size:10px;font-weight:760;letter-spacing:.055em;
+}
+.campaign-time-footer strong{color:#f1f7ff;font-weight:900}
+.campaign-map.awaiting-bigbang .campaign-time-footer{opacity:.72}
+
+@media(max-width:620px){
+  .campaign-map .campaign-head{padding-inline:13px!important}
+  .campaign-home-menu-trigger{width:48px;height:48px;min-height:48px}
+  .campaign-time-footer{bottom:calc(env(safe-area-inset-bottom) + 10px);font-size:9px;padding:7px 12px}
+}
+@media(prefers-reduced-motion:reduce){.campaign-home-menu-actions>button{transition:none}}
