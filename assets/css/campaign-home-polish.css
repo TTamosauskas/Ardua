@@ -26,10 +26,14 @@
 /* Requested breathing room below the fixed header. */
 .campaign-content{margin-top:25px!important}
 
-/* Keep the full guide line above atmospheric layers while phase controls remain on top. */
-.campaign-preamble-links{z-index:3!important;opacity:1!important}
-.campaign-preamble-links .campaign-link{opacity:.9!important;stroke-width:2.25!important;filter:drop-shadow(0 0 6px rgba(99,205,255,.72))!important}
-.campaign-preamble-links .campaign-link.birth{stroke-width:2.5!important}
+/* Guide lines always stay behind the readable campaign surface. */
+.campaign-preamble-links{z-index:1!important;opacity:1!important;pointer-events:none!important}
+.campaign-preamble-links .campaign-link{opacity:.82!important;stroke-width:2.25!important;filter:drop-shadow(0 0 5px currentColor)!important}
+.campaign-preamble-links .campaign-link.preamble-red{stroke:#ff4b43!important;color:rgba(255,75,67,.56)}
+.campaign-preamble-links .campaign-link.preamble-orange{stroke:#ff9a45!important;color:rgba(255,154,69,.52)}
+.campaign-preamble-links .campaign-link.birth{stroke:#d8f5ff!important;color:rgba(216,245,255,.40);stroke-width:2.35!important}
+.campaign-trail,.campaign-content>.cosmos-root{position:relative;z-index:2}
+.campaign-trail .phase-node,.campaign-trail .epoch-label,.campaign-trail .generation-banner,.campaign-trail .branch-cluster,.campaign-trail .stellar-birth,.campaign-trail .convergence{position:relative;z-index:4}
 
 /* Chapter markers appear only when their phase group has reached the playable trail. */
 .epoch-label[hidden],.preamble-chapter[hidden]{display:none!important}
@@ -62,19 +66,13 @@
 .campaign-home-menu-actions span{display:block;font-size:14px;font-weight:900}
 .campaign-home-menu-actions small{display:block;margin-top:3px;color:#aebbd6;font-size:10px;line-height:1.25}
 
-/* Dynamic cosmic-time footer. */
-.campaign-time-footer{
-  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 16px);z-index:32;transform:translateX(-50%);
-  min-width:190px;max-width:calc(100vw - 28px);padding:8px 14px;border:1px solid rgba(137,180,220,.18);border-radius:999px;
-  background:rgba(3,10,21,.76);backdrop-filter:blur(13px);box-shadow:0 8px 28px rgba(0,0,0,.22);text-align:center;pointer-events:none;
-  color:#c8d9ea;font-size:10px;font-weight:760;letter-spacing:.055em;
-}
-.campaign-time-footer strong{color:#f1f7ff;font-weight:900}
-.campaign-map.awaiting-bigbang .campaign-time-footer{opacity:.72}
+/* Cosmic time belongs to the selected phase detail, directly below its title. */
+#campaignTimeFooter{display:none!important}
+.map-detail .phase-cosmic-time{margin:7px 0 13px;padding:8px 10px;border:1px solid rgba(137,180,220,.16);border-radius:11px;background:rgba(9,20,35,.56);color:#cbdced;font-size:10px;line-height:1.35;font-weight:780;letter-spacing:.025em}
+.map-detail .phase-cosmic-time strong{color:#f2f8ff;font-weight:900}
 
 @media(max-width:620px){
   .campaign-map .campaign-head{padding-inline:13px!important}
   .campaign-home-menu-trigger{width:48px;height:48px;min-height:48px}
-  .campaign-time-footer{bottom:calc(env(safe-area-inset-bottom) + 10px);font-size:9px;padding:7px 12px}
 }
 @media(prefers-reduced-motion:reduce){.campaign-home-menu-actions>button{transition:none}}
