@@ -14,8 +14,10 @@
 .preamble-chapter{margin:11px auto 2px;min-width:220px}
 .primordial-linear-flow,.atomic-linear-flow,.primordial-gas-flow{padding-top:11px;padding-bottom:18px}
 
-/* The canonical map keeps drawing its former shortcuts; this layer replaces only those two early links. */
-#campaignLinks .campaign-link.root,#campaignLinks .campaign-link.birth{display:none!important}
+/* The dedicated preamble SVG owns the complete guide line from Big Bang to first generation. */
+#campaignLinks .campaign-link.root,
+#campaignLinks .campaign-link.primordial,
+#campaignLinks .campaign-link.birth{display:none!important}
 .campaign-preamble-links{z-index:1!important;pointer-events:none!important;overflow:visible}
 
 /* The first-generation card doubles as the playable formation phase. */
