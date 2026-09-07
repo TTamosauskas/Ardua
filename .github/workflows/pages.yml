@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,6 +23,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+
+      - name: Sync Wikipedia element images
+        run: node scripts/sync-element-wikipedia-images.mjs
+
+      - name: Persist synchronized element images
+        run: |
+          if [[ -n "$(git status --porcelain -- assets/data/element-sources.json assets/images/elements)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/data/element-sources.json assets/images/elements
+            git commit -m "Sincroniza imagens Wikipedia dos elementos"
+            git push
+          fi
 
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
