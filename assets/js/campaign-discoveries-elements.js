@@ -53,6 +53,26 @@ function sourceMeta(){
 }
 sourceMeta();
 
+function firstCreationPhases(phases){
+ const byId=new Map((phases||[]).map(p=>[p.id,p])),first=new Map(),order=G.baseOrder||G.runtimeOrder||[];
+ for(const id of order){const p=byId.get(id);if(p?.newSym&&!first.has(p.newSym))first.set(p.newSym,[id])}
+ if(byId.has('primordial_he3d')&&byId.has('primordial_td'))first.set('He',['primordial_he3d','primordial_td']);
+ return first;
+}
+let creationGateSerial=0;
+async function enforceElementCreationGate(){
+ if(!modal.classList.contains('discoveries-view'))return;
+ const serial=++creationGateSerial,src=await sourceMeta();if(serial!==creationGateSerial)return;
+ const first=firstCreationPhases(src.phases),done=new Set(C.getState?.().completed||[]),editor=!!C.editor;let visible=0;
+ catalog.querySelectorAll('.el-card').forEach(elementCard=>{
+  const sym=elementCard.querySelector('.s')?.textContent?.trim()||'',required=first.get(sym)||[],show=editor||required.some(id=>done.has(id));
+  elementCard.hidden=!show;if(show)visible++;
+ });
+ const empties=[...catalog.querySelectorAll(':scope > .discovery-empty')];
+ if(visible)empties.forEach(el=>el.remove());
+ else if(!empties.length){const empty=document.createElement('div');empty.className='discovery-empty';empty.textContent='Os elementos aparecem aqui depois que sua primeira fase de criação é concluída.';catalog.appendChild(empty)}
+}
+
 function enforceTwoTabs(){
  const tabs=$('discoveriesTabs');if(!tabs)return;
  tabs.querySelector('[data-discovery-tab="reactions"]')?.remove();
@@ -61,11 +81,11 @@ function enforceTwoTabs(){
  if(!elementBtn||!phenomenaBtn)return;
  if(!elementBtn.classList.contains('active')&&!phenomenaBtn.classList.contains('active'))elementBtn.click();
 }
-function scheduleTabs(){requestAnimationFrame(()=>requestAnimationFrame(enforceTwoTabs))}
+function scheduleTabs(){requestAnimationFrame(()=>requestAnimationFrame(()=>{enforceTwoTabs();enforceElementCreationGate()}))}
 new MutationObserver(scheduleTabs).observe(modal,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
 $('campaignData')?.addEventListener('click',scheduleTabs);
 window.addEventListener('ardua:campaign-progress',scheduleTabs);
-setTimeout(enforceTwoTabs,0);
+setTimeout(()=>{enforceTwoTabs();enforceElementCreationGate()},0);
 
 const supers={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
 function recipeTokens(text){
