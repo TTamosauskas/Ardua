@@ -1,4 +1,4 @@
-/* Ardua — discoveries element detail as an in-place view with Wikipedia context and related phases. */
+/* Ardua — discoveries element detail as an in-place view with canonical Wikipedia/local-image/Periodic Videos sources. */
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH;
@@ -10,26 +10,16 @@ if(!document.querySelector('link[data-ardua-element-detail-style]')){
 }
 
 const WIKI_API='https://pt.wikipedia.org/w/api.php';
+const ELEMENT_SOURCES_URL=new URL('assets/data/element-sources.json',document.baseURI).href;
 const PERIODIC_PLAYLIST='PL7A1F4CF36C085DE1';
-const PERIODIC_VIDEO_IDS=Object.freeze({
- H:'6rdmpx39PRk',
- He:'M6xZZiaLOV4',
- Li:'LfS10ArXTBA',
- Be:'qy8JyQShZRA',
- B:'JzqdHkpXuy4',
- O:'WuG5WTId-IY',
- F:'vtWp45Eewtw',
- Na:'7IT2I3LtlNE',
- Mg:'FKkWdizutxI',
- Cl:'BXCfBl4rmh0',
- K:'pPdevJTGAYY',
- Br:'Slt3_5upuSs',
- I:'JUBsJLRSM64',
- U:'B8vVZTvJNGk'
-});
-const WIKI_TITLES=Object.freeze({H:'Hidrogénio'});
 const wikiCache=new Map();
+let elementSourcesPromise=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function elementSources(){
+ if(elementSourcesPromise)return elementSourcesPromise;
+ elementSourcesPromise=fetch(ELEMENT_SOURCES_URL,{cache:'force-cache'}).then(r=>r.ok?r.json():Promise.reject(new Error('element sources unavailable'))).catch(()=>({}));
+ return elementSourcesPromise;
+}
 
 function parseSource(text){
  const phases=[],colors={},weights={};
@@ -52,6 +42,7 @@ function sourceMeta(){
  return window.ARDUA_PHASE_SOURCE_META_PROMISE;
 }
 sourceMeta();
+elementSources();
 
 function firstCreationPhases(phases){
  const byId=new Map((phases||[]).map(p=>[p.id,p])),first=new Map(),order=G.baseOrder||G.runtimeOrder||[];
@@ -150,24 +141,24 @@ function firstExtractParagraph(text){
 function wikiFallbackUrl(name){return `https://pt.wikipedia.org/wiki/${encodeURIComponent(String(name||'').trim().replace(/\s+/g,'_'))}`}
 async function wikiData(d){
  const key=d.sym;if(wikiCache.has(key))return wikiCache.get(key);
- const title=WIKI_TITLES[d.sym]||d.name;
- const parseParams=new URLSearchParams({origin:'*',action:'parse',format:'json',formatversion:'2',redirects:'1',prop:'text|displaytitle',page:title});
- const metaParams=new URLSearchParams({origin:'*',action:'query',format:'json',formatversion:'2',redirects:'1',prop:'pageimages|info|extracts',inprop:'url',exintro:'1',explaintext:'1',piprop:'thumbnail',pithumbsize:'900',titles:title});
- const parseReq=fetch(`${WIKI_API}?${parseParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki parse unavailable'))).catch(()=>null);
- const metaReq=fetch(`${WIKI_API}?${metaParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki metadata unavailable'))).catch(()=>null);
- const promise=Promise.all([parseReq,metaReq]).then(([parsed,meta])=>{
-  const page=meta?.query?.pages?.[0]||{},resolvedTitle=page.title||parsed?.parse?.title||title;
+ const promise=elementSources().then(async sources=>{
+  const cfg=sources[d.sym]||{},title=cfg.wikiTitle||d.name;
+  const parseParams=new URLSearchParams({origin:'*',action:'parse',format:'json',formatversion:'2',redirects:'1',prop:'text|displaytitle',page:title});
+  const metaParams=new URLSearchParams({origin:'*',action:'query',format:'json',formatversion:'2',redirects:'1',prop:'info|extracts',inprop:'url',exintro:'1',explaintext:'1',titles:title});
+  const parseReq=fetch(`${WIKI_API}?${parseParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki parse unavailable'))).catch(()=>null);
+  const metaReq=fetch(`${WIKI_API}?${metaParams.toString()}`,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki metadata unavailable'))).catch(()=>null);
+  const [parsed,meta]=await Promise.all([parseReq,metaReq]),page=meta?.query?.pages?.[0]||{},resolvedTitle=cfg.wikiResolvedTitle||page.title||parsed?.parse?.title||title;
   return{
    title:resolvedTitle,
-   url:page.fullurl||wikiFallbackUrl(resolvedTitle),
-   image:page.thumbnail?.source||'',
+   url:cfg.wikiUrl||page.fullurl||wikiFallbackUrl(resolvedTitle),
+   image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'',
    intro:firstWikiParagraph(parsed?.parse?.text)||firstExtractParagraph(page.extract)||d.fact||''
   };
- }).catch(()=>({title,url:wikiFallbackUrl(title),image:'',intro:d.fact||''}));
+ }).catch(()=>({title:d.name,url:wikiFallbackUrl(d.name),image:'',intro:d.fact||''}));
  wikiCache.set(key,promise);return promise;
 }
-function periodicVideoUrl(d){
- const id=PERIODIC_VIDEO_IDS[d.sym];
+function periodicVideoUrl(d,sources){
+ const id=sources?.[d.sym]?.periodicVideoId;
  if(id)return`https://www.youtube.com/watch?v=${id}`;
  const z=Math.max(1,Number(String(d.z).replace(/\D/g,''))||1);
  return`https://www.youtube.com/embed/videoseries?list=${PERIODIC_PLAYLIST}&index=${Math.max(0,z-1)}`;
@@ -236,12 +227,12 @@ function phaseMarkup(phases){
 }
 async function showElementDetail(elementCard){
  const d=detailData(elementCard),host=ensureDetail(),body=$('elementDiscoveryBody');if(!d.sym||!body)return;
- const src=await sourceMeta(),colors=src.colors[d.sym]||['#f7fbff','#b9cbe1','#667b94'],weight=src.weights[d.sym]||'—',phases=relatedPhases(d.sym,src.phases),gradient=`radial-gradient(circle at 30% 20%,${colors[0]},${colors[1]} 46%,${colors[2]} 100%)`;
+ const [src,sources]=await Promise.all([sourceMeta(),elementSources()]),colors=src.colors[d.sym]||['#f7fbff','#b9cbe1','#667b94'],weight=src.weights[d.sym]||'—',phases=relatedPhases(d.sym,src.phases),gradient=`radial-gradient(circle at 30% 20%,${colors[0]},${colors[1]} 46%,${colors[2]} 100%)`;
  setDetailMode(true);host.dataset.open='1';host.dataset.sym=d.sym;host.hidden=false;host.setAttribute('aria-busy','true');const title=host.querySelector('[data-element-detail-title]');if(title)title.textContent=d.name;body.innerHTML=loadingMarkup(d,gradient,weight);card.scrollTo({top:0,behavior:'auto'});
  const wiki=await wikiData(d);
  if(host.hidden||host.dataset.sym!==d.sym)return;
  host.removeAttribute('aria-busy');
- const image=wiki.image?`<img class="element-wiki-image" src="${esc(wiki.image)}" alt="${esc(d.name)}" loading="eager" referrerpolicy="no-referrer">`:`<div class="element-wiki-image-placeholder">${esc(d.sym)}</div>`;
+ const image=wiki.image?`<img class="element-wiki-image" src="${esc(wiki.image)}" alt="${esc(d.name)}" loading="eager">`:`<div class="element-wiki-image-placeholder">${esc(d.sym)}</div>`;
  body.innerHTML=`<figure class="element-wiki-figure">${image}</figure>
   <div class="info-panel discovery-element-info element-wiki-info">
    ${atomicTile(d,gradient,weight)}
@@ -250,7 +241,7 @@ async function showElementDetail(elementCard){
   <div class="element-related-phases"><strong>Aparece em:</strong><div>${phaseMarkup(phases)}</div></div>
   <div class="element-source-actions">
    <a class="element-source-btn" href="${esc(wiki.url)}" target="_blank" rel="noopener noreferrer">Wikipedia</a>
-   <a class="element-source-btn" href="${esc(periodicVideoUrl(d))}" target="_blank" rel="noopener noreferrer">Periodic Videos</a>
+   <a class="element-source-btn" href="${esc(periodicVideoUrl(d,sources))}" target="_blank" rel="noopener noreferrer">Periodic Videos</a>
   </div>`;
  host.scrollTop=0;
 }
