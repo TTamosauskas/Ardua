@@ -1,0 +1,126 @@
+/* Ardua — phenomenon grid + Wikipedia detail inside Descobertas. */
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:4px;
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-group{display:none!important}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card{
+  width:100%;
+  aspect-ratio:1/1;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 7px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:13px;
+  background:rgba(255,255,255,.045);
+  color:#eef7ff;
+  text-align:center;
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card:hover,
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card:focus-visible{
+  transform:translateY(-2px);
+  border-color:rgba(112,205,244,.38);
+  background:rgba(255,255,255,.065);
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+  outline:0;
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-glyph{
+  min-width:0;
+  width:auto;
+  height:auto;
+  display:block;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#dff5ff;
+  font-size:22px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.04em;
+  text-shadow:0 0 14px rgba(112,205,244,.20);
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card>span:last-child{
+  width:100%;
+  min-width:0;
+  display:block;
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card strong{
+  display:-webkit-box;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  color:#dfeaf5;
+  font-size:9px;
+  line-height:1.18;
+  font-weight:850;
+  letter-spacing:.01em;
+}
+#menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card small{display:none!important}
+
+.phenomenon-discovery-detail[hidden]{display:none!important}
+.phenomenon-wiki-loading{display:grid;gap:14px}
+.phenomenon-wiki-loading .phenomenon-wiki-image-placeholder{animation:phenomenonWikiPulse 1.3s ease-in-out infinite alternate}
+.phenomenon-wiki-figure{
+  margin:0 0 14px;
+  overflow:hidden;
+  border:1px solid rgba(139,190,222,.16);
+  border-radius:16px;
+  background:rgba(2,7,15,.76);
+  box-shadow:0 12px 34px rgba(0,0,0,.24);
+}
+.phenomenon-wiki-image{
+  display:block;
+  width:100%;
+  max-height:320px;
+  object-fit:contain;
+  background:#030711;
+}
+.phenomenon-wiki-image-placeholder{
+  min-height:210px;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  color:#7f9bb0;
+  background:radial-gradient(circle at 50% 42%,rgba(91,169,208,.12),rgba(4,9,18,.96) 68%);
+  font-size:22px;
+  font-weight:950;
+  letter-spacing:.02em;
+}
+.phenomenon-wiki-copy{
+  margin:0;
+  padding:14px;
+  border:1px solid rgba(151,177,224,.14);
+  border-radius:15px;
+  background:rgba(255,255,255,.025);
+}
+.phenomenon-wiki-copy p{
+  margin:0;
+  color:#cbd8e7;
+  font-size:11px;
+  line-height:1.65;
+}
+@keyframes phenomenonWikiPulse{from{opacity:.48}to{opacity:.88}}
+
+@media(max-width:700px){
+  #menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  #menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card{padding:8px 5px;border-radius:12px}
+  #menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-glyph{font-size:20px}
+  #menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid .discovery-card strong{font-size:8.5px}
+  .phenomenon-wiki-image{max-height:245px}
+  .phenomenon-wiki-image-placeholder{min-height:160px}
+  .phenomenon-wiki-copy p{font-size:10.5px;line-height:1.58}
+}
+@media(max-width:420px){
+  #menuModal.discoveries-view #discoveryAtlas.phenomena-square-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .phenomenon-wiki-copy p{font-size:10px;line-height:1.55}
+}
