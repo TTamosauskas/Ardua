@@ -19,17 +19,21 @@ function candidatesFor(id){
  const row=source.find(x=>x.id===id),mapTitle=document.querySelector(`.phase-node[data-phase="${id}"] strong`)?.textContent||'',menuTitle=document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] strong`)?.textContent||'';
  return [row?.title,window.ARDUA_PHASE_NAMES?.[id],window.ARDUA_FORGE_NAMES?.[id],mapTitle,menuTitle].filter(Boolean).map(norm);
 }
+function branchesFor(id){
+ const row=source.find(x=>x.id===id),menuBranch=document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] small`)?.textContent||'';
+ return [row?.branch,menuBranch].filter(Boolean).map(norm);
+}
 function resolve(){
  const t=norm(phaseTitle.textContent),b=norm(branchLabel?.textContent),ids=G.runtimeOrder||[];
- let matches=ids.filter(id=>candidatesFor(id).includes(t));
- if(matches.length===1)return matches[0];
- if(matches.length>1&&b){
-  const byBranch=matches.filter(id=>{const row=source.find(x=>x.id===id),menuBranch=document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] small`)?.textContent||'';return [row?.branch,menuBranch].filter(Boolean).map(norm).includes(b)});
-  if(byBranch.length===1)return byBranch[0];
- }
  if(b){
-  const bySource=source.filter(row=>norm(row.title)===t&&norm(row.branch)===b);if(bySource.length===1)return bySource[0].id;
+  const branchMatches=ids.filter(id=>branchesFor(id).includes(b));
+  if(branchMatches.length===1)return branchMatches[0];
+  if(branchMatches.length>1){const exact=branchMatches.filter(id=>candidatesFor(id).includes(t));if(exact.length===1)return exact[0]}
  }
+ const titleMatches=ids.filter(id=>candidatesFor(id).includes(t));
+ if(titleMatches.length===1)return titleMatches[0];
+ if(titleMatches.length>1&&b){const exact=titleMatches.filter(id=>branchesFor(id).includes(b));if(exact.length===1)return exact[0]}
+ if(b){const sourceMatch=source.filter(row=>norm(row.branch)===b&&norm(row.title)===t);if(sourceMatch.length===1)return sourceMatch[0].id}
  return source.find(row=>norm(row.title)===t)?.id||'';
 }
 let busy=false;
