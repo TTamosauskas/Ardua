@@ -22,8 +22,15 @@
   transform:translateY(-50%)!important;
 }
 
-/* Keep the existing two-pulse recipe cue clearly legible. */
-.formula-line.recipe-intro-flash{animation:recipeIntroFlash .62s ease-in-out 2}
+/* Initial recipe cue: the line gains and loses bold weight three times, with no flash. */
+@keyframes recipeWeightPulse{
+  0%,100%{font-weight:400}
+  50%{font-weight:950}
+}
+.formula-line.recipe-intro-flash{
+  animation:recipeWeightPulse .46s ease-in-out 3!important;
+}
+.formula-line.recipe-intro-flash>strong{font-weight:inherit!important}
 
 /* Discoveries: close from the upper-right corner; the legacy bottom action stays hidden in this view. */
 #menuModal.discoveries-view #closeMenu{display:none!important}
