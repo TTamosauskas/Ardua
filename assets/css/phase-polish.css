@@ -32,6 +32,20 @@
 }
 .formula-line.recipe-intro-flash>strong{font-weight:inherit!important}
 
+/* Beta-decay waiting nuclei: a tight irregular tremor communicates nuclear instability while the scheduled beta transition is pending. */
+.atom.beta-waiting{
+  animation:betaWaitingTremble .12s steps(2,end) infinite!important;
+  will-change:margin-left,margin-top,filter;
+}
+@keyframes betaWaitingTremble{
+  0%{margin-left:-2px;margin-top:1px;filter:brightness(.98)}
+  25%{margin-left:1px;margin-top:-2px;filter:brightness(1.08)}
+  50%{margin-left:2px;margin-top:1px;filter:brightness(1.02)}
+  75%{margin-left:-1px;margin-top:2px;filter:brightness(1.1)}
+  100%{margin-left:-2px;margin-top:1px;filter:brightness(.98)}
+}
+@media(prefers-reduced-motion:reduce){.atom.beta-waiting{animation:betaWaitingPulse .7s ease-in-out infinite alternate!important}@keyframes betaWaitingPulse{from{filter:brightness(.96)}to{filter:brightness(1.16)}}}
+
 /* Discoveries: close from the upper-right corner; the legacy bottom action stays hidden in this view. */
 #menuModal.discoveries-view #closeMenu{display:none!important}
 #menuModal.discoveries-view .card>h2{padding-right:46px}
