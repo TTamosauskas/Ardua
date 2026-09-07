@@ -120,3 +120,77 @@ window.addEventListener('resize',schedule);
 window.addEventListener('ardua:campaign-progress',schedule);
 schedule();
 })();
+
+/* Phase utility menu: map, discoveries, restart and soundtrack. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const trigger=$('menuOpenBtn');
+if(!trigger)return;
+
+const SOUND_KEY='arduaSoundtrackEnabledV1';
+trigger.classList.add('phase-menu-trigger');
+trigger.innerHTML='<span class="hamburger-icon" aria-hidden="true"><i></i><i></i><i></i></span>';
+trigger.setAttribute('aria-label','Abrir menu');
+trigger.setAttribute('aria-haspopup','dialog');
+trigger.setAttribute('aria-expanded','false');
+
+const host=document.createElement('div');
+host.id='phaseQuickMenu';
+host.className='phase-quick-menu';
+host.setAttribute('aria-hidden','true');
+host.innerHTML=`<div class="phase-quick-backdrop" data-quick-close></div>
+ <section class="phase-quick-card" role="dialog" aria-modal="true" aria-labelledby="phaseQuickTitle">
+  <header><strong id="phaseQuickTitle">Menu</strong><button type="button" class="phase-quick-close" data-quick-close aria-label="Fechar menu">×</button></header>
+  <div class="phase-quick-actions">
+   <button type="button" id="phaseQuickMap"><span>Mapa</span><small>Voltar ao mapa da campanha</small></button>
+   <button type="button" id="phaseQuickDiscoveries"><span>Descobertas</span><small>Reações, elementos e fenômenos</small></button>
+   <button type="button" id="phaseQuickRestart"><span>Recomeçar</span><small>Reiniciar esta fase desde o início</small></button>
+   <button type="button" id="phaseQuickSound"><span></span><small>Controla somente a trilha sonora</small></button>
+  </div>
+ </section>`;
+document.body.appendChild(host);
+
+const soundBtn=$('phaseQuickSound'),soundLabel=soundBtn?.querySelector('span');
+function soundtrackEnabled(){try{return localStorage.getItem(SOUND_KEY)!=='0'}catch(_e){return true}}
+function updateSoundLabel(){if(soundLabel)soundLabel.textContent=soundtrackEnabled()?'Desligar Trilha Sonora':'Ligar Trilha Sonora'}
+function applySound(enabled,persist=true){
+ const audio=$('arduaSoundtrack');
+ if(audio)audio.muted=!enabled;
+ if(persist){try{localStorage.setItem(SOUND_KEY,enabled?'1':'0')}catch(_e){}}
+ if(enabled)window.ARDUA_MUSIC?.play?.();
+ updateSoundLabel();
+}
+applySound(soundtrackEnabled(),false);
+
+function openQuickMenu(){
+ host.classList.add('show');host.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');updateSoundLabel();
+ requestAnimationFrame(()=>$('phaseQuickMap')?.focus());
+}
+function closeQuickMenu(returnFocus=true){
+ host.classList.remove('show');host.setAttribute('aria-hidden','true');trigger.setAttribute('aria-expanded','false');
+ if(returnFocus)trigger.focus();
+}
+
+// The campaign map owns the same button for its legacy/programmatic launch path.
+// Trusted user clicks open this utility menu; synthetic clicks keep the existing map/discovery bridge intact.
+document.addEventListener('click',e=>{
+ const button=e.target instanceof Element?e.target.closest('#menuOpenBtn'):null;
+ if(!button||e.isTrusted===false)return;
+ e.preventDefault();e.stopImmediatePropagation();openQuickMenu();
+},true);
+
+host.addEventListener('click',e=>{
+ if(e.target instanceof Element&&e.target.closest('[data-quick-close]'))closeQuickMenu();
+});
+$('phaseQuickMap')?.addEventListener('click',()=>{closeQuickMenu(false);trigger.click()});
+$('phaseQuickDiscoveries')?.addEventListener('click',()=>{closeQuickMenu(false);$('campaignData')?.click()});
+$('phaseQuickRestart')?.addEventListener('click',()=>{
+ const id=window.ARDUA_CAMPAIGN?.getState?.().activeId;
+ const button=id?document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"]`):null;
+ closeQuickMenu(false);
+ if(button)button.click();
+});
+soundBtn?.addEventListener('click',()=>applySound(!soundtrackEnabled(),true));
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&host.classList.contains('show')){e.preventDefault();closeQuickMenu()}});
+})();
