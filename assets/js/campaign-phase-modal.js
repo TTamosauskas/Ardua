@@ -27,7 +27,7 @@ function timeFor(id){if(PHASE_TIME[id])return PHASE_TIME[id];const gen=GEN?.gene
 function segmentFor(id){if(EARLY_SEGMENTS[id])return EARLY_SEGMENTS[id];const row=meta(id),gen=GEN?.generationOf?.(id),prefix=GEN_LABEL[gen];if(prefix&&row.branch)return`${prefix} - ${row.branch}`;return row.branch||prefix||'Campanha Cósmica'}
 function visualFor(id){const v=meta(id).visual;if(v)return v;if(id==='bigbang')return'bigBang';if(id.startsWith('primordial_'))return id==='primordial_li'?'primordialLi':(id.includes('he')?'primordialHe':'primordialH');if(id.startsWith('atomic_'))return id==='atomic_li'?'primordialLi':(id==='atomic_he'?'primordialHe':'primordialH');return'nebula'}
 function completed(id){return new Set(C.getState?.().completed||[]).has(id)}
-function unlocked(id){return !!C.isUnlocked?.(id)}
+function phaseAccessible(id){const st=C.getState?.()||{},done=new Set(st.completed||[]);return !!(C.editor||st.activeId===id||done.has(id)||C.isUnlocked?.(id))}
 
 let preview=$('campaignPhasePreview');
 if(!preview){
@@ -37,24 +37,25 @@ if(!preview){
   <h2 data-phase-title></h2>
   <p class="intro-sub" data-phase-time></p>
   <div class="stellar-portrait" aria-hidden="true"><div class="stellar-art nebula" data-phase-art></div></div>
-  <div class="phase-modal-actions"><button type="button" class="phase-modal-close" data-phase-preview-close>FECHAR</button><button type="button" class="stellar-start" data-phase-preview-launch>EXPLORAR</button></div>
+  <div class="phase-modal-actions"><button type="button" class="phase-modal-close" data-phase-preview-close>FECHAR</button><button type="button" class="stellar-start" data-phase-preview-launch>CONTINUAR</button></div>
  </div>`;
  document.body.appendChild(preview);
 }
 const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
-let previewId='',bypassMapPhase=false,suppressMapClicksUntil=0;
+let previewId='',bypassMapPhase=false,suppressMapClicksUntil=0,launchingId='';
 function renderPreview(id){
- if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent=completed(id)?'REVISITAR':'EXPLORAR';launch.disabled=!unlocked(id);preview.dataset.phaseId=id;
+ if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent='CONTINUAR';launch.disabled=!phaseAccessible(id);preview.dataset.phaseId=id;
 }
-async function openPreview(id){renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
+async function openPreview(id){if(!phaseAccessible(id))return;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
 function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
 function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
 function visibleNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||map.querySelector(`.phase-node[data-phase="${id}"]`)}
-function dismissEngineIntro(){if(engineIntro?.classList.contains('show'))setTimeout(()=>engineStart?.click(),0)}
+function dismissEngineIntro(){if(!launchingId||C.getState?.().activeId!==launchingId)return;if(engineIntro?.classList.contains('show'))engineStart?.click()}
+function finishLaunchHandoff(){dismissEngineIntro();queueMicrotask(dismissEngineIntro);requestAnimationFrame(dismissEngineIntro);setTimeout(dismissEngineIntro,60);setTimeout(()=>{dismissEngineIntro();launchingId=''},220)}
 function launchPreview(){
- const id=previewId;if(!id||!unlocked(id))return;closePreview();const node=visibleNode(id);if(!node)return;
+ const id=previewId;if(!id||!phaseAccessible(id))return;launchingId=id;closePreview();const node=visibleNode(id);if(!node){launchingId='';return}
  bypassMapPhase=true;node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));bypassMapPhase=false;
- const hiddenLaunch=map.querySelector(`#mapDetail [data-launch="${id}"]`);hiddenLaunch?.click();setTimeout(dismissEngineIntro,35);setTimeout(dismissEngineIntro,140);
+ const hiddenLaunch=map.querySelector(`#mapDetail [data-launch="${id}"]`);hiddenLaunch?.click();finishLaunchHandoff();
 }
 function activateButton(el,fn){
  if(!el)return;
@@ -70,12 +71,15 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.con
 map.addEventListener('click',e=>{
  if(bypassMapPhase)return;
  if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
- const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;e.preventDefault();e.stopImmediatePropagation();openPreview(node.dataset.phase)
+ const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;
+ const id=node.dataset.phase;if(!phaseAccessible(id))return;
+ e.preventDefault();e.stopImmediatePropagation();openPreview(id)
 },true);
 
 /* The map owns the screen whenever it is visible. */
-function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();dismissEngineIntro()}
+function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();launchingId='';if(engineIntro?.classList.contains('show'))engineStart?.click()}
 new MutationObserver(yieldEngineIntro).observe(map,{attributes:true,attributeFilter:['class']});
+if(engineIntro)new MutationObserver(dismissEngineIntro).observe(engineIntro,{attributes:true,attributeFilter:['class']});
 window.addEventListener('ardua:campaign-progress',()=>{if(previewId)renderPreview(previewId)});
 window.addEventListener('ardua:forge-names',()=>{if(previewId)renderPreview(previewId)});
 sourceReady.then(()=>{if(previewId)renderPreview(previewId);yieldEngineIntro()});
