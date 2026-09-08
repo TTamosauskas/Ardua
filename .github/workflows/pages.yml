@@ -47,10 +47,14 @@ jobs:
           node --check assets/js/phase-polish.js
           node --check assets/js/campaign-home-polish.js
           node --check assets/js/campaign-discoveries-elements.js
+          node --check assets/js/campaign-element-bohr.js
           node --check assets/js/campaign-discoveries-phenomena.js
 
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
+
+      - name: Validate element Bohr model
+        run: node scripts/validate-element-bohr.js
 
       - name: Validate phenomenon sources
         run: node scripts/validate-phenomenon-sources.mjs
