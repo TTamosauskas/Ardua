@@ -15,23 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect exact runtime sections
+      - name: Inspect movement and knowledge sections
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
-          def show(needle,before=1600,after=9000):
+          def show(needle,before=1200,after=6500):
             i=s.find(needle); print(f'\n=== {needle} @ {i} ==='); print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
           for needle in [
-            'function learnedFusionRecipes','function phaseFusionRecipe','function tapCell','function tapAtom','function tapPieceAt',
-            'function onAtom','function atomTap','function selectCell','function scheduleAutoFusionCascade',
-            'function autoFusionCandidate','function scheduleAuto','function maybeAuto','function afterNuclearAction',
-            'function reactCumulativeBoardMixed','function cumulativeParticleInteractionAllowed','function primordialMixedReaction',
-            'function renderPieces','function objectiveSatisfied','function phaseRadius','function phaseIntroTitle'
+            'function movementUnlocked','function movementTargetCells','function selectAtomForMovement','async function moveSelectedAtom',
+            'function learnedNeutronTransitions','function phaseNeutronTransitions','function universalNeutronCaptureEligible',
+            'function handleFusionTap','function contextualObjectiveLine','function modalPrimaryLine','function modalSecondaryLine',
+            'phaseEndBtn.textContent','endLabel'
           ]: show(needle)
-          print('\n=== event listeners on pieces/cells ===')
-          for pat in [r"addEventListener\('click'",r"addEventListener\('pointerup'",r"onclick="]:
-            for m in list(re.finditer(pat,s)):
-              if 280000<m.start()<380000: print(m.start(),s[m.start()-280:m.start()+620].replace('\n',' '))
           PY
