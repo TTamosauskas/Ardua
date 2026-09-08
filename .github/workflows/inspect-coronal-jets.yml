@@ -1,0 +1,48 @@
+name: Inspect coronal jets integration
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/inspect-coronal-jets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Print integration snippets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files={
+            'assets/js/ardua.js':[
+              "id:'stellar_convection'","id:'stellar_recombination'","function stellarAtomicMode","function stellarAtomicChemistryAllowed",
+              "function atomicRecombinationLearned","function ionizeStellarAtom","function recombineHydrogenParticles",
+              "function convection","convectionConfirmPending","state.convectionCharge","function fillStage","function startPhase","function checkComplete",
+              "PRODUCT_LESSONS","function closeEventTooltip","function teachProductOnce"
+            ],
+            'assets/js/campaign-graph.js':["stellar_convection","version:"],
+            'assets/js/campaign-giants-map.js':["stellar_convection"],
+            'assets/js/campaign-discoveries.js':["Convecção","stellar_convection","Ionização"],
+            'assets/js/campaign-discoveries-phenomena.js':["WIKI_ALIASES","Convecção"],
+            'assets/js/campaign-mode.js':["SAVE_VERSION","version","stellar_convection"],
+            'scripts/validate-campaign-phase-flow.js':["stellar_convection"],
+            'scripts/validate-stellar-plasma.js':["stellar_recombination"],
+            'scripts/validate-movement-chain-particles.js':["stellarIonization"],
+            'assets/data/phenomenon-sources.json':["Convecção"],
+          }
+          for path,needles in files.items():
+              p=Path(path)
+              if not p.exists(): continue
+              s=p.read_text()
+              print(f'\n\n######## {path} ########')
+              for needle in needles:
+                  i=s.find(needle)
+                  print(f'\n===== {needle} @ {i} =====')
+                  if i>=0: print(s[max(0,i-1800):i+5000])
+          PY
