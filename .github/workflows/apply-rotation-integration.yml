@@ -1,0 +1,37 @@
+name: Apply rotation integration
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/apply-rotation-integration.py"
+      - ".github/workflows/apply-rotation-integration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Apply rotation integration
+        run: python scripts/apply-rotation-integration.py
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/rotation-polish.js
+          node --check assets/js/ardua.js
+      - name: Smoke-check integration
+        run: |
+          grep -q 'assets/js/rotation-polish.js' index.html
+          grep -q 'ARDUA_ROTATION?.enabled' assets/js/ardua.js
+          grep -q 'phaseQuickRotation' assets/js/rotation-polish.js
+          grep -q 'campaignHomeRotation' assets/js/rotation-polish.js
+      - name: Commit integrated runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/js/ardua.js
+          git diff --cached --quiet || git commit -m "feat: integrate rotation toggle with stellar formation"
+          git push
