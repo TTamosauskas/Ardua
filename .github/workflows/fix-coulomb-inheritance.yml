@@ -1,0 +1,95 @@
+name: Apply Coulomb inheritance fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-coulomb-inheritance.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Patch Coulomb phase and isotope labels
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const enginePath = 'assets/js/ardua.js';
+          let s = fs.readFileSync(enginePath, 'utf8');
+          function replaceOnce(oldText, newText, label) {
+            const count = s.split(oldText).length - 1;
+            if (count !== 1) throw new Error(`${label}: expected 1 occurrence, found ${count}`);
+            s = s.replace(oldText, newText);
+          }
+
+          replaceOnce(
+            "if(s.id==='coulomb_intro')return[FUSIONS.He];",
+            "if(s.id==='coulomb_intro')return[FUSIONS.D,FUSIONS.He3,FUSIONS.He];",
+            'Coulomb recipe inheritance'
+          );
+
+          replaceOnce(
+            "return q>0?`${p.sym}${q===1?'⁺':superNum(q)+'⁺'}`:p.sym",
+            "return q>0?`${base}${q===1?'⁺':superNum(q)+'⁺'}`:base",
+            'isotope display for atomic matter'
+          );
+
+          replaceOnce(
+            "  const outerRing=phaseRadius(s),outer=(byRing[outerRing]||[]).slice(),outerSet=new Set(outer),pairs=[];\n  for(const a of outer)for(const b of (neigh[a]||[]))if(outerSet.has(b)&&a<b)pairs.push([a,b]);\n  pairs.sort((A,B)=>A.reduce((n,c)=>n+(state.board[c]?1:0),0)-B.reduce((n,c)=>n+(state.board[c]?1:0),0));\n  const hePair=pairs[0]||outer.slice(0,2);\n  for(const cell of hePair){if(cell===undefined)continue;const id=state.board[cell];if(id){state.pieces.delete(id);state.board[cell]=null}createPiece('He3',cell,false,{matterState:'nucleus',boundElectrons:0})}",
+            "  // Coulomb segue o contrato cumulativo das fases de fusão: uma oportunidade\n  // da reação-alvo e exemplos conectados das duas etapas pp já aprendidas.\n  const inheritedStarterGroups=[['He3','He3'],['D','H'],['H','H']];\n  placeStarterGroups(inheritedStarterGroups);\n  state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined){p.matterState='nucleus';p.boundElectrons=0}});",
+            'Coulomb starter groups'
+          );
+
+          replaceOnce(
+            "  let i=0;while(stellarGridPopulation()<STELLAR_CONTINUITY_POPULATION){",
+            "  let i=0,targetPopulation=Math.max(STELLAR_CONTINUITY_POPULATION,Math.min(Number(s.fill||0),activeCells().length));while(stellarGridPopulation()<targetPopulation){",
+            'Coulomb population target'
+          );
+
+          replaceOnce(
+            "if(r===FUSIONS.He)return'³He + ³He → He + 2 prótons';",
+            "if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';",
+            'full helium-4 fusion label'
+          );
+
+          replaceOnce(
+            "if(r===FUSIONS.He)return'³He + ³He → He';",
+            "if(r===FUSIONS.He)return'³He + ³He → ⁴He';",
+            'compact helium-4 fusion label'
+          );
+
+          fs.writeFileSync(enginePath, s);
+
+          const validationPath = 'scripts/validate-cumulative-recipes.js';
+          let v = fs.readFileSync(validationPath, 'utf8');
+          const marker = "console.log('Cumulative recipe contract validation passed.');";
+          if (!v.includes(marker)) throw new Error('validation marker missing');
+          const checks = `\nconst coulombRecipeContract=\"if(s.id==='coulomb_intro')return[FUSIONS.D,FUSIONS.He3,FUSIONS.He];\";\nif(!s.includes(coulombRecipeContract))fail('Coulomb deve herdar H+H→²H, ²H+H→³He e ³He+³He→⁴He');\nif(!s.includes(\"const inheritedStarterGroups=[['He3','He3'],['D','H'],['H','H']];\"))fail('Coulomb precisa expor oportunidades conectadas da cadeia pp acumulada');\nconst isotopeDisplayStart=s.indexOf('function pieceDisplaySymbol');\nconst isotopeDisplayEnd=s.indexOf('function pieceSymbolScale',isotopeDisplayStart);\nconst isotopeDisplay=s.slice(isotopeDisplayStart,isotopeDisplayEnd);\nif(isotopeDisplayStart<0||isotopeDisplayEnd<0||!isotopeDisplay.includes(\"return q>0?\\\`${base}\" )||!isotopeDisplay.includes(':base}'))fail('Isótopos devem usar o símbolo científico também em estado atômico');\nif(!s.includes(\"if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';\"))fail('Rótulo completo da reação pp-I deve explicitar ⁴He');\n`;
+          v = v.replace(marker, checks + '\n' + marker);
+          fs.writeFileSync(validationPath, v);
+          NODE
+
+      - name: Validate engine and cumulative recipes
+        run: |
+          node --check assets/js/ardua.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-stellar-plasma.js
+
+      - name: Persist fix and remove one-shot workflow
+        shell: bash
+        run: |
+          rm .github/workflows/fix-coulomb-inheritance.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js scripts/validate-cumulative-recipes.js .github/workflows/fix-coulomb-inheritance.yml
+          git commit -m "fix: make Coulomb phase inherit pp-chain recipes"
+          git push
