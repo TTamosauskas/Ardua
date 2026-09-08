@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect exact runtime functions
+      - name: Inspect remaining anchors
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
-          def show(needle,before=900,after=4200):
-            i=s.find(needle);print(f'\n=== {needle} @ {i} ===');print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
-          for needle in ["{id:'he_yellow'",'function showCoulombTooltip','showAmbientEvent','function showEventTooltip','eventTooltipBtn','function ionizeStellarAtom','function recombineStellarIon','async function advanceStellarAtomicPhase','function showStellarPopup']:
-            show(needle)
+          for needle in ['function recombineHydrogenParticles','const PRODUCT_LESSONS','PRODUCT_LESSONS=','function closeEventTooltip']:
+            i=s.find(needle);print(f'\n=== {needle} @ {i} ===');print(s[max(0,i-1000):min(len(s),i+7000)] if i>=0 else 'NOT FOUND')
+          for f in ['scripts/validate-phenomenon-sources.mjs','scripts/validate-phenomena-discoveries.mjs','assets/js/campaign-discoveries-phenomena.js']:
+            p=Path(f);print('\n===',f,'===\n',p.read_text(encoding='utf-8')[:18000])
           PY
