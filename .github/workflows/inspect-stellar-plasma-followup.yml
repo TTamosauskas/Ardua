@@ -15,24 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect anchors
+      - name: Inspect exact anchors
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           root=Path('.')
-          needles=['Descobertas da fase','showCoulombTooltip','function showCoulomb','eventTooltipBtn','ambientContinueBtn','solar_wind','stellar_convection']
-          for needle in needles:
-              print('\n===== SEARCH',needle,'=====')
-              for p in root.rglob('*'):
-                  if not p.is_file() or p.suffix.lower() not in {'.js','.html','.css','.json'}: continue
-                  try:s=p.read_text(encoding='utf-8')
-                  except:continue
-                  for m in list(re.finditer(re.escape(needle),s,re.I))[:5]:
-                      i=m.start();print('\n###',p,'@',i);print(s[max(0,i-2200):min(len(s),i+5200)])
-          # Map-specific branch-selection/visibility logic.
-          p=Path('assets/js/campaign-map.js');s=p.read_text(encoding='utf-8')
-          for needle in ['function inferAncestorBranches','function openMap','function renderMap','function activateBranch','G.sequences.mid']:
-              i=s.find(needle)
-              if i>=0: print('\n===== MAP',needle,'=====\n',s[max(0,i-1200):min(len(s),i+6500)])
+          print('=== Descobertas strings ===')
+          for p in root.rglob('*'):
+            if p.is_file() and p.suffix.lower() in {'.js','.html'}:
+              try:s=p.read_text(encoding='utf-8')
+              except:continue
+              if 'Descobertas' in s or 'descobertas' in s:
+                for m in re.finditer(r'.{0,250}Descobertas.{0,700}',s,re.I|re.S):
+                  txt=m.group(0)
+                  if 'fase' in txt.lower() or 'coulomb' in txt.lower(): print('\n###',p,'\n',txt[:1200])
+          def around(path,needle,before=1800,after=5000):
+            s=Path(path).read_text(encoding='utf-8');i=s.find(needle);print(f'\n=== {path} :: {needle} @ {i} ===');print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
+          for needle in ['function showAmbientEvent','const AMBIENT','ambientContinueBtn','function triggerSolarWind','function queueSolarWindCheck','function fillStage','function fillStellarAtomicStage','function startPhase','function updateObjective']:
+            around('assets/js/ardua.js',needle)
+          for needle in ['function inferAncestorBranches','if(!branchSelection.stellar)','function openMap','function renderMap']:
+            around('assets/js/campaign-map.js',needle,1000,6500)
+          for f in ['assets/js/campaign-phase-preview.js','assets/js/phase-polish.js','assets/js/campaign-fork-links.js']:
+            if Path(f).exists():
+              s=Path(f).read_text(encoding='utf-8');print('\n=== FULL',f,'===\n',s[:18000])
           PY
