@@ -3,7 +3,7 @@
 'use strict';
 const KEY='arduaRotationEnabledV2';
 const SPEED=.00028; // rad/ms: same order of magnitude as stellar-formation cluster rotation.
-let enabled=true,angle=0,last=performance.now(),lastFormation=false,raf=0,geometry=null;
+let enabled=true,angle=0,last=performance.now(),lastFormation=false,raf=0,geometry=null,offsetsApplied=false;
 
 function readPreference(){
  try{const value=localStorage.getItem(KEY);return value===null?true:value!=='0'}catch(_e){return true}
@@ -22,13 +22,15 @@ function syncButtons(){
   if(button.getAttribute('aria-label')!==text)button.setAttribute('aria-label',text);
  }
 }
-function resetAtomOffsets(){
- document.querySelectorAll('#pieces .atom').forEach(atom=>{
-  atom.style.removeProperty('translate');
-  atom.style.removeProperty('will-change');
+function resetFieldOffsets(){
+ if(!offsetsApplied)return;
+ document.querySelectorAll('#pieces .atom,#cells .cell').forEach(el=>{
+  el.style.removeProperty('translate');
+  el.style.removeProperty('will-change');
  });
+ offsetsApplied=false;
 }
-function resetOrbit(){angle=0;last=performance.now();geometry=null;resetAtomOffsets()}
+function resetOrbit(){angle=0;last=performance.now();geometry=null;resetFieldOffsets()}
 function stopFrame(){if(raf){cancelAnimationFrame(raf);raf=0}}
 function startFrame(){if(enabled&&!raf){last=performance.now();raf=requestAnimationFrame(frame)}}
 function setEnabled(value,{persist=true}={}){
@@ -111,32 +113,37 @@ function hexOrbitPoint(x,y,g,rotation){
  const targetR=ratio*targetLimit;
  return{x:g.cx+Math.cos(theta)*targetR,y:g.cy+Math.sin(theta)*targetR};
 }
-function rotateNormalAtoms(now){
+function applyOrbit(el,g,promote=false){
+ const base=point(el);if(!base)return;
+ const target=hexOrbitPoint(base.x,base.y,g,angle);
+ el.style.translate=`${(target.x-base.x).toFixed(3)}px ${(target.y-base.y).toFixed(3)}px`;
+ if(promote)el.style.willChange='translate';
+}
+function rotateNormalField(now){
  if(!enabled)return;
- const board=document.getElementById('starBoard'),pieces=document.getElementById('pieces');
- if(!board||!pieces)return;
- if(!phaseGameplayVisible()){resetAtomOffsets();last=now;return}
+ const board=document.getElementById('starBoard'),pieces=document.getElementById('pieces'),cells=document.getElementById('cells');
+ if(!board||!pieces||!cells)return;
+ if(!phaseGameplayVisible()){resetFieldOffsets();last=now;return}
  const formation=board.classList.contains('stellar-formation-mode')||!!board.querySelector('.stellar-formation-layer');
  if(formation!==lastFormation){resetOrbit();lastFormation=formation}
  if(formation)return;
  const dt=Math.min(40,Math.max(0,now-last));last=now;angle=(angle+dt*SPEED)%(Math.PI*2);
  const g=geometryFor(board);
- for(const atom of pieces.querySelectorAll('.atom')){
-  const base=point(atom);if(!base)continue;
-  const target=hexOrbitPoint(base.x,base.y,g,angle);
-  atom.style.translate=`${(target.x-base.x).toFixed(3)}px ${(target.y-base.y).toFixed(3)}px`;
-  atom.style.willChange='translate';
- }
+ // The logical grid never moves. Its visual cells and the atoms occupying them share
+ // the same orbital projection, so movement targets remain under the correct touch point.
+ for(const cell of cells.querySelectorAll('.cell'))applyOrbit(cell,g,cell.classList.contains('move-target'));
+ for(const atom of pieces.querySelectorAll('.atom'))applyOrbit(atom,g,true);
+ offsetsApplied=true;
 }
 function frame(now){
  raf=0;
  if(!enabled)return;
- rotateNormalAtoms(now);
+ rotateNormalField(now);
  raf=requestAnimationFrame(frame);
 }
 
 setTimeout(()=>{attachMenusDeferred();if(enabled)startFrame()},0);
 window.addEventListener('storage',e=>{if(e.key===KEY)setEnabled(readPreference(),{persist:false})});
-window.addEventListener('resize',()=>{geometry=null;resetAtomOffsets()});
+window.addEventListener('resize',()=>{geometry=null;resetFieldOffsets()});
 window.addEventListener('ardua:phase-enter',()=>{resetOrbit();if(enabled)startFrame()});
 })();
