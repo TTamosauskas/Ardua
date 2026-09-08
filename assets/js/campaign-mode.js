@@ -17,7 +17,7 @@ const THIRD_CHAPTER_EVIDENCE=['binary_neutron_stars','kilonova',...R_PROCESS_EVI
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set((xs||[]).filter(Boolean))]}
 function heritageDefaults(){return{level:0,seeds:[],sourceGeneration:0}}
-function defaults(){return{version:12,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
+function defaults(){return{version:13,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
 function evidenceSet(completed,activeId){return new Set([...completed,activeId].filter(Boolean))}
 function expectedSeeds(level){return level>=2?SECOND_SEEDS:level>=1?FIRST_SEEDS:[]}
 function applyHeritage(next,level){
@@ -25,7 +25,7 @@ function applyHeritage(next,level){
  next.heritage={...heritageDefaults(),...(next.heritage||{}),level:target,sourceGeneration:Math.max(Number(next.heritage?.sourceGeneration||0),target),seeds:uniq([...(next.heritage?.seeds||[]),...seeds])};
 }
 function normalizeState(rawState,inferHistorical=false){
- const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:12,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:13,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
  const seen=evidenceSet(next.completed,next.activeId);
  if(previousVersion<7&&['brown','he_red','he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o','carbon_burn','ne','fe','final_collapse','first_enrichment','second_birth','second_enrichment','third_birth','neutron_star','black_hole'].some(id=>seen.has(id)))next.completed=uniq([...next.completed,'first_generation_formation']);
  if(previousVersion<8){const cutoff=G?.runtimeIndex?.first_generation_formation??Infinity,passed=[...seen].some(id=>Number.isInteger(G?.runtimeIndex?.[id])&&G.runtimeIndex[id]>=cutoff);if(passed)next.completed=uniq([...next.completed,'first_atomic_bonds','first_nebulae'])}
@@ -42,10 +42,9 @@ function normalizeState(rawState,inferHistorical=false){
   if(next.completed.includes('white')&&!next.completed.includes('stellar_movement'))next.completed=uniq([...next.completed,'stellar_movement']);
   if(next.activeId==='white'&&!next.completed.includes('white')&&next.completed.includes('he_red'))next.activeId='stellar_movement';
  }
- if(previousVersion<11&&next.activeId==='coulomb_intro'&&!next.completed.includes('coulomb_intro')&&next.completed.includes('he_yellow')){
-  // Novas lições de plasma entram imediatamente antes de Coulomb. Só redirecione
-  // quem estava parado exatamente nessa fronteira; progresso posterior é preservado.
-  next.activeId='solar_wind';
+ if(previousVersion<13){
+  // As três lições de plasma agora pertencem à trilha de baixa massa, depois de Movimentação.
+  if(next.activeId==='white'&&!next.completed.includes('white')&&next.completed.includes('stellar_movement')&&!next.completed.includes('stellar_recombination'))next.activeId='solar_wind';
  }
  if(previousVersion<10){
   // v9 marcou a formação de Alta Massa como concluída em saves que já haviam passado

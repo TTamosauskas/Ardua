@@ -336,12 +336,12 @@ const PHASES=[
  {id:'low_mass_formation',branch:'Nascimento estelar · baixa massa',title:'Formação da Estrela de Baixa Massa',meta:'Reúna 9 duplas de H; o último H completa automaticamente a vaga final',new:'H',mode:'stellarFormation',formationLayers:2,target:19,visual:'nebula',fill:0,endEvent:'stellarBirth',endLabel:'FORMAR<br>ANÃ VERMELHA',menuTag:'19 H',durationClass:'quick'},
  {id:'he_red',branch:'Nova estrela · baixa massa',title:'Anã vermelha',meta:'Formação de Hélio estável',new:'He',mode:'fusion',target:6,visual:'redDwarf',fill:16,pool:['H'],gravityDelay:175},
  {id:'stellar_movement',branch:'Nova estrela · baixa massa',title:'Movimentação Estelar',meta:'Leve o Hélio até o núcleo estelar.',new:'He',mode:'movementTutorial',target:1,flowTarget:0,visual:'redDwarf',fill:15,pool:['H'],gravityDelay:175,menuTag:'MOVIMENTO',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
+ {id:'solar_wind',branch:'Coroa estelar · plasma e escape',title:'Vento Solar',meta:'H + e⁻ → p⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'redDwarf',fill:15,pool:['H','H','H','H','H','He'],ionizationSpecies:['H'],solarWindTutorial:true,menuTag:'VENTO SOLAR',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
+{id:'stellar_ionization',branch:'Coroa estelar · ionização',title:'Ionização Estelar',meta:'Átomo + e⁻ → Íon⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'redDwarf',fill:15,pool:['H','H','H','H','H','He'],ionizationSpecies:['H','He','Li'],menuTag:'ÍON +1',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
+{id:'stellar_recombination',branch:'Coroa estelar · recombinação',title:'Recombinação Estelar',meta:'Íon⁺ + e⁻ → Átomo + γ',new:'H',mode:'stellarRecombination',target:3,visual:'redDwarf',fill:15,pool:['H','H','H','H','H','He'],recombinationSpecies:['H','He','Li'],menuTag:'RECOMBINAÇÃO',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
  {id:'intermediate_mass_formation',branch:'Nascimento estelar · massa intermediária',title:'Formação da Estrela de Massa Intermediária',meta:'Reúna 18 duplas de H; o último H completa automaticamente a vaga final',new:'H',mode:'stellarFormation',formationLayers:3,target:37,visual:'nebula',fill:0,endEvent:'stellarBirth',endLabel:'FORMAR<br>ANÃ LARANJA',menuTag:'37 H',durationClass:'short'},
  {id:'he_orange',branch:'Nova estrela · massa intermediária',title:'Anã laranja',meta:'Primeiros passos da cadeia próton-próton',new:'He3',mode:'fusion',target:5,visual:'orangeDwarf',fill:18,pool:['H','H','H','H','He'],gravityDelay:158,fusionTempMax:1.3e7},
  {id:'he_yellow',branch:'Nova estrela · semelhante ao Sol',title:'Anã amarela',meta:'Fusão de Hidrogênio',new:'He',mode:'fusion',target:6,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],gravityDelay:145,fusionTempMax:1.6e7},
- {id:'solar_wind',branch:'Coroa estelar · plasma e escape',title:'Vento Solar',meta:'H + e⁻ → p⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H'],solarWindTutorial:true,menuTag:'VENTO SOLAR',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
-{id:'stellar_ionization',branch:'Coroa estelar · ionização',title:'Ionização Estelar',meta:'Átomo + e⁻ → Íon⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H','He','Li'],menuTag:'ÍON +1',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
-{id:'stellar_recombination',branch:'Coroa estelar · recombinação',title:'Recombinação Estelar',meta:'Íon⁺ + e⁻ → Átomo + γ',new:'H',mode:'stellarRecombination',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],recombinationSpecies:['H','He','Li'],menuTag:'RECOMBINAÇÃO',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
 {id:'coulomb_intro',branch:'Gigante vermelha · nova habilidade',title:'Barreira de Coulomb',meta:'³He + ³He → ⁴He + 2p',new:'He',mode:'fusion',target:3,visual:'redGiant',fill:28,pool:['H','H','H','H','H','He'],gravityDelay:143,fusionTempMax:1.2e8,objectiveOnlyProgress:true,menuTag:'COULOMB',endLabel:'APRENDER<br>CONVECÇÃO'},
  {id:'stellar_convection',branch:'Gigante vermelha · transporte de matéria e energia',title:'Convecção Estelar',meta:'Reação no interior → corrente convectiva → transporte radial',new:'He',mode:'convection',target:3,visual:'redGiant',fill:34,pool:['H','H','He','He3'],gravityDelay:142,fusionTempMax:1.2e8,reuseFusion:true,objectiveOnlyProgress:true,menuTag:'CONVECÇÃO',endLabel:'PRODUZIR<br>LÍTIO'},
  {id:'stellar_li',branch:'Gigante vermelha · mecanismo Cameron–Fowler',title:'Produção estelar de Lítio',meta:'³He + ⁴He → ⁷Be + γ · transporte → ⁷Li + νₑ',new:'Li',mode:'fusion',target:4,visual:'redGiant',fill:36,pool:['H','H','H','He','He'],gravityDelay:142,fusionTempMax:1.2e8,objectiveOnlyProgress:true,menuTag:'⁷Li',endLabel:'ACENDER<br>TRIPLO-ALFA'},
@@ -1485,9 +1485,11 @@ function countFree(sym,predicate=null){let n=0;state.pieces.forEach(p=>{if(p.fre
 function primordialGoalCount(s=phase()){return isPrimordial(s)&&s.mode!=='opening'?(state.created[s.new]||0):(state.created[s.new]||0)}
 function primordialReactionById(id){return PRIMORDIAL_NUCLEAR_REACTIONS.find(r=>r.id===id)||null}
 function campaignKnowledgeReached(id){
- const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);
- if(aware)return gs.activeId===id||gs.completed.includes(id);
- const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>=i
+ const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed),i=phaseIndexById.get(id);
+ // Conhecimento só atua na própria lição ou em fases cronologicamente posteriores.
+ // Assim, revisitar uma fase antiga não antecipa Vento Solar, Coulomb, Convecção etc.
+ if(aware)return (gs.activeId===id||gs.completed.includes(id))&&(i===undefined||state.phaseIndex>=i);
+ return i!==undefined&&state.phaseIndex>=i
 }
 function campaignKnowledgeCompleted(id){
  const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);
@@ -1566,7 +1568,7 @@ function stellarAtomicOpenCells(){return activeCells().filter(cell=>state.board[
 function placeNeutralStellarAtom(sym){const cell=stellarAtomicOpenCells()[0];if(cell===undefined)return null;return createPiece(sym,cell,false,{matterState:'atom',boundElectrons:Number(E[sym]?.n||0),massNumber:primordialMassForSym(sym)})}
 function placePositiveStellarIon(sym){const cell=stellarAtomicOpenCells()[0];if(cell===undefined)return null;return createPiece(sym,cell,false,{matterState:'atom',boundElectrons:Math.max(0,Number(E[sym]?.n||0)-1),massNumber:primordialMassForSym(sym)})}
 function stellarGridPopulation(){let n=0;state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined)n++});return n}
-const STELLAR_CONTINUITY_POPULATION=28;
+const STELLAR_CONTINUITY_POPULATION=15;
 const STELLAR_CONTINUITY_POOL=Object.freeze(['H','H','H','H','H','He']);
 function fillYellowAtomicPopulation(target=STELLAR_CONTINUITY_POPULATION,required=[]){
  for(const sym of required){if([...state.pieces.values()].some(p=>neutralStellarAtom(p)&&p.sym===sym))continue;placeNeutralStellarAtom(sym)}
@@ -2325,7 +2327,7 @@ function isPostMode(s=phase()){return isPostAtomMode(s)||s.mode==='collapseFinal
 const COULOMB_EXEMPT_SYMS=new Set(['H','D','T']);
 const COULOMB_BLOCK_CHANCE_BY_RING=Object.freeze({0:0,1:0,2:.10,3:.20,4:.40,5:.50});
 function coulombMechanicUnlocked(s=phase()){
- const intro=phaseIndexById.get('coulomb_intro');return intro!==undefined&&state.phaseIndex>=intro;
+ return campaignKnowledgeReached('coulomb_intro');
 }
 function coulombBlockChance(cell,s=phase(),sym=null){
  if(!coulombMechanicUnlocked(s)||cell===null||cell===undefined)return 0;
@@ -2363,7 +2365,7 @@ async function moveSelectedAtom(targetCell){
  if(state.locked||state.phaseDone)return false;const targets=movementTargetCells();if(!targets.includes(targetCell))return false;
  const source=state.selected[0],id=state.board[source],p=id?state.pieces.get(id):null;if(!p)return false;
  state.locked=true;state.board[source]=null;state.board[targetCell]=id;p.cell=targetCell;const q=pos(coords[targetCell]);p.x=q.x;p.y=q.y;state.selected=[];state.contextRecipeKey=null;tone(275,.055,'sine',.022);vibrate(5);dom.star.classList.add('pulse');render();
- await wait(210);
+ await wait(300);
  // Um deslocamento representa passagem de tempo: intermediários instáveis envelhecem
  // uma rodada e, em ambientes estratificados, toda a estrela responde com um único
  // pulso de reorganização. Não repomos matéria aqui: mover não equivale a acreção.
@@ -2373,8 +2375,7 @@ async function moveSelectedAtom(targetCell){
 }
 
 function convectionMechanicUnlocked(s=phase()){
- const intro=phaseIndexById.get('stellar_convection');
- if(intro===undefined||state.phaseIndex<intro||isPrimordial(s)||s.mode==='opening')return false;
+ if(!campaignKnowledgeReached('stellar_convection')||isPrimordial(s)||s.mode==='opening')return false;
  if(['spallation','neutrino','gamma','guidedDecay','decayGarden','explosive','neutronize','collapseFinal'].includes(s.mode)||isPostMode(s))return false;
  return true;
 }
@@ -3199,10 +3200,11 @@ function updateHUD(){
  else {const shown=state.readyToAdvance?100:Math.min(99,Math.floor(p));$('stageProgressText').textContent=flowTarget?`${shown}%`:'';}
  $('stageProgressLabel').textContent=s.id==='solar_wind'?(state.readyToAdvance?'CONCLUÍDA':'VENTO SOLAR'):s.mode==='stellarIonization'?(state.readyToAdvance?'CONCLUÍDA':'IONIZAÇÃO'):s.mode==='stellarRecombination'?(state.readyToAdvance?'CONCLUÍDA':'RECOMBINAÇÃO'):s.mode==='stellarFormation'?(state.readyToAdvance?'ESTRELA PRONTA':'AGLOMERAÇÃO'):s.mode==='primordialMolecule'?(state.readyToAdvance?'CONCLUÍDA':'QUÍMICA PRIMORDIAL'):s.id==='brown'?(state.readyToAdvance?'RESERVATÓRIO ESGOTADO':'QUEIMA DE DEUTÉRIO'):s.mode==='convection'?(state.readyToAdvance?'CONCLUÍDA':'CONVECÇÃO'):(state.readyToAdvance?'CONCLUÍDA':'PROGRESSO');
  const progressEl=document.querySelector('.stage-progress');progressEl.classList.toggle('ready',state.readyToAdvance);progressEl.style.visibility=s.mode==='opening'?'hidden':'visible';
- $('phaseEndBtn').innerHTML=s.endLabel||'ESPALHAR<br>POEIRA ESTELAR';updateObjective();applyVisual();applyRewardProgressVisuals();renderInfoPanel()
+ const stellarDustEnd=!isPrimordial(s)&&s.mode!=='stellarFormation'&&s.mode!=='campaignMilestone'&&s.endEvent!=='supernova'&&s.endEvent!=='finale';$('phaseEndBtn').innerHTML=stellarDustEnd?'ESPALHAR<br>POEIRA ESTELAR':(s.endLabel||'ESPALHAR<br>POEIRA ESTELAR');updateObjective();applyVisual();applyRewardProgressVisuals();renderInfoPanel()
 }
 function updateObjective(){
  const s=phase();
+ if(s.mode==='movementTutorial'){const done=objectiveSatisfied(s)?1:0;$('goalText').textContent=`Leve o Hélio até o núcleo estelar. — ${done}/${s.target}`;setFormula('Clique no átomo e avance um espaço por vez');return}
  if(s.id==='solar_wind'){$('goalText').textContent=`Ionize átomos de Hidrogênio ${state.stellarIonizations}/${s.target}`;setFormula('H + e⁻ → p⁺ + 2e⁻');return}
  if(s.mode==='stellarIonization'){$('goalText').textContent=`Ionize átomos ${state.stellarIonizations}/${s.target}`;setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');return}
  if(s.mode==='stellarRecombination'){$('goalText').textContent=`Recombine íons ${state.stellarRecombinations}/${s.target}`;setFormula('Íon⁺ + e⁻ → Átomo + γ');return}
@@ -4260,7 +4262,7 @@ function endPhaseAction(){
  state.phaseDone=true;state.locked=true;stopPrimordialDrift();cancelParticleDrag();stopAccretionFeed();stopCosmicRaySystem();stopNeutronSystem();
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='plasmaTransition')return advanceStellarAtomicPhase();if(s.endEvent==='stellarBirth')return stellarFormationAdvance();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()
 }
-function advancePhase(){const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}
+function advancePhase(){const campaign=window.ARDUA_CAMPAIGN;if(campaign&&!campaign.editor){state.locked=false;window.dispatchEvent(new CustomEvent('ardua:phase-ended',{detail:{id:phase().id}}));return}const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}
 function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.stellarIonizations=0;state.stellarRecombinations=0;state.stellarIonizedSpecies=new Set();state.stellarRecombinedSpecies=new Set();state.solarWindEvents=0;state.solarWindRunning=false;if(state.solarWindCheckTimer){clearTimeout(state.solarWindCheckTimer);state.solarWindCheckTimer=null}state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.blackHoleSelected=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');removeStellarFormation();dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(!stellarAtomicTransferTarget(s)&&state.stellarAtomicTransfer)state.stellarAtomicTransfer=null;if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='stellarFormation')startStellarFormationStage();if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;ensureCumulativeParticleFuel(s);const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render();if(s.mode==='campaignMilestone')setTimeout(checkComplete,80)}
 function modalPrimaryLine(s=phase()){
  if(s.mode==='movementTutorial')return 'Leve o Hélio até o núcleo estelar.';
@@ -4315,7 +4317,7 @@ function modalPrimaryLine(s=phase()){
  return s.meta||'Explore o processo desta fase';
 }
 function modalSecondaryLine(s=phase()){
- if(s.mode==='movementTutorial')return 'Selecione o Hélio e escolha uma célula vazia vizinha até chegar ao centro.';
+ if(s.mode==='movementTutorial')return 'Clique no átomo e avance um espaço por vez';
  if(s.mode==='stellarFormation')return '';
  if(s.id==='first_enrichment')return 'O que foi fabricado dentro da primeira estrela agora pode compor o gás da próxima geração';
  if(s.id==='second_birth')return 'Compare: C, N e O antes precisavam ser fabricados; agora já fazem parte da matéria inicial';

@@ -117,7 +117,7 @@ function buildMap(){
  ],'supernova-branches');
  const stellar=branchCluster('stellar',[
   {key:'sub',label:'Anã marrom',visual:'sphere-brown',content:`${ambientImage('brown','branch-bg branch-bg-left')}${flow(G.sequences.brown)}`},
-  {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${structural('Evolução de longa vida')}${flow(['white'])}`},
+  {key:'low',label:'Baixa massa',visual:'sphere-red',content:`${flow(G.sequences.red)}${flow(['white'])}`},
   {key:'mid',label:'Massa intermediária',visual:'sphere-gold',content:`${flow(G.sequences.mid)}${structural('Estrela AGB')}${portal('Processo-s',G.sequences.sprocess,false,'s')}${flow(['white'])}`},
   {key:'high',label:'Alta massa',visual:'sphere-high',content:`${ambientImage('supernova','branch-bg branch-bg-right')}${flow(G.sequences.high)}${flow(G.sequences.collapse)}${structural('Supernova')}${supernova}`}
  ],'stellar-branches');
@@ -279,7 +279,7 @@ function portalFirst(key){return [...map.querySelectorAll(`[data-portal="${key}"
 function portalLast(key){const xs=[...map.querySelectorAll(`[data-portal="${key}"] .phase-node`)].filter(isVisible);return xs[xs.length-1]||null}
 function connectBranchJunction(from,group,classes={}){
  const cluster=branchClusterEl(group),fork=branchForkEl(group);if(!isVisible(cluster)||!isVisible(fork))return;
- addPath(from,fork,`branch-fork ${group}`,.46);
+ if(group!=='neutron')addPath(from,fork,`branch-fork ${group}`,.46);
  cluster.querySelectorAll(':scope > .branch-spheres > .branch-choice').forEach(btn=>addPath(fork,btn,`branch ${classes[btn.dataset.branchOpen]||group}`,.38));
 }
 function connectActiveSphere(group,firstId,cls){
@@ -369,7 +369,7 @@ function drawLinks(){
  connectBranchJunction(birth,'stellar',{sub:'sub',low:'low',mid:'mid',high:'high'});
  const s=activeBranch('stellar');
  if(s==='sub'){connectActiveSphere('stellar',G.sequences.brown[0],'sub');connectTrail(G.sequences.brown,'sub')}
- if(s==='low'){connectActiveSphere('stellar',G.sequences.red[0],'low');connectTrail(G.sequences.red,'low');addPath(byPhase(tail('he_red')),byPhase('white'),'converge',.5)}
+ if(s==='low'){connectActiveSphere('stellar',G.sequences.red[0],'low');connectTrail(G.sequences.red,'low');addPath(byPhase(tail('stellar_recombination')),byPhase('white'),'converge',.5)}
  if(s==='mid')drawMid()
  if(s==='high'){connectActiveSphere('stellar',G.sequences.high[0],'high');drawHigh()}
 

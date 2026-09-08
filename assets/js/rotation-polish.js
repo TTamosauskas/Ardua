@@ -86,6 +86,10 @@ function point(el){
  const x=Number.parseFloat(el.style.left),y=Number.parseFloat(el.style.top);
  return Number.isFinite(x)&&Number.isFinite(y)?{x,y}:null;
 }
+function transitionPoint(el){
+ const css=getComputedStyle(el),x=Number.parseFloat(css.left),y=Number.parseFloat(css.top);
+ return Number.isFinite(x)&&Number.isFinite(y)?{x,y}:point(el);
+}
 function cross(o,a,b){return (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x)}
 function convexHull(points){
  const pts=points.slice().sort((a,b)=>a.x-b.x||a.y-b.y);if(pts.length<=2)return pts;
@@ -119,8 +123,8 @@ function hexOrbitPoint(x,y,g,rotation){
  const targetR=ratio*targetLimit;
  return{x:g.cx+Math.cos(theta)*targetR,y:g.cy+Math.sin(theta)*targetR};
 }
-function applyOrbit(el,g,promote=false){
- const base=point(el);if(!base)return;
+function applyOrbit(el,g,promote=false,followTransition=false){
+ const base=followTransition?transitionPoint(el):point(el);if(!base)return;
  const target=hexOrbitPoint(base.x,base.y,g,angle);
  el.style.translate=`${(target.x-base.x).toFixed(3)}px ${(target.y-base.y).toFixed(3)}px`;
  if(promote)el.style.willChange='translate';
@@ -138,7 +142,7 @@ function rotateNormalField(now){
  // The logical grid never moves. Its visual cells and the atoms occupying them share
  // the same orbital projection, so movement targets remain under the correct touch point.
  for(const cell of cells.querySelectorAll('.cell'))applyOrbit(cell,g,cell.classList.contains('move-target'));
- for(const atom of pieces.querySelectorAll('.atom'))applyOrbit(atom,g,true);
+ for(const atom of pieces.querySelectorAll('.atom'))applyOrbit(atom,g,true,true);
  offsetsApplied=true;
 }
 function frame(now){

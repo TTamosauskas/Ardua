@@ -1,36 +1,28 @@
-const fs=require('fs');
+const fs=require('fs'),vm=require('vm');
+const fail=m=>{throw new Error(m)};
 const engine=fs.readFileSync('assets/js/ardua.js','utf8');
-const graph=fs.readFileSync('assets/js/campaign-graph.js','utf8');
-const discoveries=fs.readFileSync('assets/js/campaign-discoveries.js','utf8');
-const phenomenaUI=fs.readFileSync('assets/js/campaign-discoveries-phenomena.js','utf8');
-const phaseModal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
-const giantMap=fs.readFileSync('assets/js/campaign-giants-map.js','utf8');
-const sources=JSON.parse(fs.readFileSync('assets/data/phenomenon-sources.json','utf8'));
+const graphSrc=fs.readFileSync('assets/js/campaign-graph.js','utf8');
+const modal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
+const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
+const giant=fs.readFileSync('assets/js/campaign-giants-map.js','utf8');
 const campaign=fs.readFileSync('assets/js/campaign-mode.js','utf8');
-const requiredEngine=[
- "id:'solar_wind'","fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H']",
- "id:'stellar_ionization'","id:'stellar_recombination'","id:'coulomb_intro'",
- 'const STELLAR_CONTINUITY_POPULATION=28',"const STELLAR_CONTINUITY_POOL=Object.freeze(['H','H','H','H','H','He'])",
- 'fillYellowAtomicPopulation(STELLAR_CONTINUITY_POPULATION)',"fillYellowAtomicPopulation(STELLAR_CONTINUITY_POPULATION,['H','He','Li'])",
- "function stellarAtomicTransferTarget(s=phase())","s.id==='coulomb_intro'","stellarAtomicSnapshot(next.id)",
- 'async function ionizeStellarAtom(piece,electron)','async function recombineStellarIon(piece,electron)',
- "solarWind:{title:'VENTO SOLAR'","stellarIonization:{title:'IONIZAÇÃO'",
- "await teachProductOnce('solarWind'","await teachProductOnce('stellarIonization'",
- 'async function triggerSolarWind()','solarWindEligibleParticles().length<10','turns=Math.PI*4','duration:2700','steps=24',
- "for(const kind of ['p','e','n'])","state.stellarIonizations>=s.target&&state.solarWindEvents>=1",
- 'Ionize átomos de Hidrogênio ${state.stellarIonizations}/${s.target}',
- 'Ionize átomos ${state.stellarIonizations}/${s.target}','Recombine íons ${state.stellarRecombinations}/${s.target}',
- "registerRewardDiscovery('phenomenon:solarWind'","if(stellarAtomicMode(s)){fillStellarAtomicStage(s);return}","if(stellarAtomicMode(s))return;"
-];
-for(const token of requiredEngine)if(!engine.includes(token))throw new Error(`Contrato de plasma ausente: ${token}`);
-const order=['he_yellow','solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'];
-let last=-1;for(const id of order){const at=graph.indexOf(`\"${id}\"`);if(at<0||at<=last)throw new Error(`Ordem de campanha inválida em ${id}`);last=at}
-for(const token of ['"solar_wind":{"allOf":["he_yellow"]}','"stellar_ionization":{"allOf":["solar_wind"]}','"stellar_recombination":{"allOf":["stellar_ionization"]}','"coulomb_intro":{"allOf":["stellar_recombination"]}','"stellar_convection":{"allOf":["coulomb_intro"]}'])if(!graph.includes(token))throw new Error(`Pré-requisito ausente: ${token}`);
-for(const id of ['solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'])if(!giantMap.includes(`'${id}'`))throw new Error(`Mapa intermediário perdeu ${id}`);
-if(!phaseModal.includes("if(id==='solar_wind')return[]"))throw new Error('Modal de Vento Solar ainda mostra resumo de descobertas');
-if(!discoveries.includes("key:'phenomenon:solarWind'")||!discoveries.includes("title:'Vento Solar'"))throw new Error('Vento Solar ausente de Fenômenos');
-if(!discoveries.includes("key:'phenomenon:stellarIonization'")||!discoveries.includes("title:'Ionização'"))throw new Error('Ionização ausente de Fenômenos');
-if(!phenomenaUI.includes("'Ionização':'Ionização'"))throw new Error('Ionização sem alias de detalhe em Fenômenos');
-for(const title of ['Vento Solar','Ionização'])if(!sources[title]?.imagePath||!sources[title]?.wikiUrl)throw new Error(`Fonte local incompleta: ${title}`);
-if(!campaign.includes('version:12')||!campaign.includes("next.activeId='solar_wind'"))throw new Error('Migração v11 do plasma ou schema v12 da campanha ausente');
-console.log('Stellar plasma follow-up OK: continuity population, map, tooltips, wind animation and Ionization discovery.');
+const ctx={window:{}};vm.createContext(ctx);vm.runInContext(graphSrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
+const low=['low_mass_formation','he_red','stellar_movement','solar_wind','stellar_ionization','stellar_recombination'];
+if(JSON.stringify(G.sequences.red)!==JSON.stringify(low))fail('Plasma deve encerrar a trilha de baixa massa');
+for(const id of ['solar_wind','stellar_ionization','stellar_recombination'])if(G.sequences.mid.includes(id))fail(id+' ainda está na trilha intermediária');
+if(JSON.stringify(G.prerequisites.solar_wind)!==JSON.stringify({allOf:['stellar_movement']}))fail('Vento Solar deve vir após Movimentação');
+if(JSON.stringify(G.prerequisites.stellar_ionization)!==JSON.stringify({allOf:['solar_wind']}))fail('Ionização deve vir após Vento Solar');
+if(JSON.stringify(G.prerequisites.stellar_recombination)!==JSON.stringify({allOf:['stellar_ionization']}))fail('Recombinação deve vir após Ionização');
+if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('Coulomb deve permanecer na trilha intermediária');
+if(!JSON.stringify(G.prerequisites.white).includes('stellar_recombination'))fail('Anã Branca deve vir depois das três lições de plasma na trilha baixa');
+for(const id of ['solar_wind','stellar_ionization','stellar_recombination']){const at=engine.indexOf(`id:'${id}'`),line=engine.slice(at,engine.indexOf('\n',at));if(at<0||!line.includes("visual:'redDwarf'")||!line.includes('fill:15'))fail(id+' precisa usar núcleo + 2 camadas da Anã Vermelha')}
+if(!engine.includes('const STELLAR_CONTINUITY_POPULATION=15'))fail('População de plasma deve caber no hexágono de 19 células');
+if(!engine.includes("campaignKnowledgeReached('coulomb_intro')"))fail('Coulomb sem gate de conhecimento');
+if(!engine.includes("campaignKnowledgeReached('stellar_convection')"))fail('Convecção sem gate de conhecimento');
+if(!engine.includes("(gs.activeId===id||gs.completed.includes(id))&&(i===undefined||state.phaseIndex>=i)"))fail('Conhecimento não bloqueia efeitos futuros ao revisitar fases antigas');
+if(map.includes('Evolução de longa vida'))fail('Título Evolução de longa vida ainda aparece no mapa');
+if(!map.includes("if(group!=='neutron')addPath(from,fork,`branch-fork ${group}`,.46)"))fail('Haste branch-fork neutron ainda é desenhada');
+for(const id of ['solar_wind','stellar_ionization','stellar_recombination'])if(giant.includes(`'${id}'`))fail('Mapa das gigantes ainda captura fase de plasma: '+id);
+if(modal.includes('phase-preview-discoveries')||modal.includes('Descobertas da fase:'))fail('Modal ainda antecipa descobertas');
+if(!campaign.includes('version:13')||!campaign.includes("next.activeId='solar_wind'"))fail('Migração v13 da trilha baixa ausente');
+console.log('Stellar plasma routing, hidden discoveries and chronological effect gates OK.');
