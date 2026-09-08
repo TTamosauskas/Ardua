@@ -1,0 +1,36 @@
+name: Inspect movement chain particles
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/inspect-movement-chain-particles.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Inspect runtime anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
+          def show(needle,before=1200,after=5000):
+            i=s.find(needle); print(f'\n=== {needle} @ {i} ==='); print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
+          for needle in [
+            "{id:'he_red'",'function endPhaseAction','async function scatterStage','function checkComplete',
+            'function movementTargetCells','function moveSelectedAtom','function tapPiece','function tapPrimordial',
+            'function try','chainNuclear','chainEnergetic','learnedFusion','learnedRecipe','possibleRecipes',
+            'function handleParticle','function handlePrimordial','state.primordialSelected','state.selected'
+          ]: show(needle)
+          print('\n=== functions containing chain/particle/move ===')
+          for m in re.finditer(r'(?:async\s+)?function\s+([A-Za-z0-9_]*(?:chain|particle|move|primordial)[A-Za-z0-9_]*)\s*\(',s,re.I): print(m.start(),m.group(1))
+          print('\n=== lines containing endEvent/scatter near PHASES ===')
+          for m in re.finditer(r"endEvent:'[^']+'",s[:160000]): print(m.start(),s[m.start()-180:m.start()+220].replace('\n',' '))
+          PY
