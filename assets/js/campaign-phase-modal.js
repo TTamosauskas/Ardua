@@ -46,10 +46,11 @@ let previewId='',suppressMapClicksUntil=0,launchingId='';
 function renderPreview(id){
  if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent='CONTINUAR';launch.disabled=!phaseAccessible(id);preview.dataset.phaseId=id;
 }
-async function openPreview(id){if(!phaseAccessible(id))return;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
+async function openPreview(id){if(!id)return;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
 function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
 function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
-function dismissEngineIntro(){if(!launchingId||C.getState?.().activeId!==launchingId)return;if(engineIntro?.classList.contains('show'))engineStart?.click()}
+function shouldDismissEngineIntro(){return map.classList.contains('show')||!!(launchingId&&C.getState?.().activeId===launchingId)}
+function dismissEngineIntro(){if(!shouldDismissEngineIntro())return;if(engineIntro?.classList.contains('show'))engineStart?.click()}
 function finishLaunchHandoff(){dismissEngineIntro();queueMicrotask(dismissEngineIntro);requestAnimationFrame(dismissEngineIntro);setTimeout(dismissEngineIntro,60);setTimeout(()=>{dismissEngineIntro();launchingId=''},220)}
 function launchPreview(){
  const id=previewId;if(!id||!phaseAccessible(id))return;const button=enginePhaseButton(id);if(!button)return;
@@ -70,13 +71,14 @@ preview.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.contains('show')){e.preventDefault();closePreviewAfterGesture()}});
 map.addEventListener('click',e=>{
  if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
- const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;
- const id=node.dataset.phase;if(!phaseAccessible(id))return;
- e.preventDefault();e.stopImmediatePropagation();openPreview(id)
+ const target=e.target instanceof Element?e.target:null;if(!target)return;
+ const root=target.closest('.singularity-map');if(root){e.preventDefault();e.stopImmediatePropagation();openPreview('bigbang');return}
+ const node=target.closest('.phase-node[data-phase]');if(!node)return;
+ const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id)
 },true);
 
 /* The map owns the screen whenever it is visible. */
-function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();launchingId='';if(engineIntro?.classList.contains('show'))engineStart?.click()}
+function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();launchingId='';dismissEngineIntro()}
 new MutationObserver(yieldEngineIntro).observe(map,{attributes:true,attributeFilter:['class']});
 if(engineIntro)new MutationObserver(dismissEngineIntro).observe(engineIntro,{attributes:true,attributeFilter:['class']});
 window.addEventListener('ardua:campaign-progress',()=>{if(previewId)renderPreview(previewId)});
