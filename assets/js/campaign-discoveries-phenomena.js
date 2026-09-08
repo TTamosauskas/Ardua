@@ -50,6 +50,7 @@ const WIKI_ALIASES=Object.freeze({
  'Convecção Estelar':'Convecção',
  'Jatos Coronais':'Jato astrofísico',
  'Reconexão Magnética':'Reconexão magnética',
+ 'Erupções Solares':'Erupção solar',
  'Pressão de degenerescência eletrônica':'Matéria degenerada',
  'Colapso gravitacional':'Colapso gravitacional',
  'Triplo-alfa':'Processo triplo-alfa',
@@ -149,9 +150,9 @@ async function wikiData(title,glyph){
    title:page.title||parsed?.parse?.title||resolved,
    url:cfg.wikiUrl||page.fullurl||wikiFallbackUrl(resolved),
    image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:(normalizeImage(page.thumbnail?.source)||firstArticleImage(html)),
-   intro:firstWikiParagraph(html)||firstExtractParagraph(page.extract)||''
+   intro:cfg.intro||firstWikiParagraph(html)||firstExtractParagraph(page.extract)||''
   };
- })().catch(async()=>{const sources=await phenomenonSources(),cfg=sources[title]||{};return{title,url:cfg.wikiUrl||wikiFallbackUrl(cfg.wikiTitle||WIKI_ALIASES[title]||title),image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'',intro:'',glyph}});
+ })().catch(async()=>{const sources=await phenomenonSources(),cfg=sources[title]||{};return{title,url:cfg.wikiUrl||wikiFallbackUrl(cfg.wikiTitle||WIKI_ALIASES[title]||title),image:cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'',intro:cfg.intro||'',glyph}});
  cache.set(title,promise);return promise;
 }
 

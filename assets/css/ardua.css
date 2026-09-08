@@ -432,3 +432,6 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 .star-board.primordial-mode.primordial-molecule-mode .primordial-layer{z-index:18}
 .star-board.primordial-mode .atom[data-molecule="HeH+"]{box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 16px rgba(147,220,255,.24),0 7px 15px rgba(0,0,0,.22)}
 .star-board.primordial-mode .atom[data-molecule="H2"]{box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 18px rgba(190,238,255,.28),0 7px 15px rgba(0,0,0,.22)}
+
+/* Jatos Coronais: estado eletrônico não altera o tamanho visual das peças. */
+.atom.coronal-uniform{width:var(--cellSize)!important;height:var(--cellSize)!important}

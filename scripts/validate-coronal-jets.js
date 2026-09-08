@@ -7,6 +7,7 @@ const discoveries=read('assets/js/campaign-discoveries.js');
 const phenomenaUI=read('assets/js/campaign-discoveries-phenomena.js');
 const sources=read('assets/data/phenomenon-sources.json');
 const campaign=read('assets/js/campaign-mode.js');
+const css=read('assets/css/ardua.css');
 function fail(msg){throw new Error(msg)}
 function need(hay,token,msg){if(!hay.includes(token))fail(msg||`Ausente: ${token}`)}
 
@@ -66,5 +67,26 @@ need(sources,'"Jatos Coronais"','Fonte de fenômeno Jatos Coronais ausente');
 need(sources,'"Reconexão Magnética"','Fonte de fenômeno Reconexão Magnética ausente');
 need(campaign,'version:14','Migração de campanha v14 ausente');
 need(campaign,"'coronal_jets'",'Migração de campanha não conhece Jatos Coronais');
+
+
+// Polimento da interação: em Jatos a Convecção vence a química atômica quando armada
+need(engine,"s.coronalJetTutorial&&state.convectionArmed&&handleConvectionTap(p)",'Íon superficial ainda é interceptado pela química antes da Convecção');
+need(engine,"if(s.coronalJetTutorial){state.convectionConfirmPending=false;render();performConvection([...path]);return true}",'Jatos Coronais ainda exige um segundo toque para executar a Convecção');
+need(engine,"1º Provoque uma reação no núcleo estelar",'Texto do primeiro passo dos Jatos incorreto');
+need(engine,"2º Ative a Convecção e selecione um íon na superfície.",'Texto do segundo passo dos Jatos incorreto');
+need(engine,"s.coronalJetTutorial?' coronal-uniform':''",'Peças da fase Jatos não recebem classe de tamanho uniforme');
+need(css,'.atom.coronal-uniform{width:var(--cellSize)!important;height:var(--cellSize)!important}','Tamanho visual dos átomos/núcleos não foi padronizado em Jatos');
+
+// Nova descoberta editorial com a imagem fornecida pelo jogador
+need(discoveries,"key:'phenomenon:solarFlare'",'Descoberta Erupções Solares ausente');
+need(discoveries,"title:'Erupções Solares'",'Título Erupções Solares ausente');
+need(engine,"registerRewardDiscovery('phenomenon:solarFlare'",'Conclusão de Jatos não registra Erupções Solares');
+need(engine,"kicker:'NOVA DESCOBERTA'",'Jogador não é informado da nova descoberta');
+need(phenomenaUI,"'Erupções Solares':'Erupção solar'",'Alias de Erupções Solares ausente');
+need(phenomenaUI,'cfg.intro||firstWikiParagraph','Texto editorial não tem prioridade sobre a Wikipédia');
+need(sources,'"Erupções Solares"','Fonte de Erupções Solares ausente');
+need(sources,'assets/images/phenomena/solar-flare.jpg','Imagem anexada não está vinculada a Erupções Solares');
+need(sources,'Erupções solares são explosões repentinas na superfície do Sol causadas por mudanças no seu campo magnético.','Texto solicitado para Erupções Solares ausente');
+if(!fs.existsSync('assets/images/phenomena/solar-flare.jpg'))fail('Imagem local de Erupções Solares ausente');
 
 console.log('Coronal jets OK: química cumulativa, ejeção superficial antes da Convecção, tutorial 0/2, rota e descobertas validados.');

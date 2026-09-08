@@ -637,5 +637,11 @@
     "imageLicense": "CC BY 4.0",
     "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
     "imageArtist": "Geoff Elston"
+  },
+  "Erupções Solares": {
+    "wikiTitle": "Erupção solar",
+    "slug": "solar-flare",
+    "imagePath": "assets/images/phenomena/solar-flare.jpg",
+    "intro": "Erupções solares são explosões repentinas na superfície do Sol causadas por mudanças no seu campo magnético. Essas explosões liberam altos níveis de radiação e partículas a altas velocidades que estavam armazenados nas linhas de campo magnético. As linhas de campo magnético formam uma \"sombra\" na fotosfera do Sol, que são as manchas solares."
   }
 }
