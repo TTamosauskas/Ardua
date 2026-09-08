@@ -38,7 +38,7 @@ const perform=engine.indexOf('async function performConvection(path)');
 if(perform<0)fail('Rotina de Convecção ausente');
 const block=engine.slice(perform,perform+6500);
 const jet=block.indexOf('await maybeEjectCoronalJet(path,s)');
-const recalc=block.indexOf('occupied=path.filter');
+const recalc=jet<0?-1:block.indexOf('occupied=path.filter',jet);
 const rotate=block.indexOf('dest=occupied.map');
 if(jet<0)fail('Convecção não verifica Jato Coronal');
 if(recalc<0||recalc<jet)fail('Linha convectiva não é recalculada após a ejeção');
