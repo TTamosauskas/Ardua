@@ -8,11 +8,12 @@ const SPECIAL_NAMES=Object.freeze({D:'Deutério',T:'Trítio',He3:'Hélio-3',HeU:
 const TITLE_OVERRIDES=Object.freeze({'phenomenon:coronalJet':'Ejeção de Massa Coronal'});
 const queue=[],queued=new Set();let current=null,renderFrame=0;
 function parse(raw,fallback={}){try{return raw?JSON.parse(raw):fallback}catch(_e){return fallback}}
-function savedRewards(){return new Set(parse(localStorage.getItem(SAVE_KEY),{}).rewardDiscoveries||[])}
+function saveData(){return parse(localStorage.getItem(SAVE_KEY),{})}
+function savedRewards(){return new Set(saveData().rewardDiscoveries||[])}
 function discoveryIndex(){return window.ARDUA_DISCOVERY_INDEX||{}}
 function elementCard(sym){return [...document.querySelectorAll('#catalog .el-card')].find(card=>card.querySelector('.s')?.textContent?.trim()===sym)||null}
 function baseElementSymbol(sym){return SPECIAL_BASE[sym]||sym}
-function itemKeyFor(rawKey){const key=String(rawKey||'');if(key.startsWith('element:')){const sym=key.slice(8),base=baseElementSymbol(sym);return elementCard(base)?`element:${base}`:null}return discoveryIndex()[key]?key:null}
+function itemKeyFor(rawKey){const key=String(rawKey||'');if(key.startsWith('element:'))return`element:${baseElementSymbol(key.slice(8))}`;return discoveryIndex()[key]?key:null}
 function elementName(sym){const card=elementCard(baseElementSymbol(sym));return SPECIAL_NAMES[sym]||card?.querySelector('.nm')?.textContent?.trim()||sym}
 function displayTitle(rawKey){const key=String(rawKey||'');if(TITLE_OVERRIDES[key])return TITLE_OVERRIDES[key];if(key.startsWith('element:'))return elementName(key.slice(8));return discoveryIndex()[key]?.title||key.split(':').pop()||'Descoberta'}
 function discoveryWord(title){
@@ -22,8 +23,15 @@ function discoveryWord(title){
  if(femininePlural)return'DESCOBERTAS';if(masculinePlural)return'DESCOBERTOS';return feminine?'DESCOBERTA':'DESCOBERTO';
 }
 function modalTitle(rawKey){const title=displayTitle(rawKey);return`${title.toLocaleUpperCase('pt-BR')} ${discoveryWord(title)}`}
+function historicalKnown(){
+ const data=saveData(),keys=new Set(data.rewardDiscoveries||[]);
+ for(const sym of data.discovered||[])keys.add(`element:${sym}`);
+ const completed=new Set(window.ARDUA_CAMPAIGN?.getState?.().completed||[]),byPhase=window.ARDUA_PHASE_DISCOVERIES||{};
+ for(const id of completed)for(const entry of byPhase[id]||[])if(entry?.key)keys.add(entry.key);
+ return keys;
+}
 let inbox=parse(localStorage.getItem(INBOX_KEY),null);
-if(!inbox||inbox.version!==1){inbox={version:1,known:[...savedRewards()],unread:[]};localStorage.setItem(INBOX_KEY,JSON.stringify(inbox))}
+if(!inbox||inbox.version!==1){inbox={version:1,known:[...historicalKnown()],unread:[]};localStorage.setItem(INBOX_KEY,JSON.stringify(inbox))}
 let known=new Set(inbox.known||[]),unread=new Set(inbox.unread||[]);
 function persist(){inbox={version:1,known:[...known],unread:[...unread]};localStorage.setItem(INBOX_KEY,JSON.stringify(inbox))}
 function ensureModal(){let host=$('discoveryUnlockModal');if(host)return host;host=document.createElement('div');host.id='discoveryUnlockModal';host.className='discovery-unlock-modal';host.setAttribute('aria-hidden','true');host.innerHTML='<section class="discovery-unlock-card" role="dialog" aria-modal="true" aria-labelledby="discoveryUnlockTitle"><strong id="discoveryUnlockTitle"></strong><p>Confira suas descobertas no menu.</p><button type="button" id="discoveryUnlockContinue">CONTINUAR</button></section>';document.body.appendChild(host);$('discoveryUnlockContinue')?.addEventListener('click',dismissModal);return host}
