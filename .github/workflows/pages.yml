@@ -61,6 +61,9 @@ jobs:
       - name: Validate stellar plasma phases
         run: node scripts/validate-stellar-plasma.js
 
+      - name: Validate coronal jets
+        run: node scripts/validate-coronal-jets.js
+
       - name: Validate movement, chain knowledge and particle selection
         run: node scripts/validate-movement-chain-particles.js
 
