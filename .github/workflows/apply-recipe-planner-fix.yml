@@ -1,0 +1,101 @@
+name: Apply recipe planner fix
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-recipe-planner-fix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Patch planner
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/ardua.js')
+          s=p.read_text()
+
+          replacements=[
+            ("if((available[need]||0)>=(needs[need]||0)&&action.kind!=='fusion')continue;",
+             "if((available[need]||0)>=(needs[need]||0))continue;"),
+            ("if(need.historical&&need.present>0&&!need.missing)continue;",
+             "if(need.present>0&&!need.missing)continue;"),
+            ("if(item.historical&&item.present>0&&!item.missing)continue;",
+             "if(item.present>0&&!item.missing)continue;"),
+            ("const available=boardSymbolCounts(),need=counts(r.ing),historical=exactHistoricalSymbols(s),items=",
+             "const available=guidanceBoardSymbolCounts(),need=counts(r.ing),historical=exactHistoricalSymbols(s),items="),
+            ("if(hasRecipeIngredients(r))return{kind:'fusion',recipe:r,out:r.out,needs:[...r.ing],key:`f:${recipeKey(r)}`};",
+             "if(hasRecipeIngredients(r,guidanceBoardSymbolCounts()))return{kind:'fusion',recipe:r,out:r.out,needs:[...r.ing],key:`f:${recipeKey(r)}`};")
+          ]
+          for old,new in replacements:
+              count=s.count(old)
+              if count!=1:
+                  raise SystemExit(f'Esperava 1 ocorrência, encontrei {count}: {old}')
+              s=s.replace(old,new,1)
+
+          old="""function nextActionableRecipeToward(r,s=phase(),seen=new Set()){
+ if(!r)return null;const key=recipeKey(r);if(seen.has(key))return null;seen.add(key);
+ if(reactionIsActionable(r,s))return r;
+ const needs=orderedSpatialNeeds(r,s);"""
+          new="""function nextActionableRecipeToward(r,s=phase(),seen=new Set()){
+ if(!r)return null;const key=recipeKey(r);if(seen.has(key))return null;seen.add(key);
+ if(reactionIsActionable(r,s))return r;
+ // Se todos os ingredientes já existem, distância espacial pede movimentação, não fabricação de cópias.
+ if(hasRecipeIngredients(r,guidanceBoardSymbolCounts()))return r;
+ const needs=orderedSpatialNeeds(r,s);"""
+          if s.count(old)!=1: raise SystemExit('Bloco nextActionableRecipeToward inesperado')
+          s=s.replace(old,new,1)
+
+          old_comment=""" // Ingredientes realmente ausentes vêm primeiro. Quando todos existem mas estão distantes,
+ // prefira reconstruir o reagente mais leve/reutilizável. Um reagente histórico presente
+ // nunca é tratado como ausente só por estar longe."""
+          new_comment=""" // Ingredientes realmente ausentes vêm primeiro. Ingredientes já suficientes no campo
+ // são satisfeitos mesmo quando estão distantes: nesse caso o próximo passo é movimentá-los,
+ // nunca fabricar uma cópia apenas para corrigir a geometria."""
+          if s.count(old_comment)!=1: raise SystemExit('Comentário orderedSpatialNeeds inesperado')
+          s=s.replace(old_comment,new_comment,1)
+
+          old_fallback="""  // Elementos já forjados nunca são reescritos para fabricar uma oportunidade artificial.
+  // A reação-base da cadeia próton-próton é H + H → D; dela o jogador reconstrói ³He e He.
+  const basic=FUSIONS.D;"""
+          new_fallback="""  // Elementos já forjados nunca são reescritos para fabricar uma oportunidade artificial.
+  // Só reponha H para H+H→D quando o planejador concluiu que D é realmente o próximo
+  // precursor ausente. Se um intermediário suficiente já existe, preserve-o e deixe o
+  // jogador aproximar/usar a matéria que já está na estrela.
+  const targetOpportunity=phaseFusionRecipes(s).slice().reverse()[0]||phaseFusionRecipe(s);
+  const plannedOpportunity=targetOpportunity?nextExecutableFusionToward(targetOpportunity,s):null;
+  const deuteriumFallbackNeeded=plannedOpportunity?.kind==='fusion'&&plannedOpportunity.recipe===FUSIONS.D;
+  if(!deuteriumFallbackNeeded)return true;
+  const basic=FUSIONS.D;"""
+          if s.count(old_fallback)!=1: raise SystemExit('Fallback H+H→D inesperado')
+          s=s.replace(old_fallback,new_fallback,1)
+
+          p.write_text(s)
+          PY
+      - name: Validate patch
+        run: |
+          node --check assets/js/ardua.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: prefer existing recipe intermediates"
+          git push origin HEAD:main
