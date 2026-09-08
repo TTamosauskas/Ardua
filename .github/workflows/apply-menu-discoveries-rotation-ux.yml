@@ -1,0 +1,50 @@
+name: Apply menu discoveries rotation UX
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/apply-menu-discoveries-rotation-ux.py"
+      - ".github/workflows/apply-menu-discoveries-rotation-ux.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Apply UX changes
+        run: python scripts/apply-menu-discoveries-rotation-ux.py
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-fork-links.js
+          node --check assets/js/phase-polish.js
+          node --check assets/js/campaign-home-polish.js
+          node --check assets/js/rotation-polish.js
+          node --check assets/js/campaign-discoveries-elements.js
+          node --check assets/js/campaign-discoveries-phenomena.js
+      - name: Smoke-check requested UX
+        run: |
+          grep -Fq '<span>Recomeçar Fase</span>' assets/js/campaign-fork-links.js
+          ! grep -Fq 'window.location.reload()' assets/js/phase-polish.js
+          grep -Fq "applySound(!soundtrackEnabled(),true);closeQuickMenu(false)" assets/js/campaign-fork-links.js
+          grep -Fq "phaseQuickRotation')document.querySelector('#phaseQuickMenu .phase-quick-close')?.click()" assets/js/rotation-polish.js
+          grep -Fq 'const pivot=points.reduce' assets/js/rotation-polish.js
+          grep -Fq 'if(r<1)return{x:g.cx,y:g.cy}' assets/js/rotation-polish.js
+          ! grep -Fq 'data-element-detail-back' assets/js/campaign-discoveries-elements.js
+          ! grep -Fq 'data-phenomenon-detail-back' assets/js/campaign-discoveries-phenomena.js
+          ! grep -Fq 'tabs.hidden=on' assets/js/campaign-discoveries-elements.js
+          ! grep -Fq 'tabs.hidden=on' assets/js/campaign-discoveries-phenomena.js
+          grep -Fq 'if(!open)continue' assets/js/ardua.js
+          grep -Fq '.discovery-card.locked{display:none!important}' assets/css/phase-polish.css
+      - name: Commit runtime changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/js/campaign-fork-links.js assets/js/phase-polish.js assets/js/campaign-home-polish.js assets/js/rotation-polish.js assets/js/campaign-discoveries-elements.js assets/js/campaign-discoveries-phenomena.js assets/css/phase-polish.css
+          git diff --cached --quiet || git commit -m "feat: refine phase menu discoveries and rotation UX"
+          git push
