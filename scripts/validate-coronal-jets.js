@@ -41,10 +41,11 @@ const block=engine.slice(perform,perform+6500);
 const jetToken='await maybeEjectCoronalJet(path,s)';
 const jet=block.indexOf(jetToken);
 const recalc=jet<0?-1:block.indexOf('occupied=path.filter',jet+jetToken.length);
-const rotate=block.indexOf('dest=occupied.map');
+const reorder=block.indexOf('reversed=[...ids].reverse()');
 if(jet<0)fail('Convecção não verifica Jato Coronal');
 if(recalc<0||recalc<jet)fail('Linha convectiva não é recalculada após a ejeção');
-if(rotate<0||rotate<jet)fail('Jato Coronal precisa acontecer antes da reorganização da linha');
+if(reorder<0||reorder<jet)fail('Jato Coronal precisa acontecer antes da reorganização da linha');
+if(block.includes('dest=occupied.map'))fail('Convecção foi alterada para rotação cíclica em vez da inversão histórica');
 if(block.indexOf('maybeEjectCoronalJet',jet+jetToken.length)>=0)fail('Há uma segunda verificação de Jato depois da Convecção');
 need(block,'state.convectionMoves=(state.convectionMoves||0)+1','Convecção deixou de contabilizar/reorganizar normalmente');
 
@@ -67,7 +68,6 @@ need(sources,'"Jatos Coronais"','Fonte de fenômeno Jatos Coronais ausente');
 need(sources,'"Reconexão Magnética"','Fonte de fenômeno Reconexão Magnética ausente');
 need(campaign,'version:14','Migração de campanha v14 ausente');
 need(campaign,"'coronal_jets'",'Migração de campanha não conhece Jatos Coronais');
-
 
 // Polimento da interação: em Jatos a Convecção vence a química atômica quando armada
 need(engine,"s.coronalJetTutorial&&state.convectionArmed&&handleConvectionTap(p)",'Íon superficial ainda é interceptado pela química antes da Convecção');
