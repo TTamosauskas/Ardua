@@ -1,0 +1,183 @@
+from pathlib import Path
+import json,re
+
+
+def sub1(text, pattern, repl, label, flags=0):
+    out,n=re.subn(pattern,repl,text,count=1,flags=flags)
+    if n!=1: raise SystemExit(f'{label}: {n} ocorrencias')
+    return out
+
+def rep1(text, old, new, label):
+    n=text.count(old)
+    if n!=1: raise SystemExit(f'{label}: {n} ocorrencias')
+    return text.replace(old,new,1)
+
+# ---- engine ----
+p=Path('assets/js/ardua.js'); s=p.read_text()
+phase="{id:'coronal_jets',branch:'Gigante vermelha · atividade magnética',title:'Jatos Coronais',meta:'Convecção + íon superficial → reconexão magnética → jato coronal',new:'He',mode:'convection',target:2,visual:'redGiant',fill:34,pool:['H','H','He','He3'],gravityDelay:142,fusionTempMax:1.2e8,reuseFusion:true,objectiveOnlyProgress:true,coronalJetTutorial:true,menuTag:'JATOS CORONAIS',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},"
+s=sub1(s,r"(?m)^(\{id:'stellar_convection'.*\},)$",lambda m:m.group(1)+'\n'+phase,'fase Jatos')
+
+anchor="function stellarRecombinationKnowledge(s=phase()){return s?.mode==='stellarRecombination'||campaignKnowledgeReached('stellar_recombination')}"
+helper=anchor+"""
+function prepareCumulativeStellarAtomicMatter(s=phase()){
+ if(stellarAtomicMode(s)||!stellarAtomicChemistryAllowed(s)||!stellarIonizationKnowledge(s))return false;
+ const outer=phaseRadius(s);let changed=false;
+ state.pieces.forEach(p=>{
+  if(!p||p.free||p.cell===null||p.cell===undefined||coords[p.cell]?.ring!==outer||p.matterState==='atom'||p.neutronBetaPending||pieceIsUnstable(p)||!E[p.sym]?.n)return;
+  p.matterState='atom';p.boundElectrons=Number(E[p.sym].n||0);changed=true;
+ });
+ return changed
+}"""
+s=rep1(s,anchor,helper,'quimica cumulativa')
+
+s=sub1(s,r"function createPiece\(sym,cell,fromOutside=false,opts=\{\}\)\{[^\n]*?return piece\}","""function createPiece(sym,cell,fromOutside=false,opts={}){
+ const autoAtom=!opts.matterState&&!isPrimordial()&&stellarAtomicChemistryAllowed(phase())&&stellarIonizationKnowledge(phase())&&cell!==null&&cell!==undefined&&coords[cell]?.ring===phaseRadius()&&!!E[sym]?.n;
+ const explicitElectrons=Object.prototype.hasOwnProperty.call(opts,'boundElectrons'),id=state.nextId++,p0=fromOutside?outside(cell):pos(coords[cell]),piece={id,sym,cell,x:p0.x,y:p0.y,captures:0,matterState:opts.matterState||(autoAtom?'atom':'nucleus'),boundElectrons:explicitElectrons?Number(opts.boundElectrons||0):(autoAtom?Number(E[sym]?.n||0):0),massNumber:opts.massNumber??E[sym]?.mass??null,longRadioactive:!!opts.longRadioactive,lineage:normalizeMatterLineage(opts.lineage?.length?opts.lineage:freshMatterLineage())};
+ armIntrinsicInstability(piece);state.pieces.set(id,piece);state.board[cell]=id;return piece
+}""",'createPiece cumulativo')
+
+s=sub1(s,r"function ensureCumulativeParticleFuel\(s=phase\(\)\)\{.*?^\}","""function ensureCumulativeParticleFuel(s=phase()){
+ if(stellarAtomicMode(s))return;
+ if(s?.coronalJetTutorial){ensurePrimordialParticleMix({p:1,n:1,e:1});startPrimordialDrift();return}
+ if(!s||isPrimordial(s)||!cumulativeParticleInteractionAllowed(s))return;
+ ensurePrimordialParticleMix({p:2,n:2,e:atomicRecombinationLearned('H')?2:0});startPrimordialDrift();
+}""",'fuel Jatos',re.M|re.S)
+s=rep1(s,"const s=phase();ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;","const s=phase();prepareCumulativeStellarAtomicMatter(s);ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;",'ensureOpportunity')
+s=rep1(s,"if((isPrimordial()&&phase().mode!=='opening')||protonCaptureAvailable(phase())||stellarAtomicMode(phase()))startPrimordialDrift();","if((isPrimordial()&&phase().mode!=='opening')||protonCaptureAvailable(phase())||stellarAtomicChemistryAllowed(phase()))startPrimordialDrift();",'tooltip drift')
+
+# Replace the whole fillStage convection branch, stopping at the brown-dwarf branch.
+start=s.index("  if(s.mode==='convection'){")
+end=s.index("  if(s.id==='brown'){",start)
+fill="""  if(s.mode==='convection'){
+    const inner=[...(byRing[0]||[]),...(byRing[1]||[])],used=new Set();
+    inner.forEach(cell=>{createPiece('He3',cell,false);used.add(cell)});
+    const edgeRing=phaseRadius(s),edgeCells=[];
+    for(const [dq,dr] of dirs){const cell=coordIndex.get(`${dq*edgeRing},${dr*edgeRing}`);if(cell!==undefined&&!used.has(cell))edgeCells.push(cell)}
+    if(s.coronalJetTutorial){
+      const jetCell=edgeCells[0],neutralCell=edgeCells[1];
+      if(jetCell!==undefined){createPiece('He',jetCell,false,{matterState:'atom',boundElectrons:1});used.add(jetCell)}
+      if(neutralCell!==undefined){createPiece('He',neutralCell,false,{matterState:'atom',boundElectrons:2});used.add(neutralCell)}
+      for(const cell of edgeCells.slice(2)){createPiece('H',cell,false,{matterState:'atom',boundElectrons:1});used.add(cell)}
+    }else for(const cell of edgeCells){createPiece('H',cell,false);used.add(cell)}
+    const rest=activeCells().filter(cell=>!used.has(cell)).sort(()=>Math.random()-.5),pool=['H','H','He','He3'];
+    const amount=Math.max(0,Math.min((s.fill||34)-used.size,rest.length));
+    rest.slice(0,amount).forEach((cell,i)=>createPiece(pool[i%pool.length],cell,false));
+    if(s.coronalJetTutorial){ensurePrimordialParticleMix({p:3,e:3,n:1});startPrimordialDrift();renderPrimordialParticles()}
+    renderPieces();requestAnimationFrame(()=>{state.pieces.forEach(p=>{if(p.cell!==null){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}});renderPieces()});return;
+  }
+"""
+s=s[:start]+fill+s[end:]
+
+# Jet helpers and first-jet tooltip.
+insert=s.index('async function performConvection(path)')
+helpers="""function coronalJetMechanicUnlocked(s=phase()){
+ return convectionMechanicUnlocked(s)&&campaignKnowledgeReached('coronal_jets')
+}
+function coronalJetIonAtPathEdge(path,s=phase()){
+ if(!coronalJetMechanicUnlocked(s)||!Array.isArray(path)||!path.length)return null;
+ const outer=phaseRadius(s),cell=path.find(c=>Number.isInteger(c)&&coords[c]?.ring===outer);
+ if(cell===undefined)return null;const id=state.board[cell],p=id?state.pieces.get(id):null;
+ return p&&!p.free&&p.matterState==='atom'&&pieceCharge(p)>0?p:null
+}
+function coronalJetChargedCompanions(){
+ const out=[];
+ for(const kind of ['p','e']){const available=[...state.primordialParticles.values()].filter(p=>p.kind===kind&&!p.reacting);if(available.length>1)out.push(available[0])}
+ const positron=[...state.primordialParticles.values()].find(p=>p.kind==='pos'&&!p.reacting);if(positron)out.push(positron);
+ return out
+}
+async function maybeEjectCoronalJet(path,s=phase()){
+ if(state.coronalJetRunning)return false;const ion=coronalJetIonAtPathEdge(path,s);if(!ion)return false;
+ state.coronalJetRunning=true;await teachProductOnce('coronalJet',ion.x,ion.y);
+ const cell=ion.cell,origin={x:ion.x,y:ion.y},source=dom.pieces.querySelector(`[data-id="${ion.id}"]`),clone=source?.cloneNode(true)||null,size=starSize(),c=size/2,a=Math.atan2(origin.y-c,origin.x-c),dist=size*1.08;
+ if(clone){clone.removeAttribute('data-id');clone.style.pointerEvents='none';clone.style.left=origin.x+'px';clone.style.top=origin.y+'px';clone.style.zIndex='18';dom.fx.appendChild(clone)}
+ const arc=document.createElement('div');arc.className='gamma-emission';arc.textContent='⌁';arc.style.left=origin.x+'px';arc.style.top=origin.y+'px';arc.style.fontSize='30px';dom.fx.appendChild(arc);
+ const companions=coronalJetChargedCompanions();companions.forEach((q,i)=>{q.reacting=true;q.x=c+Math.cos(a+(i-.5)*.10)*size*1.02;q.y=c+Math.sin(a+(i-.5)*.10)*size*1.02});
+ state.board[cell]=null;state.pieces.delete(ion.id);renderPieces();renderPrimordialParticles();
+ if(clone)clone.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(.34)`,opacity:0}],{duration:820,easing:'cubic-bezier(.16,.76,.2,1)',fill:'forwards'});
+ arc.animate([{transform:'translate(-50%,-50%) scale(.5)',opacity:.9},{transform:`translate(calc(-50% + ${Math.cos(a)*dist*.82}px),calc(-50% + ${Math.sin(a)*dist*.82}px)) scale(1.8)`,opacity:0}],{duration:760,easing:'ease-out',fill:'forwards'});
+ tone(720,.16,'sawtooth',.032);vibrate([8,18,12]);await wait(840);
+ companions.forEach(q=>state.primordialParticles.delete(q.id));clone?.remove();arc.remove();
+ if(s.coronalJetTutorial)state.coronalJetCount=(state.coronalJetCount||0)+1;
+ registerRewardDiscovery('phenomenon:coronalJet',{title:'JATOS CORONAIS',text:'Plasma ionizado da superfície foi acelerado para fora da estrela.',silent:true});
+ registerRewardDiscovery('phenomenon:magneticReconnection',{title:'RECONEXÃO MAGNÉTICA',text:'A reorganização do campo magnético liberou energia e acelerou o plasma.',silent:true});
+ state.coronalJetRunning=false;renderPrimordialParticles();return true
+}
+"""
+s=s[:insert]+helpers+s[insert:]
+
+s=sub1(s,r"(?ms)^async function performConvection\(path\)\{.*?^\}","""async function performConvection(path){
+ const s=phase();let occupied=path.filter(c=>state.board[c]!==null);if(state.locked||state.phaseDone||!state.convectionCharge||occupied.length<2)return false;
+ const first=state.pieces.get(state.board[occupied[0]]);if(!first)return false;
+ state.locked=true;state.convectionConfirmPending=false;state.convectionArmed=false;state.convectionCharge=0;state.convectionPathCells=[...path];state.selected=[];state.contextRecipeKey=null;
+ const origin=pos(coords[first.cell]);await teachConvectionOnce(origin.x,origin.y);
+ await maybeEjectCoronalJet(path,s);
+ occupied=path.filter(c=>state.board[c]!==null);
+ await releaseConvectionGamma(origin.x,origin.y);
+ if(occupied.length>=2){
+  const ids=occupied.map(c=>state.board[c]),dest=occupied.map((_,i)=>occupied[(i+1)%occupied.length]);
+  ids.forEach((id,i)=>{const p=state.pieces.get(id),cell=dest[i];state.board[p.cell]=null;p.cell=cell});
+  ids.forEach((id,i)=>{state.board[dest[i]]=id;const p=state.pieces.get(id),q=pos(coords[dest[i]]);p.x=q.x;p.y=q.y;p.convecting=true});
+  renderPieces();await wait(560);ids.forEach(id=>{const p=state.pieces.get(id);if(p)p.convecting=false});
+ }
+ state.convectionMoves=(state.convectionMoves||0)+1;if(s.id==='stellar_convection')recordFlow(1);state.convectionPathCells=[];state.locked=false;prepareCumulativeStellarAtomicMatter(s);render();checkComplete();return true;
+}""",'performConvection',re.M|re.S)
+lesson="convection:{title:'CONVECÇÃO ESTELAR',text:'Uma reação nuclear aqueceu o interior. Fótons gama interagem repetidamente com o plasma, enquanto correntes convectivas transportam matéria e energia para outras regiões da estrela.'}"
+s=rep1(s,lesson,lesson+",\n coronalJet:{title:'JATOS CORONAIS',text:'A convecção pode deformar estruturas magnéticas que alcançam a atmosfera estelar. Quando linhas de campo se reconectam, plasma ionizado na superfície pode ser acelerado para fora em um jato estreito.'}",'tooltip Jatos')
+
+# Objective and UI.
+s=rep1(s,"if(s.mode==='convection')return(state.convectionMoves||0)>=s.target;","if(s.coronalJetTutorial)return(state.coronalJetCount||0)>=s.target;if(s.mode==='convection')return(state.convectionMoves||0)>=s.target;",'objectiveSatisfied')
+s=rep1(s,"s.mode==='stellarRecombination'?Math.min(100,state.stellarRecombinations/Math.max(1,s.target)*100):currentProgress()","s.mode==='stellarRecombination'?Math.min(100,state.stellarRecombinations/Math.max(1,s.target)*100):s.coronalJetTutorial?Math.min(100,(state.coronalJetCount||0)/Math.max(1,s.target)*100):currentProgress()",'progress bar')
+s=rep1(s,"else if(s.mode==='convection')$('stageProgressText').textContent=`${state.convectionMoves||0}/${s.target}`;","else if(s.coronalJetTutorial)$('stageProgressText').textContent=`${state.coronalJetCount||0}/${s.target}`;\n else if(s.mode==='convection')$('stageProgressText').textContent=`${state.convectionMoves||0}/${s.target}`;",'progress text')
+s=rep1(s,"s.mode==='convection'?(state.readyToAdvance?'CONCLUÍDA':'CONVECÇÃO')","s.coronalJetTutorial?(state.readyToAdvance?'CONCLUÍDA':'JATOS CORONAIS'):s.mode==='convection'?(state.readyToAdvance?'CONCLUÍDA':'CONVECÇÃO')",'progress label')
+obj="if(s.mode==='convection'){$('goalText').textContent=`Realize ${s.target} correntes convectivas — ${state.convectionMoves||0}/${s.target}`;setFormula(conciseRecipeLine(s));return}"
+newobj="""if(s.coronalJetTutorial){$('goalText').textContent=`Ejete matéria pelo campo magnético — ${state.coronalJetCount||0}/${s.target}`;const outer=phaseRadius(s),ready=[...state.pieces.values()].some(p=>!p.free&&p.cell!==null&&p.cell!==undefined&&coords[p.cell]?.ring===outer&&p.matterState==='atom'&&pieceCharge(p)>0);if(!ready)setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');else if(state.convectionCharge)setFormula('Selecione a linha com o íon na superfície');else setFormula('Reação nuclear no núcleo → carregue a Convecção');return}
+  "+obj
+s=rep1(s,obj,newobj,'objective HUD')
+s=rep1(s,"function modalPrimaryLine(s=phase()){","function modalPrimaryLine(s=phase()){\n if(s.coronalJetTutorial)return 'Convecção + íon superficial → reconexão magnética → jato coronal';",'modal primary')
+s=rep1(s,"function modalSecondaryLine(s=phase()){","function modalSecondaryLine(s=phase()){\n if(s.coronalJetTutorial)return 'Ejete o íon da superfície; depois a linha convectiva se reorganiza';",'modal secondary')
+conv="if(s.mode==='convection'){if(state.convectionConfirmPending)return'Coluna marcada → toque novamente para iniciar';if(state.convectionArmed)return'↕ → selecione um átomo externo';if(state.convectionCharge)return'Toque em ↕ no núcleo estelar';return'Reação nuclear no centro ou camada 1 → Convecção'}"
+s=rep1(s,conv,"if(s.coronalJetTutorial){const outer=phaseRadius(s),ready=[...state.pieces.values()].some(p=>!p.free&&p.cell!==null&&p.cell!==undefined&&coords[p.cell]?.ring===outer&&p.matterState==='atom'&&pieceCharge(p)>0);if(!ready)return'Átomo + e⁻ → Íon⁺ + 2e⁻';if(state.convectionCharge)return'Selecione a linha com o íon na superfície';return'Reação nuclear no núcleo → Convecção'}\n "+conv,'recipe line')
+
+s=rep1(s,"state.convectionMoves=0;state.convectionLessonShown=false;","state.convectionMoves=0;state.convectionLessonShown=false;state.coronalJetCount=0;state.coronalJetRunning=false;",'state reset')
+s=rep1(s,"fillStage()}if(s.mode==='stellarFormation')startStellarFormationStage();","fillStage()}prepareCumulativeStellarAtomicMatter(s);if(s.mode==='stellarFormation')startStellarFormationStage();",'start phase atoms')
+reward="if(s.mode==='convection'){RewardDirector.show({kicker:'OBJETIVO CIENTÍFICO',title:'CONVECÇÃO ESTELAR',text:'Você dominou o ciclo entre atividade nuclear e transporte convectivo.',priority:3,duration:1950,kind:'completion'})}"
+s=rep1(s,reward,"if(s.coronalJetTutorial){RewardDirector.show({kicker:'OBJETIVO CIENTÍFICO',title:'JATOS CORONAIS',text:'Você usou matéria ionizada da superfície e atividade magnética para produzir jatos coronais.',priority:3,duration:1950,kind:'completion'})}\n else "+reward,'reward')
+p.write_text(s)
+
+# ---- graph/map ----
+p=Path('assets/js/campaign-graph.js'); g=p.read_text()
+g=rep1(g,'version:10','version:11','graph version')
+if g.count('"stellar_convection","stellar_li"')<2: raise SystemExit('ordem canonica inesperada')
+g=g.replace('"stellar_convection","stellar_li"','"stellar_convection","coronal_jets","stellar_li"')
+g=rep1(g,'"stellar_convection":{"allOf":["coulomb_intro"]},"stellar_li":{"allOf":["stellar_convection"]}','"stellar_convection":{"allOf":["coulomb_intro"]},"coronal_jets":{"allOf":["stellar_convection","stellar_recombination"]},"stellar_li":{"allOf":["coronal_jets"]}','prereqs')
+p.write_text(g)
+p=Path('assets/js/campaign-giants-map.js'); t=p.read_text(); t=rep1(t,"'coulomb_intro','stellar_convection','stellar_li'","'coulomb_intro','stellar_convection','coronal_jets','stellar_li'",'giants map'); p.write_text(t)
+
+# ---- save migration ----
+p=Path('assets/js/campaign-mode.js'); t=p.read_text(); t=t.replace('version:13','version:14')
+marker='  if(previousVersion<10){\n'
+migration="""  if(previousVersion<14){
+   const coronalDownstream=['giant_formation','fragile','c','n','o','rb','sr','y','zr','nb','gamma_mo','tc','gamma_ru','rh','pd','ag','cd','in','sn','sb','te','i','xe','cs','ba','la','ce','pr','nd','pm','sm','pb','bi'];
+   if(next.completed.includes('stellar_li')||coronalDownstream.some(id=>seen.has(id)))next.completed=uniq([...next.completed,'coronal_jets']);
+   else if(next.activeId==='stellar_li'&&!next.completed.includes('stellar_li')&&next.completed.includes('stellar_convection'))next.activeId=next.completed.includes('stellar_recombination')?'coronal_jets':'solar_wind';
+  }
+"""
+t=rep1(t,marker,migration+marker,'migration v14'); p.write_text(t)
+
+# ---- discoveries ----
+p=Path('assets/js/campaign-discoveries.js'); t=p.read_text()
+a=" {key:'phenomenon:stellarConvection',glyph:'↕',title:'Convecção Estelar',group:'Processos estelares',text:'Correntes de plasma transportam matéria e energia entre diferentes regiões da estrela.',phases:['stellar_convection'],infer:['stellar_convection']},"
+b=a+"\n {key:'phenomenon:coronalJet',glyph:'↗',title:'Jatos Coronais',group:'Processos estelares',text:'Jatos estreitos e rápidos de plasma podem ser acelerados para fora da atmosfera estelar por reconexão magnética.',phases:['coronal_jets'],infer:['coronal_jets']},\n {key:'phenomenon:magneticReconnection',glyph:'⌁',title:'Reconexão Magnética',group:'Processos estelares',text:'Linhas de campo magnético podem mudar de conectividade e liberar energia, acelerando plasma ionizado na atmosfera estelar.',phases:['coronal_jets'],infer:['coronal_jets']},"
+t=rep1(t,a,b,'discoveries'); p.write_text(t)
+p=Path('assets/js/campaign-discoveries-phenomena.js'); t=p.read_text(); t=rep1(t," 'Convecção Estelar':'Convecção',"," 'Convecção Estelar':'Convecção',\n 'Jatos Coronais':'Jato astrofísico',\n 'Reconexão Magnética':'Reconexão magnética',",'aliases'); p.write_text(t)
+
+p=Path('assets/data/phenomenon-sources.json'); data=json.loads(p.read_text())
+common={'imagePath':'assets/images/phenomena/yellow-dwarf.jpg','imageWikiResolvedTitle':'Anã amarela','imageSourceUrl':'https://commons.wikimedia.org/wiki/File:Sun_white.jpg','imageLicense':'CC BY 4.0','imageLicenseUrl':'https://creativecommons.org/licenses/by/4.0','imageArtist':'Geoff Elston'}
+data['Jatos Coronais']={'wikiTitle':'Jato astrofísico','slug':'coronal-jets','wikiResolvedTitle':'Jato astrofísico','wikiUrl':'https://pt.wikipedia.org/wiki/Jato_astrof%C3%ADsico',**common}
+data['Reconexão Magnética']={'wikiTitle':'Reconexão magnética','slug':'magnetic-reconnection','wikiResolvedTitle':'Reconexão magnética','wikiUrl':'https://pt.wikipedia.org/wiki/Reconex%C3%A3o_magn%C3%A9tica',**common}
+p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+
+p=Path('scripts/validate-phenomena-discoveries.mjs'); t=p.read_text(); t=rep1(t," 'Convecção Estelar':['stellar_convection'], 'Barreira de Coulomb'"," 'Convecção Estelar':['stellar_convection'], 'Jatos Coronais':['coronal_jets'], 'Reconexão Magnética':['coronal_jets'], 'Barreira de Coulomb'",'phenomena validator'); p.write_text(t)
+p=Path('scripts/validate-stellar-plasma.js'); t=p.read_text().replace("campaign.includes('version:13')","campaign.includes('version:14')").replace('Migração v13 da trilha baixa ausente','Migração v14/v13 da trilha estelar ausente'); p.write_text(t)
+
+print('Coronal jets patch applied.')
