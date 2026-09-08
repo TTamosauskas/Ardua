@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/js/ardua.js assets/js/rotation-polish.js assets/js/campaign-graph.js assets/js/campaign-mode.js assets/js/campaign-map.js assets/js/campaign-giants-map.js assets/js/campaign-phase-modal.js scripts/validate-stellar-plasma.js scripts/validate-movement-chain-particles.js scripts/validate-rotation-option.js scripts/validate-campaign-phase-flow.js .github/workflows/pages.yml
+          git add assets/js/ardua.js assets/js/rotation-polish.js assets/js/campaign-graph.js assets/js/campaign-mode.js assets/js/campaign-map.js assets/js/campaign-giants-map.js assets/js/campaign-phase-modal.js scripts/validate-stellar-plasma.js scripts/validate-movement-chain-particles.js scripts/validate-rotation-option.js scripts/validate-campaign-phase-flow.js
           git diff --cached --check
           git commit -m "feat: rebalance stellar lessons and phase flow"
           git push origin HEAD:main
