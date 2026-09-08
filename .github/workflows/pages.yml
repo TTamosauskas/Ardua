@@ -99,6 +99,9 @@ jobs:
       - name: Validate campaign phase flow
         run: node scripts/validate-campaign-phase-flow.js
 
+      - name: Validate campaign runtime regressions
+        run: node scripts/validate-campaign-runtime-regressions.js
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
