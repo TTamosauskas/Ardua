@@ -18,6 +18,13 @@ assert(modal.includes('node.click()')&&modal.includes("#mapDetail [data-launch]"
 assert(!modal.includes('function enginePhaseButton(id)'),'Atalho pelo menu interno do motor voltou a ser usado');
 assert(map.includes("function launch(id){if(!C.isUnlocked(id))return;const idx=C.runtimeIndex(id),btn=phaseButtons[idx];if(!btn)return;C.setActive(id);mapRequired=false;hideMap(true);btn.click();refresh()}"),'Lançador nativo do mapa mudou: rever contrato');
 
+// O mapa recebe mutações de classe enquanto continua visível. Isso jamais pode fechar
+// o modal da fase; ele só é fechado quando há uma transição real de fase -> mapa.
+assert(modal.includes("let mapWasVisible=map.classList.contains('show')"),'Falta memória do estado anterior de visibilidade do mapa');
+assert(modal.includes("becameVisible=visible&&!mapWasVisible"),'Fechamento do modal precisa depender da transição para mapa visível');
+assert(modal.includes("if(!becameVisible)return;closePreview()"),'Preview ainda pode ser fechado por atualização cosmética do mapa');
+assert(!modal.includes("function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview()"),'Regressão: qualquer mutation de classe do mapa volta a fechar o preview');
+
 // 2. Os indicadores apontam para os controles realmente visíveis e sobrevivem à ordem de carga.
 for(const id of ['campaignHomeMenuBtn','campaignHomeDiscoveries'])assert(home.includes(id),`Interface atual perdeu ${id}`);
 for(const token of ["$('campaignHomeMenuBtn')","$('campaignHomeDiscoveries')","function currentDiscoveryKeys()","data.discovered||[]","data.rewardDiscoveries||[]","new MutationObserver(scheduleRender).observe(campaignMap"])assert(inbox.includes(token),`Inbox não cobre contrato real: ${token}`);
@@ -31,4 +38,4 @@ assert(modal.includes("if(engineIntro?.classList.contains('show'))engineStart?.c
 assert(modal.includes("new MutationObserver(dismissEngineIntro).observe(engineIntro"),'Intro tardio precisa ser observado');
 assert(map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'Fim de fase precisa retornar imediatamente ao mapa');
 
-console.log('Campaign runtime regressions OK: native map launch, live unread badges and post-phase modal dismissal.');
+console.log('Campaign runtime regressions OK: native map launch, persistent phase preview, live unread badges and post-phase modal dismissal.');
