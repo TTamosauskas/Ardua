@@ -1,0 +1,200 @@
+/* Ardua — Bohr model presentation inside Descobertas > Elementos. */
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview{
+  position:relative;
+  width:148px;
+  height:148px;
+  min-width:148px;
+  min-height:148px;
+  padding:0;
+  overflow:hidden;
+  align-self:start;
+  border:1px solid color-mix(in srgb,var(--bohr-b,#75c9ef) 34%,transparent);
+  border-radius:18px;
+  background:radial-gradient(circle at 50% 43%,color-mix(in srgb,var(--bohr-b,#75c9ef) 14%,#07111d),#030711 72%);
+  box-shadow:inset 0 0 28px rgba(101,190,235,.07),0 10px 28px rgba(0,0,0,.24);
+  color:#eaf7ff;
+  cursor:pointer;
+  isolation:isolate;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview:hover{
+  border-color:color-mix(in srgb,var(--bohr-b,#75c9ef) 65%,white 8%);
+  box-shadow:inset 0 0 34px rgba(101,190,235,.10),0 12px 32px rgba(0,0,0,.30);
+  transform:translateY(-1px);
+}
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview:focus-visible{
+  outline:2px solid color-mix(in srgb,var(--bohr-a,#e8f6ff) 72%,transparent);
+  outline-offset:2px;
+}
+#menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview:disabled{
+  cursor:default;
+}
+.element-bohr-canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
+.element-bohr-canvas-preview{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.element-bohr-preview-label{
+  position:absolute;
+  z-index:2;
+  left:9px;
+  right:9px;
+  bottom:8px;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:6px;
+  pointer-events:none;
+  text-shadow:0 2px 7px rgba(0,0,0,.9);
+}
+.element-bohr-preview-label strong{
+  color:#f2fbff;
+  font-size:18px;
+  line-height:1;
+  font-weight:950;
+}
+.element-bohr-preview-label small{
+  color:#8fb4ca;
+  font-size:7px;
+  line-height:1.15;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+
+.element-wiki-figure.element-bohr-stage-active{
+  position:relative;
+  min-height:300px;
+  background:#030711;
+}
+.element-bohr-stage{
+  position:relative;
+  width:100%;
+  height:300px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--bohr-b,#75c9ef) 12%,transparent),transparent 42%),
+    linear-gradient(180deg,#040914,#02050b);
+}
+.element-bohr-stage::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,transparent 28%,rgba(0,0,0,.34) 100%);
+  z-index:1;
+}
+.element-bohr-canvas-stage{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+}
+.element-bohr-canvas-stage.is-dragging{cursor:grabbing}
+.element-bohr-stage-top,
+.element-bohr-stage-bottom{
+  position:absolute;
+  z-index:3;
+  left:12px;
+  right:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  pointer-events:none;
+}
+.element-bohr-stage-top{top:10px;align-items:flex-start}
+.element-bohr-stage-bottom{bottom:10px;align-items:flex-end}
+.element-bohr-stage-top span{
+  color:#e7f6ff;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.045em;
+}
+.element-bohr-stage-top span strong{
+  margin-right:5px;
+  color:var(--bohr-a,#e8f6ff);
+  font-size:16px;
+  font-weight:950;
+}
+.element-bohr-stage-top small{
+  color:#7894aa;
+  font-size:7px;
+  line-height:1.25;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.element-bohr-stage-bottom>span{
+  max-width:70%;
+  color:#7f9db3;
+  font-size:8px;
+  line-height:1.3;
+  font-weight:800;
+  letter-spacing:.045em;
+}
+.element-bohr-restore{
+  min-height:30px;
+  padding:6px 10px;
+  border:1px solid rgba(139,190,222,.24);
+  border-radius:9px;
+  background:rgba(3,9,17,.78);
+  color:#d9eefc;
+  font-size:8px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  cursor:pointer;
+  pointer-events:auto;
+  backdrop-filter:blur(6px);
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.element-bohr-restore:hover{
+  border-color:color-mix(in srgb,var(--bohr-b,#75c9ef) 52%,transparent);
+  background:rgba(13,31,47,.86);
+  transform:translateY(-1px);
+}
+
+@media(max-width:700px){
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview{
+    width:126px;
+    height:126px;
+    min-width:126px;
+    min-height:126px;
+    border-radius:16px;
+  }
+  .element-wiki-figure.element-bohr-stage-active,.element-bohr-stage{height:235px;min-height:235px}
+  .element-bohr-preview-label strong{font-size:16px}
+  .element-bohr-preview-label small{font-size:6.5px}
+}
+
+@media(max-width:420px){
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info{
+    grid-template-columns:104px minmax(0,1fr);
+  }
+  #menuModal.discoveries-view .discovery-element-info.element-wiki-info .element-bohr-preview{
+    width:104px;
+    height:104px;
+    min-width:104px;
+    min-height:104px;
+    border-radius:14px;
+  }
+  .element-bohr-preview-label{left:7px;right:7px;bottom:6px}
+  .element-bohr-preview-label strong{font-size:14px}
+  .element-bohr-preview-label small{font-size:5.8px;letter-spacing:.09em}
+  .element-bohr-stage-top,.element-bohr-stage-bottom{left:9px;right:9px}
+  .element-bohr-stage-top small{font-size:6px}
+  .element-bohr-stage-bottom>span{max-width:62%;font-size:7px}
+  .element-bohr-restore{min-height:28px;padding:5px 8px;font-size:7px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #menuModal.discoveries-view .element-bohr-preview,
+  #menuModal.discoveries-view .element-bohr-restore{transition:none!important}
+}
