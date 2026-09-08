@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
 
+# Temporary migration runner; delete after the runtime commit is verified.
 jobs:
   apply:
     runs-on: ubuntu-latest
