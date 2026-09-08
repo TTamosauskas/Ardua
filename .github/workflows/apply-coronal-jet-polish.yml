@@ -1,0 +1,51 @@
+name: Apply coronal jet interaction polish
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-coronal-jet-polish.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Apply patch
+        run: |
+          python3 -m py_compile scripts/apply-coronal-jet-polish.py
+          python3 scripts/apply-coronal-jet-polish.py
+
+      - name: Validate coronal jet polish
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-discoveries.js
+          node --check assets/js/campaign-discoveries-phenomena.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-campaign-phase-flow.js
+
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/css/ardua.css assets/js/campaign-discoveries.js assets/js/campaign-discoveries-phenomena.js assets/data/phenomenon-sources.json scripts/validate-coronal-jets.js scripts/validate-phenomena-discoveries.mjs scripts/validate-phenomenon-sources.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: polish coronal jet interaction and discovery"
+          git push origin HEAD:main
