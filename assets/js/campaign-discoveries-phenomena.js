@@ -48,6 +48,8 @@ const WIKI_ALIASES=Object.freeze({
  'Barreira de Coulomb':'Barreira de Coulomb',
  'Tunelamento quântico':'Efeito túnel',
  'Convecção Estelar':'Convecção',
+ 'Jatos Coronais':'Jato astrofísico',
+ 'Reconexão Magnética':'Reconexão magnética',
  'Pressão de degenerescência eletrônica':'Matéria degenerada',
  'Colapso gravitacional':'Colapso gravitacional',
  'Triplo-alfa':'Processo triplo-alfa',

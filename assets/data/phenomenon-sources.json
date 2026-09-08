@@ -613,5 +613,29 @@
     "imageLicense": "CC BY 4.0",
     "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
     "imageArtist": "Geoff Elston"
+  },
+  "Jatos Coronais": {
+    "wikiTitle": "Jato astrofísico",
+    "slug": "coronal-jets",
+    "wikiResolvedTitle": "Jato astrofísico",
+    "wikiUrl": "https://pt.wikipedia.org/wiki/Jato_astrof%C3%ADsico",
+    "imagePath": "assets/images/phenomena/yellow-dwarf.jpg",
+    "imageWikiResolvedTitle": "Anã amarela",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Sun_white.jpg",
+    "imageLicense": "CC BY 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "imageArtist": "Geoff Elston"
+  },
+  "Reconexão Magnética": {
+    "wikiTitle": "Reconexão magnética",
+    "slug": "magnetic-reconnection",
+    "wikiResolvedTitle": "Reconexão magnética",
+    "wikiUrl": "https://pt.wikipedia.org/wiki/Reconex%C3%A3o_magn%C3%A9tica",
+    "imagePath": "assets/images/phenomena/yellow-dwarf.jpg",
+    "imageWikiResolvedTitle": "Anã amarela",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Sun_white.jpg",
+    "imageLicense": "CC BY 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "imageArtist": "Geoff Elston"
   }
 }

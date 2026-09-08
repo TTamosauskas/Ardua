@@ -24,5 +24,5 @@ if(map.includes('Evolução de longa vida'))fail('Título Evolução de longa vi
 if(!map.includes("if(group!=='neutron')addPath(from,fork,`branch-fork ${group}`,.46)"))fail('Haste branch-fork neutron ainda é desenhada');
 for(const id of ['solar_wind','stellar_ionization','stellar_recombination'])if(giant.includes(`'${id}'`))fail('Mapa das gigantes ainda captura fase de plasma: '+id);
 if(modal.includes('phase-preview-discoveries')||modal.includes('Descobertas da fase:'))fail('Modal ainda antecipa descobertas');
-if(!campaign.includes('version:13')||!campaign.includes("next.activeId='solar_wind'"))fail('Migração v13 da trilha baixa ausente');
+if(!campaign.includes('version:14')||!campaign.includes("next.activeId='solar_wind'"))fail('Migração v14/v13 da trilha estelar ausente');
 console.log('Stellar plasma routing, hidden discoveries and chronological effect gates OK.');

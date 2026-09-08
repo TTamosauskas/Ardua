@@ -15,7 +15,7 @@ const expected=Object.freeze({
  'Gigante Vermelha':['c'], 'Gigante Amarela':['n'], 'Gigante Azul':['o'], 'Gigante Branca':['fragile'],
  'Supergigante Vermelha':['ne'], 'Supergigante Amarela':['oxygen_burn'], 'Supergigante Azul':['cl'], 'Estrela AGB':['rb'],
  'Espalação':['spallation_be'], 'Prótons':['primordial_d'], 'Disco de acreção':['accretion'], 'Nêutrons':['primordial_d'], 'Elétrons':['atomic_he'],
- 'Convecção Estelar':['stellar_convection'], 'Barreira de Coulomb':['coulomb_intro'], 'Pulsar':['pulsar'], 'Raios X':['accretion'], 'Decaimento':['decay_pa'], 'Kilonova':['kilonova'], 'Raios gama':['gamma_process'],
+ 'Convecção Estelar':['stellar_convection'], 'Jatos Coronais':['coronal_jets'], 'Reconexão Magnética':['coronal_jets'], 'Barreira de Coulomb':['coulomb_intro'], 'Pulsar':['pulsar'], 'Raios X':['accretion'], 'Decaimento':['decay_pa'], 'Kilonova':['kilonova'], 'Raios gama':['gamma_process'],
  'Big Bang':['bigbang'], 'Nucleossíntese primordial':['primordial_d'], 'Recombinação cósmica':['atomic_he'],
  'Neutrinos':['nu_f','neutronize'], 'Pósitrons':['he_orange'], 'Antineutrinos':['co'], 'Raios cósmicos':['spallation_be'],
  'Tunelamento quântico':['coulomb_intro'], 'Neutronização / captura eletrônica':['neutronize'], 'Pressão de degenerescência eletrônica':['white'],

@@ -17,7 +17,7 @@ const THIRD_CHAPTER_EVIDENCE=['binary_neutron_stars','kilonova',...R_PROCESS_EVI
 function parse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function uniq(xs){return [...new Set((xs||[]).filter(Boolean))]}
 function heritageDefaults(){return{level:0,seeds:[],sourceGeneration:0}}
-function defaults(){return{version:13,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
+function defaults(){return{version:14,introduced:false,activeId:'bigbang',completed:[],generation:0,heritage:heritageDefaults()}}
 function evidenceSet(completed,activeId){return new Set([...completed,activeId].filter(Boolean))}
 function expectedSeeds(level){return level>=2?SECOND_SEEDS:level>=1?FIRST_SEEDS:[]}
 function applyHeritage(next,level){
@@ -25,7 +25,7 @@ function applyHeritage(next,level){
  next.heritage={...heritageDefaults(),...(next.heritage||{}),level:target,sourceGeneration:Math.max(Number(next.heritage?.sourceGeneration||0),target),seeds:uniq([...(next.heritage?.seeds||[]),...seeds])};
 }
 function normalizeState(rawState,inferHistorical=false){
- const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:13,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
+ const x=rawState||{},completed=uniq(x.completed||[]),previousVersion=Number(x.version||0),next={...defaults(),...x,version:14,completed,generation:Number(x.generation||0),heritage:{...heritageDefaults(),...(x.heritage||{}),seeds:uniq(x.heritage?.seeds||[])}};
  const seen=evidenceSet(next.completed,next.activeId);
  if(previousVersion<7&&['brown','he_red','he_orange','he_yellow','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o','carbon_burn','ne','fe','final_collapse','first_enrichment','second_birth','second_enrichment','third_birth','neutron_star','black_hole'].some(id=>seen.has(id)))next.completed=uniq([...next.completed,'first_generation_formation']);
  if(previousVersion<8){const cutoff=G?.runtimeIndex?.first_generation_formation??Infinity,passed=[...seen].some(id=>Number.isInteger(G?.runtimeIndex?.[id])&&G.runtimeIndex[id]>=cutoff);if(passed)next.completed=uniq([...next.completed,'first_atomic_bonds','first_nebulae'])}
@@ -44,6 +44,11 @@ function normalizeState(rawState,inferHistorical=false){
  }
  if(previousVersion<13){
   // As três lições de plasma agora pertencem à trilha de baixa massa, depois de Movimentação.
+  if(previousVersion<14){
+   const coronalDownstream=['giant_formation','fragile','c','n','o','rb','sr','y','zr','nb','gamma_mo','tc','gamma_ru','rh','pd','ag','cd','in','sn','sb','te','i','xe','cs','ba','la','ce','pr','nd','pm','sm','pb','bi'];
+   if(next.completed.includes('stellar_li')||coronalDownstream.some(id=>seen.has(id)))next.completed=uniq([...next.completed,'coronal_jets']);
+   else if(next.activeId==='stellar_li'&&!next.completed.includes('stellar_li')&&next.completed.includes('stellar_convection'))next.activeId=next.completed.includes('stellar_recombination')?'coronal_jets':'solar_wind';
+  }
   if(next.activeId==='white'&&!next.completed.includes('white')&&next.completed.includes('stellar_movement')&&!next.completed.includes('stellar_recombination'))next.activeId='solar_wind';
  }
  if(previousVersion<10){
