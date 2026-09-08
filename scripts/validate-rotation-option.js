@@ -11,9 +11,13 @@ const requiredRotation=[
   "'Desligar Rotação':'Ligar Rotação'",
   "pieces.querySelectorAll('.atom')",
   'atom.style.translate=',
-  'const cx=board.clientWidth/2,cy=board.clientHeight/2'
+  'const cx=board.clientWidth/2,cy=board.clientHeight/2',
+  'if(label.textContent!==text)label.textContent=text',
+  'menuObserver.disconnect()',
+  'if(!menusReady())'
 ];
 for(const token of requiredRotation){if(!rotation.includes(token))throw new Error(`Contrato de rotação ausente: ${token}`)}
+if(rotation.includes("label.textContent=enabled?'Desligar Rotação':'Ligar Rotação'"))throw new Error('Regressão: syncButtons reescreve textContent incondicionalmente e pode gerar loop de MutationObserver');
 if(!index.includes('<script src="assets/js/rotation-polish.js"></script>'))throw new Error('rotation-polish.js não está carregado no index');
 if(index.indexOf('assets/js/rotation-polish.js')>index.indexOf('assets/js/ardua.js'))throw new Error('rotation-polish.js deve carregar antes do motor');
 if(!engine.includes("if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt"))throw new Error('Formação estelar não respeita a opção de rotação');
