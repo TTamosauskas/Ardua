@@ -10,7 +10,7 @@ const sources=JSON.parse(await fs.readFile(dataPath,'utf8'));
 const discoveries=await fs.readFile(discoveriesPath,'utf8');
 const ui=await fs.readFile(uiPath,'utf8');
 const entries=Object.entries(sources);
-if(entries.length!==51)throw new Error(`Esperados 51 fenômenos, encontrados ${entries.length}`);
+if(entries.length!==53)throw new Error(`Esperados 53 fenômenos, encontrados ${entries.length}`);
 const slugs=new Set();
 for(const [title,cfg] of entries){
  if(!cfg.wikiTitle)throw new Error(`${title}: wikiTitle ausente`);
