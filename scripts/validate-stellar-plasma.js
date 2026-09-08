@@ -9,6 +9,8 @@ const requiredEngine=[
  "id:'stellar_ionization'","meta:'Átomo + e⁻ → Íon⁺ + 2e⁻'",
  "id:'stellar_recombination'","meta:'Íon⁺ + e⁻ → Átomo + γ'",
  'function ionizeStellarAtom(piece,electron)','function recombineStellarIon(piece,electron)',
+ 'function stellarIonizationKnowledge(s=phase())','function stellarRecombinationKnowledge(s=phase())',
+ "!stellarIonizationKnowledge(s)||!neutralStellarAtom(p)","!stellarRecombinationKnowledge(s)||!positiveStellarIon(p)",
  'function triggerSolarWind()','solarWindEligibleParticles().length<10',
  "for(const kind of ['p','e','n'])","state.stellarIonizations>=s.target&&state.solarWindEvents>=1",
  'Ionize átomos de Hidrogênio ${state.stellarIonizations}/${s.target}',

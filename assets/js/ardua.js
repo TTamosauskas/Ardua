@@ -1533,11 +1533,13 @@ function stellarIonizationSpecies(s=phase()){return Array.isArray(s?.ionizationS
 function stellarRecombinationSpecies(s=phase()){return Array.isArray(s?.recombinationSpecies)?s.recombinationSpecies:null}
 function neutralStellarAtom(p){return !!p&&!p.free&&p.matterState==='atom'&&pieceCharge(p)===0}
 function positiveStellarIon(p){return !!p&&!p.free&&p.matterState==='atom'&&pieceCharge(p)===1}
+function stellarIonizationKnowledge(s=phase()){return s?.mode==='stellarIonization'||campaignKnowledgeReached('stellar_ionization')}
+function stellarRecombinationKnowledge(s=phase()){return s?.mode==='stellarRecombination'||campaignKnowledgeReached('stellar_recombination')}
 function stellarIonizationEligible(p,s=phase()){
- if(!stellarAtomicChemistryAllowed(s)||!neutralStellarAtom(p))return false;const list=stellarIonizationSpecies(s);return !list||list.includes(p.sym)
+ if(!stellarAtomicChemistryAllowed(s)||!stellarIonizationKnowledge(s)||!neutralStellarAtom(p))return false;const list=stellarIonizationSpecies(s);return !list||list.includes(p.sym)
 }
 function stellarRecombinationEligible(p,s=phase()){
- if(!stellarAtomicChemistryAllowed(s)||!positiveStellarIon(p))return false;const list=stellarRecombinationSpecies(s);return !list||list.includes(p.sym)
+ if(!stellarAtomicChemistryAllowed(s)||!stellarRecombinationKnowledge(s)||!positiveStellarIon(p))return false;const list=stellarRecombinationSpecies(s);return !list||list.includes(p.sym)
 }
 function stellarAtomicSnapshot(targetId){
  const size=starSize();return{to:targetId,particles:snapshotPrimordialParticles(),pieces:[...state.pieces.values()].filter(p=>!p.free&&p.cell!==null&&p.cell!==undefined).map(p=>({sym:p.sym,cell:p.cell,matterState:p.matterState||'nucleus',boundElectrons:Number(p.boundElectrons||0),massNumber:p.massNumber??E[p.sym]?.mass??null,lineage:normalizeMatterLineage(p.lineage)}))}
