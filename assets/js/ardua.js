@@ -3925,7 +3925,7 @@ function stellarFormationRenderFrame(f,now){
   if(!f.complete&&!f.stabilizing){
    const cap=Math.max(.014,.05/Math.pow(g.members.length,.22)),speed=Math.hypot(g.vx,g.vy)||1;
    if(speed>cap){g.vx=g.vx/speed*cap;g.vy=g.vy/speed*cap}
-   g.x+=g.vx*dt;g.y+=g.vy*dt;g.angle+=g.omega*dt;
+   g.x+=g.vx*dt;g.y+=g.vy*dt;if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt;
    const r=Math.min(center-10,stellarFormationFieldRadius(g)),maxDist=Math.max(0,center-r-7),dx=g.x-center,dy=g.y-center,dist=Math.hypot(dx,dy);
    if(dist>maxDist&&dist>0){
     const nx=dx/dist,ny=dy/dist,radial=g.vx*nx+g.vy*ny;
