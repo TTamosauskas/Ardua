@@ -214,7 +214,7 @@ async function showDetail(button){
  const image=wiki.image?`<img class="phenomenon-wiki-image" src="${esc(wiki.image)}" alt="${esc(title)}" loading="eager">`:`<div class="phenomenon-wiki-image-placeholder">${esc(glyph)}</div>`;
  const intro=wiki.intro||`Consulte o artigo ${wiki.title||title} na Wikipédia para esta descoberta.`;
  const copy=PHENOMENON_INTRO_HTML_OVERRIDES[title]||`<p>${esc(intro)}</p>`;
- body.innerHTML=`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy">${copy}</div>`;
+ body.innerHTML=`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy">${copy}</div><div class="phenomenon-source-actions"><a class="phenomenon-source-btn" href="${esc(wiki.url)}" target="_blank" rel="noopener noreferrer">Wikipedia</a></div>`;
 }
 
 atlas.addEventListener('click',e=>{
