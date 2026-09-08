@@ -49,6 +49,7 @@ jobs:
           node --check assets/js/campaign-discoveries-elements.js
           node --check assets/js/campaign-element-bohr.js
           node --check assets/js/campaign-discoveries-phenomena.js
+          node --check assets/js/campaign-discovery-notifications.js
 
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
@@ -91,6 +92,9 @@ jobs:
 
       - name: Validate menu discoveries UX
         run: node scripts/validate-menu-discoveries-ux.js
+
+      - name: Validate discovery inbox
+        run: node scripts/validate-discovery-inbox.js
 
       - name: Validate campaign phase flow
         run: node scripts/validate-campaign-phase-flow.js
