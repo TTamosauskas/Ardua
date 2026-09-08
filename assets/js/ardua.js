@@ -2516,20 +2516,30 @@ async function maybeEjectCoronalJet(path,s=phase()){
  state.coronalJetRunning=false;renderPrimordialParticles();return true
 }
 async function performConvection(path){
- const s=phase();let occupied=path.filter(c=>state.board[c]!==null);if(state.locked||state.phaseDone||!state.convectionCharge||occupied.length<2)return false;
- const first=state.pieces.get(state.board[occupied[0]]);if(!first)return false;
- state.locked=true;state.convectionConfirmPending=false;state.convectionArmed=false;state.convectionCharge=0;state.convectionPathCells=[...path];state.selected=[];state.contextRecipeKey=null;
- const origin=pos(coords[first.cell]);await teachConvectionOnce(origin.x,origin.y);
- await maybeEjectCoronalJet(path,s);
- occupied=path.filter(c=>state.board[c]!==null);
- await releaseConvectionGamma(origin.x,origin.y);
- if(occupied.length>=2){
-  const ids=occupied.map(c=>state.board[c]),dest=occupied.map((_,i)=>occupied[(i+1)%occupied.length]);
-  ids.forEach((id,i)=>{const p=state.pieces.get(id),cell=dest[i];state.board[p.cell]=null;p.cell=cell});
-  ids.forEach((id,i)=>{state.board[dest[i]]=id;const p=state.pieces.get(id),q=pos(coords[dest[i]]);p.x=q.x;p.y=q.y;p.convecting=true});
-  renderPieces();await wait(560);ids.forEach(id=>{const p=state.pieces.get(id);if(p)p.convecting=false});
+ const s=phase();if(state.locked||state.phaseDone||Number(state.convectionCharge||0)<1)return false;let occupied=path.filter(cell=>state.board[cell]);if(occupied.length<2)return false;
+ const firstConvection=!state.productLessons.has('convection');
+ state.locked=true;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[...path];state.selected=[];state.contextRecipeKey=null;objectiveMotifCancelSelection();renderConvectionControl();
+ let completed=false;
+ try{
+  // Jatos Coronais é uma consequência opcional da Convecção: ejeta primeiro o íon
+  // que já ocupa a extremidade superficial e só então reorganiza o restante da linha.
+  await maybeEjectCoronalJet(path,s);
+  occupied=path.filter(cell=>state.board[cell]);
+  releaseConvectionGamma(path);
+  const ids=occupied.map(cell=>state.board[cell]),reversed=[...ids].reverse(),moves=[];occupied.forEach(cell=>state.board[cell]=null);
+  occupied.forEach((cell,i)=>{const id=reversed[i],p=id?state.pieces.get(id):null;if(!p)return;const from=p.cell;state.board[cell]=id;p.cell=cell;p.convecting=true;if(from!==cell)moves.push({id,from,to:cell})});
+  dom.star.classList.add('convection-active');renderPieces();[330,415,520,660].forEach((f,i)=>setTimeout(()=>tone(f,.11,'sine',.018+i*.004),i*85));vibrate([8,16,8]);
+  requestAnimationFrame(()=>{for(const m of moves){const p=state.pieces.get(m.id);if(p){const q=pos(coords[m.to]);p.x=q.x;p.y=q.y}}renderPieces()});
+  moves.forEach((m,i)=>setTimeout(()=>emitConvectionEnergyPulse(path,i,moves.length),110+i*55));await wait(720);
+  for(const m of moves){const p=state.pieces.get(m.id);if(p)p.convecting=false}dom.star.classList.remove('convection-active');state.convectionMoves=(state.convectionMoves||0)+1;
+  if(s.mode==='convection')recordFlow(1,{kind:'convection',x:starSize()/2,y:starSize()/2,label:'energia transportada'});
+  captureTag(starSize()/2,starSize()*.18,`ENERGIA TRANSPORTADA · ${moves.length}`);
+  if(firstConvection){registerRewardDiscovery('phenomenon:stellarConvection',{title:'CONVECÇÃO ESTELAR',text:'Correntes de plasma transportam matéria e energia entre regiões da estrela.',silent:true});await teachProductOnce('convection',starSize()/2,starSize()/2)}
+  prepareCumulativeStellarAtomicMatter(s);ensureOpportunity();completed=true;return true;
+ }catch(err){console.error('Falha ao executar Convecção Estelar',err);toast('A Convecção não pôde ser concluída. Tente novamente.');return false}
+ finally{
+  dom.star.classList.remove('convection-active');state.convectionPathCells=[];state.locked=false;render();if(completed)checkComplete();
  }
- state.convectionMoves=(state.convectionMoves||0)+1;if(s.id==='stellar_convection')recordFlow(1);state.convectionPathCells=[];state.locked=false;prepareCumulativeStellarAtomicMatter(s);render();checkComplete();return true;
 }
 function handleConvectionTap(p){
  if(!state.convectionArmed||state.convectionConfirmPending)return false;if(!p||p.free||p.cell===null||p.cell===undefined)return true;const s=phase(),cell=p.cell,ring=coords[cell]?.ring??99;
