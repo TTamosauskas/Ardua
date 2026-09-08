@@ -63,13 +63,13 @@ function syncDiscoveryAtlasOwnership(){
  discoveryAtlas.innerHTML=discoveryAtlasSnapshot;scheduleRender();
 }
 if(menuModal)new MutationObserver(()=>{scheduleRender();queueMicrotask(syncDiscoveryAtlasOwnership)}).observe(menuModal,{childList:true,subtree:true});
-window.addEventListener('ardua:discovery-atlas-rendered',syncDiscoveryAtlasOwnership);syncDiscoveryAtlasOwnership();
+$('campaignData')?.addEventListener('click',()=>requestAnimationFrame(syncDiscoveryAtlasOwnership));syncDiscoveryAtlasOwnership();
 const campaignMap=$('campaignMap');if(campaignMap)new MutationObserver(scheduleRender).observe(campaignMap,{childList:true,subtree:true});
 const ambient=$('ambientBanner');
 function clearLegacyReward(){if(!ambient?.classList.contains('show'))return;if(ambient.classList.contains('discovery')||ambient.classList.contains('completion'))queueMicrotask(()=>$('ambientContinueBtn')?.click())}
 if(ambient)new MutationObserver(clearLegacyReward).observe(ambient,{attributes:true,attributeFilter:['class']});
 window.addEventListener('storage',e=>{if(e.key===SAVE_KEY)checkSavedDiscoveries(false);if(e.key===INBOX_KEY){const next=parse(e.newValue,null);if(next?.version===1){known=new Set(next.known||[]);unread=new Set(next.unread||[]);scheduleRender()}}});
-window.addEventListener('ardua:campaign-progress',()=>{checkSavedDiscoveries(true);scheduleRender()});
+window.addEventListener('ardua:campaign-progress',()=>{checkSavedDiscoveries(true);syncDiscoveryAtlasOwnership();scheduleRender()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ensureModal().classList.contains('show')){e.preventDefault();dismissModal()}});
 checkSavedDiscoveries(false);ensureModal();scheduleRender();clearLegacyReward();
 })();
