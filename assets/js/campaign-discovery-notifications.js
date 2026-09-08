@@ -63,6 +63,7 @@ function syncDiscoveryAtlasOwnership(){
  discoveryAtlas.innerHTML=discoveryAtlasSnapshot;scheduleRender();
 }
 if(menuModal)new MutationObserver(()=>{scheduleRender();queueMicrotask(syncDiscoveryAtlasOwnership)}).observe(menuModal,{childList:true,subtree:true});
+window.addEventListener('ardua:discovery-atlas-rendered',syncDiscoveryAtlasOwnership);syncDiscoveryAtlasOwnership();
 const campaignMap=$('campaignMap');if(campaignMap)new MutationObserver(scheduleRender).observe(campaignMap,{childList:true,subtree:true});
 const ambient=$('ambientBanner');
 function clearLegacyReward(){if(!ambient?.classList.contains('show'))return;if(ambient.classList.contains('discovery')||ambient.classList.contains('completion'))queueMicrotask(()=>$('ambientContinueBtn')?.click())}
