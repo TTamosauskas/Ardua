@@ -335,12 +335,13 @@ const PHASES=[
  {id:'brown',branch:'Nascimento estelar · massa muito baixa',title:'Anã marrom',meta:'Queima limitada de Deutério',new:'He3',mode:'fusion',target:4,visual:'brownDwarf',fill:7,pool:['D','H'],endLabel:'DEUTÉRIO<br>ESGOTADO',gravityDelay:190},
  {id:'low_mass_formation',branch:'Nascimento estelar · baixa massa',title:'Formação da Estrela de Baixa Massa',meta:'Reúna 9 duplas de H; o último H completa automaticamente a vaga final',new:'H',mode:'stellarFormation',formationLayers:2,target:19,visual:'nebula',fill:0,endEvent:'stellarBirth',endLabel:'FORMAR<br>ANÃ VERMELHA',menuTag:'19 H',durationClass:'quick'},
  {id:'he_red',branch:'Nova estrela · baixa massa',title:'Anã vermelha',meta:'Formação de Hélio estável',new:'He',mode:'fusion',target:6,visual:'redDwarf',fill:16,pool:['H'],gravityDelay:175},
+ {id:'stellar_movement',branch:'Nova estrela · baixa massa',title:'Movimentação Estelar',meta:'Leve o Hélio até o núcleo estelar.',new:'He',mode:'movementTutorial',target:1,flowTarget:0,visual:'redDwarf',fill:15,pool:['H'],gravityDelay:175,menuTag:'MOVIMENTO',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
  {id:'intermediate_mass_formation',branch:'Nascimento estelar · massa intermediária',title:'Formação da Estrela de Massa Intermediária',meta:'Reúna 18 duplas de H; o último H completa automaticamente a vaga final',new:'H',mode:'stellarFormation',formationLayers:3,target:37,visual:'nebula',fill:0,endEvent:'stellarBirth',endLabel:'FORMAR<br>ANÃ LARANJA',menuTag:'37 H',durationClass:'short'},
  {id:'he_orange',branch:'Nova estrela · massa intermediária',title:'Anã laranja',meta:'Primeiros passos da cadeia próton-próton',new:'He3',mode:'fusion',target:5,visual:'orangeDwarf',fill:18,pool:['H','H','H','H','He'],gravityDelay:158,fusionTempMax:1.3e7},
  {id:'he_yellow',branch:'Nova estrela · semelhante ao Sol',title:'Anã amarela',meta:'Fusão de Hidrogênio',new:'He',mode:'fusion',target:6,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],gravityDelay:145,fusionTempMax:1.6e7},
- {id:'solar_wind',branch:'Coroa estelar · plasma e escape',title:'Vento Solar',meta:'H + e⁻ → p⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H'],solarWindTutorial:true,menuTag:'VENTO SOLAR',endEvent:'plasmaTransition',endLabel:'APRENDER<br>IONIZAÇÃO'},
-{id:'stellar_ionization',branch:'Coroa estelar · ionização',title:'Ionização Estelar',meta:'Átomo + e⁻ → Íon⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H','He','Li'],menuTag:'ÍON +1',endEvent:'plasmaTransition',endLabel:'APRENDER<br>RECOMBINAÇÃO'},
-{id:'stellar_recombination',branch:'Coroa estelar · recombinação',title:'Recombinação Estelar',meta:'Íon⁺ + e⁻ → Átomo + γ',new:'H',mode:'stellarRecombination',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],recombinationSpecies:['H','He','Li'],menuTag:'RECOMBINAÇÃO',endEvent:'plasmaTransition',endLabel:'EXPLORAR<br>COULOMB'},
+ {id:'solar_wind',branch:'Coroa estelar · plasma e escape',title:'Vento Solar',meta:'H + e⁻ → p⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H'],solarWindTutorial:true,menuTag:'VENTO SOLAR',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
+{id:'stellar_ionization',branch:'Coroa estelar · ionização',title:'Ionização Estelar',meta:'Átomo + e⁻ → Íon⁺ + 2e⁻',new:'H',mode:'stellarIonization',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],ionizationSpecies:['H','He','Li'],menuTag:'ÍON +1',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
+{id:'stellar_recombination',branch:'Coroa estelar · recombinação',title:'Recombinação Estelar',meta:'Íon⁺ + e⁻ → Átomo + γ',new:'H',mode:'stellarRecombination',target:3,visual:'yellowDwarf',fill:28,pool:['H','H','H','H','H','He'],recombinationSpecies:['H','He','Li'],menuTag:'RECOMBINAÇÃO',endLabel:'ESPALHAR<br>POEIRA ESTELAR'},
 {id:'coulomb_intro',branch:'Gigante vermelha · nova habilidade',title:'Barreira de Coulomb',meta:'³He + ³He → ⁴He + 2p',new:'He',mode:'fusion',target:3,visual:'redGiant',fill:28,pool:['H','H','H','H','H','He'],gravityDelay:143,fusionTempMax:1.2e8,objectiveOnlyProgress:true,menuTag:'COULOMB',endLabel:'APRENDER<br>CONVECÇÃO'},
  {id:'stellar_convection',branch:'Gigante vermelha · transporte de matéria e energia',title:'Convecção Estelar',meta:'Reação no interior → corrente convectiva → transporte radial',new:'He',mode:'convection',target:3,visual:'redGiant',fill:34,pool:['H','H','He','He3'],gravityDelay:142,fusionTempMax:1.2e8,reuseFusion:true,objectiveOnlyProgress:true,menuTag:'CONVECÇÃO',endLabel:'PRODUZIR<br>LÍTIO'},
  {id:'stellar_li',branch:'Gigante vermelha · mecanismo Cameron–Fowler',title:'Produção estelar de Lítio',meta:'³He + ⁴He → ⁷Be + γ · transporte → ⁷Li + νₑ',new:'Li',mode:'fusion',target:4,visual:'redGiant',fill:36,pool:['H','H','H','He','He'],gravityDelay:142,fusionTempMax:1.2e8,objectiveOnlyProgress:true,menuTag:'⁷Li',endLabel:'ACENDER<br>TRIPLO-ALFA'},
@@ -1488,6 +1489,11 @@ function campaignKnowledgeReached(id){
  if(aware)return gs.activeId===id||gs.completed.includes(id);
  const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>=i
 }
+function campaignKnowledgeCompleted(id){
+ const campaign=window.ARDUA_CAMPAIGN,gs=campaign?.getState?.(),aware=!!campaign&&!campaign.editor&&gs&&Array.isArray(gs.completed);
+ if(aware)return gs.completed.includes(id);
+ const i=phaseIndexById.get(id);return i!==undefined&&state.phaseIndex>i
+}
 function learnedPrimordialNuclearReactions(){return PRIMORDIAL_NUCLEAR_REACTIONS.filter(r=>campaignKnowledgeReached(r.unlock))}
 function primordialReactionReady(r){
  if(!r)return false;
@@ -1517,6 +1523,17 @@ function primordialContextualReaction(s=phase()){
 }
 function primordialParticlePairReaction(kinds){return learnedPrimordialNuclearReactions().find(r=>r.pieces.length===0&&r.particles.length===2&&same(r.particles,kinds))||null}
 function primordialMixedReaction(pieceSym,particleKind){return learnedPrimordialNuclearReactions().find(r=>r.pieces.length===1&&r.particles.length===1&&r.pieces[0]===pieceSym&&r.particles[0]===particleKind)||null}
+function boardParticleTargetAvailable(p,s=phase()){
+ if(!p||p.free||p.cell===null||p.cell===undefined||!cumulativeParticleInteractionAllowed(s))return false;
+ for(const q of state.primordialParticles.values()){
+  if(q.reacting)continue;if(primordialMixedReaction(p.sym,q.kind))return true;
+  if(q.kind==='p'&&((p.sym==='H'&&stellarProtonRecipe(s))||(protonCaptureAvailable(s)&&!!protonCaptureRoute(p,s))))return true;
+ }
+ if(s.mode==='neutron'&&state.neutrons.size&&(!neutronGameplay(s).source||state.neutronSourceActivations>=1)&&(neutronEligible(p,s)||universalNeutronCaptureEligible(p)))return true;
+ return false
+}
+function selectBoardParticleTarget(p){state.selected=[p.cell];state.primordialSelected=null;objectiveMotifCancelSelection();tone(330,.04,'sine',.021);render();return true}
+
 function primordialPieceReaction(syms){return learnedPrimordialNuclearReactions().find(r=>r.particles.length===0&&r.pieces.length===syms.length&&same(r.pieces,syms))||null}
 function primordialPossiblePieceRecipes(syms){const c=counts(syms);return learnedPrimordialNuclearReactions().filter(r=>{if(r.particles.length||r.pieces.length<syms.length)return false;const rc=counts(r.pieces);return Object.entries(c).every(([k,v])=>(rc[k]||0)>=v)})}
 function atomicRecipeUnlock(sym){return sym==='He'?'atomic_he':sym==='H'?'atomic_h':sym==='Li'?'atomic_li':null}
@@ -1971,6 +1988,13 @@ function fillStage(){
   const s=phase();if(stellarAtomicMode(s)){fillStellarAtomicStage(s);return}
   if(s.mode==='reactionExplore'){fillAtlasStage(s);return}
   if(s.mode==='stellarFormation'){renderPieces();return}
+  if(s.mode==='movementTutorial'){
+    const center=(byRing[0]||[])[0],outer=(byRing[phaseRadius(s)]||[]).slice();let heCell=outer[0],pathCell=null;
+    for(const cell of outer){const inward=(neigh[cell]||[]).find(n=>(coords[n]?.ring??99)===1);if(inward!==undefined){heCell=cell;pathCell=inward;break}}
+    const reserved=new Set([center,pathCell,heCell].filter(Number.isInteger));if(Number.isInteger(heCell))createPiece('He',heCell,false);
+    const rest=activeCells().filter(cell=>!reserved.has(cell)).sort(()=>Math.random()-.5),amount=Math.max(0,Math.min((s.fill||15)-1,rest.length));
+    rest.slice(0,amount).forEach(cell=>createPiece('H',cell,false));renderPieces();requestAnimationFrame(()=>{state.pieces.forEach(p=>{if(p.cell!==null&&p.cell!==undefined){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}});renderPieces()});return;
+  }
   if(s.id==='coulomb_intro'){
   const transfer=state.stellarAtomicTransfer?.to==='coulomb_intro'?state.stellarAtomicTransfer:null;state.stellarAtomicTransfer=null;if(transfer)restoreStellarAtomicTransfer(transfer);
   state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined){p.matterState='nucleus';p.boundElectrons=0}});
@@ -2316,12 +2340,13 @@ function coulombCellBlocked(cell,s=phase(),sym=null){
 function coulombRollBlocks(cell,s=phase(),sym=null){
  const chance=coulombBlockChance(cell,s,sym);return chance>0&&Math.random()<chance;
 }
-function atomicMovementAllowed(s=phase()){
- if(!coulombMechanicUnlocked(s))return false;
- if(isPrimordial(s)||s.mode==='neutronize'||isPostMode(s))return false;
- if(s.mode==='explosive')return false;
+function movementMechanicUnlocked(s=phase()){
+ const intro=phaseIndexById.get('stellar_movement');
+ if(intro===undefined||state.phaseIndex<intro)return false;
+ if(isPrimordial(s)||s.mode==='opening'||s.mode==='stellarFormation'||s.mode==='neutronize'||isPostMode(s)||s.mode==='explosive')return false;
  return true;
 }
+function atomicMovementAllowed(s=phase()){return movementMechanicUnlocked(s)}
 function movableEmptyNeighbors(cell,s=phase()){
  if(!atomicMovementAllowed(s)||cell===null||cell===undefined)return[];
  const active=activeSet();return (neigh[cell]||[]).filter(n=>active.has(n)&&state.board[n]===null);
@@ -2563,7 +2588,7 @@ function tapPrimordialParticle(id){
  const processN=state.selectedNeutron!==null?state.neutrons.get(state.selectedNeutron):null;
  if(processN&&p.kind==='p'&&primordialParticlePairReaction(['p','n']))return reactCumulativeProcessNeutronWithProton(p,processN);
  const free=state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null;if(free){if(p.kind==='e'&&pieceCanBindElectron(free))return bindElectronToPiece(free,p);const mixed=primordialMixedReaction(free.sym,p.kind);if(mixed)return reactPrimordialMixed(mixed,free,p)}
- const board=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;if(board){if(p.kind==='e'&&stellarIonizationEligible(board,s))return ionizeStellarAtom(board,p);if(p.kind==='e'&&stellarRecombinationEligible(board,s))return recombineStellarIon(board,p);const mixed=primordialMixedReaction(board.sym,p.kind);if(mixed)return reactCumulativeBoardMixed(mixed,board,p)}
+ const board=state.selected.length?state.pieces.get(state.board[state.selected[0]]):null;if(board){if(p.kind==='e'&&stellarIonizationEligible(board,s))return ionizeStellarAtom(board,p);if(p.kind==='e'&&stellarRecombinationEligible(board,s))return recombineStellarIon(board,p);const mixed=primordialMixedReaction(board.sym,p.kind);if(mixed)return reactCumulativeBoardMixed(mixed,board,p);if(p.kind==='p'){const protonRecipe=stellarProtonRecipe(s);if(board.sym==='H'&&protonRecipe){setTimeout(()=>fuseHydrogenWithProton(board.cell,p.id,protonRecipe),70);return}if(protonCaptureAvailable(s)&&protonCaptureRoute(board,s)){setTimeout(()=>attemptProtonCapture(board.cell,p.id),70);return}}}
  if(state.primordialSelected===id){state.primordialSelected=null;render();return}
  if(state.primordialSelected!==null){const first=state.primordialParticles.get(state.primordialSelected);if(first){if(atomicRecombinationLearned('H')&&same([first.kind,p.kind],['p','e']))return recombineHydrogenParticles(first,p);const pair=primordialParticlePairReaction([first.kind,p.kind]);if(pair)return reactPrimordialParticlePair(pair,first,p)}}
  if(stellarAtomicChemistryAllowed(s)&&(p.kind==='e'||(s.mode==='stellarRecombination'&&p.kind==='p'))){state.primordialSelected=id;state.selected=[];tone(p.kind==='e'?460:340,.04);render();return}
@@ -2838,9 +2863,21 @@ function cascadeFlowAward(points,ctx,s=phase()){
  state.chainBonusFlowByRoot=state.chainBonusFlowByRoot||{};state.chainBonusFlowByRoot[root]=used+award;return award;
 }
 function objectiveFlowFloorApplies(s=phase()){return s.mode!=='opening'&&s.id!=='brown'&&s.mode!=='whiteCompact'&&Number(s.flowTarget||0)>0}
+function sameAutoRecipe(a,b){return !!a&&!!b&&a.out===b.out&&same(a.ing||[],b.ing||[])}
+function fusionAutoRecipePreviouslyLearned(r){
+ if(!r)return false;
+ for(const p of PHASES){if(p.mode!=='fusion'||!campaignKnowledgeCompleted(p.id))continue;if(phaseFusionRecipes(p).some(q=>sameAutoRecipe(q,r)))return true}
+ for(const pr of PRIMORDIAL_NUCLEAR_REACTIONS){if(!campaignKnowledgeCompleted(pr.unlock))continue;const q=primordialFusionRecipe(pr);if(q&&sameAutoRecipe(q,r))return true}
+ return false
+}
+function neutronAutoTargetPreviouslyLearned(p,s=phase()){
+ if(!p)return false;if(universalNeutronCaptureEligible(p)&&campaignKnowledgeCompleted('primordial_d'))return true;
+ const tr=neutronTransitionFor(p,s);return !!tr?.phaseId&&campaignKnowledgeCompleted(tr.phaseId)
+}
+function protonAutoRoutePreviouslyLearned(s=phase()){return s.mode==='rpProcess'?campaignKnowledgeCompleted(s.id):campaignKnowledgeCompleted('proton_capture')}
 function autoFusionCandidate(product,s=phase()){
  if(!product||product.free||product.cell===null||product.cell===undefined||!fusionSandboxAllowed(s))return null;const options=[];
- for(const cell of neigh[product.cell]||[]){const id=state.board[cell],other=id?state.pieces.get(id):null;if(!other)continue;const r=exactRecipe([product.sym,other.sym]);if(!r)continue;options.push({other,r,goal:r.out===s.new?1:0})}
+ for(const cell of neigh[product.cell]||[]){const id=state.board[cell],other=id?state.pieces.get(id):null;if(!other)continue;const r=exactRecipe([product.sym,other.sym]);if(!r||!fusionAutoRecipePreviouslyLearned(r))continue;options.push({other,r,goal:r.out===s.new?1:0})}
  options.sort((a,b)=>b.goal-a.goal||(E[b.r.out]?.n||0)-(E[a.r.out]?.n||0));return options[0]||null;
 }
 function scheduleAutoFusionCascade(pieceId,rootId,depth=1,kind='nuclear'){
@@ -2848,14 +2885,14 @@ function scheduleAutoFusionCascade(pieceId,rootId,depth=1,kind='nuclear'){
 }
 function neutronTrajectoryCandidate(n,s=phase()){
  if(!n)return null;const speed=Math.hypot(n.vx||0,n.vy||0)||1,ux=(n.vx||0)/speed,uy=(n.vy||0)/speed,tol=Math.max(24,starSize()*.07),options=[];
- for(const p of state.pieces.values()){if(p.free||p.cell===null||p.cell===undefined||!(neutronEligible(p,s)||universalNeutronCaptureEligible(p)))continue;const dx=p.x-n.x,dy=p.y-n.y,forward=dx*ux+dy*uy;if(forward<0||forward>starSize()*.92)continue;const cross=Math.abs(dx*uy-dy*ux);if(cross>tol)continue;options.push({p,score:cross+forward*.025})}
+ for(const p of state.pieces.values()){if(p.free||p.cell===null||p.cell===undefined||!(neutronEligible(p,s)||universalNeutronCaptureEligible(p))||!neutronAutoTargetPreviouslyLearned(p,s))continue;const dx=p.x-n.x,dy=p.y-n.y,forward=dx*ux+dy*uy;if(forward<0||forward>starSize()*.92)continue;const cross=Math.abs(dx*uy-dy*ux);if(cross>tol)continue;options.push({p,score:cross+forward*.025})}
  options.sort((a,b)=>a.score-b.score);return options[0]?.p||null;
 }
 function scheduleNeutronCascade(rootId,ids,{storm=false}={}){
  const list=[...(ids||[])],maxLinks=storm?3:2;if(!list.length)return;setTimeout(async()=>{let links=0,depth=1;for(const id of list){if(links>=maxLinks||depth>=CHAIN_MAX_AUTO_DEPTH||state.phaseDone||state.readyToAdvance||phase().mode!=='neutron')break;let spins=0;while(state.locked&&spins++<5)await wait(140);if(state.locked||state.selected.length||state.selectedNeutron!==null)break;const n=state.neutrons.get(id),target=neutronTrajectoryCandidate(n);if(!n||!target)continue;const cascadeKind=storm?'r':'neutron';await teachChainEffectOnce(cascadeKind,target.x,target.y);if(state.phaseDone||state.readyToAdvance||!state.neutrons.has(id)||!state.pieces.has(target.id))break;depth++;links++;const ctx={rootId,depth,kind:cascadeKind,x:target.x,y:target.y,creditUsed:false,feedbackUsed:false};state.chainAutoContext=ctx;state.selected=[target.cell];try{await captureNeutron(id)}finally{if(state.chainAutoContext===ctx)state.chainAutoContext=null}await wait(180)}},520);
 }
 function scheduleAutoProtonCascade(pieceId,rootId,depth=1){
- if(depth>=CHAIN_MAX_AUTO_DEPTH)return;setTimeout(async()=>{if(state.phaseDone||state.readyToAdvance||state.locked||state.selected.length||state.primordialSelected!==null)return;const target=state.pieces.get(pieceId),s=phase();if(!target||pieceIsUnstable(target)||!protonCaptureRoute(target,s))return;const nearby=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting).map(q=>({q,d:Math.hypot(q.x-target.x,q.y-target.y)})).filter(x=>x.d<=starSize()*.24).sort((a,b)=>a.d-b.d)[0];if(!nearby)return;await teachChainEffectOnce('proton',target.x,target.y);if(state.phaseDone||state.readyToAdvance||!state.pieces.has(target.id)||!state.primordialParticles.has(nearby.q.id))return;const ctx={rootId,depth:depth+1,kind:'proton',x:target.x,y:target.y,creditUsed:false,feedbackUsed:false};state.chainAutoContext=ctx;state.selected=[target.cell];try{await attemptProtonCapture(target.cell,nearby.q.id)}finally{if(state.chainAutoContext===ctx)state.chainAutoContext=null}},260);
+ if(depth>=CHAIN_MAX_AUTO_DEPTH)return;setTimeout(async()=>{if(state.phaseDone||state.readyToAdvance||state.locked||state.selected.length||state.primordialSelected!==null)return;const target=state.pieces.get(pieceId),s=phase();if(!target||pieceIsUnstable(target)||!protonCaptureRoute(target,s)||!protonAutoRoutePreviouslyLearned(s))return;const nearby=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting).map(q=>({q,d:Math.hypot(q.x-target.x,q.y-target.y)})).filter(x=>x.d<=starSize()*.24).sort((a,b)=>a.d-b.d)[0];if(!nearby)return;await teachChainEffectOnce('proton',target.x,target.y);if(state.phaseDone||state.readyToAdvance||!state.pieces.has(target.id)||!state.primordialParticles.has(nearby.q.id))return;const ctx={rootId,depth:depth+1,kind:'proton',x:target.x,y:target.y,creditUsed:false,feedbackUsed:false};state.chainAutoContext=ctx;state.selected=[target.cell];try{await attemptProtonCapture(target.cell,nearby.q.id)}finally{if(state.chainAutoContext===ctx)state.chainAutoContext=null}},260);
 }
 
 function objectiveProgress(s=phase()){
@@ -2863,6 +2900,7 @@ function objectiveProgress(s=phase()){
  const ratio=(n,d)=>Math.max(0,Math.min(.99,Number(n||0)/Math.max(1,Number(d||1))));
  const combine=parts=>Math.max(0,Math.min(.99,parts.reduce((sum,v)=>sum+Math.max(0,Math.min(1,Number(v)||0)),0)/Math.max(1,parts.length)));
  if(s.mode==='opening')return 0;
+ if(s.mode==='movementTutorial')return 0;
  if(s.mode==='convection')return ratio(state.convectionMoves,s.target);
  if(s.mode==='reactionExplore')return ratio(state.atlasProgress,s.target);
  if(s.mode==='decayGarden')return ratio(decayDiscoveryCount(s),s.target);
@@ -2906,7 +2944,7 @@ function recordFlow(points=1,feedback=null){
  for(const [ratio,key] of marks){if(before<target*ratio&&state.flow>=target*ratio&&!state.flowMilestones.has(key)){state.flowMilestones.add(key);setTimeout(()=>{if(phase()!==s||state.phaseDone)return;announce('PROGRESSO DA FASE',`${key}% DO PROGRESSO`,key==='50'?'Você já domina o gesto desta fase. Continue no seu ritmo.':'Reações compatíveis também contam para este progresso.');},240)}}
 }
 function phaseMilestoneThreshold(s=phase()){if(s.mode==='opening'||s.mode==='showcase'||!s.target)return Infinity;if(s.id==='he_red')return Math.max(1,Math.ceil(s.target*.5));if(s.mode==='blackhole')return Math.max(1,Math.ceil((state.postInitialMatter||s.target)*.5));return Math.max(1,Math.ceil(s.target*.5))}
-function phaseMilestoneReached(s=phase()){if(s.mode==='convection')return(state.convectionMoves||0)>=phaseMilestoneThreshold(s);if(s.mode==='reactionExplore')return state.atlasProgress>=phaseMilestoneThreshold(s);if(s.mode==='protonCapture')return state.protonCaptures>=phaseMilestoneThreshold(s);if(isPrimordial(s)&&s.mode!=='opening')return primordialGoalCount(s)>=phaseMilestoneThreshold(s);if(s.mode==='decayGarden')return decayDiscoveryCount(s)>=phaseMilestoneThreshold(s);if(s.mode==='guidedDecay')return(state.created[s.new]||0)>=phaseMilestoneThreshold(s);if(s.mode==='neutronize')return state.crushed>=phaseMilestoneThreshold(s);if(isPostMode(s))return state.absorbed>=phaseMilestoneThreshold(s);return(state.created[s.new]||0)>=phaseMilestoneThreshold(s)}
+function phaseMilestoneReached(s=phase()){if(s.mode==='movementTutorial')return objectiveSatisfied(s);if(s.mode==='convection')return(state.convectionMoves||0)>=phaseMilestoneThreshold(s);if(s.mode==='reactionExplore')return state.atlasProgress>=phaseMilestoneThreshold(s);if(s.mode==='protonCapture')return state.protonCaptures>=phaseMilestoneThreshold(s);if(isPrimordial(s)&&s.mode!=='opening')return primordialGoalCount(s)>=phaseMilestoneThreshold(s);if(s.mode==='decayGarden')return decayDiscoveryCount(s)>=phaseMilestoneThreshold(s);if(s.mode==='guidedDecay')return(state.created[s.new]||0)>=phaseMilestoneThreshold(s);if(s.mode==='neutronize')return state.crushed>=phaseMilestoneThreshold(s);if(isPostMode(s))return state.absorbed>=phaseMilestoneThreshold(s);return(state.created[s.new]||0)>=phaseMilestoneThreshold(s)}
 function triggerPhaseMilestone(){const s=phase();if(state.phaseMilestoneAnnounced||!phaseMilestoneReached(s))return false;state.phaseMilestoneAnnounced=true;const made=s.mode==='reactionExplore'?state.atlasProgress:(isPrimordial(s)&&s.mode!=='opening'?primordialGoalCount(s):(state.created[s.new]||0));dom.star.classList.add('milestone-flash');setTimeout(()=>dom.star.classList.remove('milestone-flash'),980);if(s.mode==='convection'){announce('CONVECÇÃO ESTELAR','CORRENTE ESTABELECIDA',`${state.convectionMoves}/${s.target} correntes convectivas realizadas`);tone(620,.14,'triangle',.04);vibrate([10,16,12]);return true}if(s.mode==='reactionExplore'){announce('ATLAS NUCLEAR','PADRÃO RECONHECIDO',`${state.atlasProgress}/${s.target} observações concluídas`);tone(610,.13,'triangle',.035);return true}if(s.mode==='decayGarden'){announce('TEMPO CÓSMICO','CADEIAS EM CURSO',`${decayDiscoveryCount(s)}/${s.target} descendentes especiais descobertos`);tone(560,.14,'sine',.038);return true}if(s.mode==='spallation'){announce('ESPALAÇÃO EM CURSO',`${E[s.new].name.toUpperCase()} INTERESTELAR`,`${made}/${s.target} núcleos de ${E[s.new].name} formados`);tone(720,.14,'triangle',.04);vibrate([12,18,20]);return true}if(isPrimordial(s)){announce('UNIVERSO PRIMORDIAL','SÍNTESE EM CURSO',`${made}/${s.target} ${E[s.new].name} formados`);tone(540,.13,'triangle',.032);return true}if(s.id==='he_red'){if(!state.ignited){state.ignited=true;dom.star.classList.add('ignited','ignition-flash');setTimeout(()=>dom.star.classList.remove('ignition-flash'),950);announce('IGNIÇÃO ESTELAR','A ANÃ VERMELHA ACENDEU',`${made}/${s.target} Hélios · brilho sustentado`);tone(820,.24,'triangle',.065);vibrate([20,35,45]);save()}return true}if(s.mode==='remnant'){announce('REMANESCENTE COMPACTO','GRAVIDADE EXTREMA',`${state.absorbed}/${s.target} núcleos incorporados`);tone(520,.18,'triangle',.04);vibrate([16,22,26]);return true}
 if(s.mode==='pulsar'){announce('ROTAÇÃO ACELERA','FEIXES MAIS RÁPIDOS',`${state.absorbed}/${s.target} núcleos incorporados`);tone(760,.16,'sine',.045);vibrate([14,18,24]);return true}
 if(s.mode==='accretion'){announce('ACREÇÃO INTENSA','DISCO MAIS LUMINOSO',`${state.absorbed}/${s.target} unidades incorporadas`);tone(610,.17,'triangle',.04);vibrate([16,22,28]);return true}
@@ -3278,6 +3316,7 @@ function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)r
    if(p.sym==='H'&&protonRecipe){state.selected=[p.cell];render();setTimeout(()=>fuseHydrogenWithProton(p.cell,pid,protonRecipe),70);return}
    if(protonCaptureAvailable(s)){state.selected=[p.cell];render();setTimeout(()=>attemptProtonCapture(p.cell,pid),70);return}
  }
+ if(state.primordialSelected===null&&boardParticleTargetAvailable(p,s)){selectBoardParticleTarget(p);return}
  if(s.mode==='rpProcess'){
    if(rpStep(s)?.fuel==='H'&&p.sym==='H'){ionizeRpHydrogen(p);return}
    if(selectAtomForMovement(p))return;
@@ -4101,6 +4140,7 @@ function resizeStellarFormation(){const f=state.stellarFormation;if(!f)return;co
 async function stellarFormationAdvance(){const f=state.stellarFormation;if(!f?.complete)return;const group=[...f.groups.values()][0];if(!group)return;group.x=starSize()/2;group.y=starSize()/2;group.angle=0;if(f.raf)cancelAnimationFrame(f.raf);const memberAtoms=group.members.map(id=>f.atoms.get(id)).filter(Boolean),cells=stellarFormationCells(f.spec);clearBoard();drawCells();memberAtoms.forEach((a,i)=>{const cell=cells[i],piece=createPiece(a.sym,cell,false,{matterState:'atom',boundElectrons:Number(E[a.sym]?.n||0),massNumber:a.sym==='D'?2:a.sym==='Li'?7:null});piece.x=a.x;piece.y=a.y});state.stellarFormationSnapshot=memberAtoms.map((a,i)=>({formationId:a.id,sym:a.sym,cell:cells[i]}));renderPieces();dom.star.classList.add('formation-materializing','formation-birth-flash');requestAnimationFrame(()=>{state.pieces.forEach(p=>{const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y});renderPieces()});await wait(760);f.layer.remove();state.stellarFormation=null;dom.star.classList.remove('stellar-formation-mode','formation-materializing','formation-stabilized');setTimeout(()=>dom.star.classList.remove('formation-birth-flash'),320);state.locked=false;render()}
 
 function objectiveSatisfied(s=phase()){
+ if(s.mode==='movementTutorial'){const center=(byRing[0]||[])[0],id=Number.isInteger(center)?state.board[center]:null,p=id?state.pieces.get(id):null;return !!p&&p.sym==='He'}
  if(s.id==='solar_wind')return state.stellarIonizations>=s.target&&state.solarWindEvents>=1;
  if(s.mode==='stellarIonization')return state.stellarIonizations>=s.target;
  if(s.mode==='stellarRecombination')return state.stellarRecombinations>=s.target;
@@ -4223,6 +4263,7 @@ function endPhaseAction(){
 function advancePhase(){const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}
 function startPhase(index,announcePhase=true,forcePopup=false){state.phaseIndex=Math.max(0,Math.min(PHASES.length-1,index));const s=phase(),captureIndex=phaseIndexById.get('proton_capture')??Infinity,neutronCaptureIndex=phaseIndexById.get('primordial_t')??Infinity,redIndex=phaseIndexById.get('he_red')??1,preserved=s.mode==='blackhole'&&Array.isArray(state.collapseMatterSnapshot)&&state.collapseMatterSnapshot.length?[...state.collapseMatterSnapshot]:null;if(state.phaseIndex>redIndex)state.ignited=true;if(state.phaseIndex>=captureIndex)state.protonCaptureUnlocked=true;if(state.phaseIndex>=neutronCaptureIndex)state.neutronCaptureUnlocked=true;state.phaseDone=false;state.readyToAdvance=false;state.flow=0;state.flowMilestones=new Set();resetChainFeedback();state.locked=false;state.popupOpen=false;state.popupKind=null;state.lessonResolver=null;state.phaseMilestoneAnnounced=false;state.created={};state.stellarIonizations=0;state.stellarRecombinations=0;state.stellarIonizedSpecies=new Set();state.stellarRecombinedSpecies=new Set();state.solarWindEvents=0;state.solarWindRunning=false;if(state.solarWindCheckTimer){clearTimeout(state.solarWindCheckTimer);state.solarWindCheckTimer=null}state.nextMatterOrigin=1;state.objectiveLineages=new Set();state.protonCaptures=0;state.protonCaptureProducts={};state.protonCaptureAttempts={};state.rpIonized=0;state.rpPhotoReturns=0;state.rpCyclesObserved=0;state.rpWaitDecays=0;state.neutronSourceActivations=0;state.neutronPulsesObserved=0;state.neutronBranchesObserved=0;state.neutronBetaWaits=0;state.neutronFreezeouts=0;state.neutronStormsObserved=0;state.fusionAttempts={};state.atlasProgress=0;state.atlasAttempts={};state.atlasBarrierPassed={};state.atlasPhaseTooltipSeen=false;state.coulombRepulsions=0;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[];state.convectionMoves=0;state.convectionLessonShown=false;state.neutronBirths=0;state.primordialDByProton=0;state.primordialDByNeutron=0;state.nuclearRound=0;state.crushed=0;state.absorbed=0;state.postInitialMatter=0;state.explosiveHits=0;state.decayFound=new Set();state.postHoldLearned=false;state.blackHoleSelected=false;state.radioactiveProofDone=false;state.selected=[];state.contextRecipeKey=null;state.infoSelection=null;state.stratificationCoreGroup=null;if(state.tooltipOpen){const tip=$('eventTooltip');tip?.classList.remove('show');tip?.setAttribute('aria-hidden','true');state.tooltipOpen=false;state.tooltipResolver=null;dom.star.classList.remove('event-paused')}stopPrimordialDrift();stopAccretionFeed();stopCosmicRaySystem();if(state.crushTimer)clearTimeout(state.crushTimer);if(state.coreHoldTimer)clearTimeout(state.coreHoldTimer);state.crushTimer=null;state.crushId=null;state.coreHoldTimer=null;dom.remnantCore?.classList.remove('core-hold');dom.star.classList.remove('core-collapsing');stopNeutronSystem();$('stellarIntro').classList.remove('show');$('phaseEndBtn').classList.toggle('show',state.readyToAdvance);$('explosion').innerHTML='';dom.pieces.classList.remove('hidden');removeStellarFormation();dom.star.classList.remove('critical','phase-active','neutron-active','milestone-flash','ignition-flash','remnant-mode','blackhole-mode','post-active','primordial-transition','spallation-mode','decay-mode','electron-network','white-electron-network','white-structure','cumulative-shells');applyGeometry();if(!stellarAtomicTransferTarget(s)&&state.stellarAtomicTransfer)state.stellarAtomicTransfer=null;if(preserved){restoreMatterSnapshot(preserved);state.collapseMatterSnapshot=null}else{if(s.mode!=='blackhole')state.collapseMatterSnapshot=null;fillStage()}if(s.mode==='stellarFormation')startStellarFormationStage();if(s.mode==='blackhole')state.postInitialMatter=state.pieces.size;ensureCumulativeParticleFuel(s);const popupShown=showStellarPopup(forcePopup);if(!popupShown&&['neutron','neutronize'].includes(s.mode))setTimeout(startNeutronSystem,420);if(!popupShown&&s.mode==='accretion')startAccretionFeed();if(!popupShown&&['spallation','neutrino','gamma'].includes(s.mode))startCosmicRaySystem();if(announcePhase&&!popupShown)announce(s.branch,s.title,s.mode==='showcase'?s.meta:(s.mode==='neutronize'?s.meta:s.meta||`Novo: ${E[s.new].name}`));save();render();if(s.mode==='campaignMilestone')setTimeout(checkComplete,80)}
 function modalPrimaryLine(s=phase()){
+ if(s.mode==='movementTutorial')return 'Leve o Hélio até o núcleo estelar.';
  if(s.mode==='stellarFormation')return 'Atraia moleculas com a gravidade';
  if(s.mode==='campaignMilestone')return s.meta;
  if(s.mode==='reactionExplore')return atlasSymbolicLine(s);
@@ -4274,6 +4315,7 @@ function modalPrimaryLine(s=phase()){
  return s.meta||'Explore o processo desta fase';
 }
 function modalSecondaryLine(s=phase()){
+ if(s.mode==='movementTutorial')return 'Selecione o Hélio e escolha uma célula vazia vizinha até chegar ao centro.';
  if(s.mode==='stellarFormation')return '';
  if(s.id==='first_enrichment')return 'O que foi fabricado dentro da primeira estrela agora pode compor o gás da próxima geração';
  if(s.id==='second_birth')return 'Compare: C, N e O antes precisavam ser fabricados; agora já fazem parte da matéria inicial';
@@ -4336,7 +4378,7 @@ function phaseIntroGroup(s=phase()){
  return phaseFamily(s);
 }
 function phaseIntroTitle(s=phase(),base={}){
- const special={primordial_d:'PRIMEIRO NÚCLEO',primordial_t:'TRÍTIO',primordial_he3:'HÉLIO-3',primordial_he3d:'HÉLIO-4',primordial_td:'HÉLIO-4',primordial_li:'LÍTIO-7',atomic_he:'HÉLIO',atomic_h:'HIDROGÊNIO',atomic_li:'LÍTIO',solar_wind:'VENTO SOLAR',stellar_ionization:'IONIZAÇÃO ESTELAR',stellar_recombination:'RECOMBINAÇÃO ESTELAR',coulomb_intro:'BARREIRA DE COULOMB',stellar_convection:'CONVECÇÃO ESTELAR',stellar_li:'LÍTIO ESTELAR'};
+ const special={primordial_d:'PRIMEIRO NÚCLEO',primordial_t:'TRÍTIO',primordial_he3:'HÉLIO-3',primordial_he3d:'HÉLIO-4',primordial_td:'HÉLIO-4',primordial_li:'LÍTIO-7',atomic_he:'HÉLIO',atomic_h:'HIDROGÊNIO',atomic_li:'LÍTIO',solar_wind:'VENTO SOLAR',stellar_ionization:'IONIZAÇÃO ESTELAR',stellar_recombination:'RECOMBINAÇÃO ESTELAR',stellar_movement:'MOVIMENTAÇÃO ESTELAR',coulomb_intro:'BARREIRA DE COULOMB',stellar_convection:'CONVECÇÃO ESTELAR',stellar_li:'LÍTIO ESTELAR'};
  return special[s.id]||String(s.title||base.title||'FASE').toUpperCase();
 }
 function showStellarPopup(force=false){
@@ -4364,7 +4406,7 @@ function phaseFamily(p){
  if(p.mode==='reactionExplore')return 'Atlas de fusões até o Ferro';
  if(p.mode==='opening'||p.mode==='primordialNuclear')return 'Universo primordial · nucleossíntese';
  if(p.mode==='atomicRecombination')return 'Era atômica · recombinação';
- if(['brown','he_red','he_orange','he_yellow','solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'].includes(p.id))return 'Estrelas de baixa e média massa';
+ if(['brown','he_red','stellar_movement','he_orange','he_yellow','solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection','stellar_li','fragile','c','n','o'].includes(p.id))return 'Estrelas de baixa e média massa';
  if(p.mode==='spallation'||p.mode==='guidedDecay')return p.mode==='guidedDecay'?'Tempo cósmico · radioatividade':'Meio interestelar';
  if(p.mode==='rpProcess')return 'Estrela de nêutrons em acreção · rp-process';
  if(p.mode==='gamma')return 'Segunda Geração · supernova enriquecida · processo γ';
