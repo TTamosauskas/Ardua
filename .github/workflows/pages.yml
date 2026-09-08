@@ -38,6 +38,8 @@ jobs:
 
       - name: Check campaign UX syntax
         run: |
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-mode.js
           node --check assets/js/campaign-fork-links.js
           node --check assets/js/phase-polish.js
           node --check assets/js/campaign-home-polish.js
@@ -55,6 +57,9 @@ jobs:
 
       - name: Validate stellar plasma phases
         run: node scripts/validate-stellar-plasma.js
+
+      - name: Validate movement, chain knowledge and particle selection
+        run: node scripts/validate-movement-chain-particles.js
 
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
