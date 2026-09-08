@@ -87,11 +87,15 @@ map.addEventListener('click',e=>{
  const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id,node)
 },true);
 
-/* The map owns the screen whenever it is visible. */
-function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();launchingId='';dismissEngineIntro()}
+/* The map owns the screen when the UI actually transitions back to it. */
+let mapWasVisible=map.classList.contains('show');
+function yieldEngineIntro(){
+ const visible=map.classList.contains('show'),becameVisible=visible&&!mapWasVisible;mapWasVisible=visible;
+ if(!becameVisible)return;closePreview();launchingId='';dismissEngineIntro()
+}
 new MutationObserver(yieldEngineIntro).observe(map,{attributes:true,attributeFilter:['class']});
 if(engineIntro)new MutationObserver(dismissEngineIntro).observe(engineIntro,{attributes:true,attributeFilter:['class']});
 window.addEventListener('ardua:campaign-progress',()=>{if(previewId)renderPreview(previewId)});
 window.addEventListener('ardua:forge-names',()=>{if(previewId)renderPreview(previewId)});
-sourceReady.then(()=>{if(previewId)renderPreview(previewId);yieldEngineIntro()});
+sourceReady.then(()=>{if(previewId)renderPreview(previewId);mapWasVisible=map.classList.contains('show');dismissEngineIntro()});
 })();
