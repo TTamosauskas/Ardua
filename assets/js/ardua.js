@@ -2096,6 +2096,8 @@ function exactRecipe(syms){return activeFusionRecipes().find(r=>same(r.ing,syms)
 function possibleRecipes(syms){const c=counts(syms);return activeFusionRecipes().filter(r=>{const rc=counts(r.ing);return Object.entries(c).every(([k,v])=>(rc[k]||0)>=v)})}
 function selectedSyms(){return state.selected.map(i=>{const id=state.board[i];return id?state.pieces.get(id)?.sym:null}).filter(Boolean)}
 function boardSymbolCounts(){const out={};state.pieces.forEach(p=>out[p.sym]=(out[p.sym]||0)+1);return out}
+function guidanceBoardSymbolCounts(){const out={};state.pieces.forEach(p=>{if(p.neutronBetaPending)return;out[p.sym]=(out[p.sym]||0)+1});return out}
+function guidanceSpeciesCount(sym){return guidanceBoardSymbolCounts()[sym]||0}
 function hasRecipeIngredients(r,available=boardSymbolCounts()){const need=counts(r.ing);return Object.entries(need).every(([sym,n])=>(available[sym]||0)>=n)}
 function recipeIsActive(r){return activeFusionRecipes().some(x=>x.out===r.out&&same(x.ing,r.ing))}
 function connectedRecipeCluster(r,fixedCells=[]){
@@ -2122,7 +2124,10 @@ function hasAdjacentRecipe(r){return !!connectedRecipeCluster(r)}
 function neutronTransitionKey(tr){return tr?`n:${tr.from}>${tr.to}@${tr.processClass||neutronProcessClass()||'current'}`:''}
 function neutronTransitionActionable(tr,s=phase()){
  if(!tr||s.mode!=='neutron')return false;
- return speciesCount(tr.from)>0;
+ const free=[...state.pieces.values()].some(p=>p.sym===tr.from&&!p.neutronBetaPending);
+ if(free)return true;
+ if(neutronGameplay(s).pattern==='branch')return [...state.pieces.values()].some(p=>p.sym===tr.from&&p.neutronBetaPending&&p.neutronBetaTransition?.to===tr.to);
+ return false;
 }
 function guidanceActionLine(action){
  if(!action)return'';
@@ -2153,8 +2158,8 @@ function learnedProducerActionsFor(sym,s=phase()){
 }
 function guidanceActionIsExecutable(action,s=phase()){
  if(!action)return false;
- if(action.kind==='fusion')return hasRecipeIngredients(action.recipe);
- if(action.kind==='cameronFowler')return speciesCount('Be7')>0;
+ if(action.kind==='fusion')return hasRecipeIngredients(action.recipe,guidanceBoardSymbolCounts());
+ if(action.kind==='cameronFowler')return guidanceSpeciesCount('Be7')>0;
  if(action.kind==='neutron')return neutronTransitionActionable(action.transition,s);
  return false;
 }
@@ -2166,7 +2171,7 @@ function nextExecutableActionTowardSymbol(sym,s=phase(),seen=new Set()){
  // Caso contrário, desça pelos reagentes ausentes até encontrar a primeira reação executável.
  for(const action of producers){
    const actionSeen=new Set(seen);actionSeen.add(action.key);
-   const needs=counts(action.needs||[]),available=boardSymbolCounts();
+   const needs=counts(action.needs||[]),available=guidanceBoardSymbolCounts();
    const ordered=Object.keys(needs).sort((a,b)=>{
      const ma=Math.max(0,(needs[a]||0)-(available[a]||0)),mb=Math.max(0,(needs[b]||0)-(available[b]||0));
      if(!!ma!==!!mb)return ma?-1:1;
