@@ -2291,7 +2291,7 @@ function nextExecutableActionTowardSymbol(sym,s=phase(),seen=new Set()){
      return (E[a]?.n??999)-(E[b]?.n??999)||a.localeCompare(b);
    });
    for(const need of ordered){
-     if((available[need]||0)>=(needs[need]||0)&&action.kind!=='fusion')continue;
+     if((available[need]||0)>=(needs[need]||0))continue;
      const sub=nextExecutableActionTowardSymbol(need,s,new Set(actionSeen));
      if(sub)return sub;
    }
@@ -2306,9 +2306,9 @@ function nextExecutableActionTowardTransition(tr,s=phase()){
 }
 function nextExecutableFusionToward(r,s=phase()){
  if(!r)return null;
- if(hasRecipeIngredients(r))return{kind:'fusion',recipe:r,out:r.out,needs:[...r.ing],key:`f:${recipeKey(r)}`};
+ if(hasRecipeIngredients(r,guidanceBoardSymbolCounts()))return{kind:'fusion',recipe:r,out:r.out,needs:[...r.ing],key:`f:${recipeKey(r)}`};
  for(const need of orderedSpatialNeeds(r,s)){
-   if(need.historical&&need.present>0&&!need.missing)continue;
+   if(need.present>0&&!need.missing)continue;
    const sub=nextExecutableActionTowardSymbol(need.sym,s,new Set([`f:${recipeKey(r)}`]));
    if(sub)return sub;
  }
@@ -2974,10 +2974,10 @@ function recipeDependencyOutputs(r,seen=new Set()){
 }
 function recipeSupportsTarget(candidate,target){return !!candidate&&!!target&&recipeDependencyOutputs(target).has(candidate.out)}
 function orderedSpatialNeeds(r,s=phase()){
- const available=boardSymbolCounts(),need=counts(r.ing),historical=exactHistoricalSymbols(s),items=[...new Set(r.ing)].map(sym=>({sym,missing:Math.max(0,(need[sym]||0)-(available[sym]||0)),present:available[sym]||0,z:E[sym]?.n??999,historical:historical.has(sym)}));
- // Ingredientes realmente ausentes vêm primeiro. Quando todos existem mas estão distantes,
- // prefira reconstruir o reagente mais leve/reutilizável. Um reagente histórico presente
- // nunca é tratado como ausente só por estar longe.
+ const available=guidanceBoardSymbolCounts(),need=counts(r.ing),historical=exactHistoricalSymbols(s),items=[...new Set(r.ing)].map(sym=>({sym,missing:Math.max(0,(need[sym]||0)-(available[sym]||0)),present:available[sym]||0,z:E[sym]?.n??999,historical:historical.has(sym)}));
+ // Ingredientes realmente ausentes vêm primeiro. Ingredientes já suficientes no campo
+ // são satisfeitos mesmo quando estão distantes: nesse caso o próximo passo é movimentá-los,
+ // nunca fabricar uma cópia apenas para corrigir a geometria.
  items.sort((a,b)=>{
    if(!!a.missing!==!!b.missing)return a.missing?-1:1;
    if(a.historical!==b.historical)return a.historical?1:-1;
@@ -2988,11 +2988,13 @@ function orderedSpatialNeeds(r,s=phase()){
 function nextActionableRecipeToward(r,s=phase(),seen=new Set()){
  if(!r)return null;const key=recipeKey(r);if(seen.has(key))return null;seen.add(key);
  if(reactionIsActionable(r,s))return r;
+ // Se todos os ingredientes já existem, distância espacial pede movimentação, não fabricação de cópias.
+ if(hasRecipeIngredients(r,guidanceBoardSymbolCounts()))return r;
  const needs=orderedSpatialNeeds(r,s);
  for(const item of needs){
    // Quantidades históricas exatas podem ser usadas quando se aproximarem, mas não sugerimos
    // fabricar uma cópia extra apenas para corrigir distância espacial.
-   if(item.historical&&item.present>0&&!item.missing)continue;
+   if(item.present>0&&!item.missing)continue;
    const producers=activeFusionRecipes().filter(q=>q.out===item.sym&&q!==r).reverse();
    for(const producer of producers){
      const action=nextActionableRecipeToward(producer,s,new Set(seen));
@@ -3863,7 +3865,13 @@ function ensureOpportunity(){
     return true;
   }
   // Elementos já forjados nunca são reescritos para fabricar uma oportunidade artificial.
-  // A reação-base da cadeia próton-próton é H + H → D; dela o jogador reconstrói ³He e He.
+  // Só reponha H para H+H→D quando o planejador concluiu que D é realmente o próximo
+  // precursor ausente. Se um intermediário suficiente já existe, preserve-o e deixe o
+  // jogador aproximar/usar a matéria que já está na estrela.
+  const targetOpportunity=phaseFusionRecipes(s).slice().reverse()[0]||phaseFusionRecipe(s);
+  const plannedOpportunity=targetOpportunity?nextExecutableFusionToward(targetOpportunity,s):null;
+  const deuteriumFallbackNeeded=plannedOpportunity?.kind==='fusion'&&plannedOpportunity.recipe===FUSIONS.D;
+  if(!deuteriumFallbackNeeded)return true;
   const basic=FUSIONS.D;
   if(hasExactOnBoard(basic))return true;
 
