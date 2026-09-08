@@ -35,8 +35,10 @@ for(const token of ['Cosmologia','Partículas','Estrelas','Processos estelares',
  if(!discoveries.includes(`group:'${token}'`))throw new Error(`Grupo de dados ausente: ${token}`);
 }
 if(!discoveries.includes('window.ARDUA_PHASE_DISCOVERIES='))throw new Error('Mapa público de descobertas por fase ausente');
-if(!modal.includes('data-phase-discoveries'))throw new Error('Modal de fase sem área de descobertas');
-if(!modal.includes('window.ARDUA_PHASE_DISCOVERIES?.[id]'))throw new Error('Modal de fase sem leitura do mapa de descobertas');
+// O mapa continua alimentando Descobertas, mas o preview da fase não pode antecipar a surpresa.
+for(const token of ['data-phase-discoveries','window.ARDUA_PHASE_DISCOVERIES?.[id]','Descobertas da fase:']){
+ if(modal.includes(token))throw new Error(`Modal de fase voltou a revelar descobertas: ${token}`);
+}
 
 for(const token of ['phenomena-square-grid','phenomenonDiscoveryDetail','firstWikiParagraph','pageimages','WIKI_ALIASES']){
  if(!phenomenaUI.includes(token))throw new Error(`Interface de Fenômenos perdeu: ${token}`);
@@ -46,4 +48,4 @@ for(const token of ['aspect-ratio:1/1','discovery-group{display:none','phenomeno
 }
 if(!index.includes('assets/js/campaign-discoveries-phenomena.js'))throw new Error('Controlador visual de Fenômenos fora do index');
 
-console.log(`Phenomena discoveries OK: ${Object.keys(expected).length} descobertas vinculadas às fases; grade quadrada e detalhe Wikipedia validados.`);
+console.log(`Phenomena discoveries OK: ${Object.keys(expected).length} descobertas vinculadas às fases; surpresa do modal, grade quadrada e detalhe Wikipedia validados.`);
