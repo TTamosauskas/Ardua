@@ -53,6 +53,9 @@ jobs:
       - name: Validate phenomena discoveries
         run: node scripts/validate-phenomena-discoveries.mjs
 
+      - name: Validate stellar plasma phases
+        run: node scripts/validate-stellar-plasma.js
+
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
 
