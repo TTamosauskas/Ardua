@@ -6,7 +6,7 @@ if(!nodeProto||!GainCtor||!DestCtor||nodeProto.__arduaAudioPolishHook||typeof no
 const nativeConnect=nodeProto.connect,nativeCreateGain=BaseCtxProto?.createGain;
 const GLOBAL_SFX_LIFT=1.22;
 const near=(a,b,e=.00035)=>Math.abs(Number(a)-Number(b))<=e;
-let lastChordCueAt=0,selectionMuteUntil=0;
+let lastChordCueAt=0,selectionMuteUntil=0,lastRoutedAt=0,lastRoutedKind='';
 
 /* Capture the value actually scheduled by tone(). Reading AudioParam.value after
    automation can vary between engines, which previously allowed a second voice through. */
@@ -33,16 +33,34 @@ function classifyRecipeVoice(type,seed){
  if(type==='triangle'&&near(seed,.022))return'chord-final';
  return'';
 }
+function rememberRouted(kind){lastRoutedKind=kind;lastRoutedAt=performance.now()}
+function routedRecently(kind,windowMs=90){return lastRoutedKind===kind&&performance.now()-lastRoutedAt<windowMs}
 function routeCue(kind,freq){
- const api=window.ARDUA_RECIPE_AUDIO_SYNC;if(!api)return;
+ const api=window.ARDUA_RECIPE_AUDIO_SYNC;if(!api)return false;
  if(kind==='note12-main'){
-  if(!document.querySelector('.objective-interaction-stage'))api.engineNote?.(freq);
-  return;
+  if(document.querySelector('.objective-interaction-stage'))return false;
+  const before=api.state?.();api.engineNote?.(freq);const after=api.state?.();
+  const played=!!after&&(!before||after.session!==before.session||after.step!==before.step);
+  if(played)rememberRouted('note12');return played;
  }
+ if(kind==='note12-harm')return routedRecently('note12');
+ if(kind==='note3-main'){
+  const played=Number(api.state?.()?.step||0)>=3;
+  if(played)rememberRouted('note3');return played;
+ }
+ if(kind==='note3-harm')return routedRecently('note3');
  if(kind==='chord-main'){
-  const now=performance.now();if(now-lastChordCueAt<90)return;lastChordCueAt=now;api.engineChord?.();return;
+  const now=performance.now();if(now-lastChordCueAt<90)return routedRecently('chord',110);
+  const before=api.state?.();api.engineChord?.();const after=api.state?.();
+  const played=!!after&&Number(after.step||0)>=4&&(!before||after.session!==before.session||after.step!==before.step);
+  if(played){lastChordCueAt=now;rememberRouted('chord')}return played;
  }
- if(kind==='chord-final')api.engineChordFinal?.();
+ if(kind==='chord-harm')return routedRecently('chord',110);
+ if(kind==='chord-final'){
+  if(Number(api.state?.()?.step||0)<4)return false;
+  api.engineChordFinal?.();rememberRouted('final');return true;
+ }
+ return false;
 }
 function armSelectionMute(ms=80){selectionMuteUntil=Math.max(selectionMuteUntil,performance.now()+Math.max(20,Number(ms)||80))}
 
@@ -55,9 +73,12 @@ nodeProto.connect=function(destination,...rest){
   try{
    /* Replica gains are the single audible recipe voice and bypass every booster. */
    if(this.__arduaRecipeReplica)return nativeConnect.call(this,destination);
-   const booster=this.context.createGain(),seed=Math.abs(Number(this.__arduaScheduledSeed??this.gain?.value??0)),type=this.__arduaPolishOscillatorType||'',freq=Number(this.__arduaPolishOscillatorFrequency||0),kind=classifyRecipeVoice(type,seed),selectionCue=performance.now()<selectionMuteUntil&&type==='sine'&&near(seed,.03,.0012);
-   booster.__arduaPolishBooster=true;
-   if(kind){booster.gain.value=0;routeCue(kind,freq)}else if(selectionCue)booster.gain.value=0;else booster.gain.value=GLOBAL_SFX_LIFT;
+   const booster=this.context.createGain(),seed=Math.abs(Number(this.__arduaScheduledSeed??this.gain?.value??0)),type=this.__arduaPolishOscillatorType||'',freq=Number(this.__arduaPolishOscillatorFrequency||0),kind=classifyRecipeVoice(type,seed),selectionCue=performance.now()<selectionMuteUntil&&type==='sine'&&near(seed,.03,.0012),routed=kind?routeCue(kind,freq):false;
+   /* Never mute the engine merely because a cue looks like the recipe motif.
+      The native voice is suppressed only after the sync layer confirms that its
+      replacement actually played. This keeps campaign mode audible even when
+      contextual guidance temporarily makes the formula impossible to parse. */
+   if(kind&&routed)booster.gain.value=0;else if(selectionCue)booster.gain.value=0;else booster.gain.value=GLOBAL_SFX_LIFT;
    nativeConnect.call(this,booster);nativeConnect.call(booster,destination);return destination;
   }catch(_e){}
  }
