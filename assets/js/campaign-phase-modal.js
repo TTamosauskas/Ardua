@@ -26,8 +26,8 @@ function phaseName(id){return window.ARDUA_FORGE_NAMES?.[id]||window.ARDUA_PHASE
 function timeFor(id){if(PHASE_TIME[id])return PHASE_TIME[id];const gen=GEN?.generationOf?.(id);if(gen==='first')return'Mais de 200 milhões de anos depois do Big Bang';if(gen==='second')return'Mais de 500 milhões de anos depois do Big Bang';if(gen==='third')return'Mais de 1 bilhão de anos depois do Big Bang';return'Eras cósmicas depois do Big Bang'}
 function segmentFor(id){if(EARLY_SEGMENTS[id])return EARLY_SEGMENTS[id];const row=meta(id),gen=GEN?.generationOf?.(id),prefix=GEN_LABEL[gen];if(prefix&&row.branch)return`${prefix} - ${row.branch}`;return row.branch||prefix||'Campanha Cósmica'}
 function visualFor(id){const v=meta(id).visual;if(v)return v;if(id==='bigbang')return'bigBang';if(id.startsWith('primordial_'))return id==='primordial_li'?'primordialLi':(id.includes('he')?'primordialHe':'primordialH');if(id.startsWith('atomic_'))return id==='atomic_li'?'primordialLi':(id==='atomic_he'?'primordialHe':'primordialH');return'nebula'}
-function completed(id){return new Set(C.getState?.().completed||[]).has(id)}
 function phaseAccessible(id){const st=C.getState?.()||{},done=new Set(st.completed||[]);return !!(C.editor||st.activeId===id||done.has(id)||C.isUnlocked?.(id))}
+function enginePhaseButton(id){const idx=G.runtimeIndex?.[id];return Number.isInteger(idx)?[...document.querySelectorAll('#phaseMenu .phase-jump')][idx]||null:null}
 
 let preview=$('campaignPhasePreview');
 if(!preview){
@@ -42,20 +42,20 @@ if(!preview){
  document.body.appendChild(preview);
 }
 const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
-let previewId='',bypassMapPhase=false,suppressMapClicksUntil=0,launchingId='';
+let previewId='',suppressMapClicksUntil=0,launchingId='';
 function renderPreview(id){
  if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent='CONTINUAR';launch.disabled=!phaseAccessible(id);preview.dataset.phaseId=id;
 }
 async function openPreview(id){if(!phaseAccessible(id))return;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
 function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
 function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
-function visibleNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||map.querySelector(`.phase-node[data-phase="${id}"]`)}
 function dismissEngineIntro(){if(!launchingId||C.getState?.().activeId!==launchingId)return;if(engineIntro?.classList.contains('show'))engineStart?.click()}
 function finishLaunchHandoff(){dismissEngineIntro();queueMicrotask(dismissEngineIntro);requestAnimationFrame(dismissEngineIntro);setTimeout(dismissEngineIntro,60);setTimeout(()=>{dismissEngineIntro();launchingId=''},220)}
 function launchPreview(){
- const id=previewId;if(!id||!phaseAccessible(id))return;launchingId=id;closePreview();const node=visibleNode(id);if(!node){launchingId='';return}
- bypassMapPhase=true;node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));bypassMapPhase=false;
- const hiddenLaunch=map.querySelector(`#mapDetail [data-launch="${id}"]`);hiddenLaunch?.click();finishLaunchHandoff();
+ const id=previewId;if(!id||!phaseAccessible(id))return;const button=enginePhaseButton(id);if(!button)return;
+ launchingId=id;closePreview();C.setActive?.(id);
+ map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');map.querySelector('#mapDetail')?.classList.remove('show');
+ button.click();finishLaunchHandoff();
 }
 function activateButton(el,fn){
  if(!el)return;
@@ -69,7 +69,6 @@ preview.addEventListener('pointerup',e=>e.stopPropagation());
 preview.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.target===preview)closePreviewAfterGesture()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.contains('show')){e.preventDefault();closePreviewAfterGesture()}});
 map.addEventListener('click',e=>{
- if(bypassMapPhase)return;
  if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
  const node=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;if(!node)return;
  const id=node.dataset.phase;if(!phaseAccessible(id))return;
