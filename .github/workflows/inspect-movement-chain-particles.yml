@@ -15,16 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect auto-chain sections
+      - name: Inspect exact tap handlers
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
-          def show(needle,before=1000,after=6500):
-            i=s.find(needle); print(f'\n=== {needle} @ {i} ==='); print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
-          for needle in [
-            'function campaignKnowledgeReached','function autoFusionCandidate','function scheduleAutoFusionCascade',
-            'function neutronTrajectoryCandidate','function scheduleNeutronCascade','function scheduleAutoProtonCascade',
-            'function scheduleAutoEnergeticCascade'
-          ]: show(needle)
+          for start,end in [('function tapAtom(id){','function tapCell('),('function tapPrimordialParticle(id){','function tapPrimordial'),('function modalPrimaryLine','function phaseIntroGroup')]:
+            a=s.find(start);b=s.find(end,a+len(start));print('\n===',start,a,'===');print(s[a:b if b>a else a+15000])
           PY
