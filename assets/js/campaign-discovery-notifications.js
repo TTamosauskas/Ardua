@@ -52,7 +52,17 @@ function markRead(itemKey){if(!itemKey||!unread.delete(itemKey))return;persist()
 const previousSet=Storage.prototype.setItem;
 Storage.prototype.setItem=function(key,value){const result=previousSet.apply(this,arguments);if(this===localStorage&&key===SAVE_KEY)checkSavedDiscoveries(true);return result};
 document.addEventListener('click',e=>{const target=e.target instanceof Element?e.target:null;if(!target)return;const element=target.closest('#catalog .el-card');if(element){const sym=element.querySelector('.s')?.textContent?.trim();if(sym)markRead(`element:${sym}`)}const phenomenon=target.closest('#discoveryAtlas .discovery-card[data-discovery-key]');if(phenomenon)markRead(phenomenon.dataset.discoveryKey||'')},true);
-const menuModal=$('menuModal');if(menuModal)new MutationObserver(scheduleRender).observe(menuModal,{childList:true,subtree:true});
+const menuModal=$('menuModal'),discoveryAtlas=$('discoveryAtlas');let discoveryAtlasSnapshot='';
+function syncDiscoveryAtlasOwnership(){
+ if(!menuModal?.classList.contains('discoveries-view')||!discoveryAtlas)return;
+ const keyed=discoveryAtlas.querySelectorAll('.discovery-card[data-discovery-key]');
+ if(keyed.length){discoveryAtlasSnapshot=discoveryAtlas.innerHTML;return}
+ if(!discoveryAtlasSnapshot)return;
+ const legacy=discoveryAtlas.querySelector('.discovery-card:not([data-discovery-key])');
+ if(!legacy&&discoveryAtlas.childElementCount>0)return;
+ discoveryAtlas.innerHTML=discoveryAtlasSnapshot;scheduleRender();
+}
+if(menuModal)new MutationObserver(()=>{scheduleRender();queueMicrotask(syncDiscoveryAtlasOwnership)}).observe(menuModal,{childList:true,subtree:true});
 const campaignMap=$('campaignMap');if(campaignMap)new MutationObserver(scheduleRender).observe(campaignMap,{childList:true,subtree:true});
 const ambient=$('ambientBanner');
 function clearLegacyReward(){if(!ambient?.classList.contains('show'))return;if(ambient.classList.contains('discovery')||ambient.classList.contains('completion'))queueMicrotask(()=>$('ambientContinueBtn')?.click())}
