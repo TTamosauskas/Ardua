@@ -24,14 +24,14 @@ jobs:
           p=Path('scripts/apply-coronal-jets.py')
           lines=p.read_text().splitlines()
           for i,line in enumerate(lines):
+              if line.startswith('s=sub1(s,r"(?m)^(\\{id:\'stellar_convection\''):
+                  lines[i]="s=sub1(s,r\"(\\\\{id:'stellar_convection'[^\\\\n]*\\\\},)\",lambda m:m.group(1)+'\\n'+phase,'fase Jatos')"
               if line.startswith('newobj="""'):
                   payload=line[len('newobj="""'):]
                   lines[i]='newobj='+repr(payload+'\n  ')+'+obj'
                   if i+1<len(lines) and lines[i+1].strip()=='"+obj':
-                      del lines[i+1]
-                  break
-          else: raise SystemExit('newobj quebrado não encontrado')
-          p.write_text('\n'.join(lines)+'\n')
+                      lines[i+1]=''
+          p.write_text('\n'.join(x for x in lines if x!='')+'\n')
           PY
           python3 -m py_compile scripts/apply-coronal-jets.py
       - name: Apply patch
