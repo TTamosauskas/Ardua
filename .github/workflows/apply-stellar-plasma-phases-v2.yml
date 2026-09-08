@@ -36,8 +36,8 @@ jobs:
           node scripts/validate-phenomena-discoveries.mjs
           node scripts/validate-cumulative-recipes.js
           node scripts/validate-rotation-option.js
-      - name: Static regression tests
-        run: node tests/validate-static.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-recipe-audio-cadence.js
       - name: Commit runtime changes
         run: |
           git config user.name "github-actions[bot]"
