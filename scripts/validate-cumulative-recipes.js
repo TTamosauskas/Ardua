@@ -3,13 +3,15 @@ const fail=m=>{throw new Error(m)};
 const gsrc=fs.readFileSync('assets/js/campaign-graph.js','utf8'),ctx={window:{}};
 vm.createContext(ctx);vm.runInContext(gsrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
 if(JSON.stringify(G.prerequisites.he_yellow)!==JSON.stringify({allOf:['he_orange']}))fail('Anã Amarela deve seguir Anã Laranja');
-if(JSON.stringify(G.prerequisites.solar_wind)!==JSON.stringify({allOf:['he_yellow']}))fail('Vento Solar deve seguir Anã Amarela');
+if(JSON.stringify(G.prerequisites.stellar_movement)!==JSON.stringify({allOf:['he_red']}))fail('Movimentação deve seguir Anã Vermelha');
+if(JSON.stringify(G.prerequisites.solar_wind)!==JSON.stringify({allOf:['stellar_movement']}))fail('Vento Solar deve seguir Movimentação na trilha de baixa massa');
 if(JSON.stringify(G.prerequisites.stellar_ionization)!==JSON.stringify({allOf:['solar_wind']}))fail('Ionização Estelar deve seguir Vento Solar');
 if(JSON.stringify(G.prerequisites.stellar_recombination)!==JSON.stringify({allOf:['stellar_ionization']}))fail('Recombinação Estelar deve seguir Ionização Estelar');
-if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['stellar_recombination']}))fail('Coulomb deve seguir Recombinação Estelar');
+if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('Coulomb deve seguir Anã Amarela na trilha intermediária');
 const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 if(map.includes("branchCluster('mainseq'"))fail('Fork Laranja/Amarela ainda existe');
 if(!map.includes('flow(G.sequences.mid)'))fail('Sequência intermediária linear ausente');
+if(!map.includes('flow(G.sequences.red)'))fail('Sequência de baixa massa linear ausente');
 const s=fs.readFileSync('assets/js/ardua.js','utf8');
 for(const t of ["campaignKnowledgeReached(r.unlock)","campaignKnowledgeReached('primordial_d')",'primordialFusionRecipe','cumulativeParticleInteractionAllowed','ensureCumulativeParticleFuel','reactCumulativeProcessNeutronWithProton','reactCumulativeProcessNeutronMixed'])if(!s.includes(t))fail('Arquitetura cumulativa ausente: '+t);
 
