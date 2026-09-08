@@ -41,6 +41,9 @@ jobs:
           node --check assets/js/campaign-graph.js
           node --check assets/js/campaign-mode.js
           node --check assets/js/campaign-fork-links.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-giants-map.js
+          node --check assets/js/campaign-phase-modal.js
           node --check assets/js/phase-polish.js
           node --check assets/js/campaign-home-polish.js
           node --check assets/js/campaign-discoveries-elements.js
@@ -75,6 +78,9 @@ jobs:
 
       - name: Validate menu discoveries UX
         run: node scripts/validate-menu-discoveries-ux.js
+
+      - name: Validate campaign phase flow
+        run: node scripts/validate-campaign-phase-flow.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
