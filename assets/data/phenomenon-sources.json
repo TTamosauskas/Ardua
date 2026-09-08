@@ -589,5 +589,17 @@
     "imageLicense": "CC BY-SA 3.0",
     "imageLicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
     "imageArtist": "Júnior - CBMMA"
+  },
+  "Vento Solar": {
+    "wikiTitle": "Vento solar",
+    "slug": "solar-wind",
+    "wikiResolvedTitle": "Vento solar",
+    "wikiUrl": "https://pt.wikipedia.org/wiki/Vento_solar",
+    "imagePath": "assets/images/phenomena/yellow-dwarf.jpg",
+    "imageWikiResolvedTitle": "Anã amarela",
+    "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Sun_white.jpg",
+    "imageLicense": "CC BY 4.0",
+    "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "imageArtist": "Geoff Elston"
   }
 }

@@ -30,6 +30,7 @@ const WIKI_ALIASES=Object.freeze({
  'Pósitrons':'Positron',
  'Antineutrinos':'Antineutrino',
  'Raios cósmicos':'Raio cósmico',
+ 'Vento Solar':'Vento solar',
  'Anã Marrom':'Anã marrom',
  'Anã Vermelha':'Anã vermelha',
  'Anã Laranja':'Anã laranja',

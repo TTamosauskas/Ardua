@@ -37,6 +37,7 @@ const PHENOMENA=[
  {key:'star:blueSupergiant',glyph:'BSG',title:'Supergigante Azul',group:'Estrelas',text:'Estrela massiva extremamente quente e luminosa, em uma fase avançada de evolução.',phases:['cl'],infer:['cl']},
  {key:'star:agb',glyph:'AGB',title:'Estrela AGB',group:'Estrelas',text:'Estrela do ramo assintótico das gigantes, com camadas de queima nuclear e ambiente favorável ao processo-s.',phases:['rb'],infer:['rb','sr']},
 
+ {key:'phenomenon:solarWind',glyph:'↗',title:'Vento Solar',group:'Processos estelares',text:'Fluxo contínuo de plasma que escapa da coroa de uma estrela como o Sol, composto principalmente por prótons e elétrons e também por íons.',phases:['solar_wind'],infer:[]},
  {key:'phenomenon:coulombBarrier',glyph:'Z₁Z₂',title:'Barreira de Coulomb',group:'Processos estelares',text:'A repulsão elétrica entre núcleos positivos precisa ser vencida ou atravessada por tunelamento quântico para a fusão ocorrer.',phases:['coulomb_intro'],infer:['coulomb_intro']},
  {key:'phenomenon:quantumTunneling',glyph:'ψ',title:'Tunelamento quântico',group:'Processos estelares',text:'A natureza quântica permite que núcleos atravessem probabilisticamente a barreira elétrica e alcancem distâncias onde a força nuclear pode uni-los.',phases:['coulomb_intro'],infer:['coulomb_intro']},
  {key:'phenomenon:stellarConvection',glyph:'↕',title:'Convecção Estelar',group:'Processos estelares',text:'Correntes de plasma transportam matéria e energia entre diferentes regiões da estrela.',phases:['stellar_convection'],infer:['stellar_convection']},

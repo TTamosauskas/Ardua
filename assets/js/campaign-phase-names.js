@@ -5,6 +5,9 @@ const G=window.ARDUA_CAMPAIGN_GRAPH,C=window.ARDUA_CAMPAIGN;
 if(!G||!C)return;
 
 const NAMES=Object.freeze({
+ solar_wind:'Vento Solar',
+ stellar_ionization:'Ionização Estelar',
+ stellar_recombination:'Recombinação Estelar',
  primordial_he3d:'Hélio-4 via Hélio-3',
  primordial_td:'Hélio-4 via Trítio',
  brown_formation:'Protoestrelas',

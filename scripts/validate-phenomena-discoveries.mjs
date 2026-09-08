@@ -11,7 +11,7 @@ const phenomenaCSS=await fs.readFile(path.join(root,'assets/css/campaign-discove
 const index=await fs.readFile(path.join(root,'index.html'),'utf8');
 
 const expected=Object.freeze({
- 'Anã Marrom':['brown'], 'Anã Vermelha':['he_red'], 'Anã Branca':['white'], 'Anã Laranja':['he_orange'], 'Anã Amarela':['he_yellow'],
+ 'Vento Solar':['solar_wind'], 'Anã Marrom':['brown'], 'Anã Vermelha':['he_red'], 'Anã Branca':['white'], 'Anã Laranja':['he_orange'], 'Anã Amarela':['he_yellow'],
  'Gigante Vermelha':['c'], 'Gigante Amarela':['n'], 'Gigante Azul':['o'], 'Gigante Branca':['fragile'],
  'Supergigante Vermelha':['ne'], 'Supergigante Amarela':['oxygen_burn'], 'Supergigante Azul':['cl'], 'Estrela AGB':['rb'],
  'Espalação':['spallation_be'], 'Prótons':['primordial_d'], 'Disco de acreção':['accretion'], 'Nêutrons':['primordial_d'], 'Elétrons':['atomic_he'],
