@@ -72,7 +72,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.con
 map.addEventListener('click',e=>{
  if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
  const target=e.target instanceof Element?e.target:null;if(!target)return;
- const root=target.closest('.singularity-map');if(root){e.preventDefault();e.stopImmediatePropagation();openPreview('bigbang');return}
  const node=target.closest('.phase-node[data-phase]');if(!node)return;
  const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id)
 },true);
