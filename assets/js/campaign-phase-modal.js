@@ -28,7 +28,7 @@ function segmentFor(id){if(EARLY_SEGMENTS[id])return EARLY_SEGMENTS[id];const ro
 function visualFor(id){const v=meta(id).visual;if(v)return v;if(id==='bigbang')return'bigBang';if(id.startsWith('primordial_'))return id==='primordial_li'?'primordialLi':(id.includes('he')?'primordialHe':'primordialH');if(id.startsWith('atomic_'))return id==='atomic_li'?'primordialLi':(id==='atomic_he'?'primordialHe':'primordialH');return'nebula'}
 function completed(id){return new Set(C.getState?.().completed||[]).has(id)}
 function unlocked(id){return !!C.isUnlocked?.(id)}
-function discoveriesFor(id){return window.ARDUA_PHASE_DISCOVERIES?.[id]||[]}
+function discoveriesFor(id){if(id==='solar_wind')return[];return window.ARDUA_PHASE_DISCOVERIES?.[id]||[]}
 
 let preview=$('campaignPhasePreview');
 if(!preview){
