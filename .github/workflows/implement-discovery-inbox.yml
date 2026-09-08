@@ -28,8 +28,9 @@ jobs:
       - name: Persist implementation
         run: |
           rm scripts/apply-discovery-inbox.sh
+          git restore .github/workflows/pages.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A ':!.github/workflows/implement-discovery-inbox.yml'
+          git add -A ':!.github/workflows/**'
           git commit -m "feat: add unread discovery inbox and direct map return"
           git push origin HEAD:feat/discovery-unread-flow
