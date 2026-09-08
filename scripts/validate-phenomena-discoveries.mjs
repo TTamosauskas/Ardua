@@ -8,6 +8,7 @@ const discoveries=await fs.readFile(path.join(root,'assets/js/campaign-discoveri
 const modal=await fs.readFile(path.join(root,'assets/js/campaign-phase-modal.js'),'utf8');
 const phenomenaUI=await fs.readFile(path.join(root,'assets/js/campaign-discoveries-phenomena.js'),'utf8');
 const phenomenaCSS=await fs.readFile(path.join(root,'assets/css/campaign-discoveries-phenomena.css'),'utf8');
+const discoveriesCSS=await fs.readFile(path.join(root,'assets/css/campaign-discoveries.css'),'utf8');
 const index=await fs.readFile(path.join(root,'index.html'),'utf8');
 
 const expected=Object.freeze({
@@ -40,12 +41,15 @@ for(const token of ['data-phase-discoveries','window.ARDUA_PHASE_DISCOVERIES?.[i
  if(modal.includes(token))throw new Error(`Modal de fase voltou a revelar descobertas: ${token}`);
 }
 
-for(const token of ['phenomena-square-grid','phenomenonDiscoveryDetail','firstWikiParagraph','pageimages','WIKI_ALIASES','cfg.intro']){
+for(const token of ['phenomena-square-grid','phenomenonDiscoveryDetail','firstWikiParagraph','pageimages','WIKI_ALIASES','cfg.intro','phenomenon-source-actions','phenomenon-source-btn','wiki.url']){
  if(!phenomenaUI.includes(token))throw new Error(`Interface de Fenômenos perdeu: ${token}`);
 }
-for(const token of ['aspect-ratio:1/1','discovery-group{display:none','phenomenon-wiki-image','phenomenon-wiki-copy']){
+for(const token of ['aspect-ratio:1/1','discovery-group{display:none','phenomenon-wiki-image','phenomenon-wiki-copy','phenomenon-source-btn']){
  if(!phenomenaCSS.includes(token))throw new Error(`Estilo de Fenômenos perdeu: ${token}`);
+}
+for(const token of ['.discoveries-tabs{position:sticky;top:-14px;z-index:12','element-detail-view .element-discovery-head','phenomenon-detail-view .element-discovery-head','top:30px;z-index:8']){
+ if(!discoveriesCSS.includes(token))throw new Error(`Cabeçalho sticky de Descobertas perdeu: ${token}`);
 }
 if(!index.includes('assets/js/campaign-discoveries-phenomena.js'))throw new Error('Controlador visual de Fenômenos fora do index');
 
-console.log(`Phenomena discoveries OK: ${Object.keys(expected).length} descobertas vinculadas às fases; surpresa do modal, grade quadrada e detalhe Wikipedia validados.`);
+console.log(`Phenomena discoveries OK: ${Object.keys(expected).length} descobertas vinculadas às fases; surpresa do modal, grade quadrada, detalhe Wikipedia, link externo e cabeçalho sticky validados.`);
