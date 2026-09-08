@@ -9,7 +9,7 @@ const TITLE_OVERRIDES=Object.freeze({'phenomenon:coronalJet':'Ejeção de Massa 
 const queue=[],queued=new Set();let current=null,renderFrame=0;
 function parse(raw,fallback={}){try{return raw?JSON.parse(raw):fallback}catch(_e){return fallback}}
 function saveData(){return parse(localStorage.getItem(SAVE_KEY),{})}
-function savedRewards(){return new Set(saveData().rewardDiscoveries||[])}
+function currentDiscoveryKeys(){const data=saveData(),keys=new Set(data.rewardDiscoveries||[]);for(const sym of data.discovered||[])keys.add(`element:${sym}`);return keys}
 function discoveryIndex(){return window.ARDUA_DISCOVERY_INDEX||{}}
 function elementCard(sym){return [...document.querySelectorAll('#catalog .el-card')].find(card=>card.querySelector('.s')?.textContent?.trim()===sym)||null}
 function baseElementSymbol(sym){return SPECIAL_BASE[sym]||sym}
@@ -24,9 +24,7 @@ function discoveryWord(title){
 }
 function modalTitle(rawKey){const title=displayTitle(rawKey);return`${title.toLocaleUpperCase('pt-BR')} ${discoveryWord(title)}`}
 function historicalKnown(){
- const data=saveData(),keys=new Set(data.rewardDiscoveries||[]);
- for(const sym of data.discovered||[])keys.add(`element:${sym}`);
- const completed=new Set(window.ARDUA_CAMPAIGN?.getState?.().completed||[]),byPhase=window.ARDUA_PHASE_DISCOVERIES||{};
+ const keys=currentDiscoveryKeys(),completed=new Set(window.ARDUA_CAMPAIGN?.getState?.().completed||[]),byPhase=window.ARDUA_PHASE_DISCOVERIES||{};
  for(const id of completed)for(const entry of byPhase[id]||[])if(entry?.key)keys.add(entry.key);
  return keys;
 }
@@ -39,19 +37,28 @@ function showNext(){if(current||!queue.length)return;current=queue.shift();queue
 function dismissModal(){const host=ensureModal();host.classList.remove('show');host.setAttribute('aria-hidden','true');current=null;setTimeout(showNext,90)}
 function enqueue(rawKey){if(current===rawKey||queued.has(rawKey))return;queued.add(rawKey);queue.push(rawKey);showNext()}
 function scheduleRender(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;renderIndicators()})}
-function renderIndicators(){const count=unread.size,menu=$('menuOpenBtn'),quick=$('phaseQuickDiscoveries');menu?.classList.toggle('discovery-has-unread',count>0);if(quick){quick.classList.toggle('discovery-has-unread',count>0);quick.dataset.unreadCount=String(count)}document.querySelectorAll('#catalog .el-card').forEach(card=>{const sym=card.querySelector('.s')?.textContent?.trim()||'';card.classList.toggle('discovery-unread',!!sym&&unread.has(`element:${sym}`))});document.querySelectorAll('#discoveryAtlas .discovery-card[data-discovery-key]').forEach(card=>card.classList.toggle('discovery-unread',unread.has(card.dataset.discoveryKey||'')));window.dispatchEvent(new CustomEvent('ardua:discovery-inbox',{detail:{count,unread:[...unread]}}))}
+function uniqueEls(xs){return [...new Set(xs.filter(Boolean))]}
+function renderIndicators(){
+ const count=unread.size;
+ for(const menu of uniqueEls([$('campaignHomeMenuBtn'),$('menuOpenBtn')]))menu.classList.toggle('discovery-has-unread',count>0);
+ for(const quick of uniqueEls([$('campaignHomeDiscoveries'),$('phaseQuickDiscoveries')])){quick.classList.toggle('discovery-has-unread',count>0);quick.dataset.unreadCount=String(count)}
+ document.querySelectorAll('#catalog .el-card').forEach(card=>{const sym=card.querySelector('.s')?.textContent?.trim()||'';card.classList.toggle('discovery-unread',!!sym&&unread.has(`element:${sym}`))});
+ document.querySelectorAll('#discoveryAtlas .discovery-card[data-discovery-key]').forEach(card=>card.classList.toggle('discovery-unread',unread.has(card.dataset.discoveryKey||'')));
+ window.dispatchEvent(new CustomEvent('ardua:discovery-inbox',{detail:{count,unread:[...unread]}}));
+}
 function ingest(keys,announce){let changed=false;for(const rawKey of keys){if(known.has(rawKey))continue;known.add(rawKey);changed=true;const item=itemKeyFor(rawKey);if(!item)continue;unread.add(item);if(announce)enqueue(rawKey)}if(changed){persist();scheduleRender()}}
-function checkSavedRewards(announce=true){const rewards=savedRewards(),fresh=[...rewards].filter(key=>!known.has(key));if(fresh.length)ingest(fresh,announce)}
+function checkSavedDiscoveries(announce=true){const all=currentDiscoveryKeys(),fresh=[...all].filter(key=>!known.has(key));if(fresh.length)ingest(fresh,announce)}
 function markRead(itemKey){if(!itemKey||!unread.delete(itemKey))return;persist();scheduleRender()}
 const previousSet=Storage.prototype.setItem;
-Storage.prototype.setItem=function(key,value){const result=previousSet.apply(this,arguments);if(this===localStorage&&key===SAVE_KEY)checkSavedRewards(true);return result};
+Storage.prototype.setItem=function(key,value){const result=previousSet.apply(this,arguments);if(this===localStorage&&key===SAVE_KEY)checkSavedDiscoveries(true);return result};
 document.addEventListener('click',e=>{const target=e.target instanceof Element?e.target:null;if(!target)return;const element=target.closest('#catalog .el-card');if(element){const sym=element.querySelector('.s')?.textContent?.trim();if(sym)markRead(`element:${sym}`)}const phenomenon=target.closest('#discoveryAtlas .discovery-card[data-discovery-key]');if(phenomenon)markRead(phenomenon.dataset.discoveryKey||'')},true);
 const menuModal=$('menuModal');if(menuModal)new MutationObserver(scheduleRender).observe(menuModal,{childList:true,subtree:true});
+const campaignMap=$('campaignMap');if(campaignMap)new MutationObserver(scheduleRender).observe(campaignMap,{childList:true,subtree:true});
 const ambient=$('ambientBanner');
 function clearLegacyReward(){if(!ambient?.classList.contains('show'))return;if(ambient.classList.contains('discovery')||ambient.classList.contains('completion'))queueMicrotask(()=>$('ambientContinueBtn')?.click())}
 if(ambient)new MutationObserver(clearLegacyReward).observe(ambient,{attributes:true,attributeFilter:['class']});
-window.addEventListener('storage',e=>{if(e.key===SAVE_KEY)checkSavedRewards(false);if(e.key===INBOX_KEY){const next=parse(e.newValue,null);if(next?.version===1){known=new Set(next.known||[]);unread=new Set(next.unread||[]);scheduleRender()}}});
-window.addEventListener('ardua:campaign-progress',()=>{checkSavedRewards(true);scheduleRender()});
+window.addEventListener('storage',e=>{if(e.key===SAVE_KEY)checkSavedDiscoveries(false);if(e.key===INBOX_KEY){const next=parse(e.newValue,null);if(next?.version===1){known=new Set(next.known||[]);unread=new Set(next.unread||[]);scheduleRender()}}});
+window.addEventListener('ardua:campaign-progress',()=>{checkSavedDiscoveries(true);scheduleRender()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ensureModal().classList.contains('show')){e.preventDefault();dismissModal()}});
-checkSavedRewards(false);ensureModal();scheduleRender();clearLegacyReward();
+checkSavedDiscoveries(false);ensureModal();scheduleRender();clearLegacyReward();
 })();
