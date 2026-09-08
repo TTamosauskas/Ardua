@@ -7,11 +7,11 @@ const SELECTOR='.atom,.primordial-particle,.cosmic-ray,.neutron';
 const ROOTS=[196,220,247,262,294,330];
 
 /* Stretch the engine's own objective-motif waits, so audio and animation share
-   exactly the same expanded cadence. The two waits before the ingredient
-   highlight are doubled; the two waits from highlight to union are tripled. */
+   exactly the same expanded cadence. The pause from the second note to the
+   third and the pause from the third note to the union/chord use the same 2x cadence. */
 if(!window.__arduaRecipeCadenceHook){
  const nativeSetTimeout=window.setTimeout.bind(window);
- const cadence=new Map([[105,210],[75,150],[28,56],[32,64],[285,855],[115,345],[70,210],[42,126]]);
+ const cadence=new Map([[105,210],[75,150],[28,56],[32,64],[285,570],[115,230],[70,140],[42,84]]);
  Object.defineProperty(window,'__arduaRecipeCadenceHook',{value:true,configurable:false,enumerable:false});
  window.setTimeout=function(handler,delay,...args){
   const ms=Number(delay),scaled=cadence.get(ms);
@@ -69,7 +69,7 @@ function emitThirdForHighlight(stage){if(!motif||motif.step!==2)return false;con
 function engineNote(freq){syncPhase();engineCueSerial++;const pair=reactants();if(pair.length<2)return;const f=Number(freq)||rootForCurrentFormula();if(!motif||motif.done||pairKey(motif.pair)!==pairKey(pair)){const m=freshMotif(pair,f);m.step=1;m.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===0){motif.root=f;motif.step=1;motif.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===1){motif.second={token:pair[1],key:'engine:second',slot:1};motif.step=2;playFrequency(f);queueMicrotask(()=>emitThirdForHighlight(currentStage()))}}
 function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios)}
 function engineChordFinal(){if(motif?.done)playFinalAccent(motif.root)}
-window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,cadence:Object.freeze({note2To3:'2x',note3ToChord:'3x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
+window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,cadence:Object.freeze({note2To3:'2x',note3ToChord:'2x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
 
 document.addEventListener('click',e=>{const el=e.target instanceof Element?e.target.closest(SELECTOR):null;if(!el||!board.contains(el))return;syncPhase();const pair=reactants();if(pair.length<2)return;const token=tokenOf(el),key=keyOf(el);if(!token)return;const preSelected=el.classList.contains('selected'),preCandidate=el.classList.contains('candidate'),currentPairKey=pairKey(pair);let targetIntent=false;if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey)targetIntent=matchingSlot(token,pair)>=0;else if(motif.step===1)targetIntent=matchingSlot(token,motif.pair,motif.first?.slot??-1)>=0&&(preCandidate||!preSelected);if(targetIntent)window.ARDUA_AUDIO_POLISH?.armSelectionMute?.(90);const beforeCue=engineCueSerial,beforeStages=board.querySelectorAll('.objective-motif-stage').length;setTimeout(()=>{syncPhase();if(engineCueSerial>beforeCue)return;const nowSelected=el.isConnected&&el.classList.contains('selected'),stageCount=board.querySelectorAll('.objective-motif-stage').length,newStage=stageCount>beforeStages;if(preSelected){if(motif?.first?.key===key&&motif.step===1&&!nowSelected)resetMotif();return}if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey){const slot=matchingSlot(token,pair);if(slot>=0&&nowSelected)markFirst(token,key,slot,rootForCurrentFormula());return}if(motif.step===1){const slot=matchingSlot(token,motif.pair,motif.first?.slot??-1);if(slot>=0&&(preCandidate||nowSelected||newStage)){markSecond(token,key,slot);return}}emitThirdForHighlight(currentStage())},0)},true);
 
