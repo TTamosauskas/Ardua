@@ -15,17 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect movement and knowledge sections
+      - name: Inspect auto-chain sections
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
-          def show(needle,before=1200,after=6500):
+          def show(needle,before=1000,after=6500):
             i=s.find(needle); print(f'\n=== {needle} @ {i} ==='); print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
           for needle in [
-            'function movementUnlocked','function movementTargetCells','function selectAtomForMovement','async function moveSelectedAtom',
-            'function learnedNeutronTransitions','function phaseNeutronTransitions','function universalNeutronCaptureEligible',
-            'function handleFusionTap','function contextualObjectiveLine','function modalPrimaryLine','function modalSecondaryLine',
-            'phaseEndBtn.textContent','endLabel'
+            'function campaignKnowledgeReached','function autoFusionCandidate','function scheduleAutoFusionCascade',
+            'function neutronTrajectoryCandidate','function scheduleNeutronCascade','function scheduleAutoProtonCascade',
+            'function scheduleAutoEnergeticCascade'
           ]: show(needle)
           PY
