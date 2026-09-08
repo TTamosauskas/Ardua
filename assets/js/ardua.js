@@ -2431,10 +2431,13 @@ function convectionConfirmationIsUiControl(target){
 }
 function ensureConvectionConfirmationListener(){
  if(state.convectionConfirmListenerInstalled)return;state.convectionConfirmListenerInstalled=true;
- document.addEventListener('pointerdown',ev=>{
+ document.addEventListener('click',ev=>{
    if(!state.convectionConfirmPending||state.locked||state.phaseDone)return;
-   if(convectionConfirmationIsUiControl(ev.target))return;
-   ev.preventDefault();ev.stopPropagation();const path=[...(state.convectionPathCells||[])];state.convectionConfirmPending=false;performConvection(path);
+   const atom=ev.target?.closest?.('.atom[data-id]');if(!atom)return;
+   const p=state.pieces.get(Number(atom.dataset.id)),path=[...(state.convectionPathCells||[])];
+   ev.preventDefault();ev.stopPropagation();
+   if(!p||p.free||p.cell===null||p.cell===undefined||!path.includes(p.cell)){toast('Toque em um átomo com borda vermelha para executar a Convecção.');return}
+   state.convectionConfirmPending=false;performConvection(path);
  },true);
 }
 function ensureConvectionControl(){
@@ -2542,12 +2545,11 @@ async function performConvection(path){
  }
 }
 function handleConvectionTap(p){
- if(!state.convectionArmed||state.convectionConfirmPending)return false;if(!p||p.free||p.cell===null||p.cell===undefined)return true;const s=phase(),cell=p.cell,ring=coords[cell]?.ring??99;
+ if(!state.convectionArmed||state.convectionConfirmPending)return false;if(!p||p.free||p.cell===null||p.cell===undefined)return true;const cell=p.cell,ring=coords[cell]?.ring??99;
  if(ring<1){toast('Escolha um átomo em uma camada externa.');return true}
  const source=(byRing[0]||[])[0],path=convectionPath(source,cell);if(source===undefined||path.length<2){toast('Escolha um átomo conectado radialmente ao núcleo.');return true}
- state.convectionPathCells=path;state.convectionArmed=false;state.selected=[];tone(210,.08,'triangle',.026);setTimeout(()=>tone(165,.11,'sine',.024),70);vibrate([5,12,5]);
- if(s.coronalJetTutorial){state.convectionConfirmPending=false;render();performConvection([...path]);return true}
- state.convectionConfirmPending=true;render();toast('Coluna convectiva marcada · toque novamente para iniciar.');return true;
+ state.convectionPathCells=path;state.convectionArmed=false;state.convectionConfirmPending=true;state.selected=[];tone(210,.08,'triangle',.026);setTimeout(()=>tone(165,.11,'sine',.024),70);vibrate([5,12,5]);
+ render();toast('Linha convectiva marcada · toque em qualquer átomo com borda vermelha para executar.');return true;
 }
 
 function fusionCandidateCells(){const set=new Set();state.selected.forEach(i=>neigh[i].forEach(n=>set.add(n)));state.selected.forEach(i=>set.delete(i));const cur=selectedSyms();return[...set].filter(i=>{const id=state.board[i];if(!id)return false;return possibleRecipes([...cur,state.pieces.get(id).sym]).length>0})}
@@ -3384,7 +3386,7 @@ async function activateNeutronSource(source,helium,s=phase()){
 }
 
 
-function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(s.coronalJetTutorial&&state.convectionArmed&&handleConvectionTap(p))return;if(handleStellarAtomicTap(p,s))return;if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);if(state.convectionArmed&&handleConvectionTap(p))return;if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode!=='reactionExplore'&&cumulativeFusionTapAvailable(p,s)&&handleFusionTap(p))return;if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
+function tapAtom(id){if(state.locked)return;const p=state.pieces.get(id);if(!p)return;focusPieceInfo(p);const s=phase();if(state.convectionArmed&&handleConvectionTap(p))return;if(handleStellarAtomicTap(p,s))return;if(p.free&&cumulativeParticleInteractionAllowed(s))return tapFreeAtom(id);if((p.sym==='Tc'||p.sym==='Pm')&&p.radioactiveReady)return tapRadioactiveProof(p);if(s.mode!=='reactionExplore'&&cumulativeFusionTapAvailable(p,s)&&handleFusionTap(p))return;if(s.mode==='reactionExplore'){if(tapAtlasReaction(p))return;if(fusionSandboxAllowed(s)&&handleFusionTap(p))return;if(selectAtomForMovement(p))return;invalid(p.cell);return}
  const armedProton=state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null;
  if(armedProton){const mixed=primordialMixedReaction(p.sym,armedProton.kind);if(mixed){state.selected=[p.cell];render();reactCumulativeBoardMixed(mixed,p,armedProton);return}}
  if(armedProton?.kind==='p'){

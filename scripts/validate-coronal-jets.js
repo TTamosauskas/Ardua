@@ -69,9 +69,11 @@ need(sources,'"Reconexão Magnética"','Fonte de fenômeno Reconexão Magnética
 need(campaign,'version:14','Migração de campanha v14 ausente');
 need(campaign,"'coronal_jets'",'Migração de campanha não conhece Jatos Coronais');
 
-// Polimento da interação: em Jatos a Convecção vence a química atômica quando armada
-need(engine,"s.coronalJetTutorial&&state.convectionArmed&&handleConvectionTap(p)",'Íon superficial ainda é interceptado pela química antes da Convecção');
-need(engine,"if(s.coronalJetTutorial){state.convectionConfirmPending=false;render();performConvection([...path]);return true}",'Jatos Coronais ainda exige um segundo toque para executar a Convecção');
+// Interação cumulativa: a Convecção vence a química atômica quando armada e usa a mesma confirmação em três passos
+need(engine,"state.convectionArmed&&handleConvectionTap(p)",'Convecção armada não tem prioridade sobre a química atômica');
+need(engine,"state.convectionConfirmPending=true",'Jatos Coronais deve primeiro marcar a linha antes de executar');
+need(engine,"path.includes(p.cell)",'Jatos Coronais deve confirmar somente ao clicar em um átomo da linha vermelha');
+if(engine.includes("if(s.coronalJetTutorial){state.convectionConfirmPending=false;render();performConvection([...path]);return true}"))fail('Jatos Coronais ainda executa imediatamente no primeiro átomo da linha');
 need(engine,"1º Provoque uma reação no núcleo estelar",'Texto do primeiro passo dos Jatos incorreto');
 need(engine,"2º Ative a Convecção e selecione um íon na superfície.",'Texto do segundo passo dos Jatos incorreto');
 need(engine,"s.coronalJetTutorial?' coronal-uniform':''",'Peças da fase Jatos não recebem classe de tamanho uniforme');
