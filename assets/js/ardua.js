@@ -1387,11 +1387,12 @@ async function settleParticleReactionProduct(spawn){
  if(spawn.ejected){const c=starSize()/2,dx=piece.x-c,dy=piece.y-c,d=Math.hypot(dx,dy),a=d>.001?Math.atan2(dy,dx):Math.random()*Math.PI*2,reach=Math.max(starSize()*1.30,Math.hypot(window.innerWidth,window.innerHeight)*.72);piece.x=c+Math.cos(a)*reach;piece.y=c+Math.sin(a)*reach;renderPieces();await wait(540);state.pieces.delete(piece.id);renderPieces();return null}
  const target=pos(coords[spawn.cell]);piece.x=target.x;piece.y=target.y;renderPieces();await wait(320);return piece
 }
+function rotationMotionEnabled(){return window.ARDUA_ROTATION?.enabled?.()!==false}
 function stopPrimordialDrift(){if(state.primordialDriftTimer){clearInterval(state.primordialDriftTimer);state.primordialDriftTimer=null}}
 function startPrimordialDrift(){
- stopPrimordialDrift();const s=phase();if(s.mode==='opening'||!state.primordialParticles.size)return;
+ stopPrimordialDrift();const s=phase();if(!rotationMotionEnabled()||s.mode==='opening'||!state.primordialParticles.size)return;
  state.primordialDriftTimer=setInterval(()=>{
-   const now=phase();if(now.mode==='opening'||state.phaseDone)return;
+   const now=phase();if(!rotationMotionEnabled()||now.mode==='opening'||state.phaseDone)return;
    const size=starSize(),pad=22,c=size/2,stellar=!isPrimordial(now);
    const freeProtons=[...state.primordialParticles.values()].filter(q=>q.kind==='p'&&!q.reacting);
    state.primordialParticles.forEach(p=>{
@@ -1454,8 +1455,8 @@ function moveParticleDrag(id,ev){
  d.lastX=pt.x;d.lastY=pt.y;d.lastT=now
 }
 function animateParticleThrow(id,vx,vy){
- const p=state.primordialParticles.get(id);if(!p)return;const maxSpeed=.95,speed=Math.hypot(vx,vy);if(speed>maxSpeed){vx*=maxSpeed/speed;vy*=maxSpeed/speed}p.throwing=true;p.throwVx=vx;p.throwVy=vy;let last=performance.now(),frames=0;
- const step=now=>{const q=state.primordialParticles.get(id);if(!q||q.reacting||q.dragging){if(q)q.throwing=false;return}const dt=Math.min(34,Math.max(8,now-last));last=now;const size=starSize(),pad=22;q.x+=q.throwVx*dt;q.y+=q.throwVy*dt;if(q.x<pad){q.x=pad;q.throwVx=Math.abs(q.throwVx)*.62}else if(q.x>size-pad){q.x=size-pad;q.throwVx=-Math.abs(q.throwVx)*.62}if(q.y<pad){q.y=pad;q.throwVy=Math.abs(q.throwVy)*.62}else if(q.y>size-pad){q.y=size-pad;q.throwVy=-Math.abs(q.throwVy)*.62}const drag=Math.pow(.965,dt/16.67);q.throwVx*=drag;q.throwVy*=drag;renderPrimordialParticles();frames++;if(Math.hypot(q.throwVx,q.throwVy)>.018&&frames<110)requestAnimationFrame(step);else{q.throwing=false;q.throwVx=0;q.throwVy=0;renderPrimordialParticles();startPrimordialDrift()}};
+ const p=state.primordialParticles.get(id);if(!p)return;if(!rotationMotionEnabled()){p.throwing=false;p.throwVx=0;p.throwVy=0;renderPrimordialParticles();return}const maxSpeed=.95,speed=Math.hypot(vx,vy);if(speed>maxSpeed){vx*=maxSpeed/speed;vy*=maxSpeed/speed}p.throwing=true;p.throwVx=vx;p.throwVy=vy;let last=performance.now(),frames=0;
+ const step=now=>{const q=state.primordialParticles.get(id);if(!q||q.reacting||q.dragging){if(q)q.throwing=false;return}if(!rotationMotionEnabled()){q.throwing=false;q.throwVx=0;q.throwVy=0;renderPrimordialParticles();return}const dt=Math.min(34,Math.max(8,now-last));last=now;const size=starSize(),pad=22;q.x+=q.throwVx*dt;q.y+=q.throwVy*dt;if(q.x<pad){q.x=pad;q.throwVx=Math.abs(q.throwVx)*.62}else if(q.x>size-pad){q.x=size-pad;q.throwVx=-Math.abs(q.throwVx)*.62}if(q.y<pad){q.y=pad;q.throwVy=Math.abs(q.throwVy)*.62}else if(q.y>size-pad){q.y=size-pad;q.throwVy=-Math.abs(q.throwVy)*.62}const drag=Math.pow(.965,dt/16.67);q.throwVx*=drag;q.throwVy*=drag;renderPrimordialParticles();frames++;if(Math.hypot(q.throwVx,q.throwVy)>.018&&frames<110)requestAnimationFrame(step);else{q.throwing=false;q.throwVx=0;q.throwVy=0;renderPrimordialParticles();startPrimordialDrift()}};
  requestAnimationFrame(step)
 }
 function finishParticleDrag(id,ev,cancel=false){
@@ -2542,7 +2543,7 @@ async function reactPrimordialHeHWithHydrogen(m,h){
 }
 function stopPrimordialMoleculeDrift(){if(state.primordialMoleculeTimer){clearInterval(state.primordialMoleculeTimer);state.primordialMoleculeTimer=null}}
 function startPrimordialMoleculeDrift(){
- stopPrimordialMoleculeDrift();if(!state.primordialMolecules?.size)return;state.primordialMoleculeTimer=setInterval(()=>{const s=phase();if(s.mode!=='primordialMolecule'||state.phaseDone||state.locked)return;const size=starSize(),pad=Math.max(62,size*.13),selected=selectedPrimordialMolecule();for(const m of state.primordialMolecules.values()){if(selected?.id===m.id)continue;const step=12+Math.random()*13,a=Math.random()*Math.PI*2;m.x=Math.max(pad,Math.min(size-pad,m.x+Math.cos(a)*step));m.y=Math.max(pad,Math.min(size-pad,m.y+Math.sin(a)*step));m.angle+=(Math.random()-.5)*.28;positionPrimordialMolecule(m)}renderPieces();syncPrimordialMoleculeVisuals()},720);
+ stopPrimordialMoleculeDrift();if(!rotationMotionEnabled()||!state.primordialMolecules?.size)return;state.primordialMoleculeTimer=setInterval(()=>{const s=phase();if(!rotationMotionEnabled()||s.mode!=='primordialMolecule'||state.phaseDone||state.locked)return;const size=starSize(),pad=Math.max(62,size*.13),selected=selectedPrimordialMolecule();for(const m of state.primordialMolecules.values()){if(selected?.id===m.id)continue;const step=12+Math.random()*13,a=Math.random()*Math.PI*2;m.x=Math.max(pad,Math.min(size-pad,m.x+Math.cos(a)*step));m.y=Math.max(pad,Math.min(size-pad,m.y+Math.sin(a)*step));m.angle+=(Math.random()-.5)*.28;positionPrimordialMolecule(m)}renderPieces();syncPrimordialMoleculeVisuals()},720);
 }
 function resizePrimordialMolecules(){const size=starSize(),pad=Math.max(62,size*.13);for(const m of state.primordialMolecules?.values?.()||[]){m.x=Math.max(pad,Math.min(size-pad,m.x));m.y=Math.max(pad,Math.min(size-pad,m.y));positionPrimordialMolecule(m)}syncPrimordialMoleculeVisuals()}
 
@@ -4271,6 +4272,14 @@ function bindPhaseStart(el){
  if(!window.PointerEvent)el.addEventListener('touchstart',activate,{capture:true,passive:false});
 }
 $('phaseEndBtn').addEventListener('click',endPhaseAction);bindReliableTap($('eventTooltipBtn'),closeEventTooltip);bindReliableTap($('ambientContinueBtn'),rewardDirectorDismiss);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}bindPhaseStart($('stellarStartBtn'));$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
+window.addEventListener('ardua:rotation-change',ev=>{
+ const moving=ev.detail?.enabled!==false;
+ if(!moving){
+  stopPrimordialDrift();stopPrimordialMoleculeDrift();
+  state.primordialParticles.forEach(p=>{if(p.throwing){p.throwing=false;p.throwVx=0;p.throwVy=0}});
+  renderPrimordialParticles();syncPrimordialMoleculeVisuals();
+ }else{startPrimordialDrift();startPrimordialMoleculeDrift()}
+});
 window.addEventListener('resize',()=>{applyGeometry();drawCells();state.pieces.forEach(p=>{if(!p.free&&p.cell!==null){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}else if(p.free){p.x=Math.max(28,Math.min(starSize()-28,p.x));p.y=Math.max(28,Math.min(starSize()-28,p.y))}});resizePrimordialMolecules();resizeStellarFormation();render()});
 load();applyGeometry();startPhase(state.phaseIndex,false,true);
 })();
