@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "scripts/apply-movement-chain-particles.py"
+      - "scripts/fix-movement-chain-particles.py"
       - ".github/workflows/apply-movement-chain-particles.yml"
   workflow_dispatch:
 
@@ -16,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
+      - name: Harden migration anchor
+        run: python scripts/fix-movement-chain-particles.py
       - name: Apply migration
         run: python scripts/apply-movement-chain-particles.py
       - name: Check JavaScript syntax
