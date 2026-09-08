@@ -6,6 +6,7 @@ on:
     paths:
       - "scripts/apply-movement-chain-particles.py"
       - "scripts/fix-movement-chain-particles.py"
+      - "scripts/validate-stellar-plasma.js"
       - ".github/workflows/apply-movement-chain-particles.yml"
   workflow_dispatch:
 
