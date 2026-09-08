@@ -37,13 +37,14 @@ if(/coronalJetChargedCompanions[\s\S]{0,900}\['p','e','n'\]/.test(engine))fail('
 const perform=engine.indexOf('async function performConvection(path)');
 if(perform<0)fail('Rotina de Convecção ausente');
 const block=engine.slice(perform,perform+6500);
-const jet=block.indexOf('await maybeEjectCoronalJet(path,s)');
-const recalc=jet<0?-1:block.indexOf('occupied=path.filter',jet);
+const jetToken='await maybeEjectCoronalJet(path,s)';
+const jet=block.indexOf(jetToken);
+const recalc=jet<0?-1:block.indexOf('occupied=path.filter',jet+jetToken.length);
 const rotate=block.indexOf('dest=occupied.map');
 if(jet<0)fail('Convecção não verifica Jato Coronal');
 if(recalc<0||recalc<jet)fail('Linha convectiva não é recalculada após a ejeção');
 if(rotate<0||rotate<jet)fail('Jato Coronal precisa acontecer antes da reorganização da linha');
-if(block.indexOf('maybeEjectCoronalJet',jet+1)>=0)fail('Há uma segunda verificação de Jato depois da Convecção');
+if(block.indexOf('maybeEjectCoronalJet',jet+jetToken.length)>=0)fail('Há uma segunda verificação de Jato depois da Convecção');
 need(block,'state.convectionMoves=(state.convectionMoves||0)+1','Convecção deixou de contabilizar/reorganizar normalmente');
 
 need(engine,"createPiece('He',jetCell,false,{matterState:'atom',boundElectrons:1})",'Fase não começa com um He+ na superfície');
