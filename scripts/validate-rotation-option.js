@@ -12,7 +12,10 @@ const requiredRotation=[
   'campaignHomeRotation',
   "'Desligar Rotação':'Ligar Rotação'",
   "pieces.querySelectorAll('.atom')",
-  'atom.style.translate=',
+  "cells.querySelectorAll('.cell')",
+  'function applyOrbit(el,g,promote=false)',
+  'applyOrbit(cell,g,cell.classList.contains(\'move-target\'))',
+  'applyOrbit(atom,g,true)',
   'phaseGameplayVisible()',
   "document.body.classList.contains('campaign-map-open')",
   "map?.classList.contains('show')",
@@ -20,13 +23,15 @@ const requiredRotation=[
   'function radialLimit(g,theta)',
   'function hexOrbitPoint(x,y,g,rotation)',
   'const ratio=Math.min(1,r/startLimit)',
+  "document.querySelectorAll('#pieces .atom,#cells .cell')",
   'setTimeout(()=>{attachMenusDeferred();if(enabled)startFrame()},0)',
   'cancelAnimationFrame(raf)'
 ];
 for(const token of requiredRotation){if(!rotation.includes(token))throw new Error(`Contrato de rotação ausente: ${token}`)}
 if(rotation.includes('MutationObserver'))throw new Error('Regressão: controlador de rotação não pode observar o body durante o bootstrap');
 if(rotation.includes('let enabled=false'))throw new Error('Regressão: rotação deve estar ligada por padrão; a tela inicial é excluída por contexto');
-if(!rotation.includes('if(!phaseGameplayVisible()){resetAtomOffsets();last=now;return}'))throw new Error('Regressão: rotação não deve atuar no mapa/página inicial');
+if(!rotation.includes('if(!phaseGameplayVisible()){resetFieldOffsets();last=now;return}'))throw new Error('Regressão: rotação não deve atuar no mapa/página inicial');
+if(rotation.includes('freezeRotation')||rotation.includes('pauseRotationForMovement'))throw new Error('Regressão: a rotação não deve congelar durante a escolha de movimento');
 if(!index.includes('<script src="assets/js/rotation-polish.js"></script>'))throw new Error('rotation-polish.js não está carregado no index');
 if(index.indexOf('assets/js/rotation-polish.js')>index.indexOf('assets/js/ardua.js'))throw new Error('rotation-polish.js deve carregar antes do motor');
 if(!engine.includes("if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt"))throw new Error('Formação estelar não respeita a opção de rotação');
