@@ -1,0 +1,43 @@
+name: Apply movement chain particles
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/apply-movement-chain-particles.py"
+      - ".github/workflows/apply-movement-chain-particles.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Apply migration
+        run: python scripts/apply-movement-chain-particles.py
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-mode.js
+          node --check scripts/validate-movement-chain-particles.js
+      - name: Validate requested behavior and existing contracts
+        run: |
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+      - name: Commit runtime changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-mode.js
+          git diff --cached --quiet || git commit -m "feat: teach movement and gate automatic chains by knowledge"
+          git push
