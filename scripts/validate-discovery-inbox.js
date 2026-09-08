@@ -11,7 +11,7 @@ if(!discoveries.includes('window.ARDUA_DISCOVERY_INDEX='))throw new Error('Índi
 if(!discoveries.includes('b.dataset.discoveryKey=entry.key'))throw new Error('Cards de fenômenos precisam preservar a chave da descoberta');
 if(map.includes('returnTimer=setTimeout(()=>showMap({required:true,focusCurrent:true}),1500)'))throw new Error('Retorno ao mapa voltou a esperar 1,5 s');
 if(!map.includes('showMap({required:true,focusCurrent:true,instant:true})'))throw new Error('Fim de fase precisa abrir o mapa imediatamente');
-if(!modal.includes("function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview()"))throw new Error('Mapa precisa fechar qualquer preview de fase');
+if(!modal.includes("becameVisible=visible&&!mapWasVisible")||!modal.includes("if(!becameVisible)return;closePreview()"))throw new Error('Mapa precisa assumir o preview apenas na transição real de volta à tela');
 if(!modal.includes("function shouldDismissEngineIntro(){return map.classList.contains('show')||"))throw new Error('Intro tardio de fase precisa ser fechado com o mapa visível');
 if(!index.includes('campaign-discovery-notifications.js')||!index.includes('campaign-discovery-notifications.css'))throw new Error('Discovery inbox fora do index');
 console.log('Discovery inbox OK: modal central, não lidos persistentes, controles visíveis, elementos/fenômenos e retorno imediato ao mapa validados.');
