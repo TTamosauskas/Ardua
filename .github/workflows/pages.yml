@@ -30,6 +30,9 @@ jobs:
       - name: Check rotation syntax
         run: node --check assets/js/rotation-polish.js
 
+      - name: Check recipe audio syntax
+        run: node --check assets/js/recipe-audio-sync.js
+
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
 
@@ -47,6 +50,9 @@ jobs:
 
       - name: Validate rotation option
         run: node scripts/validate-rotation-option.js
+
+      - name: Validate target-recipe audio cadence
+        run: node scripts/validate-recipe-audio-cadence.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
