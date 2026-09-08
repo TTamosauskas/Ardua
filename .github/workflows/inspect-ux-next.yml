@@ -15,39 +15,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect engine and campaign anchors
+      - name: Inspect completion HUD and geometry anchors
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
-          def show(label,needle,before=1200,after=5200):
-            i=s.find(needle)
+          css=Path('assets/css/ardua.css').read_text(encoding='utf-8')
+          def show(label,needle,before=1000,after=6500,src=s):
+            i=src.find(needle)
             print(f'\n===== {label} :: {needle} @ {i} =====')
-            if i>=0: print(s[max(0,i-before):min(len(s),i+after)])
+            if i>=0: print(src[max(0,i-before):min(len(src),i+after)])
           for label,needle,b,a in [
-            ('PHASE RED','id:\'he_red\'',1200,8000),
-            ('PHASE MOVE','id:\'stellar_movement\'',1200,6500),
-            ('PHASE SOLAR','id:\'solar_wind\'',1200,6500),
-            ('PROGRESS','if(s.mode===\'opening\')return 0;',1800,9000),
-            ('MOVE SELECT','function selectAtomForMovement',2200,9000),
-            ('MOVE CELL','function tapCell',1500,7000),
-            ('RENDER PIECES','function renderPieces',1000,8500),
-            ('COMPLETE','function checkComplete',1800,12000),
-            ('END','function finishPhase',1800,12000),
-            ('SCATTER','Espalhar Poeira Estelar',2500,12000),
-            ('EFFECT CLASS','stellar-convection',2500,10000),
-            ('COULOMB','coulomb_intro',2500,10000),
-            ('PLASMA STAGE','function fillStellarAtomicStage',2500,10000),
-            ('ENTER PHASE','function enterPhase',2000,10000),
+            ('ADVANCE','function advancePhase',1800,9000),
+            ('SCATTER','async function scatterStage',1200,11000),
+            ('END BUTTON',"$('phaseEndBtn').addEventListener",2200,9000),
+            ('END BUTTON ALT','phaseEndBtn',800,10000),
+            ('HUD','function updateHUD',1600,12000),
+            ('OBJECTIVE SAT','function objectiveSatisfied',1200,7000),
+            ('START PHASE','function startPhase',1800,14000),
+            ('CAMPAIGN KNOW','function campaignKnowledgeReached',1200,6000),
+            ('PHASE RADIUS','function phaseRadius',1000,6000),
+            ('ACTIVE SET','function activeSet',800,5000),
+            ('RENDER','function render()',900,7000),
+            ('VISUAL','function applyVisual',900,8000),
           ]: show(label,needle,b,a)
-          # Print compact all-occurrence contexts for effect-related identifiers.
-          for needle in ['solarWind','stellarIonization','stellarRecombination','coulomb','convection']:
-            print(f'\n===== OCCURRENCES {needle} =====')
-            pos=0;n=0
-            while True:
-              i=s.find(needle,pos)
-              if i<0: break
-              n+=1;print(f'--- {n} @ {i} ---');print(s[max(0,i-280):min(len(s),i+520)])
-              pos=i+len(needle)
-              if n>=18: break
+          for needle in ['.atom{','.atom {','.atom,','.atom.atomic-piece','transition:left','transition: left']:
+            show('CSS ATOM',needle,600,3500,css)
           PY
