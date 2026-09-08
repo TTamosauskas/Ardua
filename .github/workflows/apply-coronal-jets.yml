@@ -57,7 +57,7 @@ jobs:
           python3 -m py_compile scripts/apply-coronal-jets.py
       - name: Apply patch
         run: python3 scripts/apply-coronal-jets.py
-      - name: Validate update
+      - name: Validate update after coronal patch
         run: |
           node --check assets/js/ardua.js
           node --check assets/js/campaign-graph.js
