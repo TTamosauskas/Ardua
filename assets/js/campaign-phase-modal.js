@@ -27,7 +27,6 @@ function timeFor(id){if(PHASE_TIME[id])return PHASE_TIME[id];const gen=GEN?.gene
 function segmentFor(id){if(EARLY_SEGMENTS[id])return EARLY_SEGMENTS[id];const row=meta(id),gen=GEN?.generationOf?.(id),prefix=GEN_LABEL[gen];if(prefix&&row.branch)return`${prefix} - ${row.branch}`;return row.branch||prefix||'Campanha Cósmica'}
 function visualFor(id){const v=meta(id).visual;if(v)return v;if(id==='bigbang')return'bigBang';if(id.startsWith('primordial_'))return id==='primordial_li'?'primordialLi':(id.includes('he')?'primordialHe':'primordialH');if(id.startsWith('atomic_'))return id==='atomic_li'?'primordialLi':(id==='atomic_he'?'primordialHe':'primordialH');return'nebula'}
 function phaseAccessible(id){const st=C.getState?.()||{},done=new Set(st.completed||[]);return !!(C.editor||st.activeId===id||done.has(id)||C.isUnlocked?.(id))}
-function enginePhaseButton(id){const idx=G.runtimeIndex?.[id];return Number.isInteger(idx)?[...document.querySelectorAll('#phaseMenu .phase-jump')][idx]||null:null}
 
 let preview=$('campaignPhasePreview');
 if(!preview){
@@ -42,21 +41,32 @@ if(!preview){
  document.body.appendChild(preview);
 }
 const segment=preview.querySelector('[data-phase-segment]'),title=preview.querySelector('[data-phase-title]'),time=preview.querySelector('[data-phase-time]'),art=preview.querySelector('[data-phase-art]'),close=preview.querySelector('[data-phase-preview-close]'),launch=preview.querySelector('[data-phase-preview-launch]');
-let previewId='',suppressMapClicksUntil=0,launchingId='';
+let previewId='',previewNode=null,suppressMapClicksUntil=0,launchingId='',nativeMapHandoff=false;
 function renderPreview(id){
  if(!id)return;previewId=id;segment.textContent=segmentFor(id);title.textContent=phaseName(id).toUpperCase();time.textContent=timeFor(id);art.className=`stellar-art ${visualFor(id)}`;launch.textContent='CONTINUAR';launch.disabled=!phaseAccessible(id);preview.dataset.phaseId=id;
 }
-async function openPreview(id){if(!id)return;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
-function closePreview(){previewId='';preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
+async function openPreview(id,node=null){if(!id)return;previewNode=node;renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');await sourceReady;if(previewId===id)renderPreview(id)}
+function closePreview(){previewId='';previewNode=null;preview.classList.remove('show');preview.setAttribute('aria-hidden','true');delete preview.dataset.phaseId}
 function closePreviewAfterGesture(){suppressMapClicksUntil=performance.now()+520;requestAnimationFrame(closePreview)}
 function shouldDismissEngineIntro(){return map.classList.contains('show')||!!(launchingId&&C.getState?.().activeId===launchingId)}
 function dismissEngineIntro(){if(!shouldDismissEngineIntro())return;if(engineIntro?.classList.contains('show'))engineStart?.click()}
 function finishLaunchHandoff(){dismissEngineIntro();queueMicrotask(dismissEngineIntro);requestAnimationFrame(dismissEngineIntro);setTimeout(dismissEngineIntro,60);setTimeout(()=>{dismissEngineIntro();launchingId=''},220)}
+function nativeLaunchFromMap(id,node){
+ if(!node?.isConnected||node.dataset.phase!==id)return false;
+ nativeMapHandoff=true;
+ try{
+  node.click();
+  const button=[...map.querySelectorAll('#mapDetail [data-launch]')].find(el=>el.dataset.launch===id);
+  if(!button||button.disabled)return false;
+  button.click();
+  return true;
+ }finally{nativeMapHandoff=false}
+}
 function launchPreview(){
- const id=previewId;if(!id||!phaseAccessible(id))return;const button=enginePhaseButton(id);if(!button)return;
- launchingId=id;closePreview();C.setActive?.(id);
- map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');map.querySelector('#mapDetail')?.classList.remove('show');
- button.click();finishLaunchHandoff();
+ const id=previewId,node=previewNode;if(!id||!phaseAccessible(id))return;
+ launchingId=id;preview.classList.remove('show');preview.setAttribute('aria-hidden','true');
+ if(!nativeLaunchFromMap(id,node)){launchingId='';renderPreview(id);preview.classList.add('show');preview.setAttribute('aria-hidden','false');return}
+ previewId='';previewNode=null;delete preview.dataset.phaseId;finishLaunchHandoff();
 }
 function activateButton(el,fn){
  if(!el)return;
@@ -70,10 +80,11 @@ preview.addEventListener('pointerup',e=>e.stopPropagation());
 preview.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.target===preview)closePreviewAfterGesture()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&preview.classList.contains('show')){e.preventDefault();closePreviewAfterGesture()}});
 map.addEventListener('click',e=>{
+ if(nativeMapHandoff)return;
  if(performance.now()<suppressMapClicksUntil){e.preventDefault();e.stopImmediatePropagation();return}
  const target=e.target instanceof Element?e.target:null;if(!target)return;
  const node=target.closest('.phase-node[data-phase]');if(!node)return;
- const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id)
+ const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id,node)
 },true);
 
 /* The map owns the screen whenever it is visible. */
