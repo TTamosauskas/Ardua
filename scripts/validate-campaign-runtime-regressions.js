@@ -8,10 +8,15 @@ const index=fs.readFileSync('index.html','utf8');
 
 function assert(ok,msg){if(!ok)throw new Error(msg)}
 
-// 1. Em campanha normal todo nó reage ao clique. A permissão controla apenas CONTINUAR.
-assert(modal.includes("const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id)"),'Clique em nó de fase ainda depende de #editor/desbloqueio');
+// 1. Em campanha normal todo nó reage ao clique. O modal só apresenta a fase;
+//    CONTINUAR devolve o controle ao lançador nativo do mapa.
+assert(modal.includes("const id=node.dataset.phase;e.preventDefault();e.stopImmediatePropagation();openPreview(id,node)"),'Clique em nó de fase ainda depende de #editor/desbloqueio');
 assert(modal.includes("launch.disabled=!phaseAccessible(id)"),'CONTINUAR precisa refletir o desbloqueio da fase');
-assert(modal.includes("const id=previewId;if(!id||!phaseAccessible(id))return"),'Lançamento precisa continuar bloqueando fases indisponíveis');
+assert(modal.includes("const id=previewId,node=previewNode;if(!id||!phaseAccessible(id))return"),'Lançamento precisa continuar bloqueando fases indisponíveis');
+assert(modal.includes('function nativeLaunchFromMap(id,node)'),'Modal precisa entregar o lançamento ao mapa');
+assert(modal.includes('node.click()')&&modal.includes("#mapDetail [data-launch]")&&modal.includes('button.click()'),'Handoff precisa passar pelo detalhe/launcher real do mapa');
+assert(!modal.includes('function enginePhaseButton(id)'),'Atalho pelo menu interno do motor voltou a ser usado');
+assert(map.includes("function launch(id){if(!C.isUnlocked(id))return;const idx=C.runtimeIndex(id),btn=phaseButtons[idx];if(!btn)return;C.setActive(id);mapRequired=false;hideMap(true);btn.click();refresh()}"),'Lançador nativo do mapa mudou: rever contrato');
 
 // 2. Os indicadores apontam para os controles realmente visíveis e sobrevivem à ordem de carga.
 for(const id of ['campaignHomeMenuBtn','campaignHomeDiscoveries'])assert(home.includes(id),`Interface atual perdeu ${id}`);
@@ -26,4 +31,4 @@ assert(modal.includes("if(engineIntro?.classList.contains('show'))engineStart?.c
 assert(modal.includes("new MutationObserver(dismissEngineIntro).observe(engineIntro"),'Intro tardio precisa ser observado');
 assert(map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'Fim de fase precisa retornar imediatamente ao mapa');
 
-console.log('Campaign runtime regressions OK: map clicks, live unread badges, element/phenomenon tracking and post-phase modal dismissal.');
+console.log('Campaign runtime regressions OK: native map launch, live unread badges and post-phase modal dismissal.');
