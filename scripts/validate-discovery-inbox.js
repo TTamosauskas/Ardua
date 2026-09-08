@@ -6,6 +6,7 @@ const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 const modal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 for(const token of ['arduaDiscoveryInboxV1','Confira suas descobertas no menu.','discovery-has-unread','discovery-unread','markRead(`element:${sym}`)','dataset.unreadCount','function historicalKnown()','function currentDiscoveryKeys()','window.ARDUA_PHASE_DISCOVERIES','for(const sym of data.discovered||[])',"$('campaignHomeMenuBtn')","$('campaignHomeDiscoveries')",'new MutationObserver(scheduleRender).observe(campaignMap'])if(!ui.includes(token))throw new Error('Discovery inbox perdeu contrato: '+token);
+for(const token of ['function syncDiscoveryAtlasOwnership()','discoveryAtlasSnapshot',".discovery-card[data-discovery-key]",".discovery-card:not([data-discovery-key])",'discoveryAtlas.innerHTML=discoveryAtlasSnapshot',"$('campaignData')?.addEventListener('click',()=>requestAnimationFrame(syncDiscoveryAtlasOwnership))",'checkSavedDiscoveries(true);syncDiscoveryAtlasOwnership();scheduleRender()'])if(!ui.includes(token))throw new Error('Proteção do Atlas de Fenômenos perdeu contrato: '+token);
 for(const token of ["content:'★'",'.discovery-unlock-modal','place-items:center','.reward-banner.discovery','.reward-banner.completion','#campaignHomeMenuBtn.discovery-has-unread::after','#campaignHomeDiscoveries.discovery-has-unread::after'])if(!css.includes(token))throw new Error('Discovery inbox CSS perdeu contrato: '+token);
 if(!discoveries.includes('window.ARDUA_DISCOVERY_INDEX='))throw new Error('Índice público de descobertas ausente');
 if(!discoveries.includes('b.dataset.discoveryKey=entry.key'))throw new Error('Cards de fenômenos precisam preservar a chave da descoberta');
@@ -14,4 +15,4 @@ if(!map.includes('showMap({required:true,focusCurrent:true,instant:true})'))thro
 if(!modal.includes("becameVisible=visible&&!mapWasVisible")||!modal.includes("if(!becameVisible)return;closePreview()"))throw new Error('Mapa precisa assumir o preview apenas na transição real de volta à tela');
 if(!modal.includes("function shouldDismissEngineIntro(){return map.classList.contains('show')||"))throw new Error('Intro tardio de fase precisa ser fechado com o mapa visível');
 if(!index.includes('campaign-discovery-notifications.js')||!index.includes('campaign-discovery-notifications.css'))throw new Error('Discovery inbox fora do index');
-console.log('Discovery inbox OK: modal central, não lidos persistentes, controles visíveis, elementos/fenômenos e retorno imediato ao mapa validados.');
+console.log('Discovery inbox OK: não lidos persistentes, Atlas de Fenômenos estável e retorno imediato ao mapa validados.');
