@@ -46,8 +46,10 @@
  .campaign-head-actions #campaignData{display:inline-flex!important;align-items:center;justify-content:center}
  #menuModal.discoveries-view{padding:10px}
  #menuModal.discoveries-view .card{max-height:94dvh;border-radius:20px;padding:14px}
- .discoveries-tabs{position:sticky;top:-14px;z-index:6;margin-inline:-4px;background:rgba(8,16,31,.96);backdrop-filter:blur(12px)}
+ .discoveries-tabs{position:sticky;top:-14px;z-index:12;margin-inline:-4px;background:rgba(8,16,31,.96);backdrop-filter:blur(12px)}
  .discoveries-tabs button{padding:10px 5px;font-size:8px;letter-spacing:.055em}
+ #menuModal.discoveries-view.element-detail-view .element-discovery-head,
+ #menuModal.discoveries-view.phenomenon-detail-view .element-discovery-head{top:30px;z-index:8;background:linear-gradient(180deg,rgba(8,16,31,.98),rgba(8,16,31,.94));backdrop-filter:blur(12px)}
  .element-discovery-overlay{inset:68px 8px 8px;padding:10px;border-radius:16px}
  .element-discovery-head{top:-10px;margin:-10px -10px 10px;padding:10px}
 }
