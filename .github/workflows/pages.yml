@@ -67,6 +67,9 @@ jobs:
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
 
+      - name: Validate precursor recipe planner
+        run: node scripts/validate-recipe-planner.js
+
       - name: Validate parallel beta-decay gameplay
         run: node scripts/validate-beta-parallel.js
 
