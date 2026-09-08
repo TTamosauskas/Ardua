@@ -32,5 +32,5 @@ if(!discoveries.includes("key:'phenomenon:solarWind'")||!discoveries.includes("t
 if(!discoveries.includes("key:'phenomenon:stellarIonization'")||!discoveries.includes("title:'Ionização'"))throw new Error('Ionização ausente de Fenômenos');
 if(!phenomenaUI.includes("'Ionização':'Ionização'"))throw new Error('Ionização sem alias de detalhe em Fenômenos');
 for(const title of ['Vento Solar','Ionização'])if(!sources[title]?.imagePath||!sources[title]?.wikiUrl)throw new Error(`Fonte local incompleta: ${title}`);
-if(!campaign.includes('version:11')||!campaign.includes("next.activeId='solar_wind'"))throw new Error('Migração v11 da campanha ausente');
+if(!campaign.includes('version:12')||!campaign.includes("next.activeId='solar_wind'"))throw new Error('Migração v11 do plasma ou schema v12 da campanha ausente');
 console.log('Stellar plasma follow-up OK: continuity population, map, tooltips, wind animation and Ionization discovery.');
