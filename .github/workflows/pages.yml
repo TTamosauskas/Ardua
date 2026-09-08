@@ -30,6 +30,9 @@ jobs:
       - name: Check rotation syntax
         run: node --check assets/js/rotation-polish.js
 
+      - name: Check audio polish syntax
+        run: node --check assets/js/audio-polish.js
+
       - name: Check recipe audio syntax
         run: node --check assets/js/recipe-audio-sync.js
 
