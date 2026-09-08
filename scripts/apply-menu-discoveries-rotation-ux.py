@@ -172,11 +172,12 @@ new="for(const entry of DISCOVERY_ATLAS){const open=discoveryUnlocked(entry);if(
 if new not in s:
     if old not in s: raise SystemExit('discovery atlas loop anchor missing')
     s=s.replace(old,new,1)
-old="const open=discoveryUnlocked(entry),b=document.createElement('button');"
-new="const b=document.createElement('button');"
-if new not in s:
-    if old not in s: raise SystemExit('discovery atlas open duplicate anchor missing')
-    s=s.replace(old,new,1)
+old_decl="const open=discoveryUnlocked(entry),b=document.createElement('button');"
+new_decl="const b=document.createElement('button');"
+if old_decl in s:
+    s=s.replace(old_decl,new_decl,1)
+elif new not in s:
+    raise SystemExit('discovery atlas open duplicate anchor missing')
 p.write_text(s,encoding='utf-8')
 
 p=Path('assets/css/phase-polish.css'); s=p.read_text(encoding='utf-8')
