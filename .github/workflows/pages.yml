@@ -36,6 +36,14 @@ jobs:
       - name: Check recipe audio syntax
         run: node --check assets/js/recipe-audio-sync.js
 
+      - name: Check campaign UX syntax
+        run: |
+          node --check assets/js/campaign-fork-links.js
+          node --check assets/js/phase-polish.js
+          node --check assets/js/campaign-home-polish.js
+          node --check assets/js/campaign-discoveries-elements.js
+          node --check assets/js/campaign-discoveries-phenomena.js
+
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
 
@@ -56,6 +64,9 @@ jobs:
 
       - name: Validate target-recipe audio cadence
         run: node scripts/validate-recipe-audio-cadence.js
+
+      - name: Validate menu discoveries UX
+        run: node scripts/validate-menu-discoveries-ux.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
