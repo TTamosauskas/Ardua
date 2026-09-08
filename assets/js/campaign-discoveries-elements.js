@@ -172,12 +172,10 @@ function ensureDetail(){
  detail.id='elementDiscoveryDetail';
  detail.className='element-discovery-detail';
  detail.hidden=true;
- detail.innerHTML=`<header class="element-discovery-head"><strong data-element-detail-title></strong><button type="button" class="element-detail-back" data-element-detail-back aria-label="Voltar para elementos"><span aria-hidden="true">←</span></button></header><div id="elementDiscoveryBody"></div>`;
+ detail.innerHTML=`<header class="element-discovery-head"><strong data-element-detail-title></strong></header><div id="elementDiscoveryBody"></div>`;
  const tabs=$('discoveriesTabs');
  (tabs||heading)?.insertAdjacentElement('afterend',detail);
  detail.addEventListener('click',e=>{
-  const back=e.target instanceof Element?e.target.closest('[data-element-detail-back]'):null;
-  if(back){e.preventDefault();leaveElementDetail();return}
   const phase=e.target instanceof Element?e.target.closest('[data-element-phase]'):null;
   if(phase){e.preventDefault();openPhase(phase.dataset.elementPhase)}
  });
@@ -185,18 +183,14 @@ function ensureDetail(){
 }
 function setDetailMode(on){
  const tabs=$('discoveriesTabs');
- if(tabs)tabs.hidden=on;
+ if(tabs)tabs.hidden=false;
  modal.classList.toggle('element-detail-view',on);
- modal.querySelectorAll('[data-discovery-panel]').forEach(panel=>{
-  if(on)panel.hidden=true;
- });
- if(!on){
-  const elementBtn=tabs?.querySelector('[data-discovery-tab="elements"]');
-  if(elementBtn)elementBtn.click();
- }
+ modal.querySelectorAll('[data-discovery-panel]').forEach(panel=>{if(on)panel.hidden=true});
 }
-function leaveElementDetail(){
- const host=ensureDetail();host.hidden=true;host.removeAttribute('data-open');delete host.dataset.sym;setDetailMode(false);requestAnimationFrame(()=>card.scrollTo({top:0,behavior:'auto'}));
+function leaveElementDetail(restoreTab=true){
+ const host=ensureDetail();host.hidden=true;host.removeAttribute('data-open');delete host.dataset.sym;setDetailMode(false);
+ if(restoreTab)$('discoveriesTabs')?.querySelector('[data-discovery-tab="elements"]')?.click();
+ requestAnimationFrame(()=>card.scrollTo({top:0,behavior:'auto'}));
 }
 function openPhase(id){
  if(!id)return;
@@ -252,7 +246,7 @@ catalog.addEventListener('click',e=>{
 });
 modal.addEventListener('click',e=>{
  const tab=e.target instanceof Element?e.target.closest('[data-discovery-tab]'):null;
- if(tab&&detail&&!detail.hidden)leaveElementDetail();
+ if(tab&&detail&&!detail.hidden)leaveElementDetail(false);
 });
 $('closeMenu')?.addEventListener('click',()=>{if(detail&&!detail.hidden){detail.hidden=true;detail.removeAttribute('data-open');delete detail.dataset.sym;detail.removeAttribute('aria-busy');setDetailMode(false)}});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail&&!detail.hidden){e.preventDefault();e.stopImmediatePropagation();leaveElementDetail()}},true);

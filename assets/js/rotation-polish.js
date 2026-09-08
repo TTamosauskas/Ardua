@@ -50,7 +50,11 @@ window.ARDUA_ROTATION=Object.freeze({enabled:()=>enabled,setEnabled,toggle,key:K
 function makeMenuButton(id){
  const button=document.createElement('button');
  button.type='button';button.id=id;button.innerHTML='<span></span>';
- button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggle()});
+ button.addEventListener('click',e=>{
+  e.preventDefault();e.stopPropagation();toggle();
+  if(id==='phaseQuickRotation')document.querySelector('#phaseQuickMenu .phase-quick-close')?.click();
+  else if(id==='campaignHomeRotation')document.querySelector('#campaignHomeMenu .campaign-home-menu-close')?.click();
+ });
  return button;
 }
 function attachMenuButtons(){
@@ -92,8 +96,10 @@ function convexHull(points){
 function geometryFor(board){
  const cells=[...document.querySelectorAll('#cells .cell')],key=`${board.clientWidth}x${board.clientHeight}:${cells.length}`;
  if(geometry?.key===key)return geometry;
- const hull=convexHull(cells.map(point).filter(Boolean));
- geometry={key,cx:board.clientWidth/2,cy:board.clientHeight/2,hull};return geometry;
+ const points=cells.map(point).filter(Boolean),boardCx=board.clientWidth/2,boardCy=board.clientHeight/2;
+ const pivot=points.reduce((best,p)=>Math.hypot(p.x-boardCx,p.y-boardCy)<Math.hypot(best.x-boardCx,best.y-boardCy)?p:best,points[0]||{x:boardCx,y:boardCy});
+ const hull=convexHull(points);
+ geometry={key,cx:pivot.x,cy:pivot.y,hull};return geometry;
 }
 function radialLimit(g,theta){
  if(!g||g.hull.length<3)return Infinity;
@@ -107,7 +113,7 @@ function radialLimit(g,theta){
  return best;
 }
 function hexOrbitPoint(x,y,g,rotation){
- const dx=x-g.cx,dy=y-g.cy,r=Math.hypot(dx,dy);if(r<.01)return{x,y};
+ const dx=x-g.cx,dy=y-g.cy,r=Math.hypot(dx,dy);if(r<1)return{x:g.cx,y:g.cy};
  const start=Math.atan2(dy,dx),startLimit=radialLimit(g,start);if(!Number.isFinite(startLimit)||startLimit<=0)return{x,y};
  const ratio=Math.min(1,r/startLimit),theta=start+rotation,targetLimit=radialLimit(g,theta);if(!Number.isFinite(targetLimit)||targetLimit<=0)return{x,y};
  const targetR=ratio*targetLimit;

@@ -3,16 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 
-/* Full-page phase restart: runtime phase state is rebuilt from the persisted campaign position. */
-document.addEventListener('click',e=>{
- const target=e.target instanceof Element?e.target.closest('#phaseQuickRestart'):null;
- if(!target)return;
- e.preventDefault();
- e.stopImmediatePropagation();
- try{history.scrollRestoration='manual'}catch(_e){}
- try{window.scrollTo({top:0,left:0,behavior:'auto'})}catch(_e){}
- window.location.reload();
-},true);
+/* Phase restart is owned by the phase utility menu: it re-enters only the active phase. */
 
 /* Draw attention to the recipe whenever a playable phase is entered. */
 const formula=$('formulaText'),phaseTitle=$('phaseTitle'),stellarIntro=$('stellarIntro');

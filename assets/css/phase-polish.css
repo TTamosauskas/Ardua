@@ -91,3 +91,6 @@
   filter:drop-shadow(0 0 4px rgba(125,210,255,.42));
 }
 @media(prefers-reduced-motion:reduce){.atom.beta-waiting .beta-progress-ring{filter:none}}
+
+/* Descobertas lists only entries that have actually been discovered. */
+#menuModal.discoveries-view .discovery-card.locked{display:none!important}

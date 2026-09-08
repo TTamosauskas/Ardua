@@ -38,7 +38,7 @@ trigger.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();open
 menu.addEventListener('click',e=>{if(e.target instanceof Element&&e.target.closest('[data-home-close]'))closeMenu()});
 $('campaignHomeDiscoveries')?.addEventListener('click',()=>{closeMenu(false);dataBtn?.click()});
 returnBtn?.addEventListener('click',()=>{if(returnBtn.disabled)return;closeMenu(false);closeBtn?.click()});
-soundBtn?.addEventListener('click',()=>applySound(!soundtrackEnabled()));
+soundBtn?.addEventListener('click',()=>{applySound(!soundtrackEnabled());closeMenu(false)});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('show')){e.preventDefault();closeMenu()}});
 updateSoundLabel();syncReturn();
 

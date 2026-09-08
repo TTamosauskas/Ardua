@@ -145,7 +145,7 @@ host.innerHTML=`<div class="phase-quick-backdrop" data-quick-close></div>
   <div class="phase-quick-actions">
    <button type="button" id="phaseQuickMap"><span>Mapa</span><small>Voltar ao mapa da campanha</small></button>
    <button type="button" id="phaseQuickDiscoveries"><span>Descobertas</span><small>Reações, elementos e fenômenos</small></button>
-   <button type="button" id="phaseQuickRestart"><span>Recomeçar</span><small>Reiniciar esta fase desde o início</small></button>
+   <button type="button" id="phaseQuickRestart"><span>Recomeçar Fase</span><small>Reiniciar esta fase desde o início</small></button>
    <button type="button" id="phaseQuickSound"><span></span><small>Controla somente a trilha sonora</small></button>
   </div>
  </section>`;
@@ -191,6 +191,6 @@ $('phaseQuickRestart')?.addEventListener('click',()=>{
  closeQuickMenu(false);
  if(button)button.click();
 });
-soundBtn?.addEventListener('click',()=>applySound(!soundtrackEnabled(),true));
+soundBtn?.addEventListener('click',()=>{applySound(!soundtrackEnabled(),true);closeQuickMenu(false)});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&host.classList.contains('show')){e.preventDefault();closeQuickMenu()}});
 })();

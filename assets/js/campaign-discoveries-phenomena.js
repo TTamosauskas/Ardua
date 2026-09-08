@@ -171,24 +171,22 @@ function ensureDetail(){
  detail.id='phenomenonDiscoveryDetail';
  detail.className='element-discovery-detail phenomenon-discovery-detail';
  detail.hidden=true;
- detail.innerHTML=`<header class="element-discovery-head"><strong data-phenomenon-detail-title></strong><button type="button" class="element-detail-back" data-phenomenon-detail-back aria-label="Voltar para fenômenos"><span aria-hidden="true">←</span></button></header><div id="phenomenonDiscoveryBody"></div>`;
+ detail.innerHTML=`<header class="element-discovery-head"><strong data-phenomenon-detail-title></strong></header><div id="phenomenonDiscoveryBody"></div>`;
  const tabs=$('discoveriesTabs');
  (tabs||heading)?.insertAdjacentElement('afterend',detail);
- detail.addEventListener('click',e=>{
-  const back=e.target instanceof Element?e.target.closest('[data-phenomenon-detail-back]'):null;
-  if(back){e.preventDefault();leaveDetail()}
- });
+ detail.addEventListener('click',()=>{});
  return detail;
 }
 function setDetailMode(on){
- const tabs=$('discoveriesTabs');if(tabs)tabs.hidden=on;
+ const tabs=$('discoveriesTabs');if(tabs)tabs.hidden=false;
  modal.classList.toggle('phenomenon-detail-view',on);
  modal.querySelectorAll('[data-discovery-panel]').forEach(panel=>{if(on)panel.hidden=true});
- if(!on)tabs?.querySelector('[data-discovery-tab="phenomena"]')?.click();
 }
-function leaveDetail(){
+function leaveDetail(restoreTab=true){
  requestSerial++;
- const host=ensureDetail();host.hidden=true;host.removeAttribute('aria-busy');delete host.dataset.title;setDetailMode(false);requestAnimationFrame(()=>card.scrollTo({top:0,behavior:'auto'}));
+ const host=ensureDetail();host.hidden=true;host.removeAttribute('aria-busy');delete host.dataset.title;setDetailMode(false);
+ if(restoreTab)$('discoveriesTabs')?.querySelector('[data-discovery-tab="phenomena"]')?.click();
+ requestAnimationFrame(()=>card.scrollTo({top:0,behavior:'auto'}));
 }
 function loadingMarkup(glyph){return`<div class="phenomenon-wiki-loading"><div class="phenomenon-wiki-figure"><div class="phenomenon-wiki-image-placeholder">${esc(glyph||'✦')}</div></div><div class="phenomenon-wiki-copy"><p>Carregando o primeiro parágrafo do artigo…</p></div></div>`}
 async function showDetail(button){
@@ -208,7 +206,7 @@ atlas.addEventListener('click',e=>{
 },true);
 modal.addEventListener('click',e=>{
  const tab=e.target instanceof Element?e.target.closest('[data-discovery-tab]'):null;
- if(tab&&detail&&!detail.hidden)leaveDetail();
+ if(tab&&detail&&!detail.hidden)leaveDetail(false);
 },true);
 $('closeMenu')?.addEventListener('click',()=>{if(detail&&!detail.hidden){requestSerial++;detail.hidden=true;detail.removeAttribute('aria-busy');delete detail.dataset.title;setDetailMode(false)}});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail&&!detail.hidden){e.preventDefault();e.stopImmediatePropagation();leaveDetail()}},true);
