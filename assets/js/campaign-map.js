@@ -397,7 +397,7 @@ shell?.addEventListener('scroll',()=>{detail.classList.remove('show')},{passive:
 
 const menuOpen=$('menuOpenBtn');if(menuOpen){menuOpen.textContent='Mapa';menuOpen.addEventListener('click',e=>{if(legacyMenuPass)return;e.preventDefault();e.stopImmediatePropagation();showMap({required:false,focusCurrent:true})},true)}
 
-const phaseEnd=$('phaseEndBtn');if(phaseEnd)phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id);clearTimeout(returnTimer);returnTimer=setTimeout(()=>showMap({required:true,focusCurrent:true}),1500)},true);
+const phaseEnd=$('phaseEndBtn');if(phaseEnd)phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id);clearTimeout(returnTimer);showMap({required:true,focusCurrent:true,instant:true})},true);
 
 const phaseTitle=$('phaseTitle');if(phaseTitle)new MutationObserver(()=>{
  if(!bigBangPending)return;if((phaseTitle.textContent||'').trim()==='Big Bang')return;bigBangPending=false;C.markCompleted('bigbang');C.setIntroduced(true);C.setActive('primordial_d');setTimeout(()=>showMap({required:true,reveal:true}),120);

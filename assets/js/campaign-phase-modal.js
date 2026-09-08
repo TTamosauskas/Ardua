@@ -74,7 +74,7 @@ map.addEventListener('click',e=>{
 },true);
 
 /* The map owns the screen whenever it is visible. */
-function yieldEngineIntro(){if(map.classList.contains('show'))dismissEngineIntro()}
+function yieldEngineIntro(){if(!map.classList.contains('show'))return;closePreview();dismissEngineIntro()}
 new MutationObserver(yieldEngineIntro).observe(map,{attributes:true,attributeFilter:['class']});
 window.addEventListener('ardua:campaign-progress',()=>{if(previewId)renderPreview(previewId)});
 window.addEventListener('ardua:forge-names',()=>{if(previewId)renderPreview(previewId)});

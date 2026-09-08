@@ -76,6 +76,7 @@ const PHENOMENA=[
 const phaseDiscoveryEntries=new Map();
 for(const entry of PHENOMENA)for(const id of entry.phases||[]){const list=phaseDiscoveryEntries.get(id)||[];list.push(entry);phaseDiscoveryEntries.set(id,list)}
 window.ARDUA_PHASE_DISCOVERIES=Object.freeze(Object.fromEntries([...phaseDiscoveryEntries].map(([id,entries])=>[id,Object.freeze(entries.map(({key,title,group})=>Object.freeze({key,title,group}))) ])));
+window.ARDUA_DISCOVERY_INDEX=Object.freeze(Object.fromEntries(PHENOMENA.map(({key,title,group,glyph})=>[key,Object.freeze({key,title,group,glyph})])));
 
 function saveData(){try{return JSON.parse(localStorage.getItem('stellarForgeV1013')||'{}')||{}}catch(e){return{}}}
 function completedSet(){return new Set(C?.getState?.().completed||[])}
@@ -175,7 +176,7 @@ function renderPhenomena(data,completed){
  const rewards=new Set(data.rewardDiscoveries||[]);let group='',visible=0;
  for(const entry of PHENOMENA){if(!phenomenonOpen(entry,rewards,completed))continue;visible++;
   if(entry.group!==group){group=entry.group;const h=document.createElement('div');h.className='discovery-group';h.textContent=group;host.appendChild(h)}
-  const b=document.createElement('button');b.type='button';b.className='discovery-card unlocked';b.innerHTML=`<span class="discovery-glyph">${entry.glyph}</span><span><strong>${entry.title}</strong><small>${entry.group}</small></span>`;
+  const b=document.createElement('button');b.type='button';b.className='discovery-card unlocked';b.dataset.discoveryKey=entry.key;b.innerHTML=`<span class="discovery-glyph">${entry.glyph}</span><span><strong>${entry.title}</strong><small>${entry.group}</small></span>`;
   b.addEventListener('click',()=>{if(detail)detail.innerHTML=`<strong>${entry.title}</strong><span>${entry.group}</span><p>${entry.text}</p>`});host.appendChild(b);
  }
  if(!visible)emptyState(host,'Fenômenos e processos aparecem aqui depois de serem observados na campanha.');
