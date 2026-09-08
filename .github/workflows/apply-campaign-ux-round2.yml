@@ -17,6 +17,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Align temporary migration with engine formatting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/apply-campaign-ux-temp.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("function coulombMechanicUnlocked(s=phase()){\\n  const intro=phaseIndexById.get('coulomb_intro');return intro!==undefined&&state.phaseIndex>=intro;\\n }","function coulombMechanicUnlocked(s=phase()){\\n const intro=phaseIndexById.get('coulomb_intro');return intro!==undefined&&state.phaseIndex>=intro;\\n}")
+          s=s.replace("function coulombMechanicUnlocked(s=phase()){\\n  return campaignKnowledgeReached('coulomb_intro');\\n }","function coulombMechanicUnlocked(s=phase()){\\n return campaignKnowledgeReached('coulomb_intro');\\n}")
+          p.write_text(s,encoding='utf-8')
+          PY
+
       - name: Apply migration
         run: python scripts/apply-campaign-ux-temp.py
 
