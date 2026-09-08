@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "scripts/apply-stellar-plasma-followup.py"
+      - "scripts/fix-stellar-plasma-followup.py"
       - ".github/workflows/apply-stellar-plasma-followup.yml"
   workflow_dispatch:
 
@@ -16,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
+      - name: Harden migration locator
+        run: python scripts/fix-stellar-plasma-followup.py
       - name: Apply follow-up
         run: python scripts/apply-stellar-plasma-followup.py
       - name: Check JavaScript syntax
