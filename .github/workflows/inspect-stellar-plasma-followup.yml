@@ -1,0 +1,34 @@
+name: Inspect stellar plasma follow-up
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/inspect-stellar-plasma-followup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Inspect anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files=['assets/js/ardua.js','assets/js/campaign-map.js','assets/js/campaign-discoveries.js','assets/js/campaign-discoveries-phenomena.js','assets/js/campaign-phase-preview.js','assets/js/phase-polish.js']
+          terms=['showCoulombTooltip','Descobertas da fase','he_yellow','function fillStage','function triggerSolarWind','solar-wind-active','stellar_convection','ambientContinueBtn','showAmbient','eventTooltip','showEventTooltip']
+          for f in files:
+              p=Path(f)
+              if not p.exists(): continue
+              s=p.read_text(encoding='utf-8')
+              print('\n###',f)
+              for term in terms:
+                  i=s.find(term)
+                  if i>=0:
+                      print('\n--',term,'--')
+                      print(s[max(0,i-1800):min(len(s),i+4200)])
+          PY
