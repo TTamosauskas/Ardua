@@ -15,28 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Inspect exact anchors
+      - name: Inspect exact runtime functions
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          root=Path('.')
-          print('=== Descobertas strings ===')
-          for p in root.rglob('*'):
-            if p.is_file() and p.suffix.lower() in {'.js','.html'}:
-              try:s=p.read_text(encoding='utf-8')
-              except:continue
-              if 'Descobertas' in s or 'descobertas' in s:
-                for m in re.finditer(r'.{0,250}Descobertas.{0,700}',s,re.I|re.S):
-                  txt=m.group(0)
-                  if 'fase' in txt.lower() or 'coulomb' in txt.lower(): print('\n###',p,'\n',txt[:1200])
-          def around(path,needle,before=1800,after=5000):
-            s=Path(path).read_text(encoding='utf-8');i=s.find(needle);print(f'\n=== {path} :: {needle} @ {i} ===');print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
-          for needle in ['function showAmbientEvent','const AMBIENT','ambientContinueBtn','function triggerSolarWind','function queueSolarWindCheck','function fillStage','function fillStellarAtomicStage','function startPhase','function updateObjective']:
-            around('assets/js/ardua.js',needle)
-          for needle in ['function inferAncestorBranches','if(!branchSelection.stellar)','function openMap','function renderMap']:
-            around('assets/js/campaign-map.js',needle,1000,6500)
-          for f in ['assets/js/campaign-phase-preview.js','assets/js/phase-polish.js','assets/js/campaign-fork-links.js']:
-            if Path(f).exists():
-              s=Path(f).read_text(encoding='utf-8');print('\n=== FULL',f,'===\n',s[:18000])
+          s=Path('assets/js/ardua.js').read_text(encoding='utf-8')
+          def show(needle,before=900,after=4200):
+            i=s.find(needle);print(f'\n=== {needle} @ {i} ===');print(s[max(0,i-before):min(len(s),i+after)] if i>=0 else 'NOT FOUND')
+          for needle in ["{id:'he_yellow'",'function showCoulombTooltip','showAmbientEvent','function showEventTooltip','eventTooltipBtn','function ionizeStellarAtom','function recombineStellarIon','async function advanceStellarAtomicPhase','function showStellarPopup']:
+            show(needle)
           PY
