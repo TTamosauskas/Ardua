@@ -50,4 +50,13 @@ if(captureStart<0||bridge<0||gate<0||bridge>gate)fail('p+n deve anteceder o hand
 const primordial=s.indexOf("id:'pn_d'"),particles=s.indexOf("particles:['p','n']",primordial),deuterium=s.indexOf("out:'D'",primordial);
 if(primordial<0||particles<primordial||deuterium<primordial)fail('Receita p+n→D ausente');
 
+const coulombRecipeContract="if(s.id==='coulomb_intro')return[FUSIONS.D,FUSIONS.He3,FUSIONS.He];";
+if(!s.includes(coulombRecipeContract))fail('Coulomb deve herdar H+H→²H, ²H+H→³He e ³He+³He→⁴He');
+if(!s.includes("const inheritedStarterGroups=[['He3','He3'],['D','H'],['H','H']];"))fail('Coulomb precisa expor oportunidades conectadas da cadeia pp acumulada');
+const isotopeDisplayStart=s.indexOf('function pieceDisplaySymbol');
+const isotopeDisplayEnd=s.indexOf('function pieceSymbolScale',isotopeDisplayStart);
+const isotopeDisplay=s.slice(isotopeDisplayStart,isotopeDisplayEnd);
+if(isotopeDisplayStart<0||isotopeDisplayEnd<0||isotopeDisplay.includes("return q>0?`${p.sym}")||!isotopeDisplay.includes(':base}'))fail('Isótopos devem usar o símbolo científico também em estado atômico');
+if(!s.includes("if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';"))fail('Rótulo completo da reação pp-I deve explicitar ⁴He');
+
 console.log('Cumulative recipe contract validation passed.');

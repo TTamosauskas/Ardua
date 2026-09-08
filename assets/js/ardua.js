@@ -1765,7 +1765,7 @@ function phaseFusionRecipes(s=phase()){
   if(s.id==='he_red')return[RED_UNSTABLE_FUSION,RED_STABLE_FUSION];
   if(s.id==='he_orange')return[FUSIONS.D,FUSIONS.He3];
   if(s.id==='he_yellow')return[FUSIONS.D,FUSIONS.He3,FUSIONS.He];
-  if(s.id==='coulomb_intro')return[FUSIONS.He];
+  if(s.id==='coulomb_intro')return[FUSIONS.D,FUSIONS.He3,FUSIONS.He];
   if(s.id==='stellar_li')return[FUSIONS.Be7];
   if(s.id==='carbon_burn')return[CARBON_CARBON_FUSION];
   if(s.id==='carbon_oxygen')return[CARBON_OXYGEN_FUSION];
@@ -2015,12 +2015,12 @@ function fillStage(){
   if(s.id==='coulomb_intro'){
   const transfer=state.stellarAtomicTransfer?.to==='coulomb_intro'?state.stellarAtomicTransfer:null;state.stellarAtomicTransfer=null;if(transfer)restoreStellarAtomicTransfer(transfer);
   state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined){p.matterState='nucleus';p.boundElectrons=0}});
-  const outerRing=phaseRadius(s),outer=(byRing[outerRing]||[]).slice(),outerSet=new Set(outer),pairs=[];
-  for(const a of outer)for(const b of (neigh[a]||[]))if(outerSet.has(b)&&a<b)pairs.push([a,b]);
-  pairs.sort((A,B)=>A.reduce((n,c)=>n+(state.board[c]?1:0),0)-B.reduce((n,c)=>n+(state.board[c]?1:0),0));
-  const hePair=pairs[0]||outer.slice(0,2);
-  for(const cell of hePair){if(cell===undefined)continue;const id=state.board[cell];if(id){state.pieces.delete(id);state.board[cell]=null}createPiece('He3',cell,false,{matterState:'nucleus',boundElectrons:0})}
-  let i=0;while(stellarGridPopulation()<STELLAR_CONTINUITY_POPULATION){const cell=activeCells().filter(c=>state.board[c]===null).sort((a,b)=>(coords[b]?.ring||0)-(coords[a]?.ring||0))[0];if(cell===undefined)break;const sym=STELLAR_CONTINUITY_POOL[i++%STELLAR_CONTINUITY_POOL.length];createPiece(sym,cell,false,{matterState:'nucleus',boundElectrons:0})}
+  // Coulomb segue o contrato cumulativo das fases de fusão: uma oportunidade
+  // da reação-alvo e exemplos conectados das duas etapas pp já aprendidas.
+  const inheritedStarterGroups=[['He3','He3'],['D','H'],['H','H']];
+  placeStarterGroups(inheritedStarterGroups);
+  state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined){p.matterState='nucleus';p.boundElectrons=0}});
+  let i=0,targetPopulation=Math.max(STELLAR_CONTINUITY_POPULATION,Math.min(Number(s.fill||0),activeCells().length));while(stellarGridPopulation()<targetPopulation){const cell=activeCells().filter(c=>state.board[c]===null).sort((a,b)=>(coords[b]?.ring||0)-(coords[a]?.ring||0))[0];if(cell===undefined)break;const sym=STELLAR_CONTINUITY_POOL[i++%STELLAR_CONTINUITY_POOL.length];createPiece(sym,cell,false,{matterState:'nucleus',boundElectrons:0})}
   renderPieces();renderPrimordialParticles();requestAnimationFrame(()=>{state.pieces.forEach(p=>{if(!p.free&&p.cell!==null&&p.cell!==undefined){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}});renderPieces()});return;
  }
    if(s.mode==='convection'){
@@ -2555,7 +2555,7 @@ function handleConvectionTap(p){
 function fusionCandidateCells(){const set=new Set();state.selected.forEach(i=>neigh[i].forEach(n=>set.add(n)));state.selected.forEach(i=>set.delete(i));const cur=selectedSyms();return[...set].filter(i=>{const id=state.board[i];if(!id)return false;return possibleRecipes([...cur,state.pieces.get(id).sym]).length>0})}
 function candidateCells(){const s=phase();if(state.convectionArmed&&state.selected.length===1)return convectionDestinationCells();if(!state.selected.length)return[];if(s.id==='he_red'){const firstId=state.board[state.selected[0]],first=firstId?state.pieces.get(firstId):null;if(!first)return[];if(first.sym==='H')return[];if(first.sym!=='HeU')return[];return activeCells().filter(i=>{const id=state.board[i];return id&&state.pieces.get(id)?.sym==='HeU'})}if(s.mode==='reactionExplore')return[...new Set([...atlasCandidateCells(s),...fusionCandidateCells()])];return fusionCandidateCells()}
 function superNum(n){const map={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(x=>map[x]||x).join('')}
-function pieceDisplaySymbol(p){if(p?.atlasLabel)return p.atlasLabel;const e=E[p.sym],base=e?.symbol||p.sym;if(p?.neutronBetaPending)return `${base}*`;if(p?.neutronShellOpen)return `${base}◌`;if(p.matterState==='atom'){const q=pieceCharge(p);return q>0?`${p.sym}${q===1?'⁺':superNum(q)+'⁺'}`:p.sym}if(['D','T','He3','Be7'].includes(p.sym))return base;if(p.massNumber&&(p.rpIsotope||['H','He','Li'].includes(p.sym)))return `${superNum(p.massNumber)}${p.sym}`;return base}
+function pieceDisplaySymbol(p){if(p?.atlasLabel)return p.atlasLabel;const e=E[p.sym],base=e?.symbol||p.sym;if(p?.neutronBetaPending)return `${base}*`;if(p?.neutronShellOpen)return `${base}◌`;if(p.matterState==='atom'){const q=pieceCharge(p);return q>0?`${base}${q===1?'⁺':superNum(q)+'⁺'}`:base}if(['D','T','He3','Be7'].includes(p.sym))return base;if(p.massNumber&&(p.rpIsotope||['H','He','Li'].includes(p.sym)))return `${superNum(p.massNumber)}${p.sym}`;return base}
 function pieceSymbolScale(p,shownSym){
  const len=[...String(shownSym||'').replace(/\s+/g,'')].length;
  if(p?.sym==='Plus')return .34;
@@ -2818,8 +2818,8 @@ async function fireCosmicRay(rayId,targetId){
  if(state.board[cell]===targetId)state.board[cell]=null;state.pieces.delete(targetId);renderPieces();const product=createPiece(out,cell,false);product.x=x;product.y=y;product.newborn=true;focusPieceInfo(product);state.created[out]=(state.created[out]||0)+1;state.discovered.add(out);if(s.mode==='spallation'){if(out===s.new)recordFlow(1)}else recordFlow(out===s.new?3:1);if(motif)await objectiveInteractionRevealPiece(motif,product,{x,y});else renderPieces();spallFragments(x,y);burst(x,y);vibrate([12,18,14]);setTimeout(()=>{const q=state.pieces.get(product.id);if(q){q.newborn=false;renderPieces()}},360);if(!triggerPhaseMilestone()){const tag=s.mode==='neutrino'?'ν-PROCESSO':s.mode==='gamma'?'γ-PROCESSO':'ESPALAÇÃO';announce(tag,`${E[out].name.toUpperCase()} FORMADO`,`${state.created[out]||0}/${s.target}`)}await afterNuclearAction();state.locked=false;render();checkComplete();const chainRoot=startChainEvent('energetic',product.x,product.y);scheduleAutoFusionCascade(product.id,chainRoot,1,'energetic');if(!state.phaseDone)setTimeout(spawnCosmicRay,120)
 }
 function drawLines(){if(isPrimordial()){dom.lines.innerHTML='';return}if(state.selected.length<2){dom.lines.innerHTML='';return}let svg=`<svg viewBox="0 0 ${starSize()} ${starSize()}">`;for(let i=1;i<state.selected.length;i++){const a=pos(coords[state.selected[i-1]]),b=pos(coords[state.selected[i]]);svg+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="rgba(255,255,255,.88)" stroke-width="4" stroke-linecap="round"/>`}dom.lines.innerHTML=svg+'</svg>'}
-function fusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He + γ';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H + e⁺ + νₑ';if(r===FUSIONS.He3)return'²H + H → ³He + γ';if(r===FUSIONS.He)return'³He + ³He → He + 2 prótons';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');return r.emissions?.includes('gamma')?base+' + γ':base}
-function topFusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H';if(r===FUSIONS.He3)return'²H + H → ³He';if(r===FUSIONS.He)return'³He + ³He → He';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');if(r.emissions?.includes('gamma'))base+=' + Fóton gama';return base}
+function fusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He + γ';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H + e⁺ + νₑ';if(r===FUSIONS.He3)return'²H + H → ³He + γ';if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');return r.emissions?.includes('gamma')?base+' + γ':base}
+function topFusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H';if(r===FUSIONS.He3)return'²H + H → ³He';if(r===FUSIONS.He)return'³He + ³He → ⁴He';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');if(r.emissions?.includes('gamma'))base+=' + Fóton gama';return base}
 function infoSymbolFor(sym){
  const special={D:'²H',T:'³H',He3:'³He',HeU:'He*',Be7:'⁷Be',Be8:'⁸Be',FeU:'Fe*',Plus:'p'};
  return special[sym]||E[sym]?.symbol||sym;
