@@ -11,6 +11,12 @@ if(!document.querySelector('link[data-ardua-phenomena-style]')){
 
 const WIKI_API='https://pt.wikipedia.org/w/api.php';
 const PHENOMENON_SOURCES_URL=new URL('assets/data/phenomenon-sources.json',document.baseURI).href;
+const PHENOMENON_LABEL_OVERRIDES=Object.freeze({
+ 'Jatos Coronais':'Ejeção de Massa Coronal'
+});
+const PHENOMENON_INTRO_HTML_OVERRIDES=Object.freeze({
+ 'Ejeção de Massa Coronal':'<p><strong>Ejeções de massa coronal</strong> (<strong>EMC</strong>) são grandes erupções de gás ionizado a alta temperatura, provenientes da coroa solar. O gás expelido constitui parte do vento solar e, quando atinge o campo magnético terrestre, pode causar tempestades geomagnéticas, prejudicando os meios de comunicações e estações elétricas.</p>'
+});
 let phenomenonSourcesPromise=null;
 function phenomenonSources(){
  if(phenomenonSourcesPromise)return phenomenonSourcesPromise;
@@ -49,6 +55,7 @@ const WIKI_ALIASES=Object.freeze({
  'Tunelamento quântico':'Efeito túnel',
  'Convecção Estelar':'Convecção',
  'Jatos Coronais':'Jato astrofísico',
+ 'Ejeção de Massa Coronal':'Ejeção de massa coronal',
  'Reconexão Magnética':'Reconexão magnética',
  'Erupções Solares':'Erupção solar',
  'Pressão de degenerescência eletrônica':'Matéria degenerada',
@@ -159,7 +166,11 @@ async function wikiData(title,glyph){
 function squareify(){
  atlas.classList.add('phenomena-square-grid');
  atlas.querySelectorAll('.discovery-group').forEach(x=>x.remove());
- atlas.querySelectorAll('.discovery-card').forEach(x=>x.classList.add('phenomenon-square'));
+ atlas.querySelectorAll('.discovery-card').forEach(x=>{
+  x.classList.add('phenomenon-square');
+  const strong=x.querySelector('strong'),current=strong?.textContent?.trim()||'',replacement=PHENOMENON_LABEL_OVERRIDES[current];
+  if(strong&&replacement)strong.textContent=replacement;
+ });
 }
 let squareQueued=false;
 function scheduleSquareify(){
@@ -202,7 +213,8 @@ async function showDetail(button){
  host.removeAttribute('aria-busy');
  const image=wiki.image?`<img class="phenomenon-wiki-image" src="${esc(wiki.image)}" alt="${esc(title)}" loading="eager">`:`<div class="phenomenon-wiki-image-placeholder">${esc(glyph)}</div>`;
  const intro=wiki.intro||`Consulte o artigo ${wiki.title||title} na Wikipédia para esta descoberta.`;
- body.innerHTML=`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy"><p>${esc(intro)}</p></div>`;
+ const copy=PHENOMENON_INTRO_HTML_OVERRIDES[title]||`<p>${esc(intro)}</p>`;
+ body.innerHTML=`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy">${copy}</div>`;
 }
 
 atlas.addEventListener('click',e=>{
