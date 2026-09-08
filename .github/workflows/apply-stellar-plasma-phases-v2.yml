@@ -42,6 +42,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-mode.js assets/js/campaign-phase-names.js assets/js/campaign-discoveries.js assets/js/campaign-discoveries-phenomena.js assets/data/phenomenon-sources.json scripts/validate-phenomenon-sources.mjs scripts/validate-phenomena-discoveries.mjs scripts/validate-cumulative-recipes.js scripts/validate-stellar-plasma.js .github/workflows/pages.yml
+          git add assets/js/ardua.js assets/js/campaign-graph.js assets/js/campaign-mode.js assets/js/campaign-phase-names.js assets/js/campaign-discoveries.js assets/js/campaign-discoveries-phenomena.js assets/data/phenomenon-sources.json scripts/validate-phenomenon-sources.mjs scripts/validate-phenomena-discoveries.mjs scripts/validate-cumulative-recipes.js scripts/validate-stellar-plasma.js
           git diff --cached --quiet || git commit -m "feat: add solar wind ionization and recombination phases"
           git push
