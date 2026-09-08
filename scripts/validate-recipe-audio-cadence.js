@@ -1,5 +1,6 @@
 const fs=require('fs');
 const recipe=fs.readFileSync('assets/js/recipe-audio-sync.js','utf8');
+const polish=fs.readFileSync('assets/js/audio-polish.js','utf8');
 
 const required=[
   'const cadence=new Map([[105,210],[75,150],[28,56],[32,64],[285,570],[115,230],[70,140],[42,84]])',
@@ -12,4 +13,18 @@ for(const token of required){
 for(const legacy of ['[285,855]','[115,345]','[70,210],[42,126]',"note3ToChord:'3x'"]){
   if(recipe.includes(legacy))throw new Error(`Regressão: intervalo 3ª nota → acorde voltou a ser mais longo (${legacy})`);
 }
-console.log('Target recipe audio cadence OK: note 2→3 equals note 3→chord (2x).');
+const routingRequired=[
+  'function routeCue(kind,freq)',
+  'if(!api)return false',
+  "if(kind&&routed)booster.gain.value=0",
+  "else booster.gain.value=GLOBAL_SFX_LIFT",
+  "if(kind==='note3-main')",
+  "if(kind==='chord-main')"
+];
+for(const token of routingRequired){
+  if(!polish.includes(token))throw new Error(`Contrato de fallback de áudio ausente: ${token}`);
+}
+if(polish.includes("if(kind){booster.gain.value=0;routeCue(kind,freq)}")){
+  throw new Error('Regressão: voz nativa não pode ser silenciada antes da confirmação do sincronizador');
+}
+console.log('Target recipe audio OK: 2x/2x cadence and native fallback when sync cannot route.');
