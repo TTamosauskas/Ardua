@@ -109,6 +109,36 @@
   font-size:11px;
   line-height:1.65;
 }
+.phenomenon-source-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.phenomenon-source-btn{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 12px;
+  border:1px solid rgba(112,205,244,.24);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(72,169,215,.12),rgba(37,91,132,.07));
+  color:#e4f5ff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.055em;
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.phenomenon-source-btn:hover,
+.phenomenon-source-btn:focus-visible{
+  border-color:rgba(112,205,244,.46);
+  background:linear-gradient(180deg,rgba(72,169,215,.20),rgba(37,91,132,.11));
+  transform:translateY(-1px);
+  outline:0;
+}
 @keyframes phenomenonWikiPulse{from{opacity:.48}to{opacity:.88}}
 
 @media(max-width:700px){
