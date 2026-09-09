@@ -2,6 +2,7 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
+const G=window.ARDUA_CAMPAIGN_GRAPH;
 const modal=$('menuModal'),atlas=$('discoveryAtlas'),card=modal?.querySelector('.card'),heading=card?.querySelector(':scope > h2');
 if(!modal||!atlas||!card)return;
 
@@ -17,6 +18,48 @@ const PHENOMENON_LABEL_OVERRIDES=Object.freeze({
 const PHENOMENON_INTRO_HTML_OVERRIDES=Object.freeze({
  'Ejeção de Massa Coronal':'<p><strong>Ejeções de massa coronal</strong> (<strong>EMC</strong>) são grandes erupções de gás ionizado a alta temperatura, provenientes da coroa solar. O gás expelido constitui parte do vento solar e, quando atinge o campo magnético terrestre, pode causar tempestades geomagnéticas, prejudicando os meios de comunicações e estações elétricas.</p>'
 });
+
+/* Fenômenos follows the chronology of the campaign rather than the old category order.
+   The opening is pinned to the requested early-Universe narrative; everything after it
+   is ranked by the first campaign phase that owns the discovery. */
+const PHENOMENON_HISTORY_PREFIX=Object.freeze([
+ 'phenomenon:bigBang',
+ 'particle:quark',
+ 'phenomenon:strongNuclearForce',
+ 'particle:proton',
+ 'particle:neutron',
+ 'phenomenon:primordialNucleosynthesis'
+]);
+const UNPHASED_HISTORY_PHASE=Object.freeze({
+ 'phenomenon:freezeout':'u',
+ 'phenomenon:hawkingRadiation':'black_hole'
+});
+function historyPhases(){
+ const base=G?.baseOrder||G?.runtimeOrder||[];
+ return [...new Set(['bigbang','quarks',...base.filter(id=>id!=='bigbang'&&id!=='quarks')])];
+}
+function historyRank(key){
+ const prefix=PHENOMENON_HISTORY_PREFIX.indexOf(key);if(prefix>=0)return prefix;
+ const phases=historyPhases(),phaseDiscoveries=window.ARDUA_PHASE_DISCOVERIES||{};
+ for(let i=0;i<phases.length;i++){
+  const entries=phaseDiscoveries[phases[i]]||[],inside=entries.findIndex(entry=>entry?.key===key);
+  if(inside>=0)return PHENOMENON_HISTORY_PREFIX.length+(i*100)+inside;
+ }
+ const fallback=UNPHASED_HISTORY_PHASE[key],fallbackIndex=fallback?phases.indexOf(fallback):-1;
+ if(fallbackIndex>=0)return PHENOMENON_HISTORY_PREFIX.length+(fallbackIndex*100)+90;
+ return Number.POSITIVE_INFINITY;
+}
+function sortCardsByHistory(){
+ const cards=[...atlas.querySelectorAll(':scope > .discovery-card')];if(cards.length<2)return;
+ const original=new Map(cards.map((el,index)=>[el,index]));
+ const sorted=[...cards].sort((a,b)=>{
+  const ar=historyRank(a.dataset.discoveryKey||''),br=historyRank(b.dataset.discoveryKey||'');
+  return ar===br?(original.get(a)-original.get(b)):ar-br;
+ });
+ if(sorted.every((el,index)=>el===cards[index]))return;
+ sorted.forEach(el=>atlas.appendChild(el));
+}
+
 let phenomenonSourcesPromise=null;
 function phenomenonSources(){
  if(phenomenonSourcesPromise)return phenomenonSourcesPromise;
@@ -171,6 +214,7 @@ function squareify(){
   const strong=x.querySelector('strong'),current=strong?.textContent?.trim()||'',replacement=PHENOMENON_LABEL_OVERRIDES[current];
   if(strong&&replacement)strong.textContent=replacement;
  });
+ sortCardsByHistory();
 }
 let squareQueued=false;
 function scheduleSquareify(){
