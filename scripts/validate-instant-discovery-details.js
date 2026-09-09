@@ -11,6 +11,7 @@ assert(forces.includes('text:f.text'),'Forças fundamentais sem texto no índice
 assert(phenomena.includes('phenomenonSourcesResolved')&&phenomena.includes('phenomenonDetailMarkup(title,glyph,text,initialCfg)'),'Fenômenos não abrem pelo cache local');
 assert(phenomena.includes("phenomenonSources();\nconst cache")&&phenomena.includes('prewarmVisiblePhenomena'),'Fenômenos sem pré-aquecimento local');
 assert(!phenomena.includes('function loadingMarkup(glyph)'),'Placeholder bloqueante de Fenômenos voltou');
+for(const title of ['Quarks','Força Nuclear Forte','Força Eletromagnética','Força Gravitacional','Força Nuclear Fraca'])assert(phenomena.includes(`'${title}':Object.freeze({`),`${title} sem imagem local rápida`);
 const es=elements.slice(elements.indexOf('function showElementDetail'),elements.indexOf('function prewarmVisibleElements'));
 assert(!/^async function showElementDetail/m.test(es),'Detalhe de elemento voltou a bloquear em async');
 assert(!es.includes('await ')&&!es.includes('wikiData('),'Abertura de elemento ainda espera Wikipédia/metadados');

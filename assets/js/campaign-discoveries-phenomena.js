@@ -15,6 +15,13 @@ const PHENOMENON_SOURCES_URL=new URL('assets/data/phenomenon-sources.json',docum
 const PHENOMENON_LABEL_OVERRIDES=Object.freeze({
  'Jatos Coronais':'Ejeção de Massa Coronal'
 });
+const PHENOMENON_FAST_SOURCE_OVERRIDES=Object.freeze({
+ 'Quarks':Object.freeze({wikiTitle:'Quark',wikiUrl:'https://pt.wikipedia.org/wiki/Quark',imagePath:'assets/images/phenomena/proton.png'}),
+ 'Força Nuclear Forte':Object.freeze({wikiTitle:'Interação forte',wikiUrl:'https://pt.wikipedia.org/wiki/Intera%C3%A7%C3%A3o_forte',imagePath:'assets/images/phenomena/proton.png'}),
+ 'Força Eletromagnética':Object.freeze({wikiTitle:'Eletromagnetismo',wikiUrl:'https://pt.wikipedia.org/wiki/Eletromagnetismo',imagePath:'assets/images/phenomena/electron.png'}),
+ 'Força Gravitacional':Object.freeze({wikiTitle:'Gravidade',wikiUrl:'https://pt.wikipedia.org/wiki/Gravidade',imagePath:'assets/images/phenomena/gravitational-collapse.png'}),
+ 'Força Nuclear Fraca':Object.freeze({wikiTitle:'Interação fraca',wikiUrl:'https://pt.wikipedia.org/wiki/Intera%C3%A7%C3%A3o_fraca',imagePath:'assets/images/phenomena/electron-capture.png'})
+});
 const PHENOMENON_INTRO_HTML_OVERRIDES=Object.freeze({
  'Ejeção de Massa Coronal':'<p><strong>Ejeções de massa coronal</strong> (<strong>EMC</strong>) são grandes erupções de gás ionizado a alta temperatura, provenientes da coroa solar. O gás expelido constitui parte do vento solar e, quando atinge o campo magnético terrestre, pode causar tempestades geomagnéticas, prejudicando os meios de comunicações e estações elétricas.</p>',
  'Força Eletromagnética':'<p>A <strong>Força Eletromagnética</strong> atua entre partículas com carga elétrica. Na formação dos primeiros átomos, ela mantém elétrons ligados aos núcleos e torna possível a estrutura atômica e a química.</p>',
@@ -263,6 +270,7 @@ function phenomenonText(button){
  const key=button.dataset.discoveryKey||'';return button.dataset.discoveryText||window.ARDUA_DISCOVERY_INDEX?.[key]?.text||'';
 }
 function phenomenonImage(cfg){return cfg?.imagePath?new URL(cfg.imagePath,document.baseURI).href:''}
+function phenomenonConfig(title){return{...(PHENOMENON_FAST_SOURCE_OVERRIDES[title]||{}),...(phenomenonSourcesResolved?.[title]||{})}}
 function phenomenonUrl(title,cfg,urlOverride=''){return urlOverride||cfg?.wikiUrl||wikiFallbackUrl(cfg?.wikiTitle||WIKI_ALIASES[title]||title)}
 function phenomenonDetailMarkup(title,glyph,text,cfg={},imageOverride='',urlOverride=''){
  const src=imageOverride||phenomenonImage(cfg);if(src)preloadPhenomenonImage(src);
@@ -274,7 +282,7 @@ function phenomenonDetailMarkup(title,glyph,text,cfg={},imageOverride='',urlOver
 function prewarmVisiblePhenomena(){
  const sources=phenomenonSourcesResolved;if(!sources)return;
  for(const button of atlas.querySelectorAll('.discovery-card:not([hidden])')){
-  if(!button.getClientRects().length)continue;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(sources[title]||{});if(src)preloadPhenomenonImage(src);
+  if(!button.getClientRects().length)continue;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonConfig(title));if(src)preloadPhenomenonImage(src);
  }
 }
 function schedulePhenomenonPrewarm(){
@@ -285,10 +293,10 @@ async function showDetail(button){
  const title=button.querySelector('strong')?.textContent?.trim()||'',glyph=button.querySelector('.discovery-glyph')?.textContent?.trim()||'✦';if(!title)return;
  const text=phenomenonText(button),host=ensureDetail(),body=$('phenomenonDiscoveryBody'),serial=++requestSerial;if(!body)return;
  setDetailMode(true);host.hidden=false;host.dataset.title=title;host.removeAttribute('aria-busy');host.querySelector('[data-phenomenon-detail-title]').textContent=title;
- const initialCfg=phenomenonSourcesResolved?.[title]||{};body.innerHTML=phenomenonDetailMarkup(title,glyph,text,initialCfg);card.scrollTo({top:0,behavior:'auto'});
+ const initialCfg=phenomenonConfig(title);body.innerHTML=phenomenonDetailMarkup(title,glyph,text,initialCfg);card.scrollTo({top:0,behavior:'auto'});
  if(initialCfg.imagePath)return;
  const sources=await phenomenonSources();if(serial!==requestSerial||host.hidden||host.dataset.title!==title)return;
- const cfg=sources?.[title]||{};body.innerHTML=phenomenonDetailMarkup(title,glyph,text,cfg);
+ const cfg=phenomenonConfig(title);body.innerHTML=phenomenonDetailMarkup(title,glyph,text,cfg);
  if(cfg.imagePath)return;
  host.setAttribute('aria-busy','true');const wiki=await wikiData(title,glyph);if(serial!==requestSerial||host.hidden||host.dataset.title!==title)return;
  host.removeAttribute('aria-busy');body.innerHTML=phenomenonDetailMarkup(title,glyph,text||wiki.intro,cfg,wiki.image,wiki.url);
@@ -299,8 +307,8 @@ atlas.addEventListener('click',e=>{
  const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button||!atlas.contains(button))return;
  e.preventDefault();e.stopImmediatePropagation();showDetail(button);
 },true);
-atlas.addEventListener('pointerover',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonSourcesResolved?.[title]||{});if(src)preloadPhenomenonImage(src)},{passive:true});
-atlas.addEventListener('pointerdown',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonSourcesResolved?.[title]||{});if(src)preloadPhenomenonImage(src)},{passive:true});
+atlas.addEventListener('pointerover',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonConfig(title));if(src)preloadPhenomenonImage(src)},{passive:true});
+atlas.addEventListener('pointerdown',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonConfig(title));if(src)preloadPhenomenonImage(src)},{passive:true});
 modal.addEventListener('click',e=>{
  const tab=e.target instanceof Element?e.target.closest('[data-discovery-tab]'):null;
  if(tab&&detail&&!detail.hidden)leaveDetail(false);
