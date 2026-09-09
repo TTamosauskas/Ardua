@@ -6,6 +6,12 @@ on:
     paths:
       - "scripts/apply-thermal-ionization.mjs"
       - ".github/workflows/apply-thermal-ionization.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "scripts/apply-thermal-ionization.mjs"
+      - ".github/workflows/apply-thermal-ionization.yml"
+      - "docs/THERMAL_IONIZATION_IMPLEMENTATION.md"
   workflow_dispatch:
 
 permissions:
