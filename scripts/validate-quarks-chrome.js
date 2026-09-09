@@ -16,6 +16,7 @@ expect(chrome.includes("window.addEventListener('ardua:quarks-phase-stop',stopOw
 expect(chrome.includes('new MutationObserver(applyQuarksChrome)'),'late native engine renders must not overwrite Quarks title/objective/recipe');
 expect(css.includes('html.quarks-phase-root,body.quarks-phase-active{background:#9f0814!important'),'Quarks page background must use the primordial-H red');
 expect(css.includes('rgba(255,80,40,.36)')&&css.includes('rgba(255,35,20,.15)'),'Quarks open board must use the same red primordial glow language as deuterium');
+expect(!css.includes('background:linear-gradient(180deg,rgba(30,38,78,.18),rgba(12,10,32,.05))'),'old blue Quarks board theme must not return');
 expect(engine.includes("primordialH:'#9f0814'"),'native deuterium primordial theme reference must remain #9f0814');
 expect(before('assets/js/campaign-quarks.js','assets/js/campaign-quarks-chrome.js'),'Quarks chrome owner must load after the custom phase runtime');
 expect(before('assets/js/campaign-quarks-chrome.js','assets/js/campaign-map.js'),'Quarks chrome owner must be ready before map interaction launches the phase');
