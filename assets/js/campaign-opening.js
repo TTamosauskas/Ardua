@@ -1,11 +1,11 @@
 /* Ardua — Big Bang is the opening ritual for every campaign session. */
 (()=>{
 'use strict';
-const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail'),detail=document.getElementById('mapDetail');
+const C=window.ARDUA_CAMPAIGN,map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail'),detail=document.getElementById('mapDetail');
 if(!C||!map||!trail||!detail)return;
 const root=map.querySelector('.singularity-map'),rootSection=root?.closest('.cosmos-root'),label=rootSection?.querySelector('.singularity-map-label');
 if(!root||!rootSection)return;
-const TRAIL_OPEN_MS=720;
+const MUSIC_AFTER_BURST_MS=90;
 const EXPLOSION_MS=4600;
 const loadState=C.getState();
 const firstCosmicRun=!loadState.introduced;
@@ -52,31 +52,11 @@ function makeBurst(){
  }
  rootSection.appendChild(scene);setTimeout(()=>scene.remove(),EXPLOSION_MS+900);
 }
-function nextPhaseId(){
- const st=C.getState(),done=new Set(st.completed||[]),active=st.activeId;
- if(active&&active!=='bigbang'&&!done.has(active)&&C.isUnlocked(active))return active;
- const next=(G?.runtimeOrder||[]).find(id=>id!=='bigbang'&&!done.has(id)&&C.isUnlocked(id));
- return next||resumeActive||'primordial_d';
-}
-function phaseNode(id){return map.querySelector(`.phase-node[data-phase="${id}"]`)}
-function visiblePhaseNode(id){return [...map.querySelectorAll(`.phase-node[data-phase="${id}"]`)].find(el=>el.getClientRects().length)||phaseNode(id)}
-function openCurrentPhaseDetail(){
- const id=nextPhaseId(),node=phaseNode(id);
- if(!node)return;
- node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
- setTimeout(()=>{
-  const visible=visiblePhaseNode(id);
-  visible?.scrollIntoView({block:'center',behavior:'smooth'});
-  if(detail.classList.contains('show'))return;
-  const title=visible?.querySelector('strong')?.textContent?.trim()||window.ARDUA_PHASE_NAMES?.[id]||id;
-  detail.innerHTML=`<div class="detail-kicker">PRÓXIMA FASE</div><h3>${title}</h3><div class="detail-actions"><button type="button" data-detail-close>Fechar</button><button type="button" class="primary" data-launch="${id}">Explorar</button></div>`;
-  detail.classList.add('show');
- },90);
-}
-function openTrailBeforeBurst(){
- map.classList.add('bigbang-revealing','trail-revealed');
+function openTrailWithBurst(){
+ map.classList.add('bigbang-revealing','trail-revealed','bigbang-expanding');
  trail.setAttribute('aria-hidden','false');
  trail.classList.remove('trail-arrive');void trail.offsetWidth;trail.classList.add('trail-arrive');
+ makeBurst();
  window.dispatchEvent(new Event('resize'));
 }
 function finishBigBang(){
@@ -90,22 +70,18 @@ function finishBigBang(){
  map.classList.remove('awaiting-bigbang','bigbang-expanding','bigbang-revealing');
  map.classList.add('bigbang-complete','trail-revealed');
  trail.setAttribute('aria-hidden','false');
+ detail.classList.remove('show');detail.innerHTML='';
  if(label){label.hidden=false;label.querySelector('strong').textContent='Big Bang'}
  window.dispatchEvent(new Event('resize'));
- setTimeout(openCurrentPhaseDetail,420);
 }
 function beginBigBang(e){
  if(C.editor||started||finished)return;
  started=true;e.preventDefault();e.stopImmediatePropagation();
- window.ARDUA_MUSIC?.play?.();window.ARDUA_MUSIC?.sync?.();
- detail.classList.remove('show');
+ detail.classList.remove('show');detail.innerHTML='';
  root.setAttribute('aria-label','Big Bang em expansão');
- openTrailBeforeBurst();
- setTimeout(()=>{
-  map.classList.add('bigbang-expanding');
-  makeBurst();
- },TRAIL_OPEN_MS);
- setTimeout(finishBigBang,TRAIL_OPEN_MS+EXPLOSION_MS);
+ openTrailWithBurst();
+ setTimeout(()=>{window.ARDUA_MUSIC?.play?.();window.ARDUA_MUSIC?.sync?.()},MUSIC_AFTER_BURST_MS);
+ setTimeout(finishBigBang,EXPLOSION_MS);
 }
 
 root.addEventListener('click',beginBigBang,true);
