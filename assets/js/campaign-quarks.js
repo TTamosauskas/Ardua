@@ -16,7 +16,7 @@ const SEED=Object.freeze([
  {id:'u2',type:'u',x:76,y:65},{id:'d2',type:'d',x:50,y:82},
  {id:'u3',type:'u',x:24,y:65},{id:'d3',type:'d',x:24,y:35}
 ]);
-let active=false,stage=null,anchorId='',candidateIds=[],picked=new Set(),made={proton:0,neutron:0},snapshot=null,finishing=false;
+let active=false,stage=null,anchorId='',candidateIds=[],picked=new Set(),made={proton:0,neutron:0},snapshot=null;
 
 function readSave(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch(_e){return{}}}
 function grantDiscoveries(){
@@ -49,9 +49,9 @@ function resetSelection(){
 }
 function selectAnchor(id){
  resetSelection();const q=quarkById(id),button=liveButton(id);if(!q||!button)return;
- anchorId=id;button.classList.add('selected');
- const complement=q.type==='u'?'d':'u';
- candidateIds=SEED.filter(x=>x.type===complement&&liveButton(x.id)).sort((a,b)=>distance(q,a)-distance(q,b)).slice(0,2).map(x=>x.id);
+ const complement=q.type==='u'?'d':'u',eligible=SEED.filter(x=>x.type===complement&&liveButton(x.id)).sort((a,b)=>distance(q,a)-distance(q,b));
+ if(eligible.length<2){button.classList.add('invalid');setTimeout(()=>button.classList.remove('invalid'),260);return}
+ anchorId=id;button.classList.add('selected');candidateIds=eligible.slice(0,2).map(x=>x.id);
  candidateIds.forEach(candidate=>liveButton(candidate)?.classList.add('candidate'));
 }
 function baryonKind(ids){
@@ -73,7 +73,7 @@ function completeIfReady(){
  stage?.classList.add('complete');
 }
 function fuse(){
- const ids=[anchorId,...candidateIds];const kind=baryonKind(ids);if(!kind)return;
+ const ids=[anchorId,...candidateIds],kind=baryonKind(ids);if(!kind)return;
  const buttons=ids.map(liveButton).filter(Boolean);buttons.forEach(b=>{b.classList.remove('selected','candidate','picked');b.classList.add('reacting');b.style.left='50%';b.style.top='50%'});
  anchorId='';candidateIds=[];picked.clear();
  setTimeout(()=>{
@@ -105,7 +105,7 @@ function hideMap(){
  const map=$('campaignMap');if(!map)return;map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
 }
 function start(){
- if(active)return;active=true;finishing=false;snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];picked.clear();
+ if(active)return;active=true;snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];picked.clear();
  C.setActive?.('quarks');hideMap();document.body.classList.add('quarks-phase-active');
  setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');updateProgress();
  const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.textContent='Proxima fase'}
@@ -134,7 +134,7 @@ document.addEventListener('click',e=>{
 window.addEventListener('load',()=>{
  const preview=$('campaignPhasePreview');if(preview){new MutationObserver(polishPreview).observe(preview,{attributes:true,subtree:true,childList:true});polishPreview()}
  const end=$('phaseEndBtn');if(end)end.addEventListener('click',e=>{
-  if(!active||C.getState?.().activeId!=='quarks')return;finishing=true;e.preventDefault();e.stopImmediatePropagation();cleanup();
+  if(!active||C.getState?.().activeId!=='quarks')return;e.preventDefault();e.stopImmediatePropagation();cleanup();
  },true);
  const map=$('campaignMap');if(map)new MutationObserver(()=>{if(active&&map.classList.contains('show'))cleanup()}).observe(map,{attributes:true,attributeFilter:['class']});
 },{once:true});
