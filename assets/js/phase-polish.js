@@ -40,6 +40,24 @@ if(pieces){
  syncBetaWaitingVisuals();
 }
 
+/* The generic completion milestone duplicates the phase-end feedback and blocks the
+   campaign rhythm. Suppress every occurrence before the browser paints it, while
+   leaving scientific discoveries and other milestone banners untouched. */
+const ambient=$('ambientBanner'),ambientKicker=$('ambientKicker'),ambientTitle=$('ambientTitle'),ambientContinue=$('ambientContinueBtn');
+function suppressGenericPhaseComplete(){
+ if(!ambient||!ambientTitle)return;
+ const title=(ambientTitle.textContent||'').trim().toUpperCase(),kicker=(ambientKicker?.textContent||'').trim().toUpperCase();
+ if(title!=='PROCESSO COMPLETO'||kicker!=='MARCO')return;
+ if(ambient.classList.contains('show'))ambient.classList.remove('show');
+ if(ambient.classList.contains('awaiting-continue'))ambient.classList.remove('awaiting-continue');
+ if(ambient.dataset.priority!=='0')ambient.dataset.priority='0';
+ if(ambientContinue&&!ambientContinue.hidden)ambientContinue.hidden=true;
+}
+if(ambient){
+ new MutationObserver(suppressGenericPhaseComplete).observe(ambient,{attributes:true,attributeFilter:['class'],childList:true,subtree:true,characterData:true});
+ suppressGenericPhaseComplete();
+}
+
 /* Discoveries uses a persistent top-right close control and keeps the legacy close action as its behavior bridge. */
 const modal=$('menuModal'),card=modal?.querySelector('.card'),legacyClose=$('closeMenu');
 if(modal&&card&&legacyClose){
