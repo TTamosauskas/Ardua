@@ -68,7 +68,8 @@ const atomicTapStart=s.indexOf('function handleStellarAtomicTap');
 const atomicTapEnd=s.indexOf('\nfunction ',atomicTapStart+10);
 const atomicTap=s.slice(atomicTapStart,atomicTapEnd);
 if(atomicTapStart<0||atomicTapEnd<0)fail('Handler de quimica atomica perdeu a ancora');
-const passiveYield="if(!stellarAtomicMode(s)&&!electron&&cumulativeFusionTapAvailable(piece,s))return false;";
+const passiveYield="if(!stellarAtomicMode(s)&&!electron&&(otherMechanicArmed||cumulativeFusionTapAvailable(piece,s)))return false;";
+if(!atomicTap.includes('const otherMechanicArmed=state.selectedNeutron!==null||state.selectedCosmic!==null||state.primordialSelected!==null||state.blackHoleSelected||state.convectionArmed;'))fail('Mecanicas explicitamente armadas precisam vencer quimica atomica passiva');
 if(!atomicTap.includes(passiveYield))fail('Quimica atomica passiva pode roubar um toque de fusao cumulativa');
 
 // O caso que revelou a regressao: C + He -> O foi aprendido em Forjar Oxigenio e deve

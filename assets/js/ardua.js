@@ -2705,7 +2705,8 @@ function handleStellarAtomicTap(piece,s=phase()){
  // Quimica atomica herdada e passiva nunca pode roubar um toque que a camada cumulativa
  // ja prometeu como fusao valida. Fases atomicas dedicadas ou um eletron explicitamente
  // selecionado continuam tendo prioridade sobre a fusao.
- if(!stellarAtomicMode(s)&&!electron&&cumulativeFusionTapAvailable(piece,s))return false;
+ const otherMechanicArmed=state.selectedNeutron!==null||state.selectedCosmic!==null||state.primordialSelected!==null||state.blackHoleSelected||state.convectionArmed;
+ if(!stellarAtomicMode(s)&&!electron&&(otherMechanicArmed||cumulativeFusionTapAvailable(piece,s)))return false;
  if(stellarIonizationEligible(piece,s)){if(electron){ionizeStellarAtom(piece,electron);return true}state.selected=[piece.cell];state.primordialSelected=null;tone(350,.04,'sine',.022);render();return true}
  if(stellarRecombinationEligible(piece,s)){if(electron){recombineStellarIon(piece,electron);return true}state.selected=[piece.cell];state.primordialSelected=null;tone(390,.04,'sine',.022);render();return true}
  return false
