@@ -118,6 +118,10 @@ function selectAnchor(id){
  anchorId=id;button.classList.add('selected');candidateIds=eligible.slice(0,2).map(x=>x.id);candidateIds.forEach(candidate=>liveButton(candidate)?.classList.add('candidate'));
  playFrequency(rootForKind(baryonKind([id,...candidateIds])||kindForAnchor(q.type)));
 }
+function spawnRecipeFocus(){
+ if(!stage)return null;const focus=document.createElement('div');focus.className='objective-motif-stage quarks-recipe-focus';focus.setAttribute('aria-hidden','true');stage.appendChild(focus);requestAnimationFrame(()=>focus.classList.add('visible'));return focus;
+}
+function retireRecipeFocus(focus){if(!focus)return;focus.classList.add('leaving');setTimeout(()=>focus.remove(),260)}
 function spawnUnionBurst(x,y){
  if(!stage)return;const burst=document.createElement('div');burst.className='quarks-union-burst';burst.style.left=`${x}px`;burst.style.top=`${y}px`;stage.appendChild(burst);setTimeout(()=>burst.remove(),720);
 }
@@ -131,13 +135,13 @@ function completeIfReady(){
 }
 async function fuse(){
  if(reactionLocked||!anchorId||candidateIds.length!==2)return;const ids=[anchorId,...candidateIds],kind=baryonKind(ids);if(!kind)return;
- const buttons=ids.map(liveButton).filter(Boolean);if(buttons.length!==3)return;reactionLocked=true;const root=rootForKind(kind),w=stage?.clientWidth||500,h=stage?.clientHeight||500,cx=w/2,cy=h/2,spread=Math.min(58,w*.12);
+ const buttons=ids.map(liveButton).filter(Boolean);if(buttons.length!==3)return;reactionLocked=true;const root=rootForKind(kind),w=stage?.clientWidth||500,h=stage?.clientHeight||500,cx=w/2,cy=h/2,focusXs=[w*.24,w*.5,w*.76],focus=spawnRecipeFocus();
  anchorId='';candidateIds=[];buttons.forEach(b=>{b.classList.remove('selected','candidate');b.classList.add('quark-reaction-source','aligning')});
  playFrequency(root*1.25);
- buttons.forEach((b,i)=>{const m=motion.get(b.dataset.quarkId);if(m){m.x=cx+(i-1)*spread;m.y=cy}b.style.left=`${cx+(i-1)*spread}px`;b.style.top=`${cy}px`});
+ buttons.forEach((b,i)=>{const x=focusXs[i],m=motion.get(b.dataset.quarkId);if(m){m.x=x;m.y=cy}b.style.left=`${x}px`;b.style.top=`${cy}px`});
  await wait(150);if(!active)return;buttons.forEach(b=>b.classList.add('aligned'));playFrequency(root*1.5,true);
  await wait(230);if(!active)return;buttons.forEach(b=>{b.classList.remove('aligning');b.classList.add('converging');const m=motion.get(b.dataset.quarkId);if(m){m.x=cx;m.y=cy}b.style.left=`${cx}px`;b.style.top=`${cy}px`});playChord(root);try{navigator.vibrate?.([5,8,5])}catch(_e){}
- await wait(360);if(!active)return;for(const id of ids){motion.delete(id);liveButton(id)?.remove()}made[kind]++;spawnUnionBurst(cx,cy);spawnBaryon(kind,cx,cy);playFinalAccent(root);updateProgress();completeIfReady();reactionLocked=false;
+ await wait(360);if(!active)return;for(const id of ids){motion.delete(id);liveButton(id)?.remove()}made[kind]++;spawnUnionBurst(cx,cy);spawnBaryon(kind,cx,cy);retireRecipeFocus(focus);playFinalAccent(root);updateProgress();completeIfReady();reactionLocked=false;
 }
 function onQuarkClick(e){
  const button=e.target.closest('.quark-piece');if(!button||!stage?.contains(button)||reactionLocked)return;const id=button.dataset.quarkId;
