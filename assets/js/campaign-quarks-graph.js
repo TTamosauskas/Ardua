@@ -1,7 +1,7 @@
 /* Ardua — inserts the Quarks lesson between Big Bang and primordial deuterium. */
 (()=>{
 'use strict';
-const G=window.ARDUA_CAMPAIGN_GRAPH,A=window.ARDUA_REQUIRED_ATLAS;
+const G=window.ARDUA_CAMPAIGN_GRAPH,A=window.ARDUA_REQUIRED_ATLAS,SAVE_KEY='stellarForgeV1013';
 if(!G||!A)return;
 
 G.prerequisites.quarks={allOf:['bigbang']};
@@ -26,6 +26,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   const i=G.runtimeIndex?.[id];return Number.isInteger(i)&&i>=dIndex;
  });
  const activeIndex=G.runtimeIndex?.[st.activeId],activePastDeuterium=Number.isInteger(activeIndex)&&activeIndex>dIndex;
- if(completedPastDeuterium||activePastDeuterium)C.markCompleted('quarks');
+ if(!(completedPastDeuterium||activePastDeuterium))return;
+ C.markCompleted('quarks');
+ try{
+  const data=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{},historical=['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron'];
+  const known=new Set(data.discoveryKnown||[]),unread=new Set(data.unreadDiscoveries||[]);historical.forEach(key=>{known.add(key);unread.delete(key)});
+  localStorage.setItem(SAVE_KEY,JSON.stringify({...data,discoveryKnown:[...known],unreadDiscoveries:[...unread]}));
+ }catch(_e){}
 },{once:true});
 })();
