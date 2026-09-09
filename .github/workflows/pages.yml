@@ -52,6 +52,7 @@ jobs:
           node --check assets/js/campaign-discovery-notifications.js
           node --check assets/js/campaign-quarks-graph.js
           node --check assets/js/campaign-quarks.js
+          node --check assets/js/campaign-quarks-map.js
           node --check assets/js/campaign-quarks-discoveries.js
 
       - name: Validate element sources
