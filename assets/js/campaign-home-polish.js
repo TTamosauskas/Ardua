@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN,G=window.ARDUA_C
 const map=$('campaignMap'),head=map?.querySelector('.campaign-head'),actions=head?.querySelector('.campaign-head-actions'),dataBtn=$('campaignData'),closeBtn=$('campaignClose'),detail=$('mapDetail');
 if(!C||!G||!map||!head||!actions)return;
 const SOUND_KEY='arduaSoundtrackEnabledV1';
+const STATE_CLASSES=['locked','revealed','available','completed','current'];
 
 /* Keep legacy controls alive as behavior bridges while the surface shows one hamburger. */
 let trigger=$('campaignHomeMenuBtn');
@@ -50,10 +51,17 @@ function phaseState(id){
  const rule=G.prerequisites?.[id],parents=[...(rule?.allOf||[]),...(rule?.anyOf||[]).flat()];
  return parents.some(p=>done.has(p))?'revealed':'locked';
 }
-function setStateClass(el,state){el.classList.remove('locked','revealed','available','completed','current');el.classList.add(state)}
+function setStateClass(el,state){
+ let changed=false;
+ for(const name of STATE_CLASSES){
+  const enabled=name===state;if(el.classList.contains(name)===enabled)continue;
+  el.classList.toggle(name,enabled);changed=true;
+ }
+ return changed;
+}
 function syncPhaseStates(){
  map.querySelectorAll('.phase-node[data-phase]').forEach(el=>setStateClass(el,phaseState(el.dataset.phase)));
- const root=map.querySelector('.singularity-map'),rootState=phaseState('bigbang');if(root)root.dataset.state=rootState;
+ const root=map.querySelector('.singularity-map'),rootState=phaseState('bigbang');if(root&&root.dataset.state!==rootState)root.dataset.state=rootState;
 }
 function idsFromGroup(el){return String(el?.dataset.phaseGroup||'').split(',').map(x=>x.trim()).filter(Boolean)}
 function groupReached(ids){const st=C.getState(),done=new Set(st.completed||[]);return ids.some(id=>done.has(id)||st.activeId===id||C.isUnlocked(id))}
@@ -120,15 +128,18 @@ function syncDetailTime(){
 
 let syncFrame=0;
 function syncAll(){syncFrame=0;syncPhaseStates();syncChapterVisibility();syncReturn();syncDetailTime()}
-function scheduleSync(){if(syncFrame)cancelAnimationFrame(syncFrame);syncFrame=requestAnimationFrame(syncAll)}
+function scheduleSync(){if(syncFrame)return;syncFrame=requestAnimationFrame(syncAll)}
+function structureMutation(records){
+ const selector='.phase-node[data-phase],.epoch-label,.preamble-chapter,.branch-choice,[data-phase-group]';
+ return records.some(record=>[...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1&&(node.matches?.(selector)||node.querySelector?.(selector))));
+}
 window.addEventListener('ardua:campaign-progress',scheduleSync);
-window.addEventListener('resize',scheduleSync);
 map.addEventListener('click',e=>{
  const phase=e.target instanceof Element?e.target.closest('.phase-node[data-phase]'):null;
  if(phase){detailPhaseId=phase.dataset.phase||'';setTimeout(syncDetailTime,0)}
  setTimeout(scheduleSync,0);
 });
-new MutationObserver(scheduleSync).observe(map,{subtree:true,childList:true});
+new MutationObserver(records=>{if(structureMutation(records))scheduleSync()}).observe(map,{subtree:true,childList:true});
 new MutationObserver(scheduleSync).observe(map,{attributes:true,attributeFilter:['class']});
 setTimeout(syncAll,0);setTimeout(syncAll,180);
 })();
