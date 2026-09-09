@@ -2,7 +2,9 @@ const fs=require('fs');
 const read=p=>fs.readFileSync(p,'utf8');
 const graph=read('assets/js/campaign-quarks-graph.js');
 const game=read('assets/js/campaign-quarks.js');
+const mapBridge=read('assets/js/campaign-quarks-map.js');
 const discoveries=read('assets/js/campaign-quarks-discoveries.js');
+const notifications=read('assets/js/campaign-discovery-notifications.js');
 const index=read('index.html');
 
 function expect(condition,message){if(!condition)throw new Error(`Quarks validation: ${message}`)}
@@ -12,6 +14,7 @@ expect(graph.includes("G.prerequisites.quarks={allOf:['bigbang']}"),'Quarks must
 expect(graph.includes("G.prerequisites.primordial_d={allOf:['quarks']}"),'deuterium must require Quarks');
 expect(graph.includes("return['quarks',...out]"),'campaign map must insert Quarks before deuterium');
 expect(graph.includes("i>=dIndex")&&graph.includes("activeIndex>dIndex"),'advanced saves must inherit Quarks without skipping it for saves parked at deuterium');
+expect(graph.includes("INBOX_KEY='arduaDiscoveryInboxV1'")&&graph.includes('unread.delete(key)'),'advanced saves must baseline the four Quarks discoveries as read');
 expect(!graph.includes('runtimeOrder.push')&&!graph.includes('runtimeOrder.splice'),'custom phase must not shift the native engine runtime order');
 
 for(const id of ['u1','u2','u3'])expect(game.includes(`id:'${id}',type:'u'`),`missing initial ${id}`);
@@ -19,7 +22,8 @@ for(const id of ['d1','d2','d3'])expect(game.includes(`id:'${id}',type:'d'`),`mi
 expect(game.includes("if(u===2&&d===1)return'proton'"),'uud must produce a proton');
 expect(game.includes("if(u===1&&d===2)return'neutron'"),'udd must produce a neutron');
 expect(game.includes("made.proton!==1||made.neutron!==1"),'completion must require one proton and one neutron');
-expect(game.includes("slice(0,2)"),'selecting a quark must expose exactly two complementary candidates');
+expect(game.includes("eligible.slice(0,2)"),'selecting a quark must expose exactly two complementary candidates');
+expect(game.includes("if(eligible.length<2)"),'remaining opposite-composition trio must reject the wrong anchor without deadlocking');
 expect(game.includes("Crie Prótons e Nêutrons — ${total}/2"),'objective counter must be 0/2 through 2/2');
 expect(game.includes("3 quarks → 1 próton ou nêutron"),'objective formula must explain the three-quark result');
 expect(game.includes("end.textContent='Proxima fase'"),'final central button must say exactly Proxima fase');
@@ -30,12 +34,20 @@ for(const key of ['particle:quark','phenomenon:strongNuclearForce','particle:pro
  expect(discoveries.includes(key),`atlas mapping missing ${key}`);
 }
 expect(discoveries.includes("title:'Quarks'")&&discoveries.includes("title:'Força Nuclear Forte'"),'new discovery names must remain stable');
+expect(discoveries.includes("entry?.key!==PROTON&&entry?.key!==NEUTRON"),'proton and neutron discovery ownership must move out of older phases');
 expect(discoveries.includes("card.hidden=!baryonsUnlocked"),'proton and neutron cards must stay gated until Quarks');
+expect(discoveries.includes('glúons e pares quark-antiquark'),'Quarks article must preserve the valence-model caveat');
+expect(discoveries.includes('cromodinâmica quântica'),'strong-force article must retain its scientific explanation');
+expect(notifications.includes('JATOS|QUARKS')&&notifications.includes('PLATINA|FORÇA'),'discovery modal grammar must support Quarks and Força Nuclear Forte');
+
+expect(mapBridge.includes('.phase-node[data-phase="quarks"]')&&mapBridge.includes('.phase-node[data-phase="primordial_d"]'),'map bridge must connect Quarks to deuterium');
+expect(mapBridge.includes('quarks-root-link')&&mapBridge.includes('add(singularity,quarks);add(quarks,deuterium)'),'map bridge must render Big Bang → Quarks → Deuterium');
 
 expect(before('assets/js/campaign-required-atlas.js','assets/js/campaign-quarks-graph.js'),'Quarks graph patch must load after the required Atlas');
 expect(before('assets/js/campaign-quarks-graph.js','assets/js/campaign-mode.js'),'Quarks graph patch must load before campaign state');
 expect(before('assets/js/campaign-phase-names.js','assets/js/campaign-quarks.js'),'Quarks runtime must extend phase names after base names load');
 expect(before('assets/js/campaign-quarks.js','assets/js/campaign-map.js'),'Quarks name/runtime must exist before map construction');
+expect(before('assets/js/campaign-map.js','assets/js/campaign-quarks-map.js'),'Quarks map bridge must load after map construction');
 expect(before('assets/js/campaign-discoveries.js','assets/js/campaign-quarks-discoveries.js'),'Quarks discoveries must extend the base catalog');
 expect(before('assets/js/campaign-quarks-discoveries.js','assets/js/campaign-discovery-notifications.js'),'Quarks discovery keys must exist before unread inbox initialization');
 
