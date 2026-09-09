@@ -25,7 +25,7 @@ expect(game.includes("if(u===2&&d===1)return'proton'"),'uud must produce a proto
 expect(game.includes("if(u===1&&d===2)return'neutron'"),'udd must produce a neutron');
 expect(game.includes("made.proton!==1||made.neutron!==1"),'completion must require one proton and one neutron');
 expect(game.includes("eligible.slice(0,2)"),'selecting a quark must expose exactly two complementary candidates');
-expect(game.includes("if(eligible.length<2)"),'remaining opposite-composition trio must reject the wrong anchor without deadlocking');
+expect(game.includes("if(eligible.length<2&&live.length===3)")&&game.includes("baryonKind([id,...remainder.map(x=>x.id)])"),'when only the final valid trio remains, any of its quarks must expose the other two without deadlocking');
 expect(game.includes("if(candidateIds.includes(id)){fuse();return}"),'one click on either highlighted partner must execute the three-quark recipe');
 expect(!game.includes('picked=new Set')&&!game.includes('candidateIds.every'),'Quarks recipe must not require a third click');
 expect(game.includes("Crie Prótons e Nêutrons — ${total}/2"),'objective counter must be 0/2 through 2/2');
