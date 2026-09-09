@@ -42,6 +42,8 @@ jobs:
           node --check assets/js/campaign-mode.js
           node --check assets/js/campaign-fork-links.js
           node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-exploration.js
+          node --check assets/js/campaign-runtime-sync.js
           node --check assets/js/campaign-giants-map.js
           node --check assets/js/campaign-phase-modal.js
           node --check assets/js/phase-polish.js
@@ -120,4 +122,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
