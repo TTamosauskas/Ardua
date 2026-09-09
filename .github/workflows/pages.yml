@@ -52,6 +52,7 @@ jobs:
           node --check assets/js/campaign-discovery-notifications.js
           node --check assets/js/campaign-quarks-graph.js
           node --check assets/js/campaign-quarks.js
+          node --check assets/js/campaign-quarks-chrome.js
           node --check assets/js/campaign-quarks-map.js
           node --check assets/js/campaign-quarks-discoveries.js
 
@@ -108,6 +109,9 @@ jobs:
 
       - name: Validate Quarks phase
         run: node scripts/validate-quarks-phase.js
+
+      - name: Validate Quarks chrome
+        run: node scripts/validate-quarks-chrome.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
