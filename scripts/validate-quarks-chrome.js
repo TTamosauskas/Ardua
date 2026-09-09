@@ -10,7 +10,9 @@ function before(a,b){return index.indexOf(a)>=0&&index.indexOf(b)>=0&&index.inde
 expect(chrome.includes("const GOAL='Forje os primeiros bárions'"),'visible objective must be Forje os primeiros bárions');
 expect(chrome.includes("const FORMULA='3 quarks → 1 próton ou nêutron'"),'visible recipe must be the three-quark baryon recipe');
 expect(chrome.includes("setText('phaseTitle','Quarks')"),'visible phase title must stay Quarks');
-expect(chrome.includes("document.body.classList.remove('prebang','bigbang-phase')"),'legacy Big Bang visual state must be removed while Quarks owns the board');
+expect(chrome.includes("function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}"),'class ownership must be idempotent so its MutationObserver cannot feed itself');
+expect(chrome.includes("setClass(document.body,'prebang',false)")&&chrome.includes("setClass(document.body,'bigbang-phase',false)"),'legacy Big Bang visual state must be removed while Quarks owns the board');
+expect(!chrome.includes("document.body.classList.add('quarks-phase-active')")&&!chrome.includes("document.body.classList.remove('prebang','bigbang-phase')"),'body class observer must not perform unconditional class writes');
 expect(chrome.includes("window.addEventListener('ardua:quarks-phase-start',startOwnership)"),'chrome ownership must start with the custom Quarks phase');
 expect(chrome.includes("window.addEventListener('ardua:quarks-phase-stop',stopOwnership)"),'chrome ownership must stop when leaving Quarks');
 expect(chrome.includes('new MutationObserver(applyQuarksChrome)'),'late native engine renders must not overwrite Quarks title/objective/recipe');
@@ -21,4 +23,4 @@ expect(engine.includes("primordialH:'#9f0814'"),'native deuterium primordial the
 expect(before('assets/js/campaign-quarks.js','assets/js/campaign-quarks-chrome.js'),'Quarks chrome owner must load after the custom phase runtime');
 expect(before('assets/js/campaign-quarks-chrome.js','assets/js/campaign-map.js'),'Quarks chrome owner must be ready before map interaction launches the phase');
 
-console.log('Quarks chrome OK: title, baryon objective, recipe and deuterium-red theme are protected from Big Bang inheritance.');
+console.log('Quarks chrome OK: Continue cannot enter a class-observer loop; title, baryon objective, recipe and deuterium-red theme remain protected.');
