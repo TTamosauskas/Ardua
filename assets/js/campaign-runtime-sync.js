@@ -1,7 +1,7 @@
 /* Ardua — keep campaign activeId synchronized with the phase actually loaded by the engine. */
 (()=>{
 'use strict';
-const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,phaseTitle=document.getElementById('phaseTitle'),branchLabel=document.getElementById('branchLabel');
+const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,phaseTitle=document.getElementById('phaseTitle'),branchLabel=document.getElementById('branchLabel'),map=document.getElementById('campaignMap');
 if(!C||!G||!phaseTitle)return;
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
 let source=[];
@@ -38,7 +38,10 @@ function resolve(){
 }
 let busy=false;
 function sync(){
- if(busy)return;const id=resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;
+ /* The engine title is stale while the campaign map owns the screen, and Quarks is a
+    custom phase outside runtimeOrder. Neither state may be inferred from that title. */
+ if(busy||map?.classList.contains('show')||window.ARDUA_QUARKS?.isActive?.())return;
+ const id=resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;
  busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
 }
 new MutationObserver(sync).observe(phaseTitle,{childList:true,subtree:true,characterData:true});
