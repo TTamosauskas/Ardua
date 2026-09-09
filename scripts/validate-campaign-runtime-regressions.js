@@ -7,6 +7,7 @@ const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 const exploration=fs.readFileSync('assets/js/campaign-exploration.js','utf8');
 const runtimeSync=fs.readFileSync('assets/js/campaign-runtime-sync.js','utf8');
 const quarksMap=fs.readFileSync('assets/js/campaign-quarks-map.js','utf8');
+const engine=fs.readFileSync('assets/js/ardua.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 
 function assert(ok,msg){if(!ok)throw new Error(msg)}
@@ -57,4 +58,18 @@ assert(quarksMap.includes('setStateClass(quarks,phaseState(\'quarks\'))'),'Nó Q
 assert(runtimeSync.includes("map?.classList.contains('show')"),'Runtime sync precisa respeitar a posse do mapa');
 assert(runtimeSync.includes('window.ARDUA_QUARKS?.isActive?.()'),'Runtime sync precisa respeitar a posse da fase customizada Quarks');
 
-console.log('Campaign runtime regressions OK: native launch, phase preview, unread badges, Quarks handoff and stable map state ownership.');
+// 6. No primeiro núcleo primordial, p e n convergem no centro do motivo visual.
+//    O Deutério deve nascer e permanecer nesse mesmo ponto, sem voltar ao ponto médio
+//    anterior à animação.
+const pairStart=engine.indexOf('async function reactPrimordialParticlePair(r,a,b){');
+const pairEnd=engine.indexOf('\nasync function reactPrimordialMixed',pairStart);
+assert(pairStart>=0&&pairEnd>pairStart,'Reação primordial p+n não encontrada');
+const pairBody=engine.slice(pairStart,pairEnd);
+for(const token of [
+ "const reactionPoint=r.id==='pn_d'&&motif?{x:motif.center,y:motif.center}:{x,y}",
+ 'createParticleReactionProduct(r.out,reactionPoint.x,reactionPoint.y',
+ 'objectiveInteractionRevealPiece(motif,out,reactionPoint)',
+ 'burst(reactionPoint.x,reactionPoint.y)'
+])assert(pairBody.includes(token),`Deutério primordial perdeu o ponto real de encontro: ${token}`);
+
+console.log('Campaign runtime regressions OK: native launch, phase preview, unread badges, Quarks handoff, primordial deuterium origin and stable map state ownership.');
