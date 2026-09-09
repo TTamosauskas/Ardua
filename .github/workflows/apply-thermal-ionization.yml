@@ -54,11 +54,14 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs');
-          const p='scripts/validate-movement-chain-particles.js';
-          let s=fs.readFileSync(p,'utf8');
+          let p='scripts/validate-movement-chain-particles.js',s=fs.readFileSync(p,'utf8');
           if(!s.includes("campaign.includes('version:14')"))throw new Error('movement migration version anchor missing');
           s=s.replace("campaign.includes('version:14')","campaign.includes('version:15')")
              .replace('Anã Branca deve esperar o trio de plasma','Anã Branca deve esperar a sequência de plasma');
+          fs.writeFileSync(p,s);
+          p='scripts/validate-phenomenon-sources.mjs';s=fs.readFileSync(p,'utf8');
+          if(!s.includes('entries.length!==54'))throw new Error('phenomenon count anchor missing');
+          s=s.replace('entries.length!==54','entries.length!==55').replace('Esperados 54 fenômenos','Esperados 55 fenômenos');
           fs.writeFileSync(p,s);
           NODE
 
