@@ -3,6 +3,7 @@ const read=p=>fs.readFileSync(p,'utf8');
 const graph=read('assets/js/campaign-quarks-graph.js');
 const game=read('assets/js/campaign-quarks.js');
 const css=read('assets/css/campaign-quarks.css');
+const coreCss=read('assets/css/ardua.css');
 const map=read('assets/js/campaign-map.js');
 const mapBridge=read('assets/js/campaign-quarks-map.js');
 const discoveries=read('assets/js/campaign-quarks-discoveries.js');
@@ -56,6 +57,11 @@ expect(game.includes("b.classList.add('quark-reaction-source','aligning')"),'rec
 expect(game.includes('playFrequency(root*1.25)')&&game.includes('playFrequency(root*1.5,true)'),'recipe animation must play the intermediate selection/alignment notes');
 expect(game.includes('playChord(root)')&&game.includes('playFinalAccent(root)'),'recipe union must end with the chord and final accent');
 expect(css.includes('.quark-piece.quark-reaction-source')&&css.includes('.quarks-union-burst'),'alignment, convergence and union effects must have dedicated visual states');
+expect(game.includes("focus.className='objective-motif-stage quarks-recipe-focus'"),'Quarks recipe must reuse the native objective-motif focus circle shown by primordial recipes');
+expect(coreCss.includes('.objective-motif-stage::before'),'native recipe focus circle contract must still exist in the core stylesheet');
+expect(css.includes('width:clamp(72px,calc(var(--cellSize)*1.72),112px)')&&css.includes('font-size:clamp(30px,calc(var(--cellSize)*.82),58px)'),'reacting quarks must enlarge to the same visual scale as native recipe particles');
+expect(game.includes('focusXs=[w*.24,w*.5,w*.76]'),'the three enlarged quarks must spread across the focus circle before converging');
+expect(game.includes('retireRecipeFocus(focus)')&&css.includes('.quarks-recipe-focus.leaving{opacity:0}'),'the recipe focus circle must disappear after the union');
 expect(map.includes("phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id)")&&map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'native phase-end listener must complete Quarks and open the required map before the custom handoff refreshes it');
 
 for(const key of ['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron']){
@@ -82,4 +88,4 @@ expect(before('assets/js/campaign-map.js','assets/js/campaign-quarks-map.js'),'Q
 expect(before('assets/js/campaign-discoveries.js','assets/js/campaign-quarks-discoveries.js'),'Quarks discoveries must extend the base catalog');
 expect(before('assets/js/campaign-quarks-discoveries.js','assets/js/campaign-discovery-notifications.js'),'Quarks discovery keys must exist before unread inbox initialization');
 
-console.log('Quarks phase validation passed: free primordial field, two-click recipe, info panel, movement and recipe audiovisual cadence verified.');
+console.log('Quarks phase validation passed: free primordial field, two-click recipe, native focus circle, enlarged reactants, movement and audiovisual cadence verified.');
