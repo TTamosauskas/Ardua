@@ -18,8 +18,8 @@ function elementName(sym){const card=elementCard(baseElementSymbol(sym));return 
 function displayTitle(rawKey){const key=String(rawKey||'');if(TITLE_OVERRIDES[key])return TITLE_OVERRIDES[key];if(key.startsWith('element:'))return elementName(key.slice(8));return discoveryIndex()[key]?.title||key.split(':').pop()||'Descoberta'}
 function discoveryWord(title){
  const u=String(title||'').trim().toLocaleUpperCase('pt-BR');
- const femininePlural=/^(ERUPÇÕES|ONDAS|ESTRELAS)/.test(u),masculinePlural=/^(PRÓTONS|NÊUTRONS|ELÉTRONS|NEUTRINOS|ANTINEUTRINOS|PÓSITRONS|RAIOS|JATOS)/.test(u);
- const feminine=/^(ANÃ|GIGANTE|SUPERGIGANTE|ESTRELA|NUCLEOSSÍNTESE|RECOMBINAÇÃO|IONIZAÇÃO|BARREIRA|CONVECÇÃO|RECONEXÃO|PRESSÃO|ESPALAÇÃO|NEUTRONIZAÇÃO|CAPTURA|FOTODESINTEGRAÇÃO|SUPERNOVA|KILONOVA|RADIAÇÃO|EJEÇÃO|CADEIA|PRATA|PLATINA)/.test(u);
+ const femininePlural=/^(ERUPÇÕES|ONDAS|ESTRELAS)/.test(u),masculinePlural=/^(PRÓTONS|NÊUTRONS|ELÉTRONS|NEUTRINOS|ANTINEUTRINOS|PÓSITRONS|RAIOS|JATOS|QUARKS)/.test(u);
+ const feminine=/^(ANÃ|GIGANTE|SUPERGIGANTE|ESTRELA|NUCLEOSSÍNTESE|RECOMBINAÇÃO|IONIZAÇÃO|BARREIRA|CONVECÇÃO|RECONEXÃO|PRESSÃO|ESPALAÇÃO|NEUTRONIZAÇÃO|CAPTURA|FOTODESINTEGRAÇÃO|SUPERNOVA|KILONOVA|RADIAÇÃO|EJEÇÃO|CADEIA|PRATA|PLATINA|FORÇA)/.test(u);
  if(femininePlural)return'DESCOBERTAS';if(masculinePlural)return'DESCOBERTOS';return feminine?'DESCOBERTA':'DESCOBERTO';
 }
 function modalTitle(rawKey){const title=displayTitle(rawKey);return`${title.toLocaleUpperCase('pt-BR')} ${discoveryWord(title)}`}
