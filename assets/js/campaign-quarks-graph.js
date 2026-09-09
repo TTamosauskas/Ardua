@@ -1,19 +1,14 @@
 /* Ardua — inserts the Quarks lesson between Big Bang and primordial deuterium. */
 (()=>{
 'use strict';
-const G=window.ARDUA_CAMPAIGN_GRAPH,A=window.ARDUA_REQUIRED_ATLAS,INBOX_KEY='arduaDiscoveryInboxV1';
-if(!G||!A)return;
+const G=window.ARDUA_CAMPAIGN_GRAPH,INBOX_KEY='arduaDiscoveryInboxV1';
+if(!G)return;
 
 G.prerequisites.quarks={allOf:['bigbang']};
 G.prerequisites.primordial_d={allOf:['quarks']};
 
-/* The engine runtime order remains untouched. The map alone receives the custom phase. */
-const nativeExpand=A.expand.bind(A);
-A.expand=function(ids){
- const source=Array.isArray(ids)?ids:[],out=nativeExpand(source);
- if(source.length===1&&source[0]==='primordial_d'&&!out.includes('quarks'))return['quarks',...out];
- return out;
-};
+/* Quarks stays outside the native engine runtime order. Its map node is rendered explicitly
+   by campaign-quarks-map.js, while the graph owns only progression and migration rules. */
 
 /* Existing campaigns that already passed deuterium inherit Quarks as completed,
    while saves parked at the old deuterium gate are invited to play the new lesson. */
