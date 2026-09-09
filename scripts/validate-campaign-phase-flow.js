@@ -4,6 +4,7 @@ const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 const modal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
 const opening=fs.readFileSync('assets/js/campaign-opening.js','utf8');
 const music=fs.readFileSync('assets/js/music.js','utf8');
+const mode=fs.readFileSync('assets/js/campaign-mode.js','utf8');
 const must=["Leve o Hélio até o núcleo estelar. — ${done}/${s.target}","Clique no átomo e avance um espaço por vez","window.dispatchEvent(new CustomEvent('ardua:phase-ended'","const stellarDustEnd=!isPrimordial(s)"];
 for(const x of must)if(!engine.includes(x))throw new Error('Contrato de fluxo ausente: '+x);
 if(map.includes('Evolução de longa vida'))throw new Error('Título removido voltou ao mapa');
@@ -19,5 +20,6 @@ for(const token of ["const MUSIC_AFTER_BURST_MS=90","function openTrailWithBurst
 const burstStart=opening.indexOf('openTrailWithBurst();'),musicStart=opening.indexOf("setTimeout(()=>{window.ARDUA_MUSIC?.play?.()");
 if(burstStart<0||musicStart<0||burstStart>=musicStart)throw new Error('A música deve iniciar somente depois de a animação do Big Bang ser disparada');
 for(const token of ["audio.autoplay=false","function holdForBigBang()","if(!map)return true","map.classList.contains('awaiting-bigbang')","if(holdForBigBang()){armUnlock();return}"]){if(!music.includes(token))throw new Error('Bloqueio musical antes do Big Bang perdeu contrato: '+token)}
+for(const token of ["function suppressLegacyBigBangIntro()","if(EDITOR_MODE||graphState.introduced||graphState.activeId!=='bigbang')return","new MutationObserver(hide)","intro.classList.remove('show')","window.addEventListener('ardua:campaign-progress',release)","suppressLegacyBigBangIntro();"]){if(!mode.includes(token))throw new Error('Supressão do modal legado de Big Bang perdeu contrato: '+token)}
 
-console.log('Campaign phase flow UX OK: Big Bang anima antes da música e o mapa abre sem modal automático.');
+console.log('Campaign phase flow UX OK: Big Bang anima antes da música, mapa abre limpo e popup legado não pisca no carregamento.');
