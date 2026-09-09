@@ -50,6 +50,9 @@ jobs:
           node --check assets/js/campaign-element-bohr.js
           node --check assets/js/campaign-discoveries-phenomena.js
           node --check assets/js/campaign-discovery-notifications.js
+          node --check assets/js/campaign-quarks-graph.js
+          node --check assets/js/campaign-quarks.js
+          node --check assets/js/campaign-quarks-discoveries.js
 
       - name: Validate element sources
         run: node scripts/validate-element-sources.mjs
@@ -101,6 +104,9 @@ jobs:
 
       - name: Validate campaign runtime regressions
         run: node scripts/validate-campaign-runtime-regressions.js
+
+      - name: Validate Quarks phase
+        run: node scripts/validate-quarks-phase.js
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
