@@ -1,0 +1,44 @@
+/* Ardua — Quarks phase. */
+body.quarks-phase-active #starBoard{filter:drop-shadow(0 0 38px rgba(92,126,255,.22));background:radial-gradient(circle at 50% 50%,rgba(37,48,91,.34),rgba(4,8,22,.2) 54%,transparent 76%)}
+body.quarks-phase-active #starBoard>.star-core,
+body.quarks-phase-active #starBoard>.stellar-zones,
+body.quarks-phase-active #starBoard>.electron-mesh,
+body.quarks-phase-active #starBoard>.primordial-layer,
+body.quarks-phase-active #starBoard>.singularity,
+body.quarks-phase-active #starBoard>.remnant-layer,
+body.quarks-phase-active #starBoard>.rings,
+body.quarks-phase-active #starBoard>.cells,
+body.quarks-phase-active #starBoard>.lines,
+body.quarks-phase-active #starBoard>.pieces,
+body.quarks-phase-active #starBoard>.cosmic-rays,
+body.quarks-phase-active #starBoard>.neutrons,
+body.quarks-phase-active #starBoard>.fx,
+body.quarks-phase-active #starBoard>.explosion,
+body.quarks-phase-active #starBoard>.event-tooltip{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+body.quarks-phase-active .info-panel{display:none}
+body.quarks-phase-active #phaseEndBtn{z-index:60}
+
+.quarks-stage{position:absolute;inset:0;z-index:42;border-radius:50%;overflow:hidden;isolation:isolate;touch-action:manipulation}
+.quarks-field{position:absolute;inset:6%;border-radius:50%;background:radial-gradient(circle,rgba(109,144,255,.08),rgba(56,44,112,.045) 46%,transparent 72%);border:1px solid rgba(177,197,255,.08);box-shadow:inset 0 0 52px rgba(102,132,255,.05);pointer-events:none}
+.quarks-field::before,.quarks-field::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(255,255,255,.08)}
+.quarks-field::before{width:68%;height:68%}.quarks-field::after{width:38%;height:38%}
+.quarks-hint{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);width:min(78%,330px);padding:7px 10px;border-radius:12px;background:rgba(5,10,25,.78);border:1px solid rgba(255,255,255,.11);color:#b9c5df;font-size:9px;line-height:1.3;text-align:center;pointer-events:none;backdrop-filter:blur(8px)}
+.quarks-hint b{color:#f3f7ff}
+.quarks-stage.complete .quarks-hint{opacity:.22}
+
+.quark-piece{position:absolute;width:clamp(42px,calc(var(--cellSize)*.88),56px);height:clamp(42px,calc(var(--cellSize)*.88),56px);transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.28);display:grid;place-items:center;color:#071018;font-weight:950;font-size:clamp(20px,calc(var(--cellSize)*.42),27px);cursor:pointer;z-index:5;box-shadow:inset 0 0 16px rgba(255,255,255,.2),0 7px 16px rgba(0,0,0,.28);transition:left .33s cubic-bezier(.2,.8,.2,1),top .33s cubic-bezier(.2,.8,.2,1),transform .16s ease,opacity .3s ease,outline-color .14s ease,box-shadow .14s ease;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.quark-piece span{transform:translateY(-1px)}
+.quark-u{background:radial-gradient(circle at 34% 28%,#f1fff6 0 9%,#7bf1ad 36%,#32b978 68%,#176345 100%)}
+.quark-d{background:radial-gradient(circle at 34% 28%,#fff4ff 0 9%,#d59bff 36%,#8a4dcc 68%,#482466 100%);color:#11091a}
+.quark-piece.selected{outline:5px solid var(--selectGreen);outline-offset:2px;box-shadow:0 0 26px rgba(67,242,138,.5),inset 0 0 16px rgba(255,255,255,.25);z-index:8}
+.quark-piece.candidate{outline:3px solid var(--candidateGreen);outline-offset:2px;box-shadow:0 0 18px rgba(67,242,138,.36),inset 0 0 16px rgba(255,255,255,.22);z-index:7}
+.quark-piece.candidate.picked{outline-width:5px;filter:brightness(1.16);transform:translate(-50%,-50%) scale(1.04)}
+.quark-piece.reacting{pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.25);filter:brightness(1.8);z-index:15}
+
+.quarks-baryon{z-index:18!important;pointer-events:none!important;cursor:default!important;opacity:0!important;transform:translate(-50%,-50%) scale(.35)!important;transition:opacity .25s ease,transform .32s cubic-bezier(.18,.85,.22,1)!important}
+.quarks-baryon.formed{opacity:1!important;transform:translate(-50%,-50%) scale(1)!important}
+.quarks-proton{background:radial-gradient(circle at 34% 30%,#f7feff,#8ddbff 48%,#439ce5 78%)!important;border-color:rgba(255,255,255,.78)!important;box-shadow:inset 0 0 14px rgba(255,255,255,.2),0 0 17px rgba(82,176,238,.42),0 7px 15px rgba(0,0,0,.22)!important}
+.quarks-proton .sym{font-size:calc(var(--cellSize)*.42)!important;letter-spacing:-.08em!important}
+.quarks-neutron{filter:none!important}
+
+@media(max-height:720px){.quarks-hint{bottom:5%;font-size:8px;padding:5px 8px}.quark-piece{width:clamp(38px,calc(var(--cellSize)*.78),50px);height:clamp(38px,calc(var(--cellSize)*.78),50px)}}
