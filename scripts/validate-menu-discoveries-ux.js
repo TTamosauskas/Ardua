@@ -38,4 +38,34 @@ for(const [text,name,back] of [[elements,'Elementos','data-element-detail-back']
 requireToken(elements,'leaveElementDetail(false)','Elementos: troca de aba deve encerrar detalhe sem reverter a aba escolhida');
 requireToken(phenomena,'leaveDetail(false)','Fenômenos: troca de aba deve encerrar detalhe sem reverter a aba escolhida');
 
-console.log('Phase menu, discoveries detail and central rotation UX contract OK.');
+for(const token of [
+ "title!=='PROCESSO COMPLETO'||kicker!=='MARCO'",
+ "ambient.classList.contains('show')",
+ "ambient.classList.contains('awaiting-continue')",
+ "ambientContinue&&!ambientContinue.hidden",
+ 'new MutationObserver(suppressGenericPhaseComplete)'
+])requireToken(polish,token,'O marco genérico PROCESSO COMPLETO não pode voltar a aparecer');
+
+const history=[
+ "'phenomenon:bigBang'",
+ "'particle:quark'",
+ "'phenomenon:strongNuclearForce'",
+ "'particle:proton'",
+ "'particle:neutron'",
+ "'phenomenon:primordialNucleosynthesis'"
+];
+let previous=-1;
+for(const token of history){
+ const at=phenomena.indexOf(token);if(at<0||at<=previous)throw new Error(`Fenômenos perdeu a abertura cronológica: ${token}`);previous=at;
+}
+for(const token of [
+ 'const PHENOMENON_HISTORY_PREFIX=Object.freeze([',
+ "const base=G?.baseOrder||G?.runtimeOrder||[]",
+ 'window.ARDUA_PHASE_DISCOVERIES||{}',
+ 'function sortCardsByHistory()',
+ 'sortCardsByHistory();',
+ "'phenomenon:freezeout':'u'",
+ "'phenomenon:hawkingRadiation':'black_hole'"
+])requireToken(phenomena,token,'Fenômenos precisa permanecer em cronologia cosmológica/campanha');
+
+console.log('Phase menu, discoveries detail, chronological phenomena, generic completion suppression and central rotation UX contract OK.');
