@@ -19,6 +19,9 @@ requireToken(menu,'if(button)button.click()','Recomeçar Fase deve reentrar pela
 requireToken(menu,"applySound(!soundtrackEnabled(),true);closeQuickMenu(false)",'Trilha sonora deve fechar o menu da fase');
 forbidToken(polish,'window.location.reload()','Recomeçar Fase não pode recarregar o jogo inteiro');
 
+for(const token of ['recipe-intro-flash','flashRecipe','scheduleRecipeFlash'])forbidToken(polish,token,'Receita não pode piscar, pulsar ou trocar peso/tamanho ao entrar na fase');
+for(const token of ['recipe-intro-flash','recipeWeightPulse'])forbidToken(css,token,'CSS não pode animar peso, tamanho ou destaque da receita');
+
 requireToken(home,"applySound(!soundtrackEnabled());closeMenu(false)",'Trilha sonora deve fechar também o menu do mapa');
 requireToken(rotation,"if(id==='phaseQuickRotation')document.querySelector('#phaseQuickMenu .phase-quick-close')?.click()",'Rotação deve fechar o menu da fase');
 requireToken(rotation,"else if(id==='campaignHomeRotation')document.querySelector('#campaignHomeMenu .campaign-home-menu-close')?.click()",'Rotação deve fechar o menu do mapa');
@@ -68,4 +71,4 @@ for(const token of [
  "'phenomenon:hawkingRadiation':'black_hole'"
 ])requireToken(phenomena,token,'Fenômenos precisa permanecer em cronologia cosmológica/campanha');
 
-console.log('Phase menu, discoveries detail, chronological phenomena, generic completion suppression and central rotation UX contract OK.');
+console.log('Phase menu, static recipe text, discoveries detail, chronological phenomena, generic completion suppression and central rotation UX contract OK.');
