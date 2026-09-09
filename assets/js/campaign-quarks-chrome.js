@@ -1,7 +1,7 @@
 /* Ardua — owns the visible phase chrome while the custom Quarks lesson is active. */
 (()=>{
 'use strict';
-const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN;
 const GOAL='Forje os primeiros bárions';
 const FORMULA='3 quarks → 1 próton ou nêutron';
 const NEXT_LABEL='Próxima fase';
@@ -35,6 +35,15 @@ function stopOwnership(){
  setClass(document.documentElement,'quarks-phase-root',false);
  setClass(document.body,'quarks-phase-active',false);
 }
+
+/* Quarks is a custom phase outside the native runtime order, so persist its successful
+   completion before the native-looking final button hands control back to the map. */
+document.addEventListener('click',e=>{
+ const target=e.target instanceof Element?e.target:null,end=target?.closest('#phaseEndBtn');
+ if(!end||!active||!end.classList.contains('show'))return;
+ const st=C?.getState?.()||{};
+ if(st.activeId==='quarks'&&!(st.completed||[]).includes('quarks'))C.markCompleted?.('quarks');
+},true);
 
 window.addEventListener('ardua:quarks-phase-start',startOwnership);
 window.addEventListener('ardua:quarks-phase-stop',stopOwnership);
