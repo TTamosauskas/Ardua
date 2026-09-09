@@ -5,28 +5,6 @@ const $=id=>document.getElementById(id);
 
 /* Phase restart is owned by the phase utility menu: it re-enters only the active phase. */
 
-/* Draw attention to the recipe whenever a playable phase is entered. */
-const formula=$('formulaText'),phaseTitle=$('phaseTitle'),stellarIntro=$('stellarIntro');
-let recipeTimer=0,recipeCleanup=0;
-function flashRecipe(){
- recipeTimer=0;
- if(!formula||stellarIntro?.classList.contains('show'))return;
- formula.classList.remove('recipe-intro-flash');
- void formula.offsetWidth;
- formula.classList.add('recipe-intro-flash');
- clearTimeout(recipeCleanup);
- recipeCleanup=setTimeout(()=>formula.classList.remove('recipe-intro-flash'),1500);
-}
-function scheduleRecipeFlash(delay=150){
- clearTimeout(recipeTimer);
- recipeTimer=setTimeout(flashRecipe,delay);
-}
-if(phaseTitle)new MutationObserver(()=>scheduleRecipeFlash(180)).observe(phaseTitle,{childList:true,subtree:true,characterData:true});
-document.addEventListener('click',e=>{
- const el=e.target instanceof Element?e.target.closest('#phaseMenu .phase-jump'):null;
- if(el)scheduleRecipeFlash(190);
-},true);
-
 /* A nucleus waiting for beta decay is rendered by the engine with an asterisk in its symbol. Keep that physical waiting state visibly trembling until the beta transition resolves. */
 const pieces=$('pieces');
 function syncBetaWaitingVisuals(){
