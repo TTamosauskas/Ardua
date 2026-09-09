@@ -11,12 +11,17 @@ const INDEX={...(window.ARDUA_DISCOVERY_INDEX||{}),
  [FORCE]:{title:'Força Nuclear Forte',type:'phenomenon'}
 };
 window.ARDUA_DISCOVERY_INDEX=Object.freeze(INDEX);
-window.ARDUA_PHASE_DISCOVERIES=Object.freeze({...(window.ARDUA_PHASE_DISCOVERIES||{}),quarks:Object.freeze([
+const PHASE_DISCOVERIES={};
+for(const [id,entries] of Object.entries(window.ARDUA_PHASE_DISCOVERIES||{})){
+ PHASE_DISCOVERIES[id]=Object.freeze((entries||[]).filter(entry=>entry?.key!==PROTON&&entry?.key!==NEUTRON));
+}
+PHASE_DISCOVERIES.quarks=Object.freeze([
  {key:QUARK,title:'Quarks',type:'phenomenon'},
  {key:FORCE,title:'Força Nuclear Forte',type:'phenomenon'},
  {key:PROTON,title:'Próton',type:'phenomenon'},
  {key:NEUTRON,title:'Nêutron',type:'phenomenon'}
-])});
+]);
+window.ARDUA_PHASE_DISCOVERIES=Object.freeze(PHASE_DISCOVERIES);
 
 const readSave=()=>{try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch(_e){return{}}};
 function knownNow(){
