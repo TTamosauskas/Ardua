@@ -61,7 +61,7 @@ function updateProgress(){
  const bar=$('stageProgress');if(bar)bar.style.width=`${Math.min(100,total*50)}%`;
 }
 function quarkById(id){return SEED.find(q=>q.id===id)}
-function liveButton(id){return stage?.querySelector(`.quark-piece[data-quark-id="${id}"]`)||null}
+function liveButton(id){const root=stage||$('starBoard');return root?.querySelector(`.quark-piece[data-quark-id="${id}"]`)||null}
 function currentPoint(id){const m=motion.get(id);if(m)return{x:m.x,y:m.y};const el=liveButton(id);return{x:el?.offsetLeft||0,y:el?.offsetTop||0}}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function randomVelocity(){const a=Math.random()*Math.PI*2,s=.012+Math.random()*.012;return{vx:Math.cos(a)*s,vy:Math.sin(a)*s}}
