@@ -50,19 +50,21 @@ function firstCreationPhases(phases){
  if(byId.has('primordial_he3d')&&byId.has('primordial_td'))first.set('He',['primordial_he3d','primordial_td']);
  return first;
 }
-let creationGateSerial=0;
-async function enforceElementCreationGate(){
+const ELEMENT_DISCOVERY_ALIASES=Object.freeze({D:'H',T:'H',He3:'He',HeU:'He',Be7:'Be',Be8:'Be',C13:'C',Ne22:'Ne',FeU:'Fe'});
+function discoveredElementSymbols(){
+ let data={};try{data=JSON.parse(localStorage.getItem('stellarForgeV1013')||'{}')||{}}catch(_e){}
+ const found=new Set();for(const raw of data.discovered||[]){const sym=ELEMENT_DISCOVERY_ALIASES[raw]||raw;if(sym)found.add(sym)}return found;
+}
+function enforceElementCreationGate(){
  if(!modal.classList.contains('discoveries-view'))return;
- const serial=++creationGateSerial,src=await sourceMeta();if(serial!==creationGateSerial)return;
- const first=firstCreationPhases(src.phases),done=new Set(C.getState?.().completed||[]),editor=!!C.editor;let visible=0;
+ const discovered=discoveredElementSymbols(),editor=!!C.editor;let visible=0;
  catalog.querySelectorAll('.el-card').forEach(elementCard=>{
-  const sym=elementCard.querySelector('.s')?.textContent?.trim()||'',required=first.get(sym)||[],show=editor||required.some(id=>done.has(id)),shouldHide=!show;
-  if(elementCard.hidden!==shouldHide)elementCard.hidden=shouldHide;
-  if(show)visible++;
+  const sym=elementCard.querySelector('.s')?.textContent?.trim()||'',show=editor||discovered.has(sym),shouldHide=!show;
+  if(elementCard.hidden!==shouldHide)elementCard.hidden=shouldHide;if(show)visible++;
  });
  const empties=[...catalog.querySelectorAll(':scope > .discovery-empty')];
  if(visible)empties.forEach(el=>el.remove());
- else if(!empties.length){const empty=document.createElement('div');empty.className='discovery-empty';empty.textContent='Os elementos aparecem aqui depois que sua primeira fase de criação é concluída.';catalog.appendChild(empty)}
+ else if(!empties.length){const empty=document.createElement('div');empty.className='discovery-empty';empty.textContent='Elementos descobertos no jogo aparecerão aqui.';catalog.appendChild(empty)}
 }
 
 function enforceTwoTabs(){

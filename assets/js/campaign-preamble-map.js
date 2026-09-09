@@ -50,7 +50,7 @@ function flow(ids,cls=''){
 function chapter(title,ids){const el=document.createElement('div');el.className='epoch-label preamble-chapter';el.dataset.phaseGroup=ids.join(',');el.innerHTML=`<strong>${title}</strong>`;return el}
 function universeBanner(){
  const el=document.createElement('section');el.className='generation-banner generation-primordial primordial-generation-banner';el.dataset.generationBanner='primordial';
- el.innerHTML='<strong>Universo Primordial</strong><small>Do plasma quente aos primeiros átomos, gases e objetos subestelares.</small>';return el;
+ el.innerHTML='<strong>Universo Primordial</strong><small>Do plasma quente aos primeiros corpos celestes.</small>';return el;
 }
 
 const stellar=zone.querySelector('.branch-cluster[data-branch-group="stellar"]');

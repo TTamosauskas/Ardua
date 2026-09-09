@@ -16,7 +16,10 @@ const PHENOMENON_LABEL_OVERRIDES=Object.freeze({
  'Jatos Coronais':'Ejeção de Massa Coronal'
 });
 const PHENOMENON_INTRO_HTML_OVERRIDES=Object.freeze({
- 'Ejeção de Massa Coronal':'<p><strong>Ejeções de massa coronal</strong> (<strong>EMC</strong>) são grandes erupções de gás ionizado a alta temperatura, provenientes da coroa solar. O gás expelido constitui parte do vento solar e, quando atinge o campo magnético terrestre, pode causar tempestades geomagnéticas, prejudicando os meios de comunicações e estações elétricas.</p>'
+ 'Ejeção de Massa Coronal':'<p><strong>Ejeções de massa coronal</strong> (<strong>EMC</strong>) são grandes erupções de gás ionizado a alta temperatura, provenientes da coroa solar. O gás expelido constitui parte do vento solar e, quando atinge o campo magnético terrestre, pode causar tempestades geomagnéticas, prejudicando os meios de comunicações e estações elétricas.</p>',
+ 'Força Eletromagnética':'<p>A <strong>Força Eletromagnética</strong> atua entre partículas com carga elétrica. Na formação dos primeiros átomos, ela mantém elétrons ligados aos núcleos e torna possível a estrutura atômica e a química.</p>',
+ 'Força Gravitacional':'<p>A <strong>Força Gravitacional</strong> atrai matéria. Em escalas astronômicas, ela reúne gás e poeira, comprime nuvens e conduz o nascimento de protoestrelas e outros corpos celestes.</p>',
+ 'Força Nuclear Fraca':'<p>A <strong>Força Nuclear Fraca</strong> permite transformações entre partículas. Na cadeia próton-próton, ela converte um próton em nêutron e produz um pósitron e um neutrino.</p>'
 });
 
 /* Fenômenos follows the chronology of the campaign rather than the old category order.
@@ -70,6 +73,9 @@ const cache=new Map();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WIKI_ALIASES=Object.freeze({
  'Big Bang':'Big Bang',
+ 'Força Eletromagnética':'Força eletromagnética',
+ 'Força Gravitacional':'Gravidade',
+ 'Força Nuclear Fraca':'Interação fraca',
  'Nucleossíntese primordial':'Nucleossíntese primordial',
  'Recombinação cósmica':'Recombinação (cosmologia)',
  'Prótons':'Próton',
