@@ -73,19 +73,6 @@ jobs:
               if alias not in text: raise SystemExit('wiki alias anchor missing')
               text=text.replace(alias,add,1)
           p.write_text(text)
-
-          p=Path('.github/workflows/pages.yml'); text=p.read_text()
-          syntax='          node --check assets/js/campaign-fundamental-forces.js\n'
-          syntax_anchor='          node --check assets/js/campaign-quarks-discoveries.js\n'
-          if syntax not in text:
-              if syntax_anchor not in text: raise SystemExit('pages syntax anchor missing')
-              text=text.replace(syntax_anchor,syntax_anchor+syntax,1)
-          validation='\n      - name: Validate fundamental forces discoveries\n        run: node scripts/validate-fundamental-forces.js\n'
-          validation_anchor='\n      - name: Validate discovery inbox\n        run: node scripts/validate-discovery-inbox.js\n'
-          if 'Validate fundamental forces discoveries' not in text:
-              if validation_anchor not in text: raise SystemExit('pages validation anchor missing')
-              text=text.replace(validation_anchor,validation+validation_anchor,1)
-          p.write_text(text)
           PY
       - name: Validate changes
         run: |
@@ -101,6 +88,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/patch-fundamental-forces.yml
-          git add index.html assets/js/campaign-preamble-map.js assets/js/campaign-discoveries-elements.js assets/js/campaign-discoveries-phenomena.js assets/js/campaign-fundamental-forces.js scripts/validate-fundamental-forces.js .github/workflows/pages.yml
+          git add index.html assets/js/campaign-preamble-map.js assets/js/campaign-discoveries-elements.js assets/js/campaign-discoveries-phenomena.js assets/js/campaign-fundamental-forces.js scripts/validate-fundamental-forces.js
           git commit -m "Add remaining fundamental force discoveries"
           git push origin HEAD:feat/fundamental-forces-discoveries
