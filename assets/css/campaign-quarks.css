@@ -1,5 +1,9 @@
 /* Ardua — Quarks phase, visually aligned with the free primordial particle field. */
-body.quarks-phase-active #starBoard.quarks-free-mode{filter:none!important;background:linear-gradient(180deg,rgba(30,38,78,.18),rgba(12,10,32,.05))!important;border-radius:28px!important;overflow:visible!important}
+html.quarks-phase-root,body.quarks-phase-active{background:#9f0814!important;color:#f2f5ff}
+body.quarks-phase-active{--text:#f2f5ff;--muted:#9aa8c7;--panel:rgba(255,255,255,.06);--line:rgba(255,255,255,.11)}
+body.quarks-phase-active .goal-line{color:#fff!important}
+body.quarks-phase-active .formula-line{color:#cfd8ee!important}
+body.quarks-phase-active #starBoard.quarks-free-mode{filter:none!important;background:radial-gradient(circle at 50% 48%,rgba(255,80,40,.36),transparent 23%),radial-gradient(circle at 50% 55%,rgba(255,35,20,.15),transparent 66%)!important;border-radius:28px!important;overflow:visible!important}
 body.quarks-phase-active #starBoard>.star-core,
 body.quarks-phase-active #starBoard>.stellar-zones,
 body.quarks-phase-active #starBoard>.electron-mesh,
