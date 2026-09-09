@@ -4,6 +4,7 @@
 const $=id=>document.getElementById(id);
 const GOAL='Forje os primeiros bárions';
 const FORMULA='3 quarks → 1 próton ou nêutron';
+const NEXT_LABEL='Próxima fase';
 let active=false,observer=null;
 
 function setText(id,value){const el=$(id);if(el&&el.textContent!==value)el.textContent=value}
@@ -18,12 +19,13 @@ function applyQuarksChrome(){
  setText('phaseTitle','Quarks');
  setText('goalText',GOAL);
  setText('formulaText',FORMULA);
+ setText('phaseEndBtn',NEXT_LABEL);
 }
 function startOwnership(){
  active=true;applyQuarksChrome();
  if(observer)return;
  observer=new MutationObserver(applyQuarksChrome);
- for(const id of ['branchLabel','phaseTitle','goalText','formulaText']){
+ for(const id of ['branchLabel','phaseTitle','goalText','formulaText','phaseEndBtn']){
   const el=$(id);if(el)observer.observe(el,{childList:true,subtree:true,characterData:true});
  }
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
