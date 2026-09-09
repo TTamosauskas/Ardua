@@ -1,0 +1,35 @@
+name: Patch cumulative explicit interaction priority
+
+on:
+  push:
+    branches:
+      - fix/cumulative-recipe-execution
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/cumulative-recipe-execution
+          fetch-depth: 0
+      - name: Apply strict priority patch
+        run: python scripts/_patch_cumulative_explicit_priority.py
+      - name: Validate strict cumulative architecture
+        run: |
+          node --check assets/js/ardua.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-campaign-runtime-regressions.js
+      - name: Commit strict priority patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/patch-cumulative-explicit-priority.yml scripts/_patch_cumulative_explicit_priority.py
+          git add assets/js/ardua.js scripts/validate-cumulative-recipes.js
+          git commit -m "Keep passive mechanics behind explicit cumulative actions"
+          git push origin HEAD:fix/cumulative-recipe-execution
