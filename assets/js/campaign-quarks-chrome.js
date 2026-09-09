@@ -7,11 +7,13 @@ const FORMULA='3 quarks → 1 próton ou nêutron';
 let active=false,observer=null;
 
 function setText(id,value){const el=$(id);if(el&&el.textContent!==value)el.textContent=value}
+function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
 function applyQuarksChrome(){
  if(!active)return;
- document.documentElement.classList.add('quarks-phase-root');
- document.body.classList.add('quarks-phase-active');
- document.body.classList.remove('prebang','bigbang-phase');
+ setClass(document.documentElement,'quarks-phase-root',true);
+ setClass(document.body,'quarks-phase-active',true);
+ setClass(document.body,'prebang',false);
+ setClass(document.body,'bigbang-phase',false);
  setText('branchLabel','Universo primordial');
  setText('phaseTitle','Quarks');
  setText('goalText',GOAL);
@@ -28,7 +30,8 @@ function startOwnership(){
 }
 function stopOwnership(){
  active=false;observer?.disconnect();observer=null;
- document.documentElement.classList.remove('quarks-phase-root');
+ setClass(document.documentElement,'quarks-phase-root',false);
+ setClass(document.body,'quarks-phase-active',false);
 }
 
 window.addEventListener('ardua:quarks-phase-start',startOwnership);
