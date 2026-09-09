@@ -4,13 +4,17 @@
 const map=document.getElementById('campaignMap'),content=document.getElementById('campaignContent'),links=document.getElementById('campaignLinks'),C=window.ARDUA_CAMPAIGN;
 if(!map||!content||!links||!C)return;
 let frame=0,redirectTimer=0;
+const STATE_CLASSES=['locked','revealed','available','completed','current'];
 
 function phaseState(id){
  const st=C.getState?.()||{},done=new Set(st.completed||[]);
- if(st.activeId===id)return'current';
  if(done.has(id))return'completed';
+ if(st.activeId===id)return'current';
  if(C.isUnlocked?.(id))return'available';
  return id==='quarks'&&done.has('bigbang')?'revealed':'locked';
+}
+function setStateClass(el,state){
+ for(const name of STATE_CLASSES){const enabled=name===state;if(el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
 }
 function ensureTrailNode(){
  const deuterium=map.querySelector('.phase-node[data-phase="primordial_d"]');if(!deuterium?.parentElement)return null;
@@ -19,7 +23,7 @@ function ensureTrailNode(){
   quarks=document.createElement('button');quarks.type='button';quarks.className='phase-node';quarks.dataset.phase='quarks';quarks.innerHTML='<strong>Quarks</strong>';
  }
  if(quarks.parentElement!==deuterium.parentElement||quarks.nextElementSibling!==deuterium)deuterium.parentElement.insertBefore(quarks,deuterium);
- quarks.classList.remove('locked','revealed','available','completed','current');quarks.classList.add(phaseState('quarks'));
+ setStateClass(quarks,phaseState('quarks'));
  return quarks;
 }
 function visible(el){return !!el&&el.getClientRects().length>0}
