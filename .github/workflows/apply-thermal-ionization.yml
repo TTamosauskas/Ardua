@@ -40,7 +40,11 @@ jobs:
           const classA=`  s=replaceOnce(s,"'solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'","'solar_wind','stellar_ionization','thermal_ionization','stellar_recombination','coulomb_intro','stellar_convection'",'thermal short duration');`;
           const classB=`  {const from="'solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'",to="'solar_wind','stellar_ionization','thermal_ionization','stellar_recombination','coulomb_intro','stellar_convection'",count=s.split(from).length-1;if(count!==2)throw new Error(\`Expected 2 thermal classification anchors, got \${count}\`);s=s.replaceAll(from,to);}`;
           if(!s.includes(classA))throw new Error('classification normalization anchor missing');
-          fs.writeFileSync(p,s.replace(classA,classB));
+          s=s.replace(classA,classB);
+          const validatorA="engine.includes('Ionize átomos no núcleo ${state.thermalIonizations}/${s.target}')";
+          const validatorB="engine.includes('Ionize átomos no núcleo \\${state.thermalIonizations}/\\${s.target}')";
+          if(!s.includes(validatorA))throw new Error('validator interpolation anchor missing');
+          fs.writeFileSync(p,s.replace(validatorA,validatorB));
           NODE
 
       - name: Apply implementation
