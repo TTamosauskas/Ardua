@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const SAVE_KEY='stellarForgeV1013';
-const C=window.ARDUA_CAMPAIGN,atlas=document.getElementById('discoveryAtlas');
+const C=window.ARDUA_CAMPAIGN,atlas=document.getElementById('discoveryAtlas'),modal=document.getElementById('menuModal');
 if(!C||!atlas)return;
 
 const QUARK='particle:quark',FORCE='phenomenon:strongNuclearForce',PROTON='particle:proton',NEUTRON='particle:neutron';
@@ -46,9 +46,28 @@ function sync(){
  }
  if(visible)host.querySelectorAll('.discovery-empty').forEach(x=>x.remove());
 }
+function polishDetail(){
+ const detail=document.getElementById('phenomenonDiscoveryDetail'),title=detail?.dataset.title,body=document.getElementById('phenomenonDiscoveryBody');
+ if(!detail||detail.hidden||!body||!body.querySelector('.phenomenon-source-actions'))return;
+ const copy=body.querySelector('.phenomenon-wiki-copy'),link=body.querySelector('.phenomenon-source-btn');if(!copy)return;
+ if(title==='Quarks'){
+  if(copy.dataset.quarksCopy!=='quarks'){
+   copy.dataset.quarksCopy='quarks';
+   copy.innerHTML='<p><strong>Quarks</strong> são partículas elementares. Nesta fase usamos os quarks de valência: dois <strong>u</strong> e um <strong>d</strong> formam um próton (<strong>uud</strong>), enquanto um <strong>u</strong> e dois <strong>d</strong> formam um nêutron (<strong>udd</strong>). A estrutura real dos hádrons também envolve glúons e pares quark-antiquark.</p>';
+  }
+  if(link)link.href='https://pt.wikipedia.org/wiki/Quark';
+ }else if(title==='Força Nuclear Forte'){
+  if(copy.dataset.quarksCopy!=='strong-force'){
+   copy.dataset.quarksCopy='strong-force';
+   copy.innerHTML='<p>A <strong>Força Nuclear Forte</strong> é a interação fundamental descrita pela cromodinâmica quântica. Ela mantém os quarks ligados em prótons e nêutrons; a interação forte residual entre núcleons contribui para manter os núcleos atômicos ligados.</p>';
+  }
+  if(link)link.href='https://pt.wikipedia.org/wiki/Intera%C3%A7%C3%A3o_forte';
+ }
+}
 let queued=false;
-function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;sync()})}
+function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;sync();polishDetail()})}
 new MutationObserver(schedule).observe(atlas,{childList:true,subtree:true});
+if(modal)new MutationObserver(schedule).observe(modal,{childList:true,subtree:true});
 window.addEventListener('ardua:campaign-progress',schedule);
 window.addEventListener('ardua:discovery-unread-change',schedule);
 window.addEventListener('storage',e=>{if(e.key===SAVE_KEY)schedule()});
