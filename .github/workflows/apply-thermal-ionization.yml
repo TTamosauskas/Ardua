@@ -50,6 +50,18 @@ jobs:
       - name: Apply implementation
         run: node scripts/apply-thermal-ionization.mjs
 
+      - name: Align neighboring regression contracts
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const p='scripts/validate-movement-chain-particles.js';
+          let s=fs.readFileSync(p,'utf8');
+          if(!s.includes("campaign.includes('version:14')"))throw new Error('movement migration version anchor missing');
+          s=s.replace("campaign.includes('version:14')","campaign.includes('version:15')")
+             .replace('Anã Branca deve esperar o trio de plasma','Anã Branca deve esperar a sequência de plasma');
+          fs.writeFileSync(p,s);
+          NODE
+
       - name: Restore patch runner
         if: always()
         run: git checkout -- scripts/apply-thermal-ionization.mjs
