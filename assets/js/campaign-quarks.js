@@ -16,7 +16,7 @@ const SEED=Object.freeze([
  {id:'u2',type:'u',x:76,y:65},{id:'d2',type:'d',x:50,y:82},
  {id:'u3',type:'u',x:24,y:65},{id:'d3',type:'d',x:24,y:35}
 ]);
-let active=false,stage=null,anchorId='',candidateIds=[],picked=new Set(),made={proton:0,neutron:0},snapshot=null;
+let active=false,stage=null,anchorId='',candidateIds=[],picked=new Set(),made={proton:0,neutron:0},snapshot=null,returnActiveId='';
 
 function readSave(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch(_e){return{}}}
 function grantDiscoveries(){
@@ -105,7 +105,7 @@ function hideMap(){
  const map=$('campaignMap');if(!map)return;map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
 }
 function start(){
- if(active)return;active=true;snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];picked.clear();
+ if(active)return;active=true;returnActiveId=C.getState?.().activeId||'';snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];picked.clear();
  C.setActive?.('quarks');hideMap();document.body.classList.add('quarks-phase-active');
  setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');updateProgress();
  const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.textContent='Proxima fase'}
@@ -119,6 +119,13 @@ function cleanup(){
   const end=$('phaseEndBtn');if(end){end.textContent=snapshot.endText;end.classList.toggle('show',snapshot.endShow)}
  }
  snapshot=null;window.dispatchEvent(new CustomEvent('ardua:quarks-phase-stop'));
+}
+function restoreMapActive(next){
+ if(!next)return;C.setActive?.(next);window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id:next,state:C.getState?.(),source:'quarks-complete'}}));
+}
+function finishToMap(){
+ const next=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'primordial_d';
+ cleanup();returnActiveId='';restoreMapActive(next);
 }
 function polishPreview(){
  const preview=$('campaignPhasePreview');if(!preview||preview.dataset.phaseId!=='quarks')return;
@@ -134,9 +141,12 @@ document.addEventListener('click',e=>{
 window.addEventListener('load',()=>{
  const preview=$('campaignPhasePreview');if(preview){new MutationObserver(polishPreview).observe(preview,{attributes:true,subtree:true,childList:true});polishPreview()}
  const end=$('phaseEndBtn');if(end)end.addEventListener('click',e=>{
-  if(!active||C.getState?.().activeId!=='quarks')return;e.preventDefault();e.stopImmediatePropagation();cleanup();
+  if(!active||C.getState?.().activeId!=='quarks')return;e.preventDefault();e.stopImmediatePropagation();finishToMap();
  },true);
- const map=$('campaignMap');if(map)new MutationObserver(()=>{if(active&&map.classList.contains('show'))cleanup()}).observe(map,{attributes:true,attributeFilter:['class']});
+ const map=$('campaignMap');if(map)new MutationObserver(()=>{
+  if(!active||!map.classList.contains('show'))return;
+  const back=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'';cleanup();returnActiveId='';restoreMapActive(back);
+ }).observe(map,{attributes:true,attributeFilter:['class']});
 },{once:true});
 
 window.ARDUA_QUARKS=Object.freeze({start,isActive:()=>active,recipe:Object.freeze({proton:'uud',neutron:'udd'}),seed:Object.freeze(SEED.map(x=>Object.freeze({...x}))) });
