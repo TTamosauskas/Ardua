@@ -643,5 +643,18 @@
     "slug": "solar-flare",
     "imagePath": "assets/images/phenomena/solar-flare.jpg",
     "intro": "Erupções solares são explosões repentinas na superfície do Sol causadas por mudanças no seu campo magnético. Essas explosões liberam altos níveis de radiação e partículas a altas velocidades que estavam armazenados nas linhas de campo magnético. As linhas de campo magnético formam uma \"sombra\" na fotosfera do Sol, que são as manchas solares."
+  },
+  "Núcleo estelar": {
+    "wikiTitle": "Núcleo estelar",
+    "slug": "stellar-core",
+    "wikiResolvedTitle": "Núcleo estelar",
+    "wikiUrl": "https://pt.wikipedia.org/wiki/Estrela",
+    "imagePath": "assets/images/phenomena/stellar-core.svg",
+    "imageWikiResolvedTitle": "",
+    "imageSourceUrl": "local:assets/images/phenomena/stellar-core.svg",
+    "imageLicense": "Ilustração original do projeto Ardua",
+    "imageLicenseUrl": "",
+    "imageArtist": "Ardua",
+    "intro": "A região central de uma estrela concentra as maiores temperaturas e pressões. Nessas condições, a matéria permanece fortemente ionizada e as reações nucleares que sustentam a estrela ocorrem com maior probabilidade."
   }
 }

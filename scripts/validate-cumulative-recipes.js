@@ -6,7 +6,8 @@ if(JSON.stringify(G.prerequisites.he_yellow)!==JSON.stringify({allOf:['he_orange
 if(JSON.stringify(G.prerequisites.stellar_movement)!==JSON.stringify({allOf:['he_red']}))fail('Movimentação deve seguir Anã Vermelha');
 if(JSON.stringify(G.prerequisites.solar_wind)!==JSON.stringify({allOf:['stellar_movement']}))fail('Vento Solar deve seguir Movimentação na trilha de baixa massa');
 if(JSON.stringify(G.prerequisites.stellar_ionization)!==JSON.stringify({allOf:['solar_wind']}))fail('Ionização Estelar deve seguir Vento Solar');
-if(JSON.stringify(G.prerequisites.stellar_recombination)!==JSON.stringify({allOf:['stellar_ionization']}))fail('Recombinação Estelar deve seguir Ionização Estelar');
+if(JSON.stringify(G.prerequisites.thermal_ionization)!==JSON.stringify({allOf:['stellar_ionization']}))fail('Ionização Térmica deve seguir Ionização Estelar');
+if(JSON.stringify(G.prerequisites.stellar_recombination)!==JSON.stringify({allOf:['thermal_ionization']}))fail('Recombinação Estelar deve seguir Ionização Térmica');
 if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_yellow']}))fail('Coulomb deve seguir Anã Amarela na trilha intermediária');
 const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 if(map.includes("branchCluster('mainseq'"))fail('Fork Laranja/Amarela ainda existe');

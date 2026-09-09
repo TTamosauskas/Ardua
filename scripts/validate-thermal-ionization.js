@@ -1,0 +1,15 @@
+const fs=require('fs'),vm=require('vm');
+const fail=m=>{throw new Error(m)};
+const engine=fs.readFileSync('assets/js/ardua.js','utf8'),graphSrc=fs.readFileSync('assets/js/campaign-graph.js','utf8'),discoveries=fs.readFileSync('assets/js/campaign-discoveries.js','utf8'),css=fs.readFileSync('assets/css/ardua.css','utf8'),sources=JSON.parse(fs.readFileSync('assets/data/phenomenon-sources.json','utf8'));
+const ctx={window:{}};vm.createContext(ctx);vm.runInContext(graphSrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
+const order=G.baseOrder,i=order.indexOf('stellar_ionization');if(i<0||order[i+1]!=='thermal_ionization'||order[i+2]!=='stellar_recombination')fail('ordem da Ionização Térmica inválida');
+if(!engine.includes("id:'thermal_ionization'")||!engine.includes("title:'Ionização Térmica'")||!engine.includes("mode:'thermalIonization'"))fail('fase térmica ausente no motor');
+if(!engine.includes('Ionize átomos no núcleo ${state.thermalIonizations}/${s.target}')||!engine.includes("setFormula('Leve um átomo ao núcleo.')"))fail('objetivo/receita térmicos incorretos');
+if(!engine.includes('piece.thermalIonizationReadyRound=state.nuclearRound+2')||!engine.includes('await resolvePendingThermalIonizations()'))fail('espera de uma rodada ausente');
+if(!engine.includes('piece.boundElectrons=0')||!engine.includes("piece.matterState='atom'"))fail('ionização total ausente');
+if(!engine.includes('thermalIonizationSeparationMotif')||!engine.includes('objectiveMotifChord(r,false)'))fail('motivo musical térmico ausente');
+if(!engine.includes('movementMechanicUnlocked(s)||thermalCoreMovementAllowed(s)')||!engine.includes("campaignKnowledgeReached('thermal_ionization')"))fail('mecânica cumulativa térmica ausente');
+if(engine.includes('grantConvectionFromCells([piece.cell]')||engine.includes('grantConvectionFromCells([targetCell]'))fail('ionização térmica alimenta Convecção');
+if(!css.includes('.atom.thermal-heating')||!css.includes('@keyframes thermalCoreShake'))fail('estado visual térmico ausente');
+if(!discoveries.includes("key:'phenomenon:stellarCore'")||!sources['Núcleo estelar']?.imagePath?.endsWith('stellar-core.svg')||!fs.existsSync('assets/images/phenomena/stellar-core.svg'))fail('descoberta Núcleo estelar incompleta');
+console.log('Thermal ionization phase, persistence, visuals, discovery and convection isolation OK.');
