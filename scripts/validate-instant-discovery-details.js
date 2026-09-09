@@ -1,0 +1,20 @@
+const fs=require('fs');
+const base=fs.readFileSync('assets/js/campaign-discoveries.js','utf8');
+const quarks=fs.readFileSync('assets/js/campaign-quarks-discoveries.js','utf8');
+const forces=fs.readFileSync('assets/js/campaign-fundamental-forces.js','utf8');
+const phenomena=fs.readFileSync('assets/js/campaign-discoveries-phenomena.js','utf8');
+const elements=fs.readFileSync('assets/js/campaign-discoveries-elements.js','utf8');
+function assert(ok,msg){if(!ok)throw new Error(msg)}
+assert(base.includes('glyph,text})')&&base.includes('dataset.discoveryText=entry.text'),'Fenômenos base sem cópia local síncrona');
+assert(quarks.includes('LOCAL_TEXT')&&quarks.includes('dataset.discoveryText=LOCAL_TEXT[key]'),'Quarks/forte sem cópia local síncrona');
+assert(forces.includes('text:f.text'),'Forças fundamentais sem texto no índice');
+assert(phenomena.includes('phenomenonSourcesResolved')&&phenomena.includes('phenomenonDetailMarkup(title,glyph,text,initialCfg)'),'Fenômenos não abrem pelo cache local');
+assert(phenomena.includes("phenomenonSources();\nconst cache")&&phenomena.includes('prewarmVisiblePhenomena'),'Fenômenos sem pré-aquecimento local');
+assert(!phenomena.includes('function loadingMarkup(glyph)'),'Placeholder bloqueante de Fenômenos voltou');
+const es=elements.slice(elements.indexOf('function showElementDetail'),elements.indexOf('function prewarmVisibleElements'));
+assert(!/^async function showElementDetail/m.test(es),'Detalhe de elemento voltou a bloquear em async');
+assert(!es.includes('await ')&&!es.includes('wikiData('),'Abertura de elemento ainda espera Wikipédia/metadados');
+assert(es.indexOf('render();')>=0,'Elemento não renderiza sincronamente');
+assert(elements.includes('elementSourcesResolved')&&elements.includes('sourceMetaResolved')&&elements.includes('prewarmVisibleElements'),'Elementos sem caches locais/preload');
+assert(!elements.includes('setTimeout(()=>showElementDetail(el),0)'),'Elemento ainda adia clique para outro task');
+console.log('Instant discovery details OK: local-first render, local image prewarm, no Wikipedia wait in element click path.');

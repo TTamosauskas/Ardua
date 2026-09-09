@@ -63,13 +63,18 @@ function sortCardsByHistory(){
  sorted.forEach(el=>atlas.appendChild(el));
 }
 
-let phenomenonSourcesPromise=null;
+let phenomenonSourcesPromise=null,phenomenonSourcesResolved=null;
 function phenomenonSources(){
  if(phenomenonSourcesPromise)return phenomenonSourcesPromise;
- phenomenonSourcesPromise=fetch(PHENOMENON_SOURCES_URL,{cache:'force-cache'}).then(r=>r.ok?r.json():Promise.reject(new Error('phenomenon sources unavailable'))).catch(()=>({}));
+ phenomenonSourcesPromise=fetch(PHENOMENON_SOURCES_URL,{cache:'force-cache'}).then(r=>r.ok?r.json():Promise.reject(new Error('phenomenon sources unavailable'))).catch(()=>({})).then(data=>(phenomenonSourcesResolved=data||{},phenomenonSourcesResolved));
  return phenomenonSourcesPromise;
 }
-const cache=new Map();
+phenomenonSources();
+const cache=new Map(),preloadedPhenomenonImages=new Set();
+function preloadPhenomenonImage(src){
+ if(!src||preloadedPhenomenonImages.has(src))return;preloadedPhenomenonImages.add(src);const img=new Image();img.decoding='async';img.src=src;
+}
+
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WIKI_ALIASES=Object.freeze({
  'Big Bang':'Big Bang',
@@ -254,23 +259,48 @@ function leaveDetail(restoreTab=true){
  if(restoreTab)$('discoveriesTabs')?.querySelector('[data-discovery-tab="phenomena"]')?.click();
  requestAnimationFrame(()=>card.scrollTo({top:0,behavior:'auto'}));
 }
-function loadingMarkup(glyph){return`<div class="phenomenon-wiki-loading"><div class="phenomenon-wiki-figure"><div class="phenomenon-wiki-image-placeholder">${esc(glyph||'✦')}</div></div><div class="phenomenon-wiki-copy"><p>Carregando o primeiro parágrafo do artigo…</p></div></div>`}
+function phenomenonText(button){
+ const key=button.dataset.discoveryKey||'';return button.dataset.discoveryText||window.ARDUA_DISCOVERY_INDEX?.[key]?.text||'';
+}
+function phenomenonImage(cfg){return cfg?.imagePath?new URL(cfg.imagePath,document.baseURI).href:''}
+function phenomenonUrl(title,cfg,urlOverride=''){return urlOverride||cfg?.wikiUrl||wikiFallbackUrl(cfg?.wikiTitle||WIKI_ALIASES[title]||title)}
+function phenomenonDetailMarkup(title,glyph,text,cfg={},imageOverride='',urlOverride=''){
+ const src=imageOverride||phenomenonImage(cfg);if(src)preloadPhenomenonImage(src);
+ const image=src?`<img class="phenomenon-wiki-image" src="${esc(src)}" alt="${esc(title)}" loading="eager" decoding="async" fetchpriority="high">`:`<div class="phenomenon-wiki-image-placeholder">${esc(glyph)}</div>`;
+ const fallback=text||cfg?.intro||`Consulte o artigo ${cfg?.wikiResolvedTitle||cfg?.wikiTitle||title} na Wikipédia para esta descoberta.`;
+ const copy=PHENOMENON_INTRO_HTML_OVERRIDES[title]||`<p>${esc(fallback)}</p>`;
+ return`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy">${copy}</div><div class="phenomenon-source-actions"><a class="phenomenon-source-btn" href="${esc(phenomenonUrl(title,cfg,urlOverride))}" target="_blank" rel="noopener noreferrer">Wikipedia</a></div>`;
+}
+function prewarmVisiblePhenomena(){
+ const sources=phenomenonSourcesResolved;if(!sources)return;
+ for(const button of atlas.querySelectorAll('.discovery-card:not([hidden])')){
+  if(!button.getClientRects().length)continue;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(sources[title]||{});if(src)preloadPhenomenonImage(src);
+ }
+}
+function schedulePhenomenonPrewarm(){
+ const run=()=>prewarmVisiblePhenomena();if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:700});else setTimeout(run,0);
+}
+phenomenonSources().then(schedulePhenomenonPrewarm);
 async function showDetail(button){
  const title=button.querySelector('strong')?.textContent?.trim()||'',glyph=button.querySelector('.discovery-glyph')?.textContent?.trim()||'✦';if(!title)return;
- const host=ensureDetail(),body=$('phenomenonDiscoveryBody'),serial=++requestSerial;if(!body)return;
- setDetailMode(true);host.hidden=false;host.dataset.title=title;host.setAttribute('aria-busy','true');host.querySelector('[data-phenomenon-detail-title]').textContent=title;body.innerHTML=loadingMarkup(glyph);card.scrollTo({top:0,behavior:'auto'});
- const wiki=await wikiData(title,glyph);if(serial!==requestSerial||host.hidden||host.dataset.title!==title)return;
- host.removeAttribute('aria-busy');
- const image=wiki.image?`<img class="phenomenon-wiki-image" src="${esc(wiki.image)}" alt="${esc(title)}" loading="eager">`:`<div class="phenomenon-wiki-image-placeholder">${esc(glyph)}</div>`;
- const intro=wiki.intro||`Consulte o artigo ${wiki.title||title} na Wikipédia para esta descoberta.`;
- const copy=PHENOMENON_INTRO_HTML_OVERRIDES[title]||`<p>${esc(intro)}</p>`;
- body.innerHTML=`<figure class="phenomenon-wiki-figure">${image}</figure><div class="phenomenon-wiki-copy">${copy}</div><div class="phenomenon-source-actions"><a class="phenomenon-source-btn" href="${esc(wiki.url)}" target="_blank" rel="noopener noreferrer">Wikipedia</a></div>`;
+ const text=phenomenonText(button),host=ensureDetail(),body=$('phenomenonDiscoveryBody'),serial=++requestSerial;if(!body)return;
+ setDetailMode(true);host.hidden=false;host.dataset.title=title;host.removeAttribute('aria-busy');host.querySelector('[data-phenomenon-detail-title]').textContent=title;
+ const initialCfg=phenomenonSourcesResolved?.[title]||{};body.innerHTML=phenomenonDetailMarkup(title,glyph,text,initialCfg);card.scrollTo({top:0,behavior:'auto'});
+ if(initialCfg.imagePath)return;
+ const sources=await phenomenonSources();if(serial!==requestSerial||host.hidden||host.dataset.title!==title)return;
+ const cfg=sources?.[title]||{};body.innerHTML=phenomenonDetailMarkup(title,glyph,text,cfg);
+ if(cfg.imagePath)return;
+ host.setAttribute('aria-busy','true');const wiki=await wikiData(title,glyph);if(serial!==requestSerial||host.hidden||host.dataset.title!==title)return;
+ host.removeAttribute('aria-busy');body.innerHTML=phenomenonDetailMarkup(title,glyph,text||wiki.intro,cfg,wiki.image,wiki.url);
 }
+
 
 atlas.addEventListener('click',e=>{
  const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button||!atlas.contains(button))return;
  e.preventDefault();e.stopImmediatePropagation();showDetail(button);
 },true);
+atlas.addEventListener('pointerover',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonSourcesResolved?.[title]||{});if(src)preloadPhenomenonImage(src)},{passive:true});
+atlas.addEventListener('pointerdown',e=>{const button=e.target instanceof Element?e.target.closest('.discovery-card'):null;if(!button)return;const title=button.querySelector('strong')?.textContent?.trim()||'',src=phenomenonImage(phenomenonSourcesResolved?.[title]||{});if(src)preloadPhenomenonImage(src)},{passive:true});
 modal.addEventListener('click',e=>{
  const tab=e.target instanceof Element?e.target.closest('[data-discovery-tab]'):null;
  if(tab&&detail&&!detail.hidden)leaveDetail(false);

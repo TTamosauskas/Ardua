@@ -6,9 +6,13 @@ const C=window.ARDUA_CAMPAIGN,atlas=document.getElementById('discoveryAtlas'),mo
 if(!C||!atlas)return;
 
 const QUARK='particle:quark',FORCE='phenomenon:strongNuclearForce',PROTON='particle:proton',NEUTRON='particle:neutron';
+const LOCAL_TEXT=Object.freeze({
+ [QUARK]:'Quarks são partículas elementares. Prótons e nêutrons são bárions formados por três quarks de valência, embora sua estrutura real também envolva glúons e pares quark-antiquark.',
+ [FORCE]:'A Força Nuclear Forte mantém quarks ligados dentro de prótons e nêutrons; sua interação residual entre núcleons contribui para manter os núcleos atômicos ligados.'
+});
 const INDEX={...(window.ARDUA_DISCOVERY_INDEX||{}),
- [QUARK]:{title:'Quarks',type:'phenomenon'},
- [FORCE]:{title:'Força Nuclear Forte',type:'phenomenon'}
+ [QUARK]:{title:'Quarks',type:'phenomenon',text:LOCAL_TEXT[QUARK]},
+ [FORCE]:{title:'Força Nuclear Forte',type:'phenomenon',text:LOCAL_TEXT[FORCE]}
 };
 window.ARDUA_DISCOVERY_INDEX=Object.freeze(INDEX);
 const PHASE_DISCOVERIES={};
@@ -29,7 +33,7 @@ function knownNow(){
  return{rewards,unlocked:C.editor||done.has('quarks')||rewards.has(QUARK)||rewards.has(FORCE)};
 }
 function makeCard(key,title,glyph,group){
- const b=document.createElement('button');b.type='button';b.className='discovery-card unlocked quarks-discovery-card';b.dataset.discoveryKey=key;
+ const b=document.createElement('button');b.type='button';b.className='discovery-card unlocked quarks-discovery-card';b.dataset.discoveryKey=key;b.dataset.discoveryText=LOCAL_TEXT[key]||'';
  b.innerHTML=`<span class="discovery-glyph">${glyph}</span><span><strong>${title}</strong><small>${group}</small></span>`;
  return b;
 }

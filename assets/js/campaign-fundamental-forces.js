@@ -12,7 +12,7 @@ const FORCES=Object.freeze([
 ]);
 
 const index={...(window.ARDUA_DISCOVERY_INDEX||{})};
-for(const f of FORCES)index[f.key]=Object.freeze({key:f.key,title:f.title,group:f.group,glyph:f.glyph,type:'phenomenon'});
+for(const f of FORCES)index[f.key]=Object.freeze({key:f.key,title:f.title,group:f.group,glyph:f.glyph,text:f.text,type:'phenomenon'});
 window.ARDUA_DISCOVERY_INDEX=Object.freeze(index);
 
 const byPhase={};
