@@ -1625,7 +1625,8 @@ function thermalIonizationMechanicUnlocked(s=phase()){return !!s&&campaignKnowle
 function thermalIonizationEligible(piece,s=phase()){return thermalIonizationMechanicUnlocked(s)&&!!piece&&!piece.free&&piece.cell!==null&&piece.cell!==undefined&&piece.matterState==='atom'&&Number(piece.boundElectrons||0)>0&&!piece.thermalHeating}
 function thermalCoreMovementAllowed(s=phase()){return thermalIonizationMechanicUnlocked(s)}
 function ensureCumulativeThermalAtom(s=phase()){
- if(!thermalIonizationMechanicUnlocked(s)||s.mode==='stellarFormation')return false;if([...state.pieces.values()].some(p=>thermalIonizationEligible(p,s)))return false;
+ dom.star?.classList.toggle('thermal-core-enabled',thermalIonizationMechanicUnlocked(s));
+ if(!thermalIonizationMechanicUnlocked(s))return false;if([...state.pieces.values()].some(p=>thermalIonizationEligible(p,s)))return false;
  const cell=activeCells().filter(c=>state.board[c]===null).sort((a,b)=>(coords[b]?.ring||0)-(coords[a]?.ring||0)||a-b)[0];if(cell===undefined)return false;createPiece('H',cell,false,{matterState:'atom',boundElectrons:1,massNumber:1});return true;
 }
 function armThermalIonizationAtCore(piece,targetCell,s=phase()){

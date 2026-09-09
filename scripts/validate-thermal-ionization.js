@@ -9,6 +9,13 @@ if(!engine.includes('piece.thermalIonizationReadyRound=state.nuclearRound+2')||!
 if(!engine.includes('piece.boundElectrons=0')||!engine.includes("piece.matterState='atom'"))fail('ionização total ausente');
 if(!engine.includes('thermalIonizationSeparationMotif')||!engine.includes('objectiveMotifChord(r,false)'))fail('motivo musical térmico ausente');
 if(!engine.includes('movementMechanicUnlocked(s)||thermalCoreMovementAllowed(s)')||!engine.includes("campaignKnowledgeReached('thermal_ionization')"))fail('mecânica cumulativa térmica ausente');
+const thermalEnsure=engine.slice(engine.indexOf('function ensureCumulativeThermalAtom'),engine.indexOf('function armThermalIonizationAtCore'));
+if(thermalEnsure.includes("s.mode==='stellarFormation'"))fail('formação estelar ainda exclui ionização térmica cumulativa');
+if(!thermalEnsure.includes("classList.toggle('thermal-core-enabled'"))fail('estado visual cumulativo do núcleo térmico ausente');
+const startPhaseBlock=engine.slice(engine.indexOf('function startPhase('),engine.indexOf('function modalPrimaryLine'));
+if(startPhaseBlock.indexOf('ensureCumulativeThermalAtom(s)')<0||startPhaseBlock.indexOf('ensureCumulativeThermalAtom(s)')>startPhaseBlock.indexOf("if(s.mode==='stellarFormation')startStellarFormationStage()"))fail('átomo térmico precisa existir antes da camada especial de formação');
+const formationCss=fs.readFileSync('assets/css/stellar-formation.css','utf8');
+for(const token of ['.stellar-formation-mode.thermal-core-enabled .cells','.stellar-formation-mode.thermal-core-enabled .pieces','.stellar-formation-mode.thermal-core-enabled .cell.move-target','.stellar-formation-mode.thermal-core-enabled .atom'])if(!formationCss.includes(token))fail('formação estelar perdeu interatividade térmica: '+token);
 if(engine.includes('grantConvectionFromCells([piece.cell]')||engine.includes('grantConvectionFromCells([targetCell]'))fail('ionização térmica alimenta Convecção');
 if(!css.includes('.atom.thermal-heating')||!css.includes('@keyframes thermalCoreShake'))fail('estado visual térmico ausente');
 if(!discoveries.includes("key:'phenomenon:stellarCore'")||!sources['Núcleo estelar']?.imagePath?.endsWith('stellar-core.svg')||!fs.existsSync('assets/images/phenomena/stellar-core.svg'))fail('descoberta Núcleo estelar incompleta');
