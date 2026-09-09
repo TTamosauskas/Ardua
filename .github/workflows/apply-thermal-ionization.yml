@@ -53,6 +53,10 @@ jobs:
           s=s.replace("campaign.includes('version:14')","campaign.includes('version:15')")
              .replace('Anã Branca deve esperar o trio de plasma','Anã Branca deve esperar a sequência de plasma');
           fs.writeFileSync(p,s);
+          p='scripts/validate-coronal-jets.js';s=fs.readFileSync(p,'utf8');
+          if(!s.includes("need(campaign,'version:14'"))throw new Error('coronal migration version anchor missing');
+          s=s.replace("need(campaign,'version:14','Migração de campanha v14 ausente');","need(campaign,'version:15','Migração de campanha v15 ausente');");
+          fs.writeFileSync(p,s);
           p='scripts/validate-phenomenon-sources.mjs';s=fs.readFileSync(p,'utf8');
           if(!s.includes('entries.length!==54'))throw new Error('phenomenon count anchor missing');
           s=s.replace('entries.length!==54','entries.length!==55').replace('Esperados 54 fenômenos','Esperados 55 fenômenos');
