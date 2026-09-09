@@ -4,6 +4,9 @@ const inbox=fs.readFileSync('assets/js/campaign-discovery-notifications.js','utf
 const css=fs.readFileSync('assets/css/campaign-discovery-notifications.css','utf8');
 const home=fs.readFileSync('assets/js/campaign-home-polish.js','utf8');
 const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
+const exploration=fs.readFileSync('assets/js/campaign-exploration.js','utf8');
+const runtimeSync=fs.readFileSync('assets/js/campaign-runtime-sync.js','utf8');
+const quarksMap=fs.readFileSync('assets/js/campaign-quarks-map.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 
 function assert(ok,msg){if(!ok)throw new Error(msg)}
@@ -38,4 +41,20 @@ assert(modal.includes("if(engineIntro?.classList.contains('show'))engineStart?.c
 assert(modal.includes("new MutationObserver(dismissEngineIntro).observe(engineIntro"),'Intro tardio precisa ser observado');
 assert(map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'Fim de fase precisa retornar imediatamente ao mapa');
 
-console.log('Campaign runtime regressions OK: native map launch, persistent phase preview, live unread badges and post-phase modal dismissal.');
+// 4. O estado visual do mapa deve estabilizar. Renderizadores auxiliares não podem
+//    remover/recolocar as mesmas classes a cada redraw das linhas ou resize sintético.
+assert(home.includes("const STATE_CLASSES=['locked','revealed','available','completed','current']"),'Home precisa compartilhar um conjunto explícito de classes de estado');
+assert(home.includes("if(el.classList.contains(name)===enabled)continue"),'Home precisa alterar classe de estado somente quando necessário');
+assert(home.includes('function structureMutation(records)'),'Observer do home precisa ignorar redraws SVG sem mudança estrutural da trilha');
+assert(!home.includes("window.addEventListener('resize',scheduleSync)"),'Resize de linhas não pode reprocessar todas as classes de fase');
+assert(exploration.includes('function setClass(el,name,enabled)')&&exploration.includes('if(changed)requestLayout()'),'Janela de exploração precisa ser idempotente e recalcular layout só quando algo mudou');
+assert(!exploration.includes('function clearFog(node)'),'Exploração não pode mais remover e recolocar todas as classes em cada passagem');
+assert(quarksMap.includes("if(done.has(id))return'completed';\n if(st.activeId===id)return'current'"),'Quarks concluída deve priorizar completed sobre current');
+assert(quarksMap.includes('setStateClass(quarks,phaseState(\'quarks\'))'),'Nó Quarks precisa atualizar estado de forma idempotente');
+
+// 5. O título interno do motor fica propositalmente obsoleto enquanto o mapa está visível
+//    e durante a fase customizada Quarks; runtime-sync não pode recuar activeId nesses estados.
+assert(runtimeSync.includes("map?.classList.contains('show')"),'Runtime sync precisa respeitar a posse do mapa');
+assert(runtimeSync.includes('window.ARDUA_QUARKS?.isActive?.()'),'Runtime sync precisa respeitar a posse da fase customizada Quarks');
+
+console.log('Campaign runtime regressions OK: native launch, phase preview, unread badges, Quarks handoff and stable map state ownership.');
