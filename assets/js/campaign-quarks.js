@@ -127,10 +127,12 @@ function finishToMap(){
  const next=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'primordial_d';
  cleanup();returnActiveId='';restoreMapActive(next);
 }
+function setPreviewText(el,value){if(el&&el.textContent!==value)el.textContent=value}
+function setPreviewClass(el,value){if(el&&el.className!==value)el.className=value}
 function polishPreview(){
  const preview=$('campaignPhasePreview');if(!preview||preview.dataset.phaseId!=='quarks')return;
  const segment=preview.querySelector('[data-phase-segment]'),time=preview.querySelector('[data-phase-time]'),title=preview.querySelector('[data-phase-title]'),art=preview.querySelector('[data-phase-art]');
- if(segment)segment.textContent='Universo Primordial - Primeiros Instantes';if(time)time.textContent='Primeiros microssegundos depois do Big Bang';if(title)title.textContent='QUARKS';if(art)art.className='stellar-art bigBang';
+ setPreviewText(segment,'Universo Primordial - Primeiros Instantes');setPreviewText(time,'Primeiros microssegundos depois do Big Bang');setPreviewText(title,'QUARKS');setPreviewClass(art,'stellar-art bigBang');
 }
 document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null,button=target?.closest('#campaignPhasePreview [data-phase-preview-launch]');if(!button)return;
