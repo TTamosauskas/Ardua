@@ -2,6 +2,7 @@ const fs=require('fs');
 const read=p=>fs.readFileSync(p,'utf8');
 const graph=read('assets/js/campaign-quarks-graph.js');
 const game=read('assets/js/campaign-quarks.js');
+const map=read('assets/js/campaign-map.js');
 const mapBridge=read('assets/js/campaign-quarks-map.js');
 const discoveries=read('assets/js/campaign-quarks-discoveries.js');
 const notifications=read('assets/js/campaign-discovery-notifications.js');
@@ -28,6 +29,11 @@ expect(game.includes("Crie Prótons e Nêutrons — ${total}/2"),'objective coun
 expect(game.includes("3 quarks → 1 próton ou nêutron"),'objective formula must explain the three-quark result');
 expect(game.includes("end.textContent='Proxima fase'"),'final central button must say exactly Proxima fase');
 expect(game.includes("className=isProton?'atom quarks-baryon quarks-proton':'neutron quarks-baryon quarks-neutron'"),'formed baryons must reuse native proton/atom and neutron visual classes');
+expect(game.includes("returnActiveId=C.getState?.().activeId||''"),'Quarks must remember the campaign phase that owned the map before launch');
+expect(game.includes("const next=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'primordial_d'"),'first completion must hand the current map state to deuterium while revisits return to their previous campaign position');
+expect(game.includes("source:'quarks-complete'"),'completion handoff must refresh campaign state after the native map opens');
+expect(game.includes('finishToMap()'),'the central final button must execute the synchronized map handoff');
+expect(map.includes("phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id)")&&map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'native phase-end listener must complete Quarks and open the required map before the custom handoff refreshes it');
 
 for(const key of ['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron']){
  expect(game.includes(`'${key}'`),`phase reward missing ${key}`);
