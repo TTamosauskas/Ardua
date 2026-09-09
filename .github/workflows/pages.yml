@@ -73,9 +73,6 @@ jobs:
       - name: Validate stellar plasma phases
         run: node scripts/validate-stellar-plasma.js
 
-      - name: Validate thermal ionization
-        run: node scripts/validate-thermal-ionization.js
-
       - name: Validate coronal jets
         run: node scripts/validate-coronal-jets.js
 

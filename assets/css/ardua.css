@@ -435,10 +435,3 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 
 /* Jatos Coronais: estado eletrônico não altera o tamanho visual das peças. */
 .atom.coronal-uniform{width:var(--cellSize)!important;height:var(--cellSize)!important}
-
-
-/* Thermal ionization */
-.atom.thermal-heating{animation:thermalCoreShake .16s ease-in-out infinite alternate;filter:saturate(1.65) sepia(.22) hue-rotate(320deg);box-shadow:0 0 0 2px rgba(255,80,70,.72),0 0 22px rgba(255,48,38,.78),inset 0 0 16px rgba(255,70,55,.28)!important}
-@keyframes thermalCoreShake{from{transform:translate(-50%,-50%) translate(-2px,1px) scale(1.03)}to{transform:translate(-50%,-50%) translate(2px,-1px) scale(1.07)}}
-.thermal-separation-stage .thermal-source-token{transition:opacity .16s ease,transform .2s ease,filter .18s ease}.thermal-separation-stage .thermal-hot-token{filter:saturate(1.8) sepia(.25) hue-rotate(320deg);transform:translate(-50%,-50%) scale(1.12)}.thermal-separation-stage .thermal-source-gone{opacity:0;transform:translate(-50%,-50%) scale(.72)}.thermal-separation-stage .thermal-split-ion,.thermal-separation-stage .thermal-split-electrons{opacity:0;transition:left .28s cubic-bezier(.2,.75,.25,1),opacity .16s ease,transform .28s ease}.thermal-separation-stage.thermal-separated .thermal-split-ion,.thermal-separation-stage.thermal-separated .thermal-split-electrons{opacity:1;transform:translate(-50%,-50%) scale(1.04)}
-@media(prefers-reduced-motion:reduce){.atom.thermal-heating{animation:none}.thermal-separation-stage .thermal-split-ion,.thermal-separation-stage .thermal-split-electrons{transition-duration:.06s}}

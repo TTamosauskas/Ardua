@@ -7,7 +7,6 @@ if(!G||!C)return;
 const NAMES=Object.freeze({
  solar_wind:'Vento Solar',
  stellar_ionization:'Ionização Estelar',
- thermal_ionization:'Ionização Térmica',
  stellar_recombination:'Recombinação Estelar',
  coronal_jets:'Ejeção de Massa Coronal (CME)',
  primordial_he3d:'Hélio-4 via Hélio-3',

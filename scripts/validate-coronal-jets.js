@@ -66,7 +66,7 @@ need(phenomenaUI,"'Jatos Coronais'",'Alias Wikipedia de Jatos Coronais ausente')
 need(phenomenaUI,"'Reconexão Magnética'",'Alias Wikipedia de Reconexão Magnética ausente');
 need(sources,'"Jatos Coronais"','Fonte de fenômeno Jatos Coronais ausente');
 need(sources,'"Reconexão Magnética"','Fonte de fenômeno Reconexão Magnética ausente');
-need(campaign,'version:15','Migração de campanha v15 ausente');
+need(campaign,'version:14','Migração de campanha v14 ausente');
 need(campaign,"'coronal_jets'",'Migração de campanha não conhece Jatos Coronais');
 
 // Interação cumulativa: a Convecção vence a química atômica quando armada e usa a mesma confirmação em três passos

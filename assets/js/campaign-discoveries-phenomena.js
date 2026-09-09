@@ -99,7 +99,6 @@ const WIKI_ALIASES=Object.freeze({
  'Raios cósmicos':'Raio cósmico',
  'Vento Solar':'Vento solar',
  'Ionização':'Ionização',
- 'Núcleo estelar':'Núcleo estelar',
  'Anã Marrom':'Anã marrom',
  'Anã Vermelha':'Anã vermelha',
  'Anã Laranja':'Anã laranja',
