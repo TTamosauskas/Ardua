@@ -1,7 +1,7 @@
 /* Ardua — inserts the Quarks lesson between Big Bang and primordial deuterium. */
 (()=>{
 'use strict';
-const G=window.ARDUA_CAMPAIGN_GRAPH,A=window.ARDUA_REQUIRED_ATLAS;
+const G=window.ARDUA_CAMPAIGN_GRAPH,A=window.ARDUA_REQUIRED_ATLAS,INBOX_KEY='arduaDiscoveryInboxV1';
 if(!G||!A)return;
 
 G.prerequisites.quarks={allOf:['bigbang']};
@@ -28,6 +28,15 @@ window.addEventListener('DOMContentLoaded',()=>{
  const activeIndex=G.runtimeIndex?.[st.activeId],activePastDeuterium=Number.isInteger(activeIndex)&&activeIndex>dIndex;
  if(!(completedPastDeuterium||activePastDeuterium))return;
  C.markCompleted('quarks');
- window.dispatchEvent(new CustomEvent('ardua:discovery-inbox-baseline',{detail:{keys:['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron']}}));
+ try{
+  const historical=['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron'];
+  const inbox=JSON.parse(localStorage.getItem(INBOX_KEY)||'{}')||{},known=new Set(inbox.known||[]),unread=new Set(inbox.unread||[]);
+  historical.forEach(key=>{known.add(key);unread.delete(key)});
+  const next=JSON.stringify({...inbox,version:1,known:[...known],unread:[...unread]});localStorage.setItem(INBOX_KEY,next);
+  let event;
+  try{event=new StorageEvent('storage',{key:INBOX_KEY,newValue:next,storageArea:localStorage})}
+  catch(_e){event=new Event('storage');Object.defineProperties(event,{key:{value:INBOX_KEY},newValue:{value:next}})}
+  window.dispatchEvent(event);
+ }catch(_e){}
 },{once:true});
 })();
