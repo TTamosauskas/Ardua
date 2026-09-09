@@ -33,6 +33,7 @@ expect(game.includes("returnActiveId=C.getState?.().activeId||''"),'Quarks must 
 expect(game.includes("const next=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'primordial_d'"),'first completion must hand the current map state to deuterium while revisits return to their previous campaign position');
 expect(game.includes("source:'quarks-complete'"),'completion handoff must refresh campaign state after the native map opens');
 expect(game.includes('finishToMap()'),'the central final button must execute the synchronized map handoff');
+expect(game.includes("function setPreviewText(el,value){if(el&&el.textContent!==value)")&&game.includes("function setPreviewClass(el,value){if(el&&el.className!==value)"),'Quarks preview mutations must be idempotent to avoid MutationObserver feedback loops');
 expect(map.includes("phaseEnd.addEventListener('click',()=>{const id=C.getState().activeId;if(id&&id!=='bigbang')C.markCompleted(id)")&&map.includes('showMap({required:true,focusCurrent:true,instant:true})'),'native phase-end listener must complete Quarks and open the required map before the custom handoff refreshes it');
 
 for(const key of ['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron']){
@@ -59,4 +60,4 @@ expect(before('assets/js/campaign-map.js','assets/js/campaign-quarks-map.js'),'Q
 expect(before('assets/js/campaign-discoveries.js','assets/js/campaign-quarks-discoveries.js'),'Quarks discoveries must extend the base catalog');
 expect(before('assets/js/campaign-quarks-discoveries.js','assets/js/campaign-discovery-notifications.js'),'Quarks discovery keys must exist before unread inbox initialization');
 
-console.log('Quarks phase validation passed: explicit trail node, Big Bang focus and deuterium gate verified.');
+console.log('Quarks phase validation passed: explicit trail node, stable preview, Big Bang focus and deuterium gate verified.');
