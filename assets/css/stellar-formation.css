@@ -38,10 +38,3 @@
 .star-board.stellar-formation-mode.formation-stabilized{overflow:visible}
 .star-board.stellar-formation-mode.formation-stabilized .center-action.stage-end{top:auto;bottom:-58px;width:min(78%,300px);height:48px;border-radius:999px;padding:8px 18px;transform:translate(-50%,0) scale(.94)}
 .star-board.stellar-formation-mode.formation-stabilized .center-action.stage-end.show{transform:translate(-50%,0) scale(1)}
-
-
-/* Learned thermal-core ionization remains interactive through every later stellar-formation phase. */
-.star-board.stellar-formation-mode.thermal-core-enabled .cells{opacity:1;z-index:20}
-.star-board.stellar-formation-mode.thermal-core-enabled .pieces{opacity:1;z-index:21}
-.star-board.stellar-formation-mode.thermal-core-enabled .cell.move-target,
-.star-board.stellar-formation-mode.thermal-core-enabled .atom{pointer-events:auto}
