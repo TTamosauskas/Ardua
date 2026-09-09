@@ -36,13 +36,13 @@ function stopOwnership(){
  setClass(document.body,'quarks-phase-active',false);
 }
 
-/* Quarks is a custom phase outside the native runtime order, so persist its successful
-   completion before the native-looking final button hands control back to the map. */
+/* The custom phase itself is the authority here. Persist completion even if a stale native
+   engine title briefly disagrees with campaign activeId during the final click. */
 document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null,end=target?.closest('#phaseEndBtn');
  if(!end||!active||!end.classList.contains('show'))return;
  const st=C?.getState?.()||{};
- if(st.activeId==='quarks'&&!(st.completed||[]).includes('quarks'))C.markCompleted?.('quarks');
+ if(!(st.completed||[]).includes('quarks'))C.markCompleted?.('quarks');
 },true);
 
 window.addEventListener('ardua:quarks-phase-start',startOwnership);
