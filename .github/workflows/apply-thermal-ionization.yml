@@ -33,16 +33,21 @@ jobs:
           const fs=require('fs');
           const p='scripts/apply-thermal-ionization.mjs';
           let s=fs.readFileSync(p,'utf8');
-          const a=`  s=replaceOnce(s,'"solar_wind","stellar_ionization","stellar_recombination"','"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"','graph base order');\n  s=replaceOnce(s,'"solar_wind","stellar_ionization","stellar_recombination"','"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"','graph red sequence');`;
-          const b=`  const plasmaOrder='"solar_wind","stellar_ionization","stellar_recombination"',withThermal='"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"';\n  const plasmaOrderCount=s.split(plasmaOrder).length-1;if(plasmaOrderCount!==2)throw new Error(\`Expected 2 plasma order anchors, got \${plasmaOrderCount}\`);s=s.replaceAll(plasmaOrder,withThermal);`;
-          if(!s.includes(a))throw new Error('graph normalization anchor missing');
-          fs.writeFileSync(p,s.replace(a,b));
+          const graphA=`  s=replaceOnce(s,'"solar_wind","stellar_ionization","stellar_recombination"','"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"','graph base order');\n  s=replaceOnce(s,'"solar_wind","stellar_ionization","stellar_recombination"','"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"','graph red sequence');`;
+          const graphB=`  const plasmaOrder='"solar_wind","stellar_ionization","stellar_recombination"',withThermal='"solar_wind","stellar_ionization","thermal_ionization","stellar_recombination"';\n  const plasmaOrderCount=s.split(plasmaOrder).length-1;if(plasmaOrderCount!==2)throw new Error(\`Expected 2 plasma order anchors, got \${plasmaOrderCount}\`);s=s.replaceAll(plasmaOrder,withThermal);`;
+          if(!s.includes(graphA))throw new Error('graph normalization anchor missing');
+          s=s.replace(graphA,graphB);
+          const classA=`  s=replaceOnce(s,"'solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'","'solar_wind','stellar_ionization','thermal_ionization','stellar_recombination','coulomb_intro','stellar_convection'",'thermal short duration');`;
+          const classB=`  {const from="'solar_wind','stellar_ionization','stellar_recombination','coulomb_intro','stellar_convection'",to="'solar_wind','stellar_ionization','thermal_ionization','stellar_recombination','coulomb_intro','stellar_convection'",count=s.split(from).length-1;if(count!==2)throw new Error(\`Expected 2 thermal classification anchors, got \${count}\`);s=s.replaceAll(from,to);}`;
+          if(!s.includes(classA))throw new Error('classification normalization anchor missing');
+          fs.writeFileSync(p,s.replace(classA,classB));
           NODE
 
       - name: Apply implementation
         run: node scripts/apply-thermal-ionization.mjs
 
       - name: Restore patch runner
+        if: always()
         run: git checkout -- scripts/apply-thermal-ionization.mjs
 
       - name: Check syntax
