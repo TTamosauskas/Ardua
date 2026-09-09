@@ -45,8 +45,8 @@ body.quarks-phase-active .quarks-info-tile{background:linear-gradient(135deg,#32
 .quarks-union-burst{position:absolute;width:18px;height:18px;transform:translate(-50%,-50%) scale(.2);border-radius:50%;border:3px solid rgba(255,255,255,.92);box-shadow:0 0 18px rgba(255,255,255,.85),0 0 42px rgba(134,197,255,.56);pointer-events:none;z-index:20;animation:quarksUnionBurst .70s ease-out forwards}
 @keyframes quarksUnionBurst{to{transform:translate(-50%,-50%) scale(4.1);opacity:0}}
 
-/* The products literally reuse the free proton/neutron classes from Forjar Deutério. */
-.quarks-baryon{z-index:19!important;pointer-events:none!important;cursor:default!important;opacity:0;transform:translate(-50%,-50%) scale(.35)!important;transition:transform .30s cubic-bezier(.18,.85,.22,1),opacity .24s ease,box-shadow .18s ease!important}
+/* The products reuse the free proton/neutron visuals, but are slightly larger only inside Quarks. */
+.quarks-baryon{z-index:19!important;pointer-events:none!important;cursor:default!important;width:38px!important;height:38px!important;font-size:21px!important;opacity:0;transform:translate(-50%,-50%) scale(.35)!important;transition:transform .30s cubic-bezier(.18,.85,.22,1),opacity .24s ease,box-shadow .18s ease!important}
 .quarks-baryon.formed{opacity:1;transform:translate(-50%,-50%) scale(1)!important}
 
-@media(max-width:390px){.quark-piece{width:29px;height:29px;font-size:16px}}
+@media(max-width:390px){.quark-piece{width:29px;height:29px;font-size:16px}.quarks-baryon{width:35px!important;height:35px!important;font-size:19px!important}}
