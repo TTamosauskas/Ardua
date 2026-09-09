@@ -109,10 +109,14 @@ function rootForKind(kind){return kind==='proton'?220:247}
 function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function selectAnchor(id){
  if(reactionLocked)return;resetSelection();const q=quarkById(id),button=liveButton(id);if(!q||!button)return;
- const complement=q.type==='u'?'d':'u',origin=currentPoint(id),eligible=SEED.filter(x=>x.type===complement&&liveButton(x.id)).sort((a,b)=>distance(origin,currentPoint(a.id))-distance(origin,currentPoint(b.id)));
+ const complement=q.type==='u'?'d':'u',origin=currentPoint(id),live=SEED.filter(x=>liveButton(x.id));
+ let eligible=live.filter(x=>x.type===complement).sort((a,b)=>distance(origin,currentPoint(a.id))-distance(origin,currentPoint(b.id)));
+ if(eligible.length<2&&live.length===3){
+  const remainder=live.filter(x=>x.id!==id);if(remainder.length===2&&baryonKind([id,...remainder.map(x=>x.id)]))eligible=remainder;
+ }
  if(eligible.length<2){button.classList.add('invalid');setTimeout(()=>button.classList.remove('invalid'),260);return}
  anchorId=id;button.classList.add('selected');candidateIds=eligible.slice(0,2).map(x=>x.id);candidateIds.forEach(candidate=>liveButton(candidate)?.classList.add('candidate'));
- playFrequency(rootForKind(kindForAnchor(q.type)));
+ playFrequency(rootForKind(baryonKind([id,...candidateIds])||kindForAnchor(q.type)));
 }
 function spawnUnionBurst(x,y){
  if(!stage)return;const burst=document.createElement('div');burst.className='quarks-union-burst';burst.style.left=`${x}px`;burst.style.top=`${y}px`;stage.appendChild(burst);setTimeout(()=>burst.remove(),720);
