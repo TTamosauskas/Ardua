@@ -20,12 +20,20 @@ let duckUntil=0;
 let duckTimer=0;
 let unlockArmed=false;
 
+audio.autoplay=false;
+try{audio.pause()}catch(_e){}
 audio.loop=false;
 audio.preload='auto';
 audio.playsInline=true;
 audio.controls=false;
 audio.volume=MAP_VOLUME;
 
+function holdForBigBang(){
+ if(window.location.hash.slice(1).toLowerCase()==='editor')return false;
+ const map=document.getElementById('campaignMap');
+ if(!map)return true;
+ return map.classList.contains('awaiting-bigbang')&&!map.classList.contains('bigbang-expanding')&&!map.classList.contains('bigbang-complete');
+}
 function wantedVolume(){
  const body=document.body,map=document.getElementById('campaignMap');
  return !map||body?.classList.contains('campaign-map-open')?MAP_VOLUME:PHASE_VOLUME;
@@ -101,6 +109,7 @@ function armUnlock(){
  document.addEventListener('keydown',unlockPlayback,true);
 }
 function unlockPlayback(){
+ if(holdForBigBang()){armUnlock();return}
  applyStartPosition(false);sync(true);
  try{
   const p=audio.play();
@@ -108,6 +117,7 @@ function unlockPlayback(){
  }catch(_e){}
 }
 function tryPlay(){
+ if(holdForBigBang()){armUnlock();return}
  sync(true);applyStartPosition(false);
  if(!audio.paused&&!audio.ended){disarmUnlock();return}
  try{
@@ -116,6 +126,7 @@ function tryPlay(){
  }catch(_e){armUnlock()}
 }
 function restartLoop(){
+ if(holdForBigBang()){armUnlock();return}
  applyStartPosition(true);
  try{const p=audio.play();if(p&&typeof p.catch==='function')p.catch(armUnlock)}catch(_e){armUnlock()}
 }
