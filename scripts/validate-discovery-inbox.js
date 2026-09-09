@@ -25,7 +25,7 @@ const elementOrder=[...orderMatch[1].matchAll(/'([^']+)'/g)].map(m=>m[1]);
 if(elementOrder.length!==92||elementOrder[0]!=='H'||elementOrder.at(-1)!=='U')throw new Error(`Catálogo periódico incompleto: ${elementOrder.length} elementos`);
 for(const sym of elementOrder)if(!elementSources[sym])throw new Error(`Fonte/modal de elemento ausente: ${sym}`);
 if(Object.keys(elementSources).length!==92)throw new Error(`Fontes de elementos divergentes: ${Object.keys(elementSources).length}`);
-for(const token of ['function showElementDetail(card)','catalog.addEventListener(\'click\'','elementSources()','data-element-detail-title'])if(!elementDetails.includes(token))throw new Error('Detalhe reutilizável de Elementos perdeu contrato: '+token);
+for(const token of ['function showElementDetail(elementCard)','catalog.addEventListener(\'click\'','elementSources()','data-element-detail-title'])if(!elementDetails.includes(token))throw new Error('Detalhe reutilizável de Elementos perdeu contrato: '+token);
 
 const rows=new Map();
 for(const line of engine.split('\n')){
