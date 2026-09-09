@@ -42,3 +42,10 @@ Fases de abertura, formação estelar e marcos narrativos usam interações pró
 - ponte `p + n → D` antes do manipulador específico das fases de captura.
 
 Qualquer mudança futura no motor deve preservar este contrato.
+
+
+### Prioridade entre mecânicas aprendidas
+
+Uma indicação visual de candidato válido é uma promessa de execução. Se `cumulativeFusionTapAvailable(...)` reconhecer o toque como parte de uma fusão aprendida, nenhum handler **passivo** de uma mecânica antiga pode consumir esse toque antes do executor da fusão. Mecânicas explicitamente armadas (por exemplo, um elétron já selecionado) e fases dedicadas àquela mecânica conservam prioridade. Fora desses casos, a receita cumulativa tem precedência.
+
+Este contrato vale para todas as fases posteriores: por exemplo, depois de aprender `C + He → O`, essa transformação deve continuar executável em **Forjar Fósforo** e em toda superfície posterior compatível sempre que Carbono e Hélio estiverem disponíveis.

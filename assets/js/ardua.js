@@ -2702,6 +2702,10 @@ async function recombineStellarIon(piece,electron){
 }
 function handleStellarAtomicTap(piece,s=phase()){
  if(!stellarAtomicChemistryAllowed(s)||!piece||piece.free)return false;const electron=stellarAtomicSelectedElectron();
+ // Quimica atomica herdada e passiva nunca pode roubar um toque que a camada cumulativa
+ // ja prometeu como fusao valida. Fases atomicas dedicadas ou um eletron explicitamente
+ // selecionado continuam tendo prioridade sobre a fusao.
+ if(!stellarAtomicMode(s)&&!electron&&cumulativeFusionTapAvailable(piece,s))return false;
  if(stellarIonizationEligible(piece,s)){if(electron){ionizeStellarAtom(piece,electron);return true}state.selected=[piece.cell];state.primordialSelected=null;tone(350,.04,'sine',.022);render();return true}
  if(stellarRecombinationEligible(piece,s)){if(electron){recombineStellarIon(piece,electron);return true}state.selected=[piece.cell];state.primordialSelected=null;tone(390,.04,'sine',.022);render();return true}
  return false
