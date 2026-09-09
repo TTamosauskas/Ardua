@@ -120,6 +120,21 @@ function setActive(id){if(!id)return;graphState.activeId=id;const key=GEN?.gener
 function setIntroduced(v=true){graphState.introduced=!!v;saveGraph()}
 window.ARDUA_CAMPAIGN={editor:EDITOR_MODE,getState:state,isUnlocked,markCompleted,setActive,setIntroduced,runtimeIndex:id=>G?.runtimeIndex?.[id]??-1};
 
+function suppressLegacyBigBangIntro(){
+ if(EDITOR_MODE||graphState.introduced||graphState.activeId!=='bigbang')return;
+ const intro=document.getElementById('stellarIntro');if(!intro)return;
+ const hide=()=>{if(intro.classList.contains('show'))intro.classList.remove('show')};
+ const observer=new MutationObserver(hide);
+ observer.observe(intro,{attributes:true,attributeFilter:['class']});
+ const release=()=>{
+  if(!graphState.introduced&&graphState.activeId==='bigbang')return;
+  hide();observer.disconnect();window.removeEventListener('ardua:campaign-progress',release);
+ };
+ window.addEventListener('ardua:campaign-progress',release);
+ hide();
+}
+suppressLegacyBigBangIntro();
+
 Storage.prototype.getItem=function(key){
  const raw=nativeGet.call(this,key);if(this!==localStorage||key!==SAVE_KEY||!raw)return raw;const data=parse(raw);if(!data)return raw;
  const idx=G?.runtimeIndex?.[graphState.activeId];return JSON.stringify({...data,phaseIndex:Number.isInteger(idx)?idx:(data.phaseIndex||0)});
