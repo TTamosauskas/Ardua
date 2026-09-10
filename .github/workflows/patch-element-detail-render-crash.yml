@@ -1,0 +1,51 @@
+name: Fix element detail render crash
+
+on:
+  push:
+    branches: ["fix/element-detail-render-crash"]
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/element-detail-render-crash
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Diagnose metadata cache users
+        run: grep -R "ARDUA_PHASE_SOURCE_META_PROMISE" -n assets/js || true
+      - name: Apply render crash fix
+        run: node scripts/_patch_element_detail_render_crash.mjs
+      - name: Static regression tests
+        run: |
+          node --check assets/js/campaign-discoveries-elements.js
+          node scripts/validate-instant-discovery-details.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-campaign-runtime-regressions.js
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start site
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/ardua-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:8000/ >/dev/null && exit 0; sleep 0.5; done
+          exit 1
+      - name: Full mobile browser test
+        run: node scripts/_test_element_detail_e2e.mjs
+      - name: Commit production fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/campaign-discoveries-elements.js index.html scripts/validate-instant-discovery-details.js
+          git commit -m "Fix element discovery detail render crash"
+          git push origin HEAD:fix/element-detail-render-crash
