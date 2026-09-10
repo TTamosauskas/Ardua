@@ -1,1 +1,25 @@
-x
+name: Reproduce element detail end-to-end
+
+on:
+  push:
+    branches: ["fix/element-detail-open-robust"]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Chromium
+        run: npx -y playwright@1.55.0 install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/ardua-http.log 2>&1 &
+          echo $! > /tmp/ardua-http.pid
+          for i in {1..20}; do curl -fsS http://127.0.0.1:8000/ >/dev/null && exit 0; sleep 0.5; done
+          exit 1
+      - name: Reproduce full mobile flow
+        run: node scripts/repro-element-detail-e2e.mjs
