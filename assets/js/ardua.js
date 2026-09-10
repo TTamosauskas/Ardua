@@ -2588,7 +2588,8 @@ function renderPieces(){
   const partner=(!primordial&&candidates.has(p.cell))||primordialParticleTarget||primordialPieceTarget||primordialMoleculeTarget||neutronPartner||particleTarget||stellarProtonTarget||stellarElectronTarget||blackHoleTarget;
   const matterClass=p.matterState==='atom'?' atomic-piece':' nucleus-piece';
   el.className='atom'+matterClass+(s.coronalJetTutorial?' coronal-uniform':'')+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.neutronBetaPending?' beta-waiting':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=p.x+'px';el.style.top=p.y+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
- });existing.forEach(el=>el.remove())
+ });existing.forEach(el=>el.remove());
+ dom.pieces.classList.toggle('selection-foreground',!!dom.pieces.querySelector('.atom.selected'))
 }
 async function decayFloatingNeutron(n){
  if(!n||!state.primordialParticles.has(n.id))return;if(primordialNeutronsStable()){n.unstable=false;n.lifetimeRounds=null;n.bornRound=state.nuclearRound;renderPrimordialParticles();return}const {x,y}=n;state.primordialParticles.delete(n.id);spawnFloatingParticle('p',x-10,y);spawnFloatingParticle('e',x+10,y);burst(x,y);tone(360,.09,'triangle',.025);await emitAntineutrino(x,y);render()

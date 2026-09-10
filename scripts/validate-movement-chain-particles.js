@@ -22,4 +22,7 @@ if(css.includes('.star-board:not(.primordial-mode) .primordial-particle.candidat
 if(/\.neutron\{[^}]*opacity:\.(?:40|62)/.test(css))fail('Nêutrons livres ainda usam opacidade reduzida');
 const shell=css.slice(css.indexOf('/* Stellar particle shell:'),css.indexOf('/* Primordial molecule scale:'));
 if(!shell.includes('opacity:1')||/opacity:\.(?:40|62|76)/.test(shell))fail('Prótons, elétrons ou nêutrons livres ainda usam transparência no plasma estelar');
+if(!engine.includes("dom.pieces.classList.toggle('selection-foreground',!!dom.pieces.querySelector('.atom.selected'))"))fail('Camada de peças não acompanha seleção atômica');
+const foregroundCss=fs.readFileSync('assets/css/ardua.css','utf8');
+for(const token of ['.pieces.selection-foreground{z-index:60}', '.pieces.selection-foreground .atom.candidate{z-index:110}', '.pieces.selection-foreground .atom.selected{z-index:120}'])if(!foregroundCss.includes(token))fail('Contrato de primeiro plano da seleção ausente: '+token);
 console.log('Movement animation, campaign return and strict chain knowledge OK.');
