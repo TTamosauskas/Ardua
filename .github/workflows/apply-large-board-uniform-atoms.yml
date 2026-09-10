@@ -1,0 +1,77 @@
+name: Apply large-board uniform atom size
+
+on:
+  push:
+    branches: ["fix/radius5-uniform-atom-size"]
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: fix/radius5-uniform-atom-size
+
+      - name: Apply uniform-size patch
+        run: node scripts/apply-large-board-uniform-atoms.mjs
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/rotation-polish.js
+          node --check assets/js/audio-polish.js
+          node --check assets/js/recipe-audio-sync.js
+          node --check assets/js/campaign-graph.js
+          node --check assets/js/campaign-mode.js
+          node --check assets/js/campaign-fork-links.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-exploration.js
+          node --check assets/js/campaign-runtime-sync.js
+          node --check assets/js/campaign-giants-map.js
+          node --check assets/js/campaign-phase-modal.js
+          node --check assets/js/phase-polish.js
+          node --check assets/js/campaign-home-polish.js
+          node --check assets/js/campaign-discoveries-elements.js
+          node --check assets/js/campaign-element-bohr.js
+          node --check assets/js/campaign-discoveries-phenomena.js
+          node --check assets/js/campaign-discovery-notifications.js
+          node --check assets/js/campaign-quarks-graph.js
+          node --check assets/js/campaign-quarks.js
+          node --check assets/js/campaign-quarks-chrome.js
+          node --check assets/js/campaign-quarks-map.js
+          node --check assets/js/campaign-quarks-discoveries.js
+
+      - name: Validate Pages regression suite
+        run: |
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-element-bohr.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-convection-regression.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-campaign-phase-flow.js
+          node scripts/validate-campaign-runtime-regressions.js
+          node scripts/validate-quarks-phase.js
+          node scripts/validate-quarks-chrome.js
+
+      - name: Commit validated implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/css/ardua.css scripts/validate-stellar-plasma.js
+          git commit -m "Use one atom size on radius-4 and radius-5 boards"
+          git push origin HEAD:fix/radius5-uniform-atom-size
