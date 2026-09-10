@@ -25,8 +25,9 @@ if(await phasePreview.count() && await phasePreview.isVisible().catch(()=>false)
   await page.waitForTimeout(650);
 }
 
-const visibleMenu=page.locator('#campaignHomeMenuBtn:visible, #menuOpenBtn:visible').first();
-if(!(await visibleMenu.count())) throw new Error('nenhum botão de menu visível');
+let visibleMenu=page.locator('#campaignHomeMenuBtn');
+if(!(await visibleMenu.count())||!(await visibleMenu.isVisible().catch(()=>false))) visibleMenu=page.locator('#menuOpenBtn');
+if(!(await visibleMenu.count())||!(await visibleMenu.isVisible().catch(()=>false))) throw new Error('nenhum botão de menu visível');
 console.log('opening menu with=',await visibleMenu.getAttribute('id'));
 await visibleMenu.tap();
 await page.waitForTimeout(350);
