@@ -161,7 +161,7 @@ body.bigbang-phase .info-recipe{border-color:rgba(35,51,76,.15);background:rgba(
 .star-board.primordial-mode .pieces{z-index:26;pointer-events:none}.star-board.primordial-mode .pieces .atom{pointer-events:auto}
 .star-board.primordial-mode .atom{width:clamp(48px,12vw,62px);height:clamp(48px,12vw,62px);box-shadow:inset 0 0 14px rgba(255,255,255,.18),0 0 18px rgba(255,214,170,.13),0 7px 15px rgba(0,0,0,.22);animation:primordialFloat 3.2s ease-in-out infinite;animation-delay:var(--floatDelay,0s)}
 .atom.nucleus-piece{width:calc(var(--cellSize)*.78);height:calc(var(--cellSize)*.78)}
-.star-board.radius-four-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}
+.star-board.large-board-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}
 .atom.atomic-piece{width:var(--cellSize);height:var(--cellSize);box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
 .star-board.primordial-mode .atom.nucleus-piece{width:clamp(39px,9.7vw,49px);height:clamp(39px,9.7vw,49px)}
 .star-board.primordial-mode .atom.atomic-piece{width:clamp(58px,14vw,72px);height:clamp(58px,14vw,72px)}

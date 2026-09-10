@@ -18,8 +18,8 @@ if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_ye
 if(!JSON.stringify(G.prerequisites.white).includes('stellar_recombination'))fail('Anã Branca deve vir depois das três lições de plasma na trilha baixa');
 for(const id of ['solar_wind','stellar_ionization','stellar_recombination']){const at=engine.indexOf(`id:'${id}'`),line=engine.slice(at,engine.indexOf('\n',at));if(at<0||!line.includes("visual:'redDwarf'")||!line.includes('fill:15'))fail(id+' precisa usar núcleo + 2 camadas da Anã Vermelha')}
 if(!engine.includes('const STELLAR_CONTINUITY_POPULATION=15'))fail('População de plasma deve caber no hexágono de 19 células');
-if(!engine.includes("classList.toggle('radius-four-uniform-atoms',phaseRadius(s)===4)"))fail('Layout de raio 4 não ativa tamanho atômico uniforme');
-if(!css.includes('.star-board.radius-four-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}'))fail('Núcleos do layout de raio 4 não usam o tamanho grande');
+if(!engine.includes("classList.toggle('large-board-uniform-atoms',phaseRadius(s)>=4)"))fail('Layouts de raio 4 e 5 não ativam tamanho atômico uniforme');
+if(!css.includes('.star-board.large-board-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}'))fail('Núcleos dos layouts de raio 4 e 5 não usam o tamanho grande');
 if(!css.includes('.atom.nucleus-piece{width:calc(var(--cellSize)*.78);height:calc(var(--cellSize)*.78)}'))fail('Tamanho compacto de núcleos deve permanecer nos demais layouts');
 if(!engine.includes("campaignKnowledgeReached('coulomb_intro')"))fail('Coulomb sem gate de conhecimento');
 if(!engine.includes("campaignKnowledgeReached('stellar_convection')"))fail('Convecção sem gate de conhecimento');
