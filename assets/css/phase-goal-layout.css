@@ -1,0 +1,15 @@
+/* Ardua — compact phase goal hierarchy. */
+body.phase-goal-hierarchy .phase-card{min-width:0}
+body.phase-goal-hierarchy .phase-card small#branchLabel{display:block;min-height:0;margin:0 0 2px;color:var(--muted);font-size:9px;line-height:1.1;font-weight:900;letter-spacing:.085em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phase-goal-hierarchy .phase-card small#branchLabel[hidden]{display:none}
+body.phase-goal-hierarchy .phase-card strong#phaseTitle{display:block;max-width:100%;margin-top:0;white-space:nowrap;overflow:visible;text-overflow:clip;line-height:1.12;font-weight:950;letter-spacing:-.015em}
+body.phase-goal-hierarchy .objective{min-height:52px;padding:9px 12px;gap:0}
+body.phase-goal-hierarchy .objective .goal-line{display:none!important}
+body.phase-goal-hierarchy .objective .formula-line{display:block;width:100%;font-size:13px;line-height:1.28;font-weight:950;color:#fff;text-align:center}
+body.phase-goal-hierarchy .objective .formula-line strong{font-weight:950;color:#fff}
+body.phase-goal-hierarchy .objective .formula-line .science-tag{font-size:8px;line-height:1.1;font-weight:900}
+@media (max-width:390px){
+ body.phase-goal-hierarchy .phase-card{padding-left:9px;padding-right:9px}
+ body.phase-goal-hierarchy .phase-card small#branchLabel{font-size:8px;letter-spacing:.06em}
+ body.phase-goal-hierarchy .objective .formula-line{font-size:12.5px}
+}
