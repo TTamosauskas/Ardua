@@ -46,6 +46,7 @@ let audioCtx=null,recipeBus=null;const replicaVoices=new Set();
 const RECIPE_NOTE_MAIN_GAIN=.68,RECIPE_NOTE_HARM_GAIN=.22,RECIPE_CHORD_MAIN_GAIN=.18,RECIPE_CHORD_HARM_GAIN=.055,RECIPE_FINAL_GAIN=.14;
 const RECIPE_MASTER_GAIN=1.05,RECIPE_LIMIT_THRESHOLD=-1.5,RECIPE_LIMIT_RATIO=20,RECIPE_LIMIT_ATTACK=.002,RECIPE_LIMIT_RELEASE=.12,RECIPE_OUTPUT_CEILING=.98;
 function audio(){try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;audioCtx??=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch(_e){return null}}
+async function ensureAudioReady(){const ctx=audio();if(!ctx)return null;if(ctx.state==='suspended'){try{await ctx.resume()}catch(_e){return null}}return ctx.state==='running'?ctx:null}
 function recipeOutput(ctx){
  if(recipeBus?.ctx===ctx)return recipeBus.input;
  const input=ctx.createGain(),limiter=ctx.createDynamicsCompressor(),ceiling=ctx.createGain();
@@ -79,7 +80,7 @@ function engineNote(freq){syncPhase();engineCueSerial++;const pair=reactants();i
 function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios);combinationOctave++}
 function engineChordFinal(){if(motif?.done)playFinalAccent(motif.root)}
 async function victorySong(){
- syncPhase();if(!audio())return false;stopReplicaVoices();
+ syncPhase();const ctx=await ensureAudioReady();if(!ctx)return false;stopReplicaVoices();
  const root=rootForCurrentFormula(),ratios=ratiosForProduct(),notes=ratios.map(r=>root*r),noteGap=.34,phraseGap=.48,phraseSpan=noteGap*2+phraseGap;
  for(let octave=0;octave<3;octave++){const start=octave*phraseSpan,mult=2**octave;for(let i=0;i<notes.length;i++){const delay=start+i*noteGap,last=octave===2&&i===2,d=last?.62:(i===2?.36:.28),f=notes[i]*mult;nativeTone(f,d,'triangle',RECIPE_NOTE_MAIN_GAIN,delay);nativeTone(f*2,d*.82,'sine',RECIPE_NOTE_HARM_GAIN,delay)}}
  await new Promise(resolve=>setTimeout(resolve,3640));return true;
