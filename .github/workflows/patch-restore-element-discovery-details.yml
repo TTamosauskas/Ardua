@@ -1,0 +1,43 @@
+name: Restore element discovery details
+
+on:
+  push:
+    branches: ["fix/restore-element-discovery-details"]
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: fix/restore-element-discovery-details
+
+      - name: Restore element detail enrichment
+        run: node scripts/_patch_restore_element_discovery_details.mjs
+
+      - name: Check syntax
+        run: |
+          node --check assets/js/campaign-discoveries-elements.js
+          node --check scripts/validate-instant-discovery-details.js
+
+      - name: Validate discovery regressions
+        run: |
+          node scripts/validate-instant-discovery-details.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-campaign-runtime-regressions.js
+
+      - name: Commit validated implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/campaign-discoveries-elements.js index.html scripts/validate-instant-discovery-details.js
+          git commit -m "Restore element discovery detail enrichment"
+          git push origin HEAD:fix/restore-element-discovery-details
