@@ -37,3 +37,4 @@ const insert=`${marker}\nconst css=fs.readFileSync('assets/css/ardua.css','utf8'
 fs.writeFileSync(validatorPath,validator.replace(marker,insert));
 
 console.log('Free protons, electrons and neutrons are fully opaque while visible.');
+// validation trigger
