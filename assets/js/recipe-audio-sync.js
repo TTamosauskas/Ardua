@@ -48,10 +48,11 @@ function nativeTone(freq=440,duration=.05,type='sine',gain=.03){
  try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(ctx.destination);const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
 }
 function stopReplicaVoices(){const ctx=audioCtx;if(!ctx)return;const now=ctx.currentTime;for(const item of [...replicaVoices]){try{item.osc.stop(now+.01)}catch(_e){}}replicaVoices.clear()}
-function playFrequency(freq,strong=false){const d=strong?.28:.24,g=strong?.086:.074;nativeTone(freq,d,'triangle',g);nativeTone(freq*2,d*.82,'sine',g*.30)}
+const RECIPE_MAX_GAIN=1;
+function playFrequency(freq,strong=false){const d=strong?.28:.24;nativeTone(freq,d,'triangle',RECIPE_MAX_GAIN);nativeTone(freq*2,d*.82,'sine',RECIPE_MAX_GAIN)}
 function playNote(index,root,ratios=ratiosForProduct()){playFrequency(root*ratios[Math.max(0,Math.min(2,index))],index===2)}
-function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,.52,'triangle',.040);nativeTone(f*2,.42,'sine',.014)}}
-function playFinalAccent(root){nativeTone(root*2,.56,'triangle',.022)}
+function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,.52,'triangle',RECIPE_MAX_GAIN);nativeTone(f*2,.42,'sine',RECIPE_MAX_GAIN)}}
+function playFinalAccent(root){nativeTone(root*2,.56,'triangle',RECIPE_MAX_GAIN)}
 
 document.addEventListener('pointerdown',()=>audio(),{capture:true,passive:true});document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')audio()},{capture:true});
 let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0;

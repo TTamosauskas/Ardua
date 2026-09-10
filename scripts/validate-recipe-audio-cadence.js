@@ -27,4 +27,8 @@ for(const token of routingRequired){
 if(polish.includes("if(kind){booster.gain.value=0;routeCue(kind,freq)}")){
   throw new Error('Regressão: voz nativa não pode ser silenciada antes da confirmação do sincronizador');
 }
+const engine=fs.readFileSync('assets/js/ardua.js','utf8');
+for(const token of ['const RECIPE_MAX_GAIN=1', "nativeTone(freq,d,'triangle',RECIPE_MAX_GAIN)", "nativeTone(f,.52,'triangle',RECIPE_MAX_GAIN)", "nativeTone(root*2,.56,'triangle',RECIPE_MAX_GAIN)"])if(!recipe.includes(token))throw new Error('Volume máximo da réplica musical ausente: '+token);
+for(const token of ['const OBJECTIVE_MOTIF_MAX_GAIN=1', "tone(f,d,'triangle',OBJECTIVE_MOTIF_MAX_GAIN)", "tone(f,.52,'triangle',OBJECTIVE_MOTIF_MAX_GAIN)"])if(!engine.includes(token))throw new Error('Volume máximo do fallback musical ausente: '+token);
+if(!polish.includes('recipePeak:1'))throw new Error('Metadado de pico musical não está em 1.0');
 console.log('Target recipe audio OK: 2x/2x cadence and native fallback when sync cannot route.');
