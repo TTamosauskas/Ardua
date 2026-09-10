@@ -1,0 +1,8 @@
+/* Ardua — consistent phase footer placement and stellar aspect ratio. */
+.app > .info-panel{margin-top:auto}
+.star-shell{min-width:0}
+.star-shell > .star-board{
+  max-width:100%;
+  aspect-ratio:1 / 1;
+  flex-shrink:0;
+}

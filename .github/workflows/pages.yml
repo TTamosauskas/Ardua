@@ -115,6 +115,9 @@ jobs:
       - name: Validate compact phase goal hierarchy
         run: node scripts/validate-phase-goal-hierarchy.js
 
+      - name: Validate phase layout consistency
+        run: node scripts/validate-phase-layout-consistency.js
+
       - name: Validate Quarks phase
         run: node scripts/validate-quarks-phase.js
 
