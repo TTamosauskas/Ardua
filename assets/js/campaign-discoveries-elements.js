@@ -13,7 +13,7 @@ const WIKI_API='https://pt.wikipedia.org/w/api.php';
 const ELEMENT_SOURCES_URL=new URL('assets/data/element-sources.json',document.baseURI).href;
 const PERIODIC_PLAYLIST='PL7A1F4CF36C085DE1';
 const wikiCache=new Map(),preloadedElementImages=new Set();
-let elementSourcesPromise=null,elementSourcesResolved=null,sourceMetaResolved=null;
+let elementSourcesPromise=null,elementSourcesResolved=null,sourceMetaPromise=null,sourceMetaResolved=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function elementSources(){
  if(elementSourcesPromise)return elementSourcesPromise;
@@ -36,11 +36,12 @@ function parseSource(text){
  return{phases,colors,weights};
 }
 function sourceMeta(){
- if(window.ARDUA_PHASE_SOURCE_META_PROMISE)return window.ARDUA_PHASE_SOURCE_META_PROMISE;
+ if(sourceMetaPromise)return sourceMetaPromise;
  const loaded=[...document.scripts].find(s=>/\/assets\/js\/ardua\.js(?:\?|$)/.test(s.src));
  const url=loaded?.src||new URL('assets/js/ardua.js',document.baseURI).href;
- window.ARDUA_PHASE_SOURCE_META_PROMISE=fetch(url,{cache:'force-cache'}).then(r=>r.ok?r.text():Promise.reject(new Error('engine source unavailable'))).then(parseSource).catch(()=>({phases:[],colors:{},weights:{}})).then(meta=>(sourceMetaResolved=meta,meta));
- return window.ARDUA_PHASE_SOURCE_META_PROMISE;
+ /* Element details own this cache: other discovery modules use different metadata shapes. */
+ sourceMetaPromise=fetch(url,{cache:'force-cache'}).then(r=>r.ok?r.text():Promise.reject(new Error('engine source unavailable'))).then(parseSource).catch(()=>({phases:[],colors:{},weights:{}})).then(meta=>(sourceMetaResolved=meta,meta));
+ return sourceMetaPromise;
 }
 elementSources();
 const warmSourceMeta=()=>sourceMeta().then(meta=>(sourceMetaResolved=meta,meta));
@@ -95,7 +96,10 @@ const cssEsc=s=>window.CSS?.escape?CSS.escape(String(s)):String(s).replace(/\\/g
 function mapTitle(id){const q=cssEsc(id);return document.querySelector(`.phase-node[data-phase="${q}"] strong`)?.textContent?.trim()||document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${q}"] strong`)?.textContent?.trim()||''}
 function relatedPhases(sym,phases){
  const st=C.getState(),done=new Set(st.completed||[]);
- return phases.filter(p=>p.meta.includes('→')&&recipeTokens(p.meta).includes(sym)&&(C.isUnlocked(p.id)||done.has(p.id)||st.activeId===p.id));
+ return (Array.isArray(phases)?phases:[]).filter(p=>{
+  const meta=String(p?.meta||''),id=String(p?.id||'');
+  return !!id&&meta.includes('→')&&recipeTokens(meta).includes(sym)&&(C.isUnlocked(id)||done.has(id)||st.activeId===id);
+ });
 }
 function detailData(elementCard){
  const spans=[...(catalogDetail?.querySelectorAll(':scope > span')||[])],p=catalogDetail?.querySelector(':scope > p');
