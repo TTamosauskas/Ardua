@@ -32,14 +32,10 @@ console.log('opening menu with=',await visibleMenu.getAttribute('id'));
 await visibleMenu.tap();
 await page.waitForTimeout(350);
 
-const buttons=await page.locator('button').evaluateAll(btns=>btns.map(b=>({id:b.id,text:(b.textContent||'').trim().replace(/\s+/g,' '),hidden:b.hidden,display:getComputedStyle(b).display,visibility:getComputedStyle(b).visibility})).filter(x=>x.id||x.text).slice(0,160));
-console.log('BUTTONS AFTER MENU:',JSON.stringify(buttons));
-
-const data=page.locator('#campaignData');
-if(!(await data.count())) throw new Error('campaignData ausente após abrir menu');
-console.log('campaignData visible=',await data.isVisible().catch(()=>false),'text=',await data.textContent());
-if(!(await data.isVisible().catch(()=>false))) throw new Error('campaignData existe mas não está visível');
-await data.tap();
+const discoveriesEntry=page.locator('#campaignHomeDiscoveries');
+if(!(await discoveriesEntry.count())||!(await discoveriesEntry.isVisible().catch(()=>false))) throw new Error('entrada Descobertas não está visível no menu');
+console.log('opening discoveries with=',await discoveriesEntry.getAttribute('id'));
+await discoveriesEntry.tap();
 await page.waitForTimeout(550);
 
 const modal=page.locator('#menuModal');
