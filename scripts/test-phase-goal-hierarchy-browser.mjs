@@ -8,16 +8,18 @@ const failures=[];
 async function openPhase(id,expectedTitle,expectedContext){
  const context=await browser.newContext({viewport:{width:360,height:800},deviceScaleFactor:1});
  await context.addInitScript(phaseId=>{
-  localStorage.setItem('arduaCampaignGraphV1',JSON.stringify({version:14,introduced:true,activeId:phaseId,completed:[],generation:0,heritage:{level:0,seeds:[],sourceGeneration:0}}));
-  localStorage.setItem('stellarForgeV1013',JSON.stringify({phaseId,phaseIndex:0,version:'10.80',discovered:[],ignited:false,productLessons:[],rewardDiscoveries:[],rewardAchievements:[],signatureSeen:[]}));
+  const nativePhaseId=phaseId==='quarks'?'primordial_d':phaseId;
+  localStorage.setItem('arduaCampaignGraphV1',JSON.stringify({version:14,introduced:true,activeId:nativePhaseId,completed:phaseId==='quarks'?['bigbang']:[],generation:0,heritage:{level:0,seeds:[],sourceGeneration:0}}));
+  localStorage.setItem('stellarForgeV1013',JSON.stringify({phaseId:nativePhaseId,phaseIndex:0,version:'10.80',discovered:[],ignited:false,productLessons:[],rewardDiscoveries:[],rewardAchievements:[],signatureSeen:[]}));
  },id);
  const page=await context.newPage();
  const pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
  await page.goto(base,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.body.classList.contains('phase-goal-hierarchy'));
  if(id==='quarks'){
-  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ardua:quarks-phase-start')));
-  await page.waitForTimeout(120);
+  await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_QUARKS?.isActive);
+  await page.evaluate(()=>window.ARDUA_QUARKS.start());
+  await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&window.ARDUA_CAMPAIGN.getState().activeId==='quarks');
  }
  await page.waitForTimeout(900);
  const result=await page.evaluate(()=>{
@@ -95,4 +97,4 @@ await context.close();
 await browser.close();
 
 if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n'));process.exit(1)}
-console.log('Browser OK: Quarks + representative campaign phases use one-line objectives; recipe-only card and canonical map/menu labels pass on mobile viewports.');
+console.log('Browser OK: Quarks real runtime + representative campaign phases use one-line objectives; recipe-only card and canonical map/menu labels pass on mobile viewports.');
