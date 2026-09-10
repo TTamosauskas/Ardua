@@ -2,22 +2,24 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN;
-const GOAL='Forje os primeiros bárions';
+const GOAL='Forme Prótons e Nêutrons';
 const FORMULA='3 quarks → 1 próton ou nêutron';
 const NEXT_LABEL='Próxima fase';
 let active=false,observer=null;
 
 function setText(id,value){const el=$(id);if(el&&el.textContent!==value)el.textContent=value}
 function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
+function goalWithProgress(){const progress=$('goalText')?.textContent?.match(/\b\d+\/2\b/)?.[0]||'0/2';return`${GOAL} — ${progress}`}
 function applyQuarksChrome(){
  if(!active)return;
+ const goal=goalWithProgress();
  setClass(document.documentElement,'quarks-phase-root',true);
  setClass(document.body,'quarks-phase-active',true);
  setClass(document.body,'prebang',false);
  setClass(document.body,'bigbang-phase',false);
- setText('branchLabel','Universo primordial');
- setText('phaseTitle','Quarks');
- setText('goalText',GOAL);
+ setText('branchLabel','QUARKS');
+ setText('phaseTitle',goal);
+ setText('goalText',goal);
  setText('formulaText',FORMULA);
  setText('phaseEndBtn',NEXT_LABEL);
 }
