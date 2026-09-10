@@ -13,8 +13,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Chromium
-        run: npx -y playwright@1.55.0 install --with-deps chromium
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
       - name: Start local site
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/ardua-http.log 2>&1 &
