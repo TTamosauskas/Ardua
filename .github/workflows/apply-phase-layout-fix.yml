@@ -1,0 +1,63 @@
+name: Apply phase layout fix
+
+on:
+  push:
+    branches: ["fix/phase-footer-and-star-shape"]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+      - name: Apply source patch
+        run: python3 scripts/apply-phase-layout-fix.py
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check scripts/validate-phase-layout-consistency.js
+      - name: Run Pages regression validators
+        run: |
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-element-bohr.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-convection-regression.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-campaign-phase-flow.js
+          node scripts/validate-campaign-runtime-regressions.js
+          node scripts/validate-phase-goal-hierarchy.js
+          node scripts/validate-phase-layout-consistency.js
+          node scripts/validate-quarks-phase.js
+          node scripts/validate-quarks-chrome.js
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Test footer and star geometry in mobile Chromium
+        run: |
+          python3 -m http.server 4173 >/tmp/ardua-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          ARDUA_TEST_URL=http://127.0.0.1:4173/ node scripts/diagnose-phase-layout-browser.mjs
+      - name: Commit validated fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/ardua.js assets/css/phase-layout-consistency.css index.html .github/workflows/pages.yml scripts/validate-phase-layout-consistency.js scripts/diagnose-phase-layout-browser.mjs
+          git commit -m "Fix phase footer placement and circular star geometry"
+          git push
