@@ -6,6 +6,7 @@ const modal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
 const map=fs.readFileSync('assets/js/campaign-map.js','utf8');
 const giant=fs.readFileSync('assets/js/campaign-giants-map.js','utf8');
 const campaign=fs.readFileSync('assets/js/campaign-mode.js','utf8');
+const css=fs.readFileSync('assets/css/ardua.css','utf8');
 const ctx={window:{}};vm.createContext(ctx);vm.runInContext(graphSrc,ctx);const G=ctx.window.ARDUA_CAMPAIGN_GRAPH;
 const low=['low_mass_formation','he_red','stellar_movement','solar_wind','stellar_ionization','stellar_recombination'];
 if(JSON.stringify(G.sequences.red)!==JSON.stringify(low))fail('Plasma deve encerrar a trilha de baixa massa');
@@ -17,6 +18,9 @@ if(JSON.stringify(G.prerequisites.coulomb_intro)!==JSON.stringify({allOf:['he_ye
 if(!JSON.stringify(G.prerequisites.white).includes('stellar_recombination'))fail('Anã Branca deve vir depois das três lições de plasma na trilha baixa');
 for(const id of ['solar_wind','stellar_ionization','stellar_recombination']){const at=engine.indexOf(`id:'${id}'`),line=engine.slice(at,engine.indexOf('\n',at));if(at<0||!line.includes("visual:'redDwarf'")||!line.includes('fill:15'))fail(id+' precisa usar núcleo + 2 camadas da Anã Vermelha')}
 if(!engine.includes('const STELLAR_CONTINUITY_POPULATION=15'))fail('População de plasma deve caber no hexágono de 19 células');
+if(!engine.includes("classList.toggle('radius-four-uniform-atoms',phaseRadius(s)===4)"))fail('Layout de raio 4 não ativa tamanho atômico uniforme');
+if(!css.includes('.star-board.radius-four-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}'))fail('Núcleos do layout de raio 4 não usam o tamanho grande');
+if(!css.includes('.atom.nucleus-piece{width:calc(var(--cellSize)*.78);height:calc(var(--cellSize)*.78)}'))fail('Tamanho compacto de núcleos deve permanecer nos demais layouts');
 if(!engine.includes("campaignKnowledgeReached('coulomb_intro')"))fail('Coulomb sem gate de conhecimento');
 if(!engine.includes("campaignKnowledgeReached('stellar_convection')"))fail('Convecção sem gate de conhecimento');
 if(!engine.includes("(gs.activeId===id||gs.completed.includes(id))&&(i===undefined||state.phaseIndex>=i)"))fail('Conhecimento não bloqueia efeitos futuros ao revisitar fases antigas');
