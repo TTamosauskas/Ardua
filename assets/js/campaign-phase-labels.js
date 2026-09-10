@@ -8,7 +8,7 @@ const sequence=name=>new Set(G.sequences?.[name]||[]);
 const weakS=sequence('weakS'),sProcess=sequence('sprocess'),rProcess=sequence('r'),rpProcess=sequence('rp'),decays=sequence('decay');
 
 const CONTEXT=Object.freeze({
- primordial_he3d:'HÉLIO-4 VIA HÉLIO-3',primordial_td:'HÉLIO-4 VIA TRÍTIO',
+ quarks:'QUARKS',primordial_he3d:'HÉLIO-4 VIA HÉLIO-3',primordial_td:'HÉLIO-4 VIA TRÍTIO',
  first_atomic_bonds:'PRIMEIRAS LIGAÇÕES ATÔMICAS',first_nebulae:'PRIMEIRAS NEBULOSAS',
  first_generation_formation:'PRIMEIRA GERAÇÃO',brown_formation:'FORMAÇÃO DA ANÃ MARROM',brown:'ANÃ MARROM',
  low_mass_formation:'BAIXA MASSA',he_red:'ANÃ VERMELHA',stellar_movement:'MOVIMENTAÇÃO ESTELAR',
@@ -31,7 +31,7 @@ const STATIC_GOAL=Object.freeze({
  stability:'Supere o limite de estabilidade'
 });
 const MAP_OVERRIDE=Object.freeze({
- brown_formation:'Formação da Anã Marrom',coronal_jets:'Jatos Coronais',stellar_li:'Produção estelar de Lítio',
+ primordial_li:'Forme Lítio-7',brown_formation:'Formação da Anã Marrom',coronal_jets:'Jatos Coronais',stellar_li:'Produção estelar de Lítio',
  carbon_burn:'Queima de Carbono',proton_capture:'Captura de Prótons',carbon_oxygen:'Fusão Carbono–Oxigênio',
  oxygen_burn:'Queima de Oxigênio',cr_alpha_fe:'Cadeia Alfa do Ferro',fe:'Núcleo do grupo do Ferro',
  neutronize:'Colapso do núcleo',co:'Formação de Cobalto',ni_fusion:'Formação de Níquel',nu_f:'Neutrinos da Supernova',
@@ -40,6 +40,7 @@ const MAP_OVERRIDE=Object.freeze({
  kilonova:'Kilonova',neutron_star:'Estrela de nêutrons',pulsar:'Pulsar',accretion:'Acreção extrema',
  stability:'Limite de estabilidade',black_hole:'Buraco negro'
 });
+const MENU_OVERRIDE=Object.freeze({primordial_li:'Forme Lítio-7'});
 const MENU_IDENTITY=new Set([
  'bigbang','primordial_he3d','primordial_td','first_atomic_bonds','first_nebulae','first_generation_formation','brown_formation','brown',
  'low_mass_formation','he_red','stellar_movement','solar_wind','stellar_ionization','stellar_recombination','intermediate_mass_formation','he_orange','he_yellow',
@@ -64,7 +65,8 @@ function compactGoal(raw,id=activeId()){
  }
  const progress=firstProgress(text);
  let base=text.split(/\s+—\s+/)[0].replace(/\s+·\s+observe\b.*$/i,'').trim();
- if(id==='solar_wind')base='Ionize Hidrogênio';
+ if(id==='quarks')base='Forme Prótons e Nêutrons';
+ else if(id==='solar_wind')base='Ionize Hidrogênio';
  else if(id==='stellar_movement')base='Leve Hélio ao núcleo';
  else if(id==='coronal_jets')base='Ejete matéria';
  else if(id==='stellar_li')base='Produza Lítio-7';
@@ -149,6 +151,7 @@ function mapName(id,fallback=''){
  return MAP_OVERRIDE[id]||scientificNames[id]||forgeNames[id]||fallback||id;
 }
 function menuName(id,fallback=''){
+ if(MENU_OVERRIDE[id])return MENU_OVERRIDE[id];
  const el=elementName(id,fallback);
  if(weakS.has(id)||sProcess.has(id)||rProcess.has(id)||rpProcess.has(id)||decays.has(id))return`Forme ${el}`;
  if(MENU_IDENTITY.has(id))return MAP_OVERRIDE[id]||scientificNames[id]||fallback||mapName(id,fallback);
@@ -171,7 +174,7 @@ function syncCurrent(){
 }
 function syncCollections(){
  document.querySelectorAll('#campaignMap .phase-node[data-phase]').forEach(node=>{const id=node.dataset.phase||'',strong=node.querySelector('strong');if(!strong)return;const original=originalText(strong),next=mapName(id,original);if(next&&strong.textContent!==next)strong.textContent=next});
- document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id]').forEach(button=>{const id=button.dataset.phaseId||'',strong=button.querySelector('strong');if(!strong)return;const original=originalText(strong),next=menuName(id,original);if(next&&strong.textContent!==next)strong.textContent=next});
+ [...document.querySelectorAll('#phaseMenu .phase-jump')].forEach((button,index)=>{const id=button.dataset.phaseId||G.runtimeOrder?.[index]||'';if(!id)return;if(button.dataset.phaseId!==id)button.dataset.phaseId=id;const strong=button.querySelector('strong');if(!strong)return;const original=originalText(strong),next=menuName(id,original);if(next&&strong.textContent!==next)strong.textContent=next});
 }
 function ensureMapObserver(){
  const next=$('campaignMap');if(next===observedMap)return;
