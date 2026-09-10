@@ -259,9 +259,21 @@ function scheduleElementPrewarm(){const run=()=>prewarmVisibleElements();if('req
 elementSources().then(scheduleElementPrewarm);
 
 
+let elementOpenTimer=0,lastElementPointerUp=0;
+function scheduleElementDetailOpen(el){
+ if(!el||el.hidden)return;
+ clearTimeout(elementOpenTimer);
+ elementOpenTimer=setTimeout(()=>{if(el.isConnected&&!el.hidden)showElementDetail(el)},0);
+}
+catalog.addEventListener('pointerup',e=>{
+ const el=e.target instanceof Element?e.target.closest('.el-card'):null;if(!el||el.hidden)return;
+ lastElementPointerUp=performance.now();
+ scheduleElementDetailOpen(el);
+});
 catalog.addEventListener('click',e=>{
  const el=e.target instanceof Element?e.target.closest('.el-card'):null;if(!el||el.hidden)return;
- showElementDetail(el);
+ if(performance.now()-lastElementPointerUp<650)return;
+ scheduleElementDetailOpen(el);
 });
 catalog.addEventListener('pointerover',e=>{const el=e.target instanceof Element?e.target.closest('.el-card'):null;if(!el)return;const sym=el.querySelector('.s')?.textContent?.trim()||'',cfg=elementSourcesResolved?.[sym]||{};if(cfg.imagePath)preloadElementImage(new URL(cfg.imagePath,document.baseURI).href)},{passive:true});
 catalog.addEventListener('pointerdown',e=>{const el=e.target instanceof Element?e.target.closest('.el-card'):null;if(!el)return;const sym=el.querySelector('.s')?.textContent?.trim()||'',cfg=elementSourcesResolved?.[sym]||{};if(cfg.imagePath)preloadElementImage(new URL(cfg.imagePath,document.baseURI).href)},{passive:true});
