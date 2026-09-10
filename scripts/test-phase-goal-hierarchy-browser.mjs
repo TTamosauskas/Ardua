@@ -15,6 +15,10 @@ async function openPhase(id,expectedTitle,expectedContext){
  const pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
  await page.goto(base,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.body.classList.contains('phase-goal-hierarchy'));
+ if(id==='quarks'){
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ardua:quarks-phase-start')));
+  await page.waitForTimeout(120);
+ }
  await page.waitForTimeout(900);
  const result=await page.evaluate(()=>{
   const title=document.getElementById('phaseTitle'),context=document.getElementById('branchLabel'),goal=document.getElementById('goalText'),formula=document.getElementById('formulaText');
