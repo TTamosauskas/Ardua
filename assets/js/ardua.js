@@ -1236,12 +1236,12 @@ const AdaptiveAudio=Object.freeze({reaction:adaptiveAudioReaction,resolve:adapti
 const OBJECTIVE_MOTIF_ROOTS=Object.freeze([196,220,247,262,294,330]);
 function objectiveMotifHash(text=''){let h=17;for(const ch of String(text))h=(h*31+ch.charCodeAt(0))>>>0;return h}
 function objectiveMotifNotes(r){
- const baseRoot=OBJECTIVE_MOTIF_ROOTS[objectiveMotifHash(recipeKey(r))%OBJECTIVE_MOTIF_ROOTS.length],octave=Math.max(0,Number(state.objectiveMotifCombinationOctave)||0),root=baseRoot*(2**octave),unstable=!!E[r?.out]?.unstable;
+ const root=OBJECTIVE_MOTIF_ROOTS[objectiveMotifHash(recipeKey(r))%OBJECTIVE_MOTIF_ROOTS.length],unstable=!!E[r?.out]?.unstable;
  return unstable?[root,root*(4/3),root*1.5]:[root,root*1.25,root*1.5];
 }
-const OBJECTIVE_MOTIF_NOTE_MAIN_GAIN=.68,OBJECTIVE_MOTIF_NOTE_HARM_GAIN=.22,OBJECTIVE_MOTIF_CHORD_MAIN_GAIN=.18,OBJECTIVE_MOTIF_CHORD_HARM_GAIN=.055,OBJECTIVE_MOTIF_FINAL_GAIN=.14;
-function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))],d=index===2?.28:.24;tone(f,d,'triangle',OBJECTIVE_MOTIF_NOTE_MAIN_GAIN);tone(f*2,d*.82,'sine',OBJECTIVE_MOTIF_NOTE_HARM_GAIN)}
-function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes){tone(f,.52,'triangle',OBJECTIVE_MOTIF_CHORD_MAIN_GAIN);tone(f*2,.42,'sine',OBJECTIVE_MOTIF_CHORD_HARM_GAIN)}if(final)tone(notes[0]*2,.56,'triangle',OBJECTIVE_MOTIF_FINAL_GAIN);state.objectiveMotifCombinationOctave=Math.max(0,Number(state.objectiveMotifCombinationOctave)||0)+1}
+const OBJECTIVE_MOTIF_AUDIO=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022,noteDuration:.24,strongDuration:.28,harmonicDurationRatio:.82,chordDuration:.52,chordHarmDuration:.42,finalAccentDuration:.56});
+function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))],strong=index===2,d=strong?OBJECTIVE_MOTIF_AUDIO.strongDuration:OBJECTIVE_MOTIF_AUDIO.noteDuration,g=strong?OBJECTIVE_MOTIF_AUDIO.noteStrongGain:OBJECTIVE_MOTIF_AUDIO.noteMainGain;tone(f,d,'triangle',g);tone(f*2,d*OBJECTIVE_MOTIF_AUDIO.harmonicDurationRatio,'sine',g*OBJECTIVE_MOTIF_AUDIO.harmonicRatio)}
+function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes){tone(f,OBJECTIVE_MOTIF_AUDIO.chordDuration,'triangle',OBJECTIVE_MOTIF_AUDIO.chordMainGain);tone(f*2,OBJECTIVE_MOTIF_AUDIO.chordHarmDuration,'sine',OBJECTIVE_MOTIF_AUDIO.chordHarmGain)}if(final)tone(notes[0]*2,OBJECTIVE_MOTIF_AUDIO.finalAccentDuration,'triangle',OBJECTIVE_MOTIF_AUDIO.finalAccentGain)}
 function objectiveMotifSameRecipe(a,b){return !!a&&!!b&&recipeKey(a)===recipeKey(b)}
 function objectiveMotifTargetRecipes(s=phase()){
  if(s.mode==='whiteCompact'){

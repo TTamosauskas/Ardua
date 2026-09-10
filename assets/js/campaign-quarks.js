@@ -2,6 +2,7 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),SAVE_KEY='stellarForgeV1013';
+const AUDIO_PROFILE=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022,noteDuration:.24,strongDuration:.28,harmonicDurationRatio:.82,chordDuration:.52,chordHarmDuration:.42,finalAccentDuration:.56});
 const C=window.ARDUA_CAMPAIGN;if(!C)return;
 
 window.ARDUA_PHASE_NAMES=Object.freeze({...(window.ARDUA_PHASE_NAMES||{}),quarks:'Quarks'});
@@ -102,9 +103,9 @@ function tone(freq=440,duration=.24,type='triangle',gain=.074){
  const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(Math.max(.0001,gain),t);osc.connect(g);g.connect(ctx.destination);osc.start(t);g.gain.exponentialRampToValueAtTime(.0001,t+duration);osc.stop(t+duration+.02)}catch(_e){}};
  if(ctx.state==='suspended')ctx.resume().then(play).catch(()=>{});else play();
 }
-function playFrequency(freq,strong=false){const d=strong?.28:.24,g=strong?.086:.074;tone(freq,d,'triangle',g);tone(freq*2,d*.82,'sine',g*.30)}
-function playChord(root){for(const ratio of [1,1.25,1.5]){const f=root*ratio;tone(f,.52,'triangle',.040);tone(f*2,.42,'sine',.014)}}
-function playFinalAccent(root){tone(root*2,.56,'triangle',.022)}
+function playFrequency(freq,strong=false){const d=strong?AUDIO_PROFILE.strongDuration:AUDIO_PROFILE.noteDuration,g=strong?AUDIO_PROFILE.noteStrongGain:AUDIO_PROFILE.noteMainGain;tone(freq,d,'triangle',g);tone(freq*2,d*AUDIO_PROFILE.harmonicDurationRatio,'sine',g*AUDIO_PROFILE.harmonicRatio)}
+function playChord(root){for(const ratio of [1,1.25,1.5]){const f=root*ratio;tone(f,AUDIO_PROFILE.chordDuration,'triangle',AUDIO_PROFILE.chordMainGain);tone(f*2,AUDIO_PROFILE.chordHarmDuration,'sine',AUDIO_PROFILE.chordHarmGain)}}
+function playFinalAccent(root){tone(root*2,AUDIO_PROFILE.finalAccentDuration,'triangle',AUDIO_PROFILE.finalAccentGain)}
 function rootForKind(kind){return kind==='proton'?220:247}
 function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function selectAnchor(id){

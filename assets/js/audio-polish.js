@@ -5,6 +5,7 @@ const nodeProto=window.AudioNode?.prototype,GainCtor=window.GainNode,DestCtor=wi
 if(!nodeProto||!GainCtor||!DestCtor||nodeProto.__arduaAudioPolishHook||typeof nodeProto.connect!=='function')return;
 const nativeConnect=nodeProto.connect,nativeCreateGain=BaseCtxProto?.createGain;
 const GLOBAL_SFX_LIFT=1.22;
+const AUDIO_PROFILE=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022});
 const near=(a,b,e=.00035)=>Math.abs(Number(a)-Number(b))<=e;
 let lastChordCueAt=0,selectionMuteUntil=0,lastRoutedAt=0,lastRoutedKind='';
 
@@ -24,11 +25,13 @@ if(BaseCtxProto&&typeof nativeCreateGain==='function'&&!BaseCtxProto.__arduaGain
 }
 
 function classifyRecipeVoice(type,seed){
- if(type==='triangle'&&near(seed,.68))return'note12-main';
- if(type==='sine'&&near(seed,.22))return'note12-harm';
- if(type==='triangle'&&near(seed,.18))return'chord-main';
- if(type==='sine'&&near(seed,.055))return'chord-harm';
- if(type==='triangle'&&near(seed,.14))return'chord-final';
+ if(type==='triangle'&&near(seed,AUDIO_PROFILE.noteMainGain))return'note12-main';
+ if(type==='sine'&&near(seed,AUDIO_PROFILE.noteMainGain*AUDIO_PROFILE.harmonicRatio))return'note12-harm';
+ if(type==='triangle'&&near(seed,AUDIO_PROFILE.noteStrongGain))return'note3-main';
+ if(type==='sine'&&near(seed,AUDIO_PROFILE.noteStrongGain*AUDIO_PROFILE.harmonicRatio))return'note3-harm';
+ if(type==='triangle'&&near(seed,AUDIO_PROFILE.chordMainGain))return'chord-main';
+ if(type==='sine'&&near(seed,AUDIO_PROFILE.chordHarmGain))return'chord-harm';
+ if(type==='triangle'&&near(seed,AUDIO_PROFILE.finalAccentGain))return'chord-final';
  return'';
 }
 function rememberRouted(kind){lastRoutedKind=kind;lastRoutedAt=performance.now()}
@@ -82,5 +85,5 @@ nodeProto.connect=function(destination,...rest){
  }
  return nativeConnect.call(this,destination,...rest);
 };
-window.ARDUA_AUDIO_POLISH=Object.freeze({globalSfxLift:GLOBAL_SFX_LIFT,recipeMotifLift:1.05,recipePeak:.98,recipeLimiter:true,recipeOwner:'recipe-audio-sync',armSelectionMute,standardNoteSerial:()=>0,motifRoot:()=>0});
+window.ARDUA_AUDIO_POLISH=Object.freeze({globalSfxLift:GLOBAL_SFX_LIFT,recipeMotifLift:1,recipePeak:null,recipeLimiter:false,recipeOwner:'recipe-audio-sync',recipeReference:'quarks-v1',armSelectionMute,standardNoteSerial:()=>0,motifRoot:()=>0});
 })();
