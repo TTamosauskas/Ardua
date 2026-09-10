@@ -8,12 +8,14 @@ const index=read('index.html');
 function expect(condition,message){if(!condition)throw new Error(`Quarks chrome validation: ${message}`)}
 function before(a,b){return index.indexOf(a)>=0&&index.indexOf(b)>=0&&index.indexOf(a)<index.indexOf(b)}
 
-expect(chrome.includes("const GOAL='Forje os primeiros bárions'"),'visible objective must be Forje os primeiros bárions');
+expect(chrome.includes("const GOAL='Forme Prótons e Nêutrons'"),'Quarks objective must use the compact Forme wording');
+expect(chrome.includes("function goalWithProgress()")&&chrome.includes("return`${GOAL} — ${progress}`"),'Quarks objective must carry its 0/2 progress in the header');
 expect(chrome.includes("const FORMULA='3 quarks → 1 próton ou nêutron'"),'visible recipe must be the three-quark baryon recipe');
 expect(chrome.includes("const NEXT_LABEL='Próxima fase'"),'final circular button must say Próxima fase');
 expect(chrome.includes("setText('phaseEndBtn',NEXT_LABEL)"),'Quarks must own the final button label even after native updates');
 expect(chrome.includes("'formulaText','phaseEndBtn'"),'final button text must be observed with the rest of the Quarks chrome');
-expect(chrome.includes("setText('phaseTitle','Quarks')"),'visible phase title must stay Quarks');
+expect(chrome.includes("setText('branchLabel','QUARKS')"),'Quarks identity must remain as the small contextual label');
+expect(chrome.includes("setText('phaseTitle',goal)")&&chrome.includes("setText('goalText',goal)"),'visible phase title must be the compact live objective');
 expect(chrome.includes("C.markCompleted?.('quarks')"),'successful Quarks completion must be persisted before returning to the map');
 expect(chrome.includes("end.classList.contains('show')"),'Quarks completion must only be persisted after the successful final state is visible');
 expect(chrome.includes("function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}"),'class ownership must be idempotent so its MutationObserver cannot feed itself');
@@ -34,4 +36,4 @@ expect(engine.includes("primordialH:'#9f0814'"),'native deuterium primordial the
 expect(before('assets/js/campaign-quarks.js','assets/js/campaign-quarks-chrome.js'),'Quarks chrome owner must load after the custom phase runtime');
 expect(before('assets/js/campaign-quarks-chrome.js','assets/js/campaign-map.js'),'Quarks chrome owner must be ready before map interaction launches the phase');
 
-console.log('Quarks chrome OK: completion persists, next phase unlocks, trail states remain visible, and Quarks visual contracts are preserved.');
+console.log('Quarks chrome OK: compact live objective, completion persistence, trail states and visual contracts preserved.');

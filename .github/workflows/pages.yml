@@ -48,6 +48,9 @@ jobs:
           node --check assets/js/campaign-phase-modal.js
           node --check assets/js/phase-polish.js
           node --check assets/js/campaign-home-polish.js
+          node --check assets/js/campaign-phase-labels.js
+          node --check assets/js/campaign-phase-names.js
+          node --check assets/js/campaign-forge-names.js
           node --check assets/js/campaign-discoveries-elements.js
           node --check assets/js/campaign-element-bohr.js
           node --check assets/js/campaign-discoveries-phenomena.js
@@ -108,6 +111,9 @@ jobs:
 
       - name: Validate campaign runtime regressions
         run: node scripts/validate-campaign-runtime-regressions.js
+
+      - name: Validate compact phase goal hierarchy
+        run: node scripts/validate-phase-goal-hierarchy.js
 
       - name: Validate Quarks phase
         run: node scripts/validate-quarks-phase.js
