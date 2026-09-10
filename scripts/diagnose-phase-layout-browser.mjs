@@ -26,7 +26,7 @@ async function inspect(id,width=390,height=844){
       title:document.getElementById('phaseTitle')?.textContent?.trim(),
       app:ar,shell:sr,board:br,core:cr,info:ir,
       gapBelowInfo:ar.bottom-parseFloat(as.paddingBottom)-ir.bottom,
-      boardCss:{aspectRatio:bs.aspectRatio,flexShrink:bs.flexShrink,maxWidth:bs.maxWidth},
+      boardCss:{width:parseFloat(bs.width),height:parseFloat(bs.height),aspectRatio:bs.aspectRatio,flexShrink:bs.flexShrink,maxWidth:bs.maxWidth},
       infoMarginTop:is.marginTop,
       rootStarSize:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--starSize')),
       shellClientWidth:shell.clientWidth
@@ -38,14 +38,14 @@ async function inspect(id,width=390,height=844){
     assert.ok(data.board.width>0&&data.board.height>0,`${id}: estrela sem dimensões`);
     assert.ok(Math.abs(data.board.width-data.board.height)<=0.75,`${id}: estrela oval (${data.board.width.toFixed(2)} × ${data.board.height.toFixed(2)})`);
     assert.ok(Math.abs(data.core.width-data.core.height)<=0.75,`${id}: núcleo visual oval (${data.core.width.toFixed(2)} × ${data.core.height.toFixed(2)})`);
-    assert.ok(data.board.width<=data.shell.width+0.75,`${id}: estrela excede a largura disponível`);
+    assert.ok(Math.abs(data.boardCss.width-data.boardCss.height)<=0.25,`${id}: geometria CSS base não é 1:1 (${data.boardCss.width} × ${data.boardCss.height})`);
     assert.ok(data.rootStarSize<=data.shellClientWidth+0.75,`${id}: --starSize excede o shell (${data.rootStarSize}>${data.shellClientWidth})`);
     assert.ok(Math.abs(data.gapBelowInfo)<=1.25,`${id}: box não está no fim da página; sobra ${data.gapBelowInfo.toFixed(2)}px`);
     assert.equal(data.boardCss.flexShrink,'0',`${id}: estrela ainda pode ser comprimida de forma não uniforme`);
     assert.equal(data.boardCss.maxWidth,'100%',`${id}: estrela não está limitada ao shell`);
     assert.deepEqual(data.errors,[],`${id}: erros JavaScript: ${data.errors.join(' | ')}`);
   }catch(e){failures.push(`${width}x${height} ${e.message}`)}
-  console.log(`LAYOUT ${id} ${width}x${height}: board ${data.board.width.toFixed(1)}×${data.board.height.toFixed(1)}, footerGap ${data.gapBelowInfo.toFixed(1)}px`);
+  console.log(`LAYOUT ${id} ${width}x${height}: board ${data.board.width.toFixed(1)}×${data.board.height.toFixed(1)}, base ${data.boardCss.width.toFixed(1)}×${data.boardCss.height.toFixed(1)}, footerGap ${data.gapBelowInfo.toFixed(1)}px`);
   await context.close();
 }
 
