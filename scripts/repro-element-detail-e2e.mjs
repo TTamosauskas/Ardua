@@ -8,29 +8,31 @@ const pageErrors=[];
 page.on('console',msg=>{if(msg.type()==='error'){consoleErrors.push(msg.text());console.log('CONSOLE ERROR:',msg.text())}});
 page.on('pageerror',err=>{pageErrors.push(String(err));console.log('PAGE ERROR:',String(err))});
 
-await page.goto('http://127.0.0.1:8000/index.html#editor',{waitUntil:'networkidle'});
-await page.waitForTimeout(700);
+await page.goto('http://127.0.0.1:8000/index.html#editor',{waitUntil:'domcontentloaded'});
+await page.waitForTimeout(900);
 
 const intro=page.locator('#stellarIntro');
 if(await intro.count() && await intro.isVisible().catch(()=>false)){
   const start=page.locator('#stellarStartBtn');
-  if(await start.count() && await start.isVisible().catch(()=>false)) await start.click().catch(()=>{});
+  if(await start.count() && await start.isVisible().catch(()=>false)) await start.tap().catch(()=>{});
   await page.waitForTimeout(300);
 }
 
-const menu=page.locator('#menuOpenBtn');
-if(!(await menu.count())) throw new Error('menuOpenBtn ausente');
-await menu.click();
-await page.waitForTimeout(300);
+const visibleMenu=page.locator('#campaignHomeMenuBtn:visible, #menuOpenBtn:visible').first();
+if(!(await visibleMenu.count())) throw new Error('nenhum botão de menu visível');
+console.log('opening menu with=',await visibleMenu.getAttribute('id'));
+await visibleMenu.tap();
+await page.waitForTimeout(350);
 
-const buttons=await page.locator('button').evaluateAll(btns=>btns.map(b=>({id:b.id,text:(b.textContent||'').trim().replace(/\s+/g,' '),hidden:b.hidden,display:getComputedStyle(b).display,visibility:getComputedStyle(b).visibility})).filter(x=>x.id||x.text).slice(0,120));
+const buttons=await page.locator('button').evaluateAll(btns=>btns.map(b=>({id:b.id,text:(b.textContent||'').trim().replace(/\s+/g,' '),hidden:b.hidden,display:getComputedStyle(b).display,visibility:getComputedStyle(b).visibility})).filter(x=>x.id||x.text).slice(0,160));
 console.log('BUTTONS AFTER MENU:',JSON.stringify(buttons));
 
 const data=page.locator('#campaignData');
 if(!(await data.count())) throw new Error('campaignData ausente após abrir menu');
 console.log('campaignData visible=',await data.isVisible().catch(()=>false),'text=',await data.textContent());
-await data.click();
-await page.waitForTimeout(500);
+if(!(await data.isVisible().catch(()=>false))) throw new Error('campaignData existe mas não está visível');
+await data.tap();
+await page.waitForTimeout(550);
 
 const modal=page.locator('#menuModal');
 console.log('modal classes=',await modal.getAttribute('class'));
@@ -38,8 +40,9 @@ if(!String(await modal.getAttribute('class')).includes('discoveries-view')) thro
 
 const elementsTab=page.locator('[data-discovery-tab="elements"]');
 if(!(await elementsTab.count())) throw new Error('aba Elementos ausente');
-await elementsTab.click();
-await page.waitForTimeout(300);
+console.log('elements tab visible=',await elementsTab.isVisible().catch(()=>false));
+await elementsTab.tap();
+await page.waitForTimeout(350);
 
 const cards=page.locator('#catalog .el-card:not([hidden])');
 const count=await cards.count();
@@ -48,9 +51,10 @@ if(!count) throw new Error('nenhum elemento visível no modo editor');
 const first=cards.first();
 console.log('first card=',await first.textContent());
 console.log('first box=',await first.boundingBox());
+console.log('first visible=',await first.isVisible().catch(()=>false));
 
 await first.tap();
-await page.waitForTimeout(400);
+await page.waitForTimeout(500);
 
 const detail=page.locator('#elementDiscoveryDetail');
 const state={
