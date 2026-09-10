@@ -436,3 +436,9 @@ body.prebang .singularity{background:radial-gradient(circle,#05070b 0 47%,#20263
 
 /* Jatos Coronais: estado eletrônico não altera o tamanho visual das peças. */
 .atom.coronal-uniform{width:var(--cellSize)!important;height:var(--cellSize)!important}
+
+
+/* Selected atoms and their valid atom partners rise to the visual foreground. */
+.pieces.selection-foreground{z-index:60}
+.pieces.selection-foreground .atom.candidate{z-index:110}
+.pieces.selection-foreground .atom.selected{z-index:120}
