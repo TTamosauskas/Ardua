@@ -35,6 +35,7 @@ async function openPhase(id,expectedTitle,expectedContext){
  await context.close();
 }
 
+await openPhase('quarks','Forme Prótons e Nêutrons — 0/2','QUARKS');
 await openPhase('primordial_t','Forme Trítio — 0/4','');
 await openPhase('first_nebulae','Crie gás primordial — 0/4','PRIMEIRAS NEBULOSAS');
 await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO');
@@ -51,29 +52,24 @@ const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors
 await page.goto(base,{waitUntil:'domcontentloaded'});
 await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'));
 await page.waitForTimeout(1200);
-const diagnostic=await page.evaluate(()=>({
- runtimeLength:window.ARDUA_CAMPAIGN_GRAPH?.runtimeOrder?.length||0,
- mapCount:document.querySelectorAll('#campaignMap .phase-node').length,
- tritiumMapCount:document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]').length,
- phaseMenuCount:document.querySelectorAll('#phaseMenu .phase-jump').length,
- phaseMenuIdCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id]').length,
- tritiumMenuCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id="primordial_t"]').length,
- existingMenuIds:[...document.querySelectorAll('#phaseMenu .phase-jump')].map((x,i)=>[i,x.dataset.phaseId||'']).filter(x=>x[1]).slice(0,12),
- firstMapIds:[...document.querySelectorAll('#campaignMap .phase-node[data-phase]')].slice(0,8).map(x=>[x.dataset.phase,x.textContent.trim()]),
- firstMenu:[...document.querySelectorAll('#phaseMenu .phase-jump')].slice(0,8).map(x=>[x.dataset.phaseId||'',x.querySelector('strong')?.textContent?.trim()||'']),
- directMapName:window.ARDUA_PHASE_LABELS.mapName('primordial_t','Forme Trítio'),
- directMenuName:window.ARDUA_PHASE_LABELS.menuName('primordial_t','Forme Trítio')
-}));
-console.log('PHASE_LABEL_DIAGNOSTIC '+JSON.stringify(diagnostic));
 await page.evaluate(()=>window.ARDUA_PHASE_LABELS?.sync?.());
 await page.waitForTimeout(300);
 const labels=await page.evaluate(()=>{
  const map=id=>document.querySelector(`#campaignMap .phase-node[data-phase="${id}"] strong`)?.textContent?.trim()||'';
  const menu=id=>document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||'';
- return{map:{t:map('primordial_t'),c:map('c'),w:map('weak_s_cu'),au:map('au'),rp:map('rp_ge'),d:map('decay_pa'),bf:map('brown_formation')},menu:{t:menu('primordial_t'),c:menu('c'),w:menu('weak_s_cu'),au:menu('au'),d:menu('decay_pa')}};
+ const mapNodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase]')];
+ const menuButtons=[...document.querySelectorAll('#phaseMenu .phase-jump')];
+ return{
+  map:{t:map('primordial_t'),li:map('primordial_li'),c:map('c'),w:map('weak_s_cu'),au:map('au'),rp:map('rp_ge'),d:map('decay_pa'),bf:map('brown_formation')},
+  menu:{t:menu('primordial_t'),li:menu('primordial_li'),c:menu('c'),w:menu('weak_s_cu'),au:menu('au'),d:menu('decay_pa')},
+  mapEmpty:mapNodes.filter(x=>!x.querySelector('strong')?.textContent?.trim()).length,
+  menuCount:menuButtons.length,menuIdCount:menuButtons.filter(x=>x.dataset.phaseId).length,
+  forjar:[...mapNodes,...menuButtons].filter(x=>/\bForjar\b/i.test(x.textContent||'')).length
+ };
 });
 try{
  assert.equal(labels.map.t,'Forme Trítio');
+ assert.equal(labels.map.li,'Forme Lítio-7');
  assert.equal(labels.map.c,'Triplo-alfa: Carbono');
  assert.equal(labels.map.w,'Processo-s fraco: Cobre');
  assert.equal(labels.map.au,'Processo-r: Ouro');
@@ -81,14 +77,18 @@ try{
  assert.equal(labels.map.d,'Protactínio · cadeia radioativa');
  assert.equal(labels.map.bf,'Formação da Anã Marrom');
  assert.equal(labels.menu.t,'Forme Trítio');
+ assert.equal(labels.menu.li,'Forme Lítio-7');
  assert.equal(labels.menu.c,'Triplo-alfa: Carbono');
  assert.equal(labels.menu.w,'Forme Cobre');
  assert.equal(labels.menu.au,'Forme Ouro');
  assert.equal(labels.menu.d,'Forme Protactínio');
+ assert.equal(labels.mapEmpty,0,'mapa contém fases sem título');
+ assert.equal(labels.menuIdCount,labels.menuCount,'menu contém fases sem identificação canônica');
+ assert.equal(labels.forjar,0,'“Forjar” permaneceu em algum título do mapa/menu');
  assert.deepEqual(errors,[],`map/menu: erros JavaScript: ${errors.join(' | ')}`);
 }catch(e){failures.push(e.message)}
 await context.close();
 await browser.close();
 
 if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n'));process.exit(1)}
-console.log('Browser OK: one-line phase goals, contextual identities, recipe-only card, map/menu labels on mobile viewports.');
+console.log('Browser OK: Quarks + representative campaign phases use one-line objectives; recipe-only card and canonical map/menu labels pass on mobile viewports.');
