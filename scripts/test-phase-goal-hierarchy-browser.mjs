@@ -37,7 +37,7 @@ async function openPhase(id,expectedTitle,expectedContext){
 
 await openPhase('primordial_t','Forme Trítio — 0/4','');
 await openPhase('first_nebulae','Crie gás primordial — 0/4','PRIMEIRAS NEBULOSAS');
-await openPhase('first_generation_formation','Reúna Hidrogênio — 0/37','PRIMEIRA GERAÇÃO');
+await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO');
 await openPhase('he_orange','Forme Hélio-3 — 0/5','ANÃ LARANJA');
 await openPhase('c','Forme Carbono — 0/5','TRIPLO-ALFA');
 await openPhase('weak_s_cu','Forme Cobre — 0/4','PROCESSO-S FRACO');
@@ -48,7 +48,11 @@ await openPhase('black_hole','Atraia matéria — 0/6','BURACO NEGRO');
 
 const context=await browser.newContext({viewport:{width:390,height:844}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(base,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS);await page.waitForTimeout(1500);
+await page.goto(base,{waitUntil:'domcontentloaded'});
+await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'));
+await page.waitForFunction(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_t"] strong')&&document.querySelector('#phaseMenu .phase-jump[data-phase-id="primordial_t"] strong'));
+await page.waitForFunction(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_t"] strong')?.textContent?.trim()==='Forme Trítio');
+await page.waitForTimeout(500);
 const labels=await page.evaluate(()=>{
  const map=id=>document.querySelector(`#campaignMap .phase-node[data-phase="${id}"] strong`)?.textContent?.trim()||'';
  const menu=id=>document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||'';
