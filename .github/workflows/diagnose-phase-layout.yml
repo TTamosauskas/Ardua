@@ -1,0 +1,29 @@
+name: Diagnose phase layout
+
+on:
+  push:
+    branches: ["fix/phase-footer-and-star-shape"]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+      - name: Show star sizing rules
+        run: |
+          grep -R -n -E -- "--starSize|\.star-board[^\{]*\{|starScale|scaleX|scaleY" assets/css assets/js || true
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Measure phase layouts
+        run: |
+          python3 -m http.server 4173 >/tmp/ardua-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          ARDUA_TEST_URL=http://127.0.0.1:4173/ node scripts/diagnose-phase-layout-browser.mjs
