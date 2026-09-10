@@ -1085,7 +1085,9 @@ function phaseGeometry(s=phase()){
 }
 function applyGeometry(){
   const g=phaseGeometry(),root=document.documentElement;
-  const px=Math.max(260,Math.min(window.innerWidth*g.factor,g.max));
+  const desired=Math.max(260,Math.min(window.innerWidth*g.factor,g.max));
+  const shellWidth=Math.max(0,dom.star?.parentElement?.clientWidth||window.innerWidth-26);
+  const px=Math.min(desired,shellWidth||desired);
   root.style.setProperty('--starSize',`${px}px`);
   const minCell=g.r>=5?28:36,c=Math.max(minCell,Math.min(72,px*.88/(2*g.r+1)));
   root.style.setProperty('--cellSize',`${c}px`);
