@@ -5,6 +5,7 @@ const board=document.getElementById('starBoard'),formula=document.getElementById
 if(!board||!formula)return;
 const SELECTOR='.atom,.primordial-particle,.cosmic-ray,.neutron';
 const ROOTS=[196,220,247,262,294,330];
+const AUDIO_PROFILE=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022,noteDuration:.24,strongDuration:.28,harmonicDurationRatio:.82,chordDuration:.52,chordHarmDuration:.42,finalAccentDuration:.56});
 
 /* Stretch the engine's own objective-motif waits, so audio and animation share
    exactly the same expanded cadence. The pause from the second note to the
@@ -42,33 +43,25 @@ function rootForCurrentFormula(){return ROOTS[hash(nativeRecipeKey())%ROOTS.leng
 function phaseSignature(){return`${activeId()}|${phaseTitle?.textContent||''}`}
 function ratiosForProduct(sym=product()){return new Set(['HeU','FeU','Be7','Be8']).has(sym)?[1,4/3,1.5]:[1,1.25,1.5]}
 
-let audioCtx=null,recipeBus=null;const replicaVoices=new Set();
-const RECIPE_NOTE_MAIN_GAIN=.68,RECIPE_NOTE_HARM_GAIN=.22,RECIPE_CHORD_MAIN_GAIN=.18,RECIPE_CHORD_HARM_GAIN=.055,RECIPE_FINAL_GAIN=.14;
-const RECIPE_MASTER_GAIN=1.05,RECIPE_LIMIT_THRESHOLD=-1.5,RECIPE_LIMIT_RATIO=20,RECIPE_LIMIT_ATTACK=.002,RECIPE_LIMIT_RELEASE=.12,RECIPE_OUTPUT_CEILING=.98;
+let audioCtx=null;const replicaVoices=new Set();
 function audio(){try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;audioCtx??=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch(_e){return null}}
 async function ensureAudioReady(){const ctx=audio();if(!ctx)return null;if(ctx.state==='suspended'){try{await ctx.resume()}catch(_e){return null}}return ctx.state==='running'?ctx:null}
-function recipeOutput(ctx){
- if(recipeBus?.ctx===ctx)return recipeBus.input;
- const input=ctx.createGain(),limiter=ctx.createDynamicsCompressor(),ceiling=ctx.createGain();
- input.gain.value=RECIPE_MASTER_GAIN;limiter.threshold.value=RECIPE_LIMIT_THRESHOLD;limiter.knee.value=0;limiter.ratio.value=RECIPE_LIMIT_RATIO;limiter.attack.value=RECIPE_LIMIT_ATTACK;limiter.release.value=RECIPE_LIMIT_RELEASE;ceiling.gain.value=RECIPE_OUTPUT_CEILING;
- input.connect(limiter);limiter.connect(ceiling);ceiling.connect(ctx.destination);recipeBus={ctx,input,limiter,ceiling};return input;
-}
 function nativeTone(freq=440,duration=.05,type='sine',gain=.03,delay=0){
- try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime+Math.max(0,Number(delay)||0);g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(recipeOutput(ctx));const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
+ try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime+Math.max(0,Number(delay)||0);g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(ctx.destination);const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
 }
 function stopReplicaVoices(){const ctx=audioCtx;if(!ctx)return;const now=ctx.currentTime;for(const item of [...replicaVoices]){try{item.osc.stop(now+.01)}catch(_e){}}replicaVoices.clear()}
-function playFrequency(freq,strong=false){const d=strong?.28:.24;nativeTone(freq,d,'triangle',RECIPE_NOTE_MAIN_GAIN);nativeTone(freq*2,d*.82,'sine',RECIPE_NOTE_HARM_GAIN)}
+function playFrequency(freq,strong=false){const d=strong?AUDIO_PROFILE.strongDuration:AUDIO_PROFILE.noteDuration,g=strong?AUDIO_PROFILE.noteStrongGain:AUDIO_PROFILE.noteMainGain;nativeTone(freq,d,'triangle',g);nativeTone(freq*2,d*AUDIO_PROFILE.harmonicDurationRatio,'sine',g*AUDIO_PROFILE.harmonicRatio)}
 function playNote(index,root,ratios=ratiosForProduct()){playFrequency(root*ratios[Math.max(0,Math.min(2,index))],index===2)}
-function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,.52,'triangle',RECIPE_CHORD_MAIN_GAIN);nativeTone(f*2,.42,'sine',RECIPE_CHORD_HARM_GAIN)}}
-function playFinalAccent(root){nativeTone(root*2,.56,'triangle',RECIPE_FINAL_GAIN)}
+function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,AUDIO_PROFILE.chordDuration,'triangle',AUDIO_PROFILE.chordMainGain);nativeTone(f*2,AUDIO_PROFILE.chordHarmDuration,'sine',AUDIO_PROFILE.chordHarmGain)}}
+function playFinalAccent(root){nativeTone(root*2,AUDIO_PROFILE.finalAccentDuration,'triangle',AUDIO_PROFILE.finalAccentGain)}
 
 document.addEventListener('pointerdown',()=>audio(),{capture:true,passive:true});document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')audio()},{capture:true});
-let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0,combinationOctave=0;
+let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0;
 function pairKey(pair){return(pair||[]).join('|')}
 function freshMotif(pair=reactants(),root=rootForCurrentFormula()){motif={session:++sessionSerial,pair:[...pair],root:Number(root)||rootForCurrentFormula(),ratios:ratiosForProduct(),step:0,first:null,second:null,done:false};return motif}
 function resetMotif({stop=true}={}){motif=null;if(stop)stopReplicaVoices()}
-function combinationRoot(){return rootForCurrentFormula()*(2**Math.max(0,Number(combinationOctave)||0))}
-function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;combinationOctave=0;if(motif?.step>=3)return;resetMotif()}}
+function combinationRoot(){return rootForCurrentFormula()}
+function syncPhase(){const sig=phaseSignature();if(sig!==phaseSig){phaseSig=sig;if(motif?.step>=3)return;resetMotif()}}
 if(phaseTitle)new MutationObserver(syncPhase).observe(phaseTitle,{childList:true,subtree:true,characterData:true});window.addEventListener('ardua:campaign-progress',syncPhase);
 function matchingSlot(token,pair,skip=-1){for(let i=0;i<pair.length;i++)if(i!==skip&&pair[i]===token)return i;return-1}
 function currentStage(){return[...board.querySelectorAll('.objective-motif-stage')].at(-1)||null}
@@ -77,15 +70,15 @@ function markFirst(token,key,slot,root){const pair=reactants(),m=freshMotif(pair
 function markSecond(token,key,slot){if(!motif||motif.step!==1||motif.first?.key===key)return false;motif.second={token,key,slot};motif.step=2;playNote(1,motif.root,motif.ratios);queueMicrotask(()=>emitThirdForHighlight(currentStage()));return true}
 function emitThirdForHighlight(stage){if(!motif||motif.step!==2)return false;const ready=highlightedStage(stage);if(!ready||ready.dataset.recipeThirdPlayed==='1')return false;ready.dataset.recipeThirdPlayed='1';ready.dataset.recipeSession=String(motif.session);motif.step=3;playNote(2,motif.root,motif.ratios);return true}
 function engineNote(freq){syncPhase();engineCueSerial++;const pair=reactants();if(pair.length<2)return;const f=Number(freq)||rootForCurrentFormula();if(!motif||motif.done||pairKey(motif.pair)!==pairKey(pair)){const m=freshMotif(pair,f);m.step=1;m.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===0){motif.root=f;motif.step=1;motif.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===1){motif.second={token:pair[1],key:'engine:second',slot:1};motif.step=2;playFrequency(f);queueMicrotask(()=>emitThirdForHighlight(currentStage()))}}
-function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios);combinationOctave++}
+function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios)}
 function engineChordFinal(){if(motif?.done)playFinalAccent(motif.root)}
 async function victorySong(){
  syncPhase();const ctx=await ensureAudioReady();if(!ctx)return false;stopReplicaVoices();
  const root=rootForCurrentFormula(),ratios=ratiosForProduct(),notes=ratios.map(r=>root*r),noteGap=.34,phraseGap=.48,phraseSpan=noteGap*2+phraseGap;
- for(let octave=0;octave<3;octave++){const start=octave*phraseSpan,mult=2**octave;for(let i=0;i<notes.length;i++){const delay=start+i*noteGap,last=octave===2&&i===2,d=last?.62:(i===2?.36:.28),f=notes[i]*mult;nativeTone(f,d,'triangle',RECIPE_NOTE_MAIN_GAIN,delay);nativeTone(f*2,d*.82,'sine',RECIPE_NOTE_HARM_GAIN,delay)}}
+ for(let octave=0;octave<3;octave++){const start=octave*phraseSpan,mult=2**octave;for(let i=0;i<notes.length;i++){const delay=start+i*noteGap,last=octave===2&&i===2,strong=i===2,d=last?.62:(strong?.36:AUDIO_PROFILE.noteDuration),g=strong?AUDIO_PROFILE.noteStrongGain:AUDIO_PROFILE.noteMainGain,f=notes[i]*mult;nativeTone(f,d,'triangle',g,delay);nativeTone(f*2,d*AUDIO_PROFILE.harmonicDurationRatio,'sine',g*AUDIO_PROFILE.harmonicRatio,delay)}}
  await new Promise(resolve=>setTimeout(resolve,3640));return true;
 }
-window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,victorySong,cadence:Object.freeze({note2To3:'2x',note3ToChord:'2x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair],combinationOctave}:null});
+window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,victorySong,cadence:Object.freeze({note2To3:'2x',note3ToChord:'2x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
 
 document.addEventListener('click',e=>{const el=e.target instanceof Element?e.target.closest(SELECTOR):null;if(!el||!board.contains(el))return;syncPhase();const pair=reactants();if(pair.length<2)return;const token=tokenOf(el),key=keyOf(el);if(!token)return;const preSelected=el.classList.contains('selected'),preCandidate=el.classList.contains('candidate'),currentPairKey=pairKey(pair);let targetIntent=false;if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey)targetIntent=matchingSlot(token,pair)>=0;else if(motif.step===1)targetIntent=matchingSlot(token,motif.pair,motif.first?.slot??-1)>=0&&(preCandidate||!preSelected);if(targetIntent)window.ARDUA_AUDIO_POLISH?.armSelectionMute?.(90);const beforeCue=engineCueSerial,beforeStages=board.querySelectorAll('.objective-motif-stage').length;setTimeout(()=>{syncPhase();if(engineCueSerial>beforeCue)return;const nowSelected=el.isConnected&&el.classList.contains('selected'),stageCount=board.querySelectorAll('.objective-motif-stage').length,newStage=stageCount>beforeStages;if(preSelected){if(motif?.first?.key===key&&motif.step===1&&!nowSelected)resetMotif();return}if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey){const slot=matchingSlot(token,pair);if(slot>=0&&nowSelected)markFirst(token,key,slot,combinationRoot());return}if(motif.step===1){const slot=matchingSlot(token,motif.pair,motif.first?.slot??-1);if(slot>=0&&(preCandidate||nowSelected||newStage)){markSecond(token,key,slot);return}}emitThirdForHighlight(currentStage())},0)},true);
 
