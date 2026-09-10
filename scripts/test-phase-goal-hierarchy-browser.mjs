@@ -50,9 +50,21 @@ const context=await browser.newContext({viewport:{width:390,height:844}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(base,{waitUntil:'domcontentloaded'});
 await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'));
-await page.waitForFunction(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_t"] strong')&&document.querySelector('#phaseMenu .phase-jump[data-phase-id="primordial_t"] strong'));
-await page.waitForFunction(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_t"] strong')?.textContent?.trim()==='Forme Trítio');
-await page.waitForTimeout(500);
+await page.waitForTimeout(1200);
+const diagnostic=await page.evaluate(()=>({
+ mapCount:document.querySelectorAll('#campaignMap .phase-node').length,
+ tritiumMapCount:document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]').length,
+ phaseMenuCount:document.querySelectorAll('#phaseMenu .phase-jump').length,
+ phaseMenuIdCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id]').length,
+ tritiumMenuCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id="primordial_t"]').length,
+ firstMapIds:[...document.querySelectorAll('#campaignMap .phase-node[data-phase]')].slice(0,8).map(x=>[x.dataset.phase,x.textContent.trim()]),
+ firstMenu:[...document.querySelectorAll('#phaseMenu .phase-jump')].slice(0,8).map(x=>[x.dataset.phaseId||'',x.querySelector('strong')?.textContent?.trim()||'']),
+ directMapName:window.ARDUA_PHASE_LABELS.mapName('primordial_t','Forme Trítio'),
+ directMenuName:window.ARDUA_PHASE_LABELS.menuName('primordial_t','Forme Trítio')
+}));
+console.log('PHASE_LABEL_DIAGNOSTIC '+JSON.stringify(diagnostic));
+window.ARDUA_PHASE_LABELS?.sync?.();
+await page.waitForTimeout(300);
 const labels=await page.evaluate(()=>{
  const map=id=>document.querySelector(`#campaignMap .phase-node[data-phase="${id}"] strong`)?.textContent?.trim()||'';
  const menu=id=>document.querySelector(`#phaseMenu .phase-jump[data-phase-id="${id}"] strong`)?.textContent?.trim()||'';
