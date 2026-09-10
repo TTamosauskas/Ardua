@@ -1366,7 +1366,7 @@ function evaluateRewardAchievements(s=phase()){
  maybeScientificMoment(s);
 }
 function phaseCompletionReward(s=phase()){
- if(state.rewardPhaseComplete)return;state.rewardPhaseComplete=true;unlockRewardAchievement('phaseComplete');dom.star.classList.add('completion-settle');setTimeout(()=>dom.star?.classList.remove('completion-settle'),1050);adaptiveAudioResolve('completion');
+ if(state.rewardPhaseComplete)return;state.rewardPhaseComplete=true;unlockRewardAchievement('phaseComplete');dom.star.classList.add('completion-settle');setTimeout(()=>dom.star?.classList.remove('completion-settle'),1050);
  if(s.coronalJetTutorial){const fresh=registerRewardDiscovery('phenomenon:solarFlare',{kicker:'NOVA DESCOBERTA',title:'ERUPÇÕES SOLARES',text:'Nova descoberta adicionada a Descobertas > Fenômenos.',silent:false,priority:4});if(!fresh)RewardDirector.show({kicker:'OBJETIVO CIENTÍFICO',title:'JATOS CORONAIS',text:'Você usou matéria ionizada da superfície e atividade magnética para produzir jatos coronais.',priority:3,duration:1950,kind:'completion'})}
  else if(s.mode==='convection'){RewardDirector.show({kicker:'OBJETIVO CIENTÍFICO',title:'CONVECÇÃO ESTELAR',text:'Você dominou o ciclo entre atividade nuclear e transporte convectivo.',priority:3,duration:1950,kind:'completion'})}
  else if(s.mode==='remnant'){registerRewardDiscovery('phenomenon:neutronStar',{title:'ESTRELA DE NÊUTRONS',text:'Remanescente compacto formado.',silent:true});playScientificSignature('neutronStar')}
@@ -4259,7 +4259,7 @@ function checkComplete(){
  const s=phase();if(state.phaseDone||state.readyToAdvance)return;
  const objectiveDone=objectiveSatisfied(s);if(objectiveDone&&objectiveFlowFloorApplies(s)){const floor=Math.ceil(Math.max(0,s.flowTarget||0)*CHAIN_OBJECTIVE_PROGRESS_FLOOR);if(state.flow<floor)state.flow=floor}
  const flowDone=s.mode==='campaignMilestone'||s.mode==='stellarFormation'||s.id==='brown'||s.mode==='whiteCompact'||state.flow>=Math.max(0,s.flowTarget||0);if(!objectiveDone||!flowDone)return;
- state.readyToAdvance=true;state.selected=[];if(s.id==='brown')state.locked=true;if(s.mode==='stellarFormation')dom.star.parentElement?.classList.add('formation-ready-shell');save();$('phaseEndBtn').classList.remove('show');dom.star.classList.add('critical');phaseCompletionReward(s);setTimeout(()=>{if(phase()===s&&state.readyToAdvance)$('phaseEndBtn').classList.add('show')},720);
+ state.readyToAdvance=true;state.selected=[];if(s.id==='brown')state.locked=true;if(s.mode==='stellarFormation')dom.star.parentElement?.classList.add('formation-ready-shell');save();$('phaseEndBtn').classList.remove('show');dom.star.classList.add('critical');phaseCompletionReward(s);setTimeout(()=>{if(phase()===s&&state.readyToAdvance){$('phaseEndBtn').classList.add('show');const played=window.ARDUA_RECIPE_AUDIO_SYNC?.victorySting?.();if(!played)adaptiveAudioResolve('completion')}},720);
  if(s.mode==='stellarFormation'){const spec=stellarFormationSpec(s);announce('MATÉRIA REUNIDA',s.id==='first_generation_formation'?'PRIMEIRA GERAÇÃO PRONTA':'FORMAÇÃO CONCLUÍDA',`Os ${spec.total} átomos de Hidrogênio formam um hexágono com ${stellarFormationLayerDescription(spec)}.`);}
  else if(s.id==='brown')announce('DEUTÉRIO ESGOTADO','A QUEIMA DA ANÃ MARROM TERMINOU','O pequeno reservatório de Deutério foi consumido; a fusão sustentada de Hidrogênio permanece fora de alcance.');
  else if(s.endEvent==='supernova')announce('OBJETIVO CONCLUÍDO','SUPERNOVA PRONTA','O núcleo está pronto. Você ainda pode explorar o tabuleiro antes de liberar a onda de choque.');
