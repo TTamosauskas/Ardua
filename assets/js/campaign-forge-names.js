@@ -1,7 +1,7 @@
-/* Ardua — standardize the first playable creation of each element/species as “Forjar …”. */
+/* Ardua — standardize the first playable creation of each element/species as “Forme …”. */
 (()=>{
 'use strict';
-const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,map=document.getElementById('campaignMap'),phaseMenu=document.getElementById('phaseMenu'),detail=document.getElementById('mapDetail');
+const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH,L=window.ARDUA_PHASE_LABELS,map=document.getElementById('campaignMap'),phaseMenu=document.getElementById('phaseMenu'),detail=document.getElementById('mapDetail');
 if(!C||!G)return;
 const EXCLUDED=new Set(['Plus','HeU','FeU','Be7','Be8','C13','Ne22','HeH+','H2']);
 const SPECIAL={D:'Deutério',T:'Trítio',He3:'Hélio-3'};
@@ -17,7 +17,8 @@ function parsePhases(text){
 }
 function sourceMeta(){
  if(window.ARDUA_PHASE_SOURCE_META_PROMISE)return window.ARDUA_PHASE_SOURCE_META_PROMISE;
- const url=new URL('assets/js/ardua.js',document.baseURI).href;
+ const loaded=[...document.scripts].find(s=>/\/assets\/js\/ardua\.js(?:\?|$)/.test(s.src));
+ const url=loaded?.src||new URL('assets/js/ardua.js',document.baseURI).href;
  window.ARDUA_PHASE_SOURCE_META_PROMISE=fetch(url,{cache:'force-cache'}).then(r=>r.ok?r.text():Promise.reject(new Error('engine source unavailable'))).then(parsePhases).catch(()=>({phases:[],colors:{},weights:{}}));
  return window.ARDUA_PHASE_SOURCE_META_PROMISE;
 }
@@ -31,6 +32,7 @@ function applyForgeNames(names){
  if(applying)return;applying=true;
  try{
   window.ARDUA_FORGE_NAMES=Object.freeze({...names});
+  if(L){L.registerForgeNames?.(names);L.sync?.();syncDetail();return}
   window.ARDUA_PHASE_NAMES=Object.freeze({...window.ARDUA_PHASE_NAMES,...names});
   for(const [id,name] of Object.entries(names)){
    map?.querySelectorAll(`.phase-node[data-phase="${id}"] strong`).forEach(el=>setText(el,name));
@@ -42,19 +44,19 @@ function applyForgeNames(names){
   syncDetail();
  }finally{applying=false}
 }
-function syncDetail(){if(!lastDetailPhase||!detail?.classList.contains('show'))return;const name=window.ARDUA_FORGE_NAMES?.[lastDetailPhase],h=detail.querySelector(':scope > h3');setText(h,name)}
+function syncDetail(){if(!lastDetailPhase||!detail?.classList.contains('show'))return;const node=map?.querySelector(`.phase-node[data-phase="${lastDetailPhase}"] strong`),name=node?.textContent?.trim()||window.ARDUA_FORGE_NAMES?.[lastDetailPhase],h=detail.querySelector(':scope > h3');setText(h,name)}
 async function build(){
  const src=await sourceMeta(),byId=new Map((src.phases||[]).map(p=>[p.id,p])),namesBySym=elementNames(),seen=new Set(),forge={};
  for(const id of G.runtimeOrder||[]){
   const p=byId.get(id);if(!p?.newSym)continue;
   const first=!seen.has(p.newSym);seen.add(p.newSym);
   if(!first||p.target<=0||EXCLUDED.has(p.newSym))continue;
-  const elementName=namesBySym[p.newSym];if(elementName)forge[id]=`Forjar ${elementName}`;
+  const elementName=namesBySym[p.newSym];if(elementName)forge[id]=`Forme ${elementName}`;
  }
  applyForgeNames(forge);
  window.dispatchEvent(new CustomEvent('ardua:forge-names',{detail:{names:forge}}));
 }
 build();
-new MutationObserver(()=>{if(window.ARDUA_FORGE_NAMES&&!applying)applyForgeNames(window.ARDUA_FORGE_NAMES)}).observe(phaseMenu||document.body,{childList:true,subtree:true});
+if(!L)new MutationObserver(()=>{if(window.ARDUA_FORGE_NAMES&&!applying)applyForgeNames(window.ARDUA_FORGE_NAMES)}).observe(phaseMenu||document.body,{childList:true,subtree:true});
 window.addEventListener('ardua:campaign-progress',()=>{if(window.ARDUA_FORGE_NAMES)applyForgeNames(window.ARDUA_FORGE_NAMES)});
 })();
