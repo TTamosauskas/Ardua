@@ -16,4 +16,10 @@ if(!engine.includes("const campaign=window.ARDUA_CAMPAIGN;if(campaign&&!campaign
 for(const token of ['function campaignKnowledgeCompleted(id)','function fusionAutoRecipePreviouslyLearned(r)','!fusionAutoRecipePreviouslyLearned(r)','function neutronAutoTargetPreviouslyLearned(p,s=phase())','!neutronAutoTargetPreviouslyLearned(p,s)','function protonAutoRoutePreviouslyLearned(s=phase())','!protonAutoRoutePreviouslyLearned(s)'])if(!engine.includes(token))fail('Regra de cadeia estrita ausente: '+token);
 const a=engine.indexOf('function campaignKnowledgeCompleted(id)'),b=engine.indexOf('function learnedPrimordialNuclearReactions',a),block=engine.slice(a,b);if(!block.includes('gs.completed.includes(id)')||block.includes('gs.activeId===id'))fail('Cadeias automáticas só podem usar fases concluídas');
 for(const token of ['function boardParticleTargetAvailable(p,s=phase())','function selectBoardParticleTarget(p)','boardParticleTargetAvailable(p,s)){selectBoardParticleTarget(p);return}','protonCaptureAvailable(s)&&protonCaptureRoute(board,s)','attemptProtonCapture(board.cell,p.id)'])if(!engine.includes(token))fail('Seleção átomo→partícula perdeu simetria: '+token);
+const css=fs.readFileSync('assets/css/ardua.css','utf8');
+if(css.includes('small translucent free particles'))fail('Descrição visual ainda indica partículas livres translúcidas');
+if(css.includes('.star-board:not(.primordial-mode) .primordial-particle.candidate{opacity:.76}'))fail('Partículas candidatas ainda ficam translúcidas');
+if(/\.neutron\{[^}]*opacity:\.(?:40|62)/.test(css))fail('Nêutrons livres ainda usam opacidade reduzida');
+const shell=css.slice(css.indexOf('/* Stellar particle shell:'),css.indexOf('/* Primordial molecule scale:'));
+if(!shell.includes('opacity:1')||/opacity:\.(?:40|62|76)/.test(shell))fail('Prótons, elétrons ou nêutrons livres ainda usam transparência no plasma estelar');
 console.log('Movement animation, campaign return and strict chain knowledge OK.');
