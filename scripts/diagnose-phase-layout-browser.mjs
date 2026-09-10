@@ -29,10 +29,10 @@ async function inspect(id,width=390,height=844){
       boardCss:{aspectRatio:bs.aspectRatio,flexShrink:bs.flexShrink,maxWidth:bs.maxWidth},
       infoMarginTop:is.marginTop,
       rootStarSize:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--starSize')),
-      shellClientWidth:shell.clientWidth,
-      errors
+      shellClientWidth:shell.clientWidth
     };
   });
+  data.errors=errors;
   try{
     assert.equal(data.activeId,id,`${id}: fase ativa inesperada`);
     assert.ok(data.board.width>0&&data.board.height>0,`${id}: estrela sem dimensões`);
