@@ -17,6 +17,13 @@ if(await intro.count() && await intro.isVisible().catch(()=>false)){
   if(await start.count() && await start.isVisible().catch(()=>false)) await start.tap().catch(()=>{});
   await page.waitForTimeout(300);
 }
+const phasePreview=page.locator('#campaignPhasePreview.show');
+if(await phasePreview.count() && await phasePreview.isVisible().catch(()=>false)){
+  const closePreview=phasePreview.locator('[data-phase-preview-close]');
+  console.log('closing visible phase preview=',await phasePreview.getAttribute('data-phase-id'));
+  await closePreview.tap();
+  await page.waitForTimeout(650);
+}
 
 const visibleMenu=page.locator('#campaignHomeMenuBtn:visible, #menuOpenBtn:visible').first();
 if(!(await visibleMenu.count())) throw new Error('nenhum botão de menu visível');
