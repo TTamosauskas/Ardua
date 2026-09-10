@@ -52,18 +52,20 @@ await page.goto(base,{waitUntil:'domcontentloaded'});
 await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'));
 await page.waitForTimeout(1200);
 const diagnostic=await page.evaluate(()=>({
+ runtimeLength:window.ARDUA_CAMPAIGN_GRAPH?.runtimeOrder?.length||0,
  mapCount:document.querySelectorAll('#campaignMap .phase-node').length,
  tritiumMapCount:document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]').length,
  phaseMenuCount:document.querySelectorAll('#phaseMenu .phase-jump').length,
  phaseMenuIdCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id]').length,
  tritiumMenuCount:document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id="primordial_t"]').length,
+ existingMenuIds:[...document.querySelectorAll('#phaseMenu .phase-jump')].map((x,i)=>[i,x.dataset.phaseId||'']).filter(x=>x[1]).slice(0,12),
  firstMapIds:[...document.querySelectorAll('#campaignMap .phase-node[data-phase]')].slice(0,8).map(x=>[x.dataset.phase,x.textContent.trim()]),
  firstMenu:[...document.querySelectorAll('#phaseMenu .phase-jump')].slice(0,8).map(x=>[x.dataset.phaseId||'',x.querySelector('strong')?.textContent?.trim()||'']),
  directMapName:window.ARDUA_PHASE_LABELS.mapName('primordial_t','Forme Trítio'),
  directMenuName:window.ARDUA_PHASE_LABELS.menuName('primordial_t','Forme Trítio')
 }));
 console.log('PHASE_LABEL_DIAGNOSTIC '+JSON.stringify(diagnostic));
-window.ARDUA_PHASE_LABELS?.sync?.();
+await page.evaluate(()=>window.ARDUA_PHASE_LABELS?.sync?.());
 await page.waitForTimeout(300);
 const labels=await page.evaluate(()=>{
  const map=id=>document.querySelector(`#campaignMap .phase-node[data-phase="${id}"] strong`)?.textContent?.trim()||'';
