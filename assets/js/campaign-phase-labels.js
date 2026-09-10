@@ -48,7 +48,7 @@ const MENU_IDENTITY=new Set([
  'first_enrichment','second_birth','second_enrichment','third_birth','binary_neutron_stars','kilonova','neutron_star','pulsar','accretion','stability','black_hole'
 ]);
 const WAITING_RP=new Set(['rp_ge','rp_se','rp_kr']);
-let scientificNames={},forgeNames={},syncFrame=0,applying=false;
+let scientificNames={},forgeNames={},syncFrame=0,applying=false,observedMap=null,mapObserver=null;
 
 function activeId(){return C.getState?.().activeId||''}
 function firstProgress(text){return String(text||'').match(/\b\d+\/\d+\b/)?.[0]||''}
@@ -173,7 +173,12 @@ function syncCollections(){
  document.querySelectorAll('#campaignMap .phase-node[data-phase]').forEach(node=>{const id=node.dataset.phase||'',strong=node.querySelector('strong');if(!strong)return;const original=originalText(strong),next=mapName(id,original);if(next&&strong.textContent!==next)strong.textContent=next});
  document.querySelectorAll('#phaseMenu .phase-jump[data-phase-id]').forEach(button=>{const id=button.dataset.phaseId||'',strong=button.querySelector('strong');if(!strong)return;const original=originalText(strong),next=menuName(id,original);if(next&&strong.textContent!==next)strong.textContent=next});
 }
-function sync(){if(applying)return;applying=true;try{syncCurrent();syncCollections()}finally{applying=false}}
+function ensureMapObserver(){
+ const next=$('campaignMap');if(next===observedMap)return;
+ mapObserver?.disconnect();observedMap=next||null;mapObserver=null;
+ if(observedMap){mapObserver=new MutationObserver(schedule);mapObserver.observe(observedMap,{subtree:true,childList:true,characterData:true})}
+}
+function sync(){if(applying)return;applying=true;try{ensureMapObserver();syncCurrent();syncCollections()}finally{applying=false}}
 function schedule(){if(syncFrame)return;syncFrame=requestAnimationFrame(()=>{syncFrame=0;sync()})}
 function registerScientificNames(names={}){scientificNames={...scientificNames,...names};schedule()}
 function registerForgeNames(names={}){forgeNames={...names};schedule()}
@@ -181,8 +186,8 @@ function registerForgeNames(names={}){forgeNames={...names};schedule()}
 const api=Object.freeze({sync,schedule,compactGoal,contextFor,mapName,menuName,registerScientificNames,registerForgeNames});
 window.ARDUA_PHASE_LABELS=api;
 const app=document.querySelector('.app');if(app)new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true});
-const map=$('campaignMap');if(map)new MutationObserver(schedule).observe(map,{subtree:true,childList:true,characterData:true});
 const menu=$('phaseMenu');if(menu)new MutationObserver(schedule).observe(menu,{subtree:true,childList:true,characterData:true});
+new MutationObserver(records=>{if(records.some(record=>[...record.addedNodes].some(node=>node.nodeType===1&&(node.id==='campaignMap'||node.querySelector?.('#campaignMap')))))schedule()}).observe(document.body,{childList:true,subtree:true});
 window.addEventListener('ardua:campaign-progress',schedule);window.addEventListener('ardua:forge-names',schedule);window.addEventListener('resize',schedule,{passive:true});
 sync();setTimeout(sync,0);setTimeout(sync,180);
 })();
