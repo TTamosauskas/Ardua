@@ -14,8 +14,12 @@ assert(!phenomena.includes('function loadingMarkup(glyph)'),'Placeholder bloquea
 for(const title of ['Quarks','Força Nuclear Forte','Força Eletromagnética','Força Gravitacional','Força Nuclear Fraca'])assert(phenomena.includes(`'${title}':Object.freeze({`),`${title} sem imagem local rápida`);
 const es=elements.slice(elements.indexOf('function showElementDetail'),elements.indexOf('function prewarmVisibleElements'));
 assert(!/^async function showElementDetail/m.test(es),'Detalhe de elemento voltou a bloquear em async');
-assert(!es.includes('await ')&&!es.includes('wikiData('),'Abertura de elemento ainda espera Wikipédia/metadados');
+assert(!es.includes('await '),'Abertura de elemento voltou a bloquear em await');
 assert(es.indexOf('render();')>=0,'Elemento não renderiza sincronamente');
+assert(es.includes('wikiData(d)'),'Detalhe de elemento deixou de enriquecer com Wikipédia');
+assert(es.indexOf('render();')<es.indexOf('wikiData(d)'),'Wikipédia deve enriquecer somente depois do primeiro render local');
 assert(elements.includes('elementSourcesResolved')&&elements.includes('sourceMetaResolved')&&elements.includes('prewarmVisibleElements'),'Elementos sem caches locais/preload');
 assert(!elements.includes('setTimeout(()=>showElementDetail(el),0)'),'Elemento ainda adia clique para outro task');
-console.log('Instant discovery details OK: local-first render, local image prewarm, no Wikipedia wait in element click path.');
+const index=fs.readFileSync('index.html','utf8');
+assert(index.includes('campaign-discoveries-elements.js?v=20260910-element-detail-restore-1'),'Módulo de detalhes sem cache-busting da correção');
+console.log('Instant discovery details OK: local-first render plus asynchronous Wikipedia enrichment.');

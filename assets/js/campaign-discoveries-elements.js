@@ -37,7 +37,8 @@ function parseSource(text){
 }
 function sourceMeta(){
  if(window.ARDUA_PHASE_SOURCE_META_PROMISE)return window.ARDUA_PHASE_SOURCE_META_PROMISE;
- const url=new URL('assets/js/ardua.js',document.baseURI).href;
+ const loaded=[...document.scripts].find(s=>/\/assets\/js\/ardua\.js(?:\?|$)/.test(s.src));
+ const url=loaded?.src||new URL('assets/js/ardua.js',document.baseURI).href;
  window.ARDUA_PHASE_SOURCE_META_PROMISE=fetch(url,{cache:'force-cache'}).then(r=>r.ok?r.text():Promise.reject(new Error('engine source unavailable'))).then(parseSource).catch(()=>({phases:[],colors:{},weights:{}})).then(meta=>(sourceMetaResolved=meta,meta));
  return window.ARDUA_PHASE_SOURCE_META_PROMISE;
 }
@@ -221,12 +222,12 @@ function phaseMarkup(phases){
  if(!phases.length)return'<span class="element-phase-empty">A trilha irá revelar fases relacionadas a este elemento conforme a campanha avança.</span>';
  return phases.map(p=>`<button type="button" class="element-phase-chip" data-element-phase="${esc(p.id)}">${esc(phaseTitle(p.id,p.title))}</button>`).join('');
 }
-function elementDetailMarkup(elementCard,d,src={},sources={}){
- const cfg=sources?.[d.sym]||{},gradient=elementGradient(elementCard,d,src),weight=src?.weights?.[d.sym]||'—',phases=src?.phases?.length?relatedPhases(d.sym,src.phases):[],imageSrc=cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'';
+function elementDetailMarkup(elementCard,d,src={},sources={},wiki=null){
+ const cfg=sources?.[d.sym]||{},gradient=elementGradient(elementCard,d,src),weight=src?.weights?.[d.sym]||'—',phases=src?.phases?.length?relatedPhases(d.sym,src.phases):[],localImage=cfg.imagePath?new URL(cfg.imagePath,document.baseURI).href:'',imageSrc=wiki?.image||localImage;
  if(imageSrc)preloadElementImage(imageSrc);
  const image=imageSrc?`<img class="element-wiki-image" src="${esc(imageSrc)}" alt="${esc(d.name)}" loading="eager" decoding="async" fetchpriority="high">`:`<div class="element-wiki-image-placeholder">${esc(d.sym)}</div>`;
- const intro=d.fact||d.origin||`${d.name} faz parte dos elementos registrados na sua coleção.`;
- const wikiUrl=cfg.wikiUrl||wikiFallbackUrl(cfg.wikiTitle||d.name);
+ const intro=wiki?.intro||d.fact||d.origin||`${d.name} faz parte dos elementos registrados na sua coleção.`;
+ const wikiUrl=wiki?.url||cfg.wikiUrl||wikiFallbackUrl(cfg.wikiTitle||d.name);
  return`<figure class="element-wiki-figure">${image}</figure>
   <div class="info-panel discovery-element-info element-wiki-info">
    ${atomicTile(d,gradient,weight)}
@@ -241,10 +242,12 @@ function elementDetailMarkup(elementCard,d,src={},sources={}){
 function showElementDetail(elementCard){
  const d=detailData(elementCard),host=ensureDetail(),body=$('elementDiscoveryBody');if(!d.sym||!body)return;
  setDetailMode(true);host.dataset.open='1';host.dataset.sym=d.sym;host.hidden=false;host.removeAttribute('aria-busy');const title=host.querySelector('[data-element-detail-title]');if(title)title.textContent=d.name;
- const render=()=>{if(host.hidden||host.dataset.sym!==d.sym)return;body.innerHTML=elementDetailMarkup(elementCard,d,sourceMetaResolved||{},elementSourcesResolved||{});host.scrollTop=0};
+ const render=(wiki=null)=>{if(host.hidden||host.dataset.sym!==d.sym)return;body.innerHTML=elementDetailMarkup(elementCard,d,sourceMetaResolved||{},elementSourcesResolved||{},wiki);host.scrollTop=0};
+ /* Keep the local-first instant paint, then enrich the same view asynchronously. */
  render();card.scrollTo({top:0,behavior:'auto'});
- if(!elementSourcesResolved)elementSources().then(render);
- if(!sourceMetaResolved)sourceMeta().then(meta=>{sourceMetaResolved=meta;render()});
+ Promise.all([elementSources(),sourceMeta(),wikiData(d)]).then(([sources,meta,wiki])=>{
+  elementSourcesResolved=sources||{};sourceMetaResolved=meta||{};render(wiki);
+ }).catch(()=>{});
 }
 function prewarmVisibleElements(){
  const sources=elementSourcesResolved;if(!sources)return;
