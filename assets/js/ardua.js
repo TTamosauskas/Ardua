@@ -1239,9 +1239,9 @@ function objectiveMotifNotes(r){
  const root=OBJECTIVE_MOTIF_ROOTS[objectiveMotifHash(recipeKey(r))%OBJECTIVE_MOTIF_ROOTS.length],unstable=!!E[r?.out]?.unstable;
  return unstable?[root,root*(4/3),root*1.5]:[root,root*1.25,root*1.5];
 }
-const OBJECTIVE_MOTIF_MAX_GAIN=1;
-function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))],d=index===2?.28:.24;tone(f,d,'triangle',OBJECTIVE_MOTIF_MAX_GAIN);tone(f*2,d*.82,'sine',OBJECTIVE_MOTIF_MAX_GAIN)}
-function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes){tone(f,.52,'triangle',OBJECTIVE_MOTIF_MAX_GAIN);tone(f*2,.42,'sine',OBJECTIVE_MOTIF_MAX_GAIN)}if(final)tone(notes[0]*2,.56,'triangle',OBJECTIVE_MOTIF_MAX_GAIN)}
+const OBJECTIVE_MOTIF_NOTE_MAIN_GAIN=.68,OBJECTIVE_MOTIF_NOTE_HARM_GAIN=.22,OBJECTIVE_MOTIF_CHORD_MAIN_GAIN=.18,OBJECTIVE_MOTIF_CHORD_HARM_GAIN=.055,OBJECTIVE_MOTIF_FINAL_GAIN=.14;
+function objectiveMotifPlayNote(r,index){const notes=objectiveMotifNotes(r),f=notes[Math.max(0,Math.min(2,index))],d=index===2?.28:.24;tone(f,d,'triangle',OBJECTIVE_MOTIF_NOTE_MAIN_GAIN);tone(f*2,d*.82,'sine',OBJECTIVE_MOTIF_NOTE_HARM_GAIN)}
+function objectiveMotifChord(r,final=false){const notes=objectiveMotifNotes(r);for(const f of notes){tone(f,.52,'triangle',OBJECTIVE_MOTIF_CHORD_MAIN_GAIN);tone(f*2,.42,'sine',OBJECTIVE_MOTIF_CHORD_HARM_GAIN)}if(final)tone(notes[0]*2,.56,'triangle',OBJECTIVE_MOTIF_FINAL_GAIN)}
 function objectiveMotifSameRecipe(a,b){return !!a&&!!b&&recipeKey(a)===recipeKey(b)}
 function objectiveMotifTargetRecipes(s=phase()){
  if(s.mode==='whiteCompact'){

@@ -42,17 +42,24 @@ function rootForCurrentFormula(){return ROOTS[hash(nativeRecipeKey())%ROOTS.leng
 function phaseSignature(){return`${activeId()}|${phaseTitle?.textContent||''}`}
 function ratiosForProduct(sym=product()){return new Set(['HeU','FeU','Be7','Be8']).has(sym)?[1,4/3,1.5]:[1,1.25,1.5]}
 
-let audioCtx=null;const replicaVoices=new Set();
+let audioCtx=null,recipeBus=null;const replicaVoices=new Set();
+const RECIPE_NOTE_MAIN_GAIN=.68,RECIPE_NOTE_HARM_GAIN=.22,RECIPE_CHORD_MAIN_GAIN=.18,RECIPE_CHORD_HARM_GAIN=.055,RECIPE_FINAL_GAIN=.14;
+const RECIPE_MASTER_GAIN=1.05,RECIPE_LIMIT_THRESHOLD=-1.5,RECIPE_LIMIT_RATIO=20,RECIPE_LIMIT_ATTACK=.002,RECIPE_LIMIT_RELEASE=.12,RECIPE_OUTPUT_CEILING=.98;
 function audio(){try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;audioCtx??=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch(_e){return null}}
+function recipeOutput(ctx){
+ if(recipeBus?.ctx===ctx)return recipeBus.input;
+ const input=ctx.createGain(),limiter=ctx.createDynamicsCompressor(),ceiling=ctx.createGain();
+ input.gain.value=RECIPE_MASTER_GAIN;limiter.threshold.value=RECIPE_LIMIT_THRESHOLD;limiter.knee.value=0;limiter.ratio.value=RECIPE_LIMIT_RATIO;limiter.attack.value=RECIPE_LIMIT_ATTACK;limiter.release.value=RECIPE_LIMIT_RELEASE;ceiling.gain.value=RECIPE_OUTPUT_CEILING;
+ input.connect(limiter);limiter.connect(ceiling);ceiling.connect(ctx.destination);recipeBus={ctx,input,limiter,ceiling};return input;
+}
 function nativeTone(freq=440,duration=.05,type='sine',gain=.03){
- try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(ctx.destination);const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
+ try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime;g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(recipeOutput(ctx));const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
 }
 function stopReplicaVoices(){const ctx=audioCtx;if(!ctx)return;const now=ctx.currentTime;for(const item of [...replicaVoices]){try{item.osc.stop(now+.01)}catch(_e){}}replicaVoices.clear()}
-const RECIPE_MAX_GAIN=1;
-function playFrequency(freq,strong=false){const d=strong?.28:.24;nativeTone(freq,d,'triangle',RECIPE_MAX_GAIN);nativeTone(freq*2,d*.82,'sine',RECIPE_MAX_GAIN)}
+function playFrequency(freq,strong=false){const d=strong?.28:.24;nativeTone(freq,d,'triangle',RECIPE_NOTE_MAIN_GAIN);nativeTone(freq*2,d*.82,'sine',RECIPE_NOTE_HARM_GAIN)}
 function playNote(index,root,ratios=ratiosForProduct()){playFrequency(root*ratios[Math.max(0,Math.min(2,index))],index===2)}
-function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,.52,'triangle',RECIPE_MAX_GAIN);nativeTone(f*2,.42,'sine',RECIPE_MAX_GAIN)}}
-function playFinalAccent(root){nativeTone(root*2,.56,'triangle',RECIPE_MAX_GAIN)}
+function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,.52,'triangle',RECIPE_CHORD_MAIN_GAIN);nativeTone(f*2,.42,'sine',RECIPE_CHORD_HARM_GAIN)}}
+function playFinalAccent(root){nativeTone(root*2,.56,'triangle',RECIPE_FINAL_GAIN)}
 
 document.addEventListener('pointerdown',()=>audio(),{capture:true,passive:true});document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')audio()},{capture:true});
 let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0;

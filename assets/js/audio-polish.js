@@ -24,13 +24,11 @@ if(BaseCtxProto&&typeof nativeCreateGain==='function'&&!BaseCtxProto.__arduaGain
 }
 
 function classifyRecipeVoice(type,seed){
- if(type==='triangle'&&near(seed,.074))return'note12-main';
- if(type==='sine'&&near(seed,.074*.30))return'note12-harm';
- if(type==='triangle'&&near(seed,.086))return'note3-main';
- if(type==='sine'&&near(seed,.086*.30))return'note3-harm';
- if(type==='triangle'&&near(seed,.040))return'chord-main';
- if(type==='sine'&&near(seed,.014))return'chord-harm';
- if(type==='triangle'&&near(seed,.022))return'chord-final';
+ if(type==='triangle'&&near(seed,.68))return'note12-main';
+ if(type==='sine'&&near(seed,.22))return'note12-harm';
+ if(type==='triangle'&&near(seed,.18))return'chord-main';
+ if(type==='sine'&&near(seed,.055))return'chord-harm';
+ if(type==='triangle'&&near(seed,.14))return'chord-final';
  return'';
 }
 function rememberRouted(kind){lastRoutedKind=kind;lastRoutedAt=performance.now()}
@@ -78,11 +76,11 @@ nodeProto.connect=function(destination,...rest){
       The native voice is suppressed only after the sync layer confirms that its
       replacement actually played. This keeps campaign mode audible even when
       contextual guidance temporarily makes the formula impossible to parse. */
-   if(kind&&routed)booster.gain.value=0;else if(selectionCue)booster.gain.value=0;else booster.gain.value=GLOBAL_SFX_LIFT;
+   if(kind&&routed)booster.gain.value=0;else if(kind)booster.gain.value=1;else if(selectionCue)booster.gain.value=0;else booster.gain.value=GLOBAL_SFX_LIFT;
    nativeConnect.call(this,booster);nativeConnect.call(booster,destination);return destination;
   }catch(_e){}
  }
  return nativeConnect.call(this,destination,...rest);
 };
-window.ARDUA_AUDIO_POLISH=Object.freeze({globalSfxLift:GLOBAL_SFX_LIFT,recipeMotifLift:1,recipePeak:1,recipeOwner:'recipe-audio-sync',armSelectionMute,standardNoteSerial:()=>0,motifRoot:()=>0});
+window.ARDUA_AUDIO_POLISH=Object.freeze({globalSfxLift:GLOBAL_SFX_LIFT,recipeMotifLift:1.05,recipePeak:.98,recipeLimiter:true,recipeOwner:'recipe-audio-sync',armSelectionMute,standardNoteSerial:()=>0,motifRoot:()=>0});
 })();
