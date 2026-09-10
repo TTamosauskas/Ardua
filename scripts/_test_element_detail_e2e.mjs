@@ -43,12 +43,14 @@ const state={
  display:await detail.evaluate(el=>getComputedStyle(el).display),
  rect:await detail.boundingBox(),
  text:String(await body.textContent()).trim(),
- html:String(await body.innerHTML()).trim()
+ hasImage:(await body.locator('.element-wiki-image').count())>0,
+ hasModel:(await body.locator('.element-bohr-preview,.element-atomic-square').count())>0,
+ sourceLinks:await body.locator('.element-source-btn').count()
 };
-console.log('DETAIL:',JSON.stringify({...state,text:state.text.slice(0,240),html:state.html.slice(0,240)}));
+console.log('DETAIL:',JSON.stringify({...state,text:state.text.slice(0,260)}));
 console.log('PAGE_ERRORS:',JSON.stringify(pageErrors));
 if(state.hidden!==null||state.open!=='1'||state.display==='none'||!state.rect)throw new Error('Detalhe não ficou visível');
-if(!state.text||!state.html.includes('element-atomic-square'))throw new Error('Detalhe abriu sem informações do elemento');
-if(pageErrors.some(x=>x.includes("reading 'includes'")))throw new Error('A exceção de metadados ainda ocorre');
-console.log('E2E PASS: Menu > Descobertas > Elementos > toque abre conteúdo visível sem crash.');
+if(!state.text||!state.hasImage||!state.hasModel||state.sourceLinks<2)throw new Error('Detalhe abriu sem as informações finais esperadas');
+if(pageErrors.length)throw new Error(`Erros JavaScript durante o fluxo: ${pageErrors.join(' | ')}`);
+console.log('E2E PASS: Menu > Descobertas > Elementos > toque abre conteúdo final visível sem erro JavaScript.');
 await browser.close();
