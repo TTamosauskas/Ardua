@@ -1,0 +1,62 @@
+name: Validate phase goal hierarchy
+
+on:
+  push:
+    branches: ["phase-goal-hierarchy"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-phase-labels.js
+          node --check assets/js/campaign-phase-names.js
+          node --check assets/js/campaign-forge-names.js
+          node --check assets/js/campaign-map.js
+          node --check assets/js/campaign-runtime-sync.js
+          node --check assets/js/campaign-home-polish.js
+          node --check scripts/validate-phase-goal-hierarchy.js
+
+      - name: Run Pages regression validators
+        run: |
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-element-bohr.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-convection-regression.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-campaign-phase-flow.js
+          node scripts/validate-campaign-runtime-regressions.js
+          node scripts/validate-phase-goal-hierarchy.js
+          node scripts/validate-quarks-phase.js
+          node scripts/validate-quarks-chrome.js
+
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Test complete hierarchy in mobile Chromium
+        run: |
+          python3 -m http.server 4173 >/tmp/ardua-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          ARDUA_TEST_URL=http://127.0.0.1:4173/ node scripts/test-phase-goal-hierarchy-browser.mjs
