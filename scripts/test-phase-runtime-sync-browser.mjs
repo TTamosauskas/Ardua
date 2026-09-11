@@ -8,11 +8,10 @@ await page.waitForFunction(()=>window.__ARDUA_PHASE_SYNC_TEST&&window.ARDUA_CAMP
 const result=await page.evaluate(async()=>{
  const h=window.__ARDUA_PHASE_SYNC_TEST,C=window.ARDUA_CAMPAIGN;
  const idx=h.phaseIndexById.get('o');if(idx===undefined)throw new Error('Oxygen phase unavailable');
- h.startPhase(idx,false,false);await new Promise(r=>setTimeout(r,80));
- // Reproduce the class of race that produced the screenshot: campaign state says an old
- // sibling phase while the engine is already rendering Oxygen.
- C.setActive('fragile');window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id:'fragile',source:'browser-regression'}}));
- await new Promise(r=>setTimeout(r,80));
+ // Reproduce the real ordering: campaign still owns the previous sibling, then the engine
+ // actually loads Oxygen. The engine event must become authoritative immediately.
+ C.setActive('fragile');await new Promise(r=>setTimeout(r,30));
+ h.startPhase(idx,false,false);await new Promise(r=>setTimeout(r,120));
  h.clearBoard();const cells=h.activeCells().slice(0,8);
  const syms=['O','He','He','He3','H','H','H','H'];syms.forEach((sym,i)=>h.createPiece(sym,cells[i],false));
  h.state.created={O:1};h.state.selected=[];h.render();await new Promise(r=>setTimeout(r,120));
@@ -28,7 +27,7 @@ const result=await page.evaluate(async()=>{
 console.log(JSON.stringify(result,null,2));
 if(errors.length)throw new Error('Browser errors: '+errors.join(' | '));
 if(result.engine!=='o')throw new Error('Engine identity drifted: '+result.engine);
-if(result.active!=='o')throw new Error('Campaign activeId did not resync to Oxygen: '+result.active);
+if(result.active!=='o')throw new Error('Campaign activeId did not follow engine into Oxygen: '+result.active);
 if(!result.title.includes('Oxigênio')||result.title.includes('Berílio-8'))throw new Error('Header drifted away from Oxygen: '+result.title);
 if(!result.title.includes(`1/${result.target}`))throw new Error('Oxygen progress missing from header: '+result.title);
 if(!result.recipes.includes('C')||!result.recipes.includes('O'))throw new Error('Oxygen phase cannot rebuild Carbon precursor: '+result.recipes.join(','));
