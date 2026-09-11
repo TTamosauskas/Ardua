@@ -84,7 +84,14 @@ function restoreRevisit(snapshot){
  C.setActive?.(target);window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id:target,state:C.getState?.(),source:'victory-revisit-return'}}));
  if(revisit?.id===snapshot.phaseId)revisit=null;
 }
-function openMapNow(){suppressedMap=false;(canonicalMapOpener||$('menuOpenBtn'))?.click()}
+function openMapSurface(){
+ if(!map)return false;suppressedMap=false;
+ map.classList.add('show','trail-revealed');map.setAttribute('aria-hidden','false');document.body.classList.add('campaign-map-open');
+ const trail=$('campaignTrail');if(trail)trail.setAttribute('aria-hidden','false');
+ const close=$('campaignClose');if(close){close.disabled=false;close.textContent='Voltar'}
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));return true;
+}
+function openMapNow(){suppressedMap=false;(canonicalMapOpener||$('menuOpenBtn'))?.click();queueMicrotask(()=>{if(!map?.classList.contains('show'))openMapSurface()})}
 async function handoffMap(current){
  if(!current||reward!==current)return;setActionsDisabled(true);emit('handing-off',{phaseId:current.snapshot.phaseId,route:current.route.kind});restoreRevisit(current.snapshot);
  const phaseId=current.snapshot.phaseId,serial=current.serial;reward=null;pending=null;hide();setActionsDisabled(false);emit('completed',{phaseId,serial,route:'map'});queueMicrotask(openMapNow);
@@ -132,8 +139,8 @@ document.addEventListener('click',e=>{
 },true);
 document.addEventListener('click',e=>{
  const opener=e.target instanceof Element?e.target.closest('#menuOpenBtn'):null;
- if(!opener||!canonicalMapOpener||opener===canonicalMapOpener)return;
- e.preventDefault();e.stopImmediatePropagation();canonicalMapOpener.click();
+ if(!opener||!e.isTrusted)return;
+ e.preventDefault();e.stopImmediatePropagation();openMapSurface();
 },true);
 function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener&&opener.textContent!=='Mapa')opener.textContent='Mapa'}
 new MutationObserver(syncMapOpenerLabel).observe(document.body,{subtree:true,childList:true});
