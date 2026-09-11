@@ -36,7 +36,8 @@ function resolve(){
  if(b){const sourceMatch=source.filter(row=>norm(row.branch)===b&&norm(row.title)===t);if(sourceMatch.length===1)return sourceMatch[0].id}
  return source.find(row=>norm(row.title)===t)?.id||'';
 }
-function customPhaseOwnsScreen(){return !!window.ARDUA_QUARKS?.isActive?.()||!!window.ARDUA_QUASAR_GAME?.isActive?.()}
+function quasarOwnsScreen(){const id=window.ARDUA_QUASAR?.id;return !!id&&C.getState?.().activeId===id&&!!document.querySelector('#starBoard.quasar-mode .quasar-layer')}
+function customPhaseOwnsScreen(){return !!window.ARDUA_QUARKS?.isActive?.()||quasarOwnsScreen()}
 let busy=false;
 function sync(){
  /* Native engine identity is stale while the campaign map or a custom gameplay module
