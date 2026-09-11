@@ -8,7 +8,7 @@ const forge=fs.readFileSync('assets/js/campaign-forge-names.js','utf8');
 const quarks=fs.readFileSync('assets/js/campaign-quarks-chrome.js','utf8');
 
 assert(index.includes('phase-goal-layout.css?v=20260911-phase-goals-1'),'CSS da nova hierarquia não está versionado no index');
-assert(index.includes('campaign-phase-labels.js?v=20260911-phase-goals-1'),'Módulo de títulos/objetivos não está versionado no index');
+assert(index.includes('campaign-phase-labels.js?v=20260911-phase-runtime-sync-1'),'Módulo de títulos/objetivos não está versionado no index');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-phase-names.js'),'Sistema de labels precisa carregar antes dos nomes científicos');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-forge-names.js'),'Sistema de labels precisa carregar antes dos nomes de formação');
 

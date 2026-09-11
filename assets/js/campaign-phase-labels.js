@@ -51,7 +51,7 @@ const MENU_IDENTITY=new Set([
 const WAITING_RP=new Set(['rp_ge','rp_se','rp_kr']);
 let scientificNames={},forgeNames={},syncFrame=0,applying=false,observedMap=null,mapObserver=null;
 
-function activeId(){return C.getState?.().activeId||''}
+function activeId(){if(window.ARDUA_QUARKS?.isActive?.())return'quarks';return document.documentElement.dataset.arduaEnginePhase||C.getState?.().activeId||''}
 function firstProgress(text){return String(text||'').match(/\b\d+\/\d+\b/)?.[0]||''}
 function compactGoal(raw,id=activeId()){
  if(STATIC_GOAL[id])return STATIC_GOAL[id];
