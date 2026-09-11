@@ -67,7 +67,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs'),p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');
           const at=s.lastIndexOf('})();');if(at<0)throw new Error('engine closure not found');
-          const hook="\nwindow.__ARDUA_CHAIN_TEST={state,phaseIndexById,activeCells,neigh,createPiece,clearBoard,autoFusionCandidate,learnedFusionRecipes,recipeKey};\n";
+          const hook="\nwindow.__ARDUA_CHAIN_TEST={state,phaseIndexById,activeCells,neigh,createPiece,clearBoard,autoFusionCandidate,learnedFusionRecipes,activeFusionRecipes,phaseFusionRecipes,objectiveAutoDependencyDistances,recipeKey};\n";
           s=s.slice(0,at)+hook+s.slice(at);fs.writeFileSync(p,s);
           NODE
 
