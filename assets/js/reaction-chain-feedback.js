@@ -17,7 +17,10 @@ function sync(){
  if(signature===lastSignature)return;lastSignature=signature;live.textContent=`${title}. Cadeia ${step}.`;
  window.dispatchEvent(new CustomEvent('ardua:reaction-chain',{detail:{phaseId:phaseId(),step,title,tier,automatic:true,at:performance.now()}}));
 }
-new MutationObserver(sync).observe(fx,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+new MutationObserver(records=>{
+ if(records.some(r=>r.type==='attributes'&&r.attributeName==='class'&&String(r.oldValue||'').includes('visible')&&!String(r.target.className||'').includes('visible')))lastSignature='';
+ sync();
+}).observe(fx,{childList:true,subtree:true,attributes:true,attributeFilter:['class'],attributeOldValue:true});
 window.addEventListener('ardua:engine-phase',()=>{clearBoard();live.textContent=''});
 sync();
 window.ARDUA_CHAIN_FEEDBACK=Object.freeze({sync,tierFor});
