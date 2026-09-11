@@ -1,0 +1,10 @@
+/* Ardua — escalating presentation for causal reaction chains. */
+.chain-feedback-live{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.chain-callout[data-chain-tier="strong"]{border-color:rgba(213,239,255,.38);box-shadow:0 10px 34px rgba(0,0,0,.30),0 0 34px rgba(151,215,255,.23)}
+.chain-callout[data-chain-tier="strong"] strong{font-size:24px;text-shadow:0 0 18px rgba(181,226,255,.68)}
+.chain-callout[data-chain-tier="major"]{border-color:rgba(255,231,166,.46);background:radial-gradient(circle at 50% 18%,rgba(49,48,68,.86),rgba(8,13,28,.64) 72%);box-shadow:0 12px 38px rgba(0,0,0,.34),0 0 42px rgba(255,214,124,.24)}
+.chain-callout[data-chain-tier="major"] small{color:#ffe8ad}.chain-callout[data-chain-tier="major"] strong{font-size:27px;text-shadow:0 0 22px rgba(255,221,137,.72)}
+.chain-callout[data-chain-tier="cosmic"]{border-color:rgba(255,244,203,.60);background:radial-gradient(circle at 50% 16%,rgba(67,48,84,.92),rgba(9,12,28,.70) 74%);box-shadow:0 14px 44px rgba(0,0,0,.38),0 0 54px rgba(255,218,139,.30)}
+.chain-callout[data-chain-tier="cosmic"] small{color:#fff0bd}.chain-callout[data-chain-tier="cosmic"] strong{font-size:30px;text-shadow:0 0 26px rgba(255,232,166,.86)}
+.star-board.chain-feedback-active[data-chain-tier="major"],.star-board.chain-feedback-active[data-chain-tier="cosmic"]{filter:brightness(1.06) drop-shadow(0 0 30px rgba(255,225,155,.20)) drop-shadow(0 14px 30px rgba(0,0,0,.28))}
+@media(prefers-reduced-motion:reduce){.chain-callout[data-chain-tier]{transition-duration:.08s!important}.star-board.chain-feedback-active{filter:none!important}}
