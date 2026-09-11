@@ -48,7 +48,7 @@ if(JSON.stringify(owners.sort())!==JSON.stringify(expected.sort()))throw new Err
 
 if(!engine.includes("bindReliableTap($('phaseEndBtn'),endPhaseAction)"))throw new Error('Botão final não usa tap confiável');
 if(!css.includes('.center-action.stage-end{z-index:2147483647!important;pointer-events:auto!important;'))throw new Error('Botão final perdeu z-index absoluto');
-const version='20260911-phase-runtime-sync-1';
+const version='20260911-scatter-appreciation-1';
 for(const asset of ['recipe-sound-profile.js','audio-polish.js','ardua.js','recipe-audio-sync.js','campaign-quarks.js'])if(!index.includes('assets/js/'+asset+'?v='+version))throw new Error('Cache-busting musical ausente: '+asset);
 const profilePos=index.indexOf('recipe-sound-profile.js'),polishPos=index.indexOf('audio-polish.js'),enginePos=index.indexOf('ardua.js');
 if(!(profilePos>=0&&profilePos<polishPos&&profilePos<enginePos))throw new Error('Perfil Quarks precisa carregar antes dos consumidores');
