@@ -40,8 +40,14 @@ async function stellarContinue(){
   assert.ok(during.saved.completed.includes('he_red'),`${label}: save não ocorreu antes da recompensa`);assert.equal(during.map,false,`${label}: mapa apareceu sob a recompensa`);assert.equal(during.route?.kind,'continue');assert.deepEqual(during.route?.options,['stellar_movement']);assert.equal(during.primary,'CONTINUAR');assert.ok(during.next?.length);assert.ok(/formou|hélio/i.test(during.result||''));
   await page.click('[data-victory-primary]');await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='stellar_movement',undefined,{timeout:4000});
   assert.equal(await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')),false,`${label}: mapa piscou como pedágio antes da próxima fase`);
-  await page.click('#menuOpenBtn');await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'),undefined,{timeout:2500});
-  assert.equal(await page.evaluate(()=>document.getElementById('menuModal')?.classList.contains('show')),false,`${label}: item Mapa abriu o menu legado em vez do mapa`);
+  const beforeMap=await page.evaluate(()=>{
+   const map=document.getElementById('campaignMap');window.__mapTransitions=[];new MutationObserver(()=>window.__mapTransitions.push({at:performance.now(),cls:map.className,hidden:map.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:!!window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState})).observe(map,{attributes:true,attributeFilter:['class','aria-hidden']});
+   return{active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,mapClass:map.className,mapHidden:map.getAttribute('aria-hidden'),button:document.getElementById('menuOpenBtn')?.outerHTML,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show')};
+  });
+  await page.click('#menuOpenBtn');await page.waitForTimeout(350);
+  const afterMap=await page.evaluate(()=>({visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show'),transitions:window.__mapTransitions}));
+  assert.equal(afterMap.visible,true,`${label}: item Mapa não abriu o mapa. before=${JSON.stringify(beforeMap)} after=${JSON.stringify(afterMap)}`);
+  assert.equal(afterMap.legacyMenu,false,`${label}: item Mapa abriu o menu legado em vez do mapa`);
   await noErrors(errors,label);
  }finally{await context.close()}
 }
