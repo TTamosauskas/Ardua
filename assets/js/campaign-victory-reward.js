@@ -135,7 +135,7 @@ document.addEventListener('click',e=>{
  if(!opener||!canonicalMapOpener||opener===canonicalMapOpener)return;
  e.preventDefault();e.stopImmediatePropagation();canonicalMapOpener.click();
 },true);
-function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener)opener.textContent='Mapa'}
+function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener&&opener.textContent!=='Mapa')opener.textContent='Mapa'}
 new MutationObserver(syncMapOpenerLabel).observe(document.body,{subtree:true,childList:true});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&reward){e.preventDefault();void handoffMap(reward)}});
 
