@@ -1,0 +1,94 @@
+name: Validate global victory fanfare
+
+on:
+  push:
+    branches: ["feat/global-victory-fanfare"]
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-commit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: feat/global-victory-fanfare
+
+      - name: Apply fanfare E
+        run: node scripts/apply-global-victory-fanfare.js
+
+      - name: Focused validation
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/recipe-audio-sync.js
+          node scripts/validate-victory-fanfare.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-scatter-appreciation.js
+          node scripts/validate-phase-runtime-sync.js
+
+      - name: Full regression suite
+        run: |
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-element-bohr.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-convection-regression.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-objective-safe-chain.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-phase-runtime-sync.js
+          node scripts/validate-scatter-appreciation.js
+          node scripts/validate-victory-fanfare.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-campaign-phase-flow.js
+          node scripts/validate-campaign-runtime-regressions.js
+          node scripts/validate-phase-goal-hierarchy.js
+          node scripts/validate-phase-layout-consistency.js
+          node scripts/validate-quarks-phase.js
+          node scripts/validate-quarks-chrome.js
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+
+      - name: Expose test-only victory hooks
+        run: |
+          cp assets/js/ardua.js /tmp/ardua-production.js
+          node <<'NODE'
+          const fs=require('fs'),p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');const at=s.lastIndexOf('})();');if(at<0)throw new Error('engine closure missing');
+          const hook="\nwindow.__ARDUA_VICTORY_TEST={state,PHASES,phaseIndexById,startPhase};\n";s=s.slice(0,at)+hook+s.slice(at);fs.writeFileSync(p,s);
+          NODE
+
+      - name: Browser timing regression
+        run: |
+          python3 -m http.server 4173 >/tmp/ardua-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+          node scripts/test-victory-fanfare-browser.mjs
+
+      - name: Restore production engine and commit permanent change
+        run: |
+          cp /tmp/ardua-production.js assets/js/ardua.js
+          rm -rf node_modules
+          rm -f scripts/apply-global-victory-fanfare.js scripts/test-victory-fanfare-browser.mjs
+          node --check assets/js/ardua.js
+          node --check assets/js/recipe-audio-sync.js
+          node scripts/validate-victory-fanfare.js
+          node scripts/validate-recipe-audio-cadence.js
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/ardua.js assets/js/recipe-audio-sync.js index.html scripts/validate-recipe-audio-cadence.js scripts/validate-phase-runtime-sync.js scripts/validate-scatter-appreciation.js scripts/validate-victory-fanfare.js scripts/apply-global-victory-fanfare.js scripts/test-victory-fanfare-browser.mjs
+          git commit -m "Play fanfare E on every phase completion"
+          git push origin HEAD:feat/global-victory-fanfare
