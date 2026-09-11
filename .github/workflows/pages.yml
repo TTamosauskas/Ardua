@@ -44,6 +44,8 @@ jobs:
           node --check assets/js/campaign-map.js
           node --check assets/js/campaign-exploration.js
           node --check assets/js/campaign-runtime-sync.js
+          node --check assets/js/campaign-phase-completion.js
+          node --check assets/js/reaction-chain-feedback.js
           node --check assets/js/campaign-giants-map.js
           node --check assets/js/campaign-phase-modal.js
           node --check assets/js/phase-polish.js
@@ -99,6 +101,12 @@ jobs:
 
       - name: Validate stalled objective phase endings
         run: node scripts/validate-objective-phase-end.js
+
+      - name: Validate universal phase completion contract
+        run: node scripts/validate-phase-completion-contract.js
+
+      - name: Validate reaction chain feedback
+        run: node scripts/validate-reaction-chain-feedback.js
 
       - name: Validate stellar dispersal appreciation pause
         run: node scripts/validate-scatter-appreciation.js
