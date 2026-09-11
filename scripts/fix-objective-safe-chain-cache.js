@@ -1,0 +1,1 @@
+const fs=require('fs');const p='index.html';let s=fs.readFileSync(p,'utf8');const old='20260910-quarks-audio-1',next='20260911-objective-safe-chain-1';s=s.split(old).join(next);fs.writeFileSync(p,s);console.log('Coordinated musical cache token updated.');
