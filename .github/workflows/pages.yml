@@ -147,6 +147,9 @@ jobs:
       - name: Validate Quarks chrome
         run: node scripts/validate-quarks-chrome.js
 
+      - name: Validate browser player experience
+        run: bash scripts/run-browser-tests-ci.sh
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
