@@ -110,4 +110,34 @@ const goalText=document.getElementById('goalText');if(goalText)new MutationObser
 window.addEventListener('ardua:engine-phase',()=>{clearTimeout(objectiveEndTimer);restoreObjectiveEndButton();objectiveEndBusy=false;setTimeout(armObjectiveCompletionFallback,0)});
 window.addEventListener('ardua:campaign-progress',()=>setTimeout(armObjectiveCompletionFallback,0));
 setTimeout(armObjectiveCompletionFallback,400);
+
+// Quarks owns a custom phase-end click path, so give it the same audiovisual finale
+// as stellar dust endings before handing the click back to its original campaign flow.
+let quarksFinaleBusy=false,quarksFinaleBypass=false;
+function quarksFinaleReady(button){
+ return !!window.ARDUA_QUARKS?.isActive?.()&&C.getState?.().activeId==='quarks'&&button?.classList.contains('show')&&objectiveRatiosComplete(document.getElementById('goalText')?.textContent);
+}
+async function scatterQuarksFinale(){
+ const board=document.getElementById('starBoard'),stage=board?.querySelector('.quarks-stage'),layer=document.getElementById('explosion');
+ if(!board||!stage||!layer)return;
+ stopMotion?.();layer.innerHTML='';const box=board.getBoundingClientRect(),size=Math.min(box.width,box.height),c=size/2,ghost=stage.cloneNode(true),items=[...ghost.querySelectorAll('.quark-piece,.quarks-baryon')];let maxMotionMs=0;
+ ghost.classList.add('quarks-finale-ghost');ghost.style.pointerEvents='none';layer.appendChild(ghost);stage.style.visibility='hidden';
+ for(let i=0;i<34;i++){
+  const d=document.createElement('i');d.className='dust-speck';layer.appendChild(d);const a=Math.random()*Math.PI*2,dist=size*(.42+Math.random()*.35),dur=520+Math.random()*420;maxMotionMs=Math.max(maxMotionMs,dur);
+  requestAnimationFrame(()=>{d.style.transition=`transform ${dur}ms ease-out,opacity ${dur}ms ease`;d.style.transform=`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(.25)`;d.style.opacity='0'});
+ }
+ items.forEach((el,idx)=>{
+  const x=parseFloat(el.style.left)||c,y=parseFloat(el.style.top)||c,radial=Math.atan2(y-c,x-c),a=radial+(Math.random()-.5)*.8,dist=size*(.52+Math.random()*.28),dur=620+Math.random()*280+idx*35;maxMotionMs=Math.max(maxMotionMs,dur);
+  requestAnimationFrame(()=>{el.style.transition=`left ${dur}ms cubic-bezier(.15,.72,.2,1),top ${dur}ms cubic-bezier(.15,.72,.2,1),transform ${dur}ms ease,opacity ${dur*.9}ms ease`;el.style.left=(c+Math.cos(a)*dist)+'px';el.style.top=(c+Math.sin(a)*dist)+'px';el.style.transform='translate(-50%,-50%) scale(.45)';el.style.opacity='0'});
+ });
+ await wait(Math.ceil(maxMotionMs+(reducedMotion()?160:700)));
+}
+document.addEventListener('click',e=>{
+ const button=e.target instanceof Element?e.target.closest('#phaseEndBtn'):null;if(!button)return;
+ if(quarksFinaleBypass){quarksFinaleBypass=false;return}
+ if(quarksFinaleBusy||!quarksFinaleReady(button))return;
+ e.preventDefault();e.stopImmediatePropagation();quarksFinaleBusy=true;button.classList.remove('show');
+ try{window.ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()}catch(_e){}
+ void scatterQuarksFinale().finally(()=>{quarksFinaleBusy=false;quarksFinaleBypass=true;button.click()});
+},true);
 })();
