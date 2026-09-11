@@ -11,11 +11,15 @@ assert(runtime.includes("const engineId=document.documentElement.dataset.arduaEn
 assert(runtime.includes('function syncFromEngine(e)'),'Runtime sync não possui caminho autoritativo do engine');
 assert(runtime.includes("window.addEventListener('ardua:engine-phase',syncFromEngine)"),'Runtime sync não reage autoritativamente à fase real do engine');
 assert(runtime.includes("C.setActive(id);document.documentElement.dataset.arduaActivePhase=id"),'Evento do engine não corrige o activeId da campanha');
+assert(runtime.includes('function quasarOwnsScreen()'),'Runtime sync não protege a fase customizada Quasar');
+assert(runtime.includes("document.querySelector('#starBoard.quasar-mode .quasar-layer')"),'Proteção do Quasar não verifica posse real do tabuleiro');
+assert(runtime.includes('function customPhaseOwnsScreen()'),'Fases customizadas não compartilham guarda de ownership');
+assert(runtime.includes('if(customPhaseOwnsScreen()||!(G.runtimeOrder||[]).includes(id))return'),'Eventos do engine ainda podem roubar activeId de fases customizadas');
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
 assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da correção');
 assert(index.includes('campaign-phase-labels.js?v=20260911-scatter-appreciation-1'),'Labels sem cache bust da correção');
-assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-1'),'Runtime sync sem cache bust do contrato P0');
-assert(index.includes('campaign-phase-completion.js?v=20260911-p0-1'),'Contrato de conclusão sem cache bust P0');
-console.log('Phase runtime sync validation passed: engine phase is authoritative, completion is separated, and recipe guidance follows rebuildable objective precursors.');
+assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-e2e-1'),'Runtime sync sem cache bust do hardening E2E');
+assert(index.includes('campaign-phase-completion.js?v=20260911-p0-e2e-1'),'Contrato de conclusão sem cache bust do hardening E2E');
+console.log('Phase runtime sync validation passed: engine phase is authoritative except while Quarks/Quasar own the screen, completion is separated, and recipe guidance follows rebuildable objective precursors.');

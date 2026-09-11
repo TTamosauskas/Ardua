@@ -36,11 +36,13 @@ function resolve(){
  if(b){const sourceMatch=source.filter(row=>norm(row.branch)===b&&norm(row.title)===t);if(sourceMatch.length===1)return sourceMatch[0].id}
  return source.find(row=>norm(row.title)===t)?.id||'';
 }
+function quasarOwnsScreen(){const id=window.ARDUA_QUASAR?.id;return !!id&&C.getState?.().activeId===id&&!!document.querySelector('#starBoard.quasar-mode .quasar-layer')}
+function customPhaseOwnsScreen(){return !!window.ARDUA_QUARKS?.isActive?.()||quasarOwnsScreen()}
 let busy=false;
 function sync(){
- /* The engine title is stale while the campaign map owns the screen, and Quarks is a
-    custom phase outside runtimeOrder. Neither state may be inferred from that title. */
- if(busy||map?.classList.contains('show')||window.ARDUA_QUARKS?.isActive?.())return;
+ /* Native engine identity is stale while the campaign map or a custom gameplay module
+    owns the screen. Never let that stale id steal activeId from Quarks or Quasar. */
+ if(busy||map?.classList.contains('show')||customPhaseOwnsScreen())return;
  const engineId=document.documentElement.dataset.arduaEnginePhase||'';const id=(G.runtimeOrder||[]).includes(engineId)?engineId:resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;
  busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
 }
@@ -48,7 +50,7 @@ new MutationObserver(sync).observe(phaseTitle,{childList:true,subtree:true,chara
 if(branchLabel)new MutationObserver(sync).observe(branchLabel,{childList:true,subtree:true,characterData:true});
 function syncFromEngine(e){
  const id=e?.detail?.id||document.documentElement.dataset.arduaEnginePhase||'';
- if(window.ARDUA_QUARKS?.isActive?.()||!(G.runtimeOrder||[]).includes(id))return;
+ if(customPhaseOwnsScreen()||!(G.runtimeOrder||[]).includes(id))return;
  const st=C.getState?.();if(!st||st.activeId===id){document.documentElement.dataset.arduaActivePhase=id;return}
  busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
 }
