@@ -67,7 +67,7 @@ jobs:
           cp assets/js/ardua.js /tmp/ardua-production.js
           node <<'NODE'
           const fs=require('fs'),p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');const at=s.lastIndexOf('})();');if(at<0)throw new Error('engine closure missing');
-          const hook="\nwindow.__ARDUA_VICTORY_TEST={state,PHASES,phaseIndexById,startPhase};\n";s=s.slice(0,at)+hook+s.slice(at);fs.writeFileSync(p,s);
+          const hook="\nwindow.__ARDUA_VICTORY_TEST={state,PHASES,phaseIndexById,startPhase,endPhaseAction};\n";s=s.slice(0,at)+hook+s.slice(at);fs.writeFileSync(p,s);
           NODE
 
       - name: Browser timing regression

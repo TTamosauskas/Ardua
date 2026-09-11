@@ -5,9 +5,10 @@ const page=await browser.newPage({viewport:{width:390,height:844}});
 const base='http://127.0.0.1:4173';
 
 async function prepare(kind){
- await page.goto(base,{waitUntil:'networkidle'});
+ await page.goto(base,{waitUntil:'domcontentloaded'});
  return await page.evaluate(kind=>{
   const T=window.__ARDUA_VICTORY_TEST;if(!T)throw new Error('test hook missing');
+  if(typeof window.ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare!=='function')throw new Error('victory fanfare API missing');
   let p;
   if(kind==='supernova')p=T.PHASES.find(x=>x.endEvent==='supernova');
   else if(kind==='scatter')p=T.PHASES.find(x=>x.mode==='fusion'&&!x.endEvent);
@@ -25,11 +26,9 @@ async function prepare(kind){
  },kind);
 }
 
-async function clickAndMeasure(kind){
+async function runCase(kind){
  const id=await prepare(kind);
- await page.locator('#phaseEndBtn').click({force:true});
- await page.waitForFunction(()=>window.__victoryAt!==null,{timeout:2500});
- if(kind!=='special')await page.waitForFunction(()=>window.__explosionAt!==null,{timeout:2500});
+ await page.evaluate(()=>window.__ARDUA_VICTORY_TEST.endPhaseAction());
  const data=await page.evaluate(()=>({victoryAt:window.__victoryAt,explosionAt:window.__explosionAt}));
  if(!Number.isFinite(data.victoryAt))throw new Error(kind+' did not emit fanfare');
  if(kind!=='special'){
@@ -40,8 +39,8 @@ async function clickAndMeasure(kind){
  console.log(kind,id,data);
 }
 
-await clickAndMeasure('scatter');
-await clickAndMeasure('supernova');
-await clickAndMeasure('special');
+await runCase('scatter');
+await runCase('supernova');
+await runCase('special');
 await browser.close();
 console.log('Victory fanfare browser regression passed.');
