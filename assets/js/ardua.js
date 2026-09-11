@@ -4418,7 +4418,7 @@ async function finishCampaign(){
 async function endPhaseAction(){
  const s=phase();if(!state.readyToAdvance||state.phaseDone)return;
  state.phaseDone=true;state.locked=true;$('phaseEndBtn').classList.remove('show');stopPrimordialDrift();cancelParticleDrag();stopAccretionFeed();stopCosmicRaySystem();stopNeutronSystem();
- let played=false;try{played=await window.ARDUA_RECIPE_AUDIO_SYNC?.victorySong?.()}catch(_e){}if(!played){adaptiveAudioResolve('completion');await wait(620)}if(phase()!==s)return;
+ if(phase()!==s)return;
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='plasmaTransition')return advanceStellarAtomicPhase();if(s.endEvent==='stellarBirth')return stellarFormationAdvance();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()
 }
 function advancePhase(){const campaign=window.ARDUA_CAMPAIGN;if(campaign&&!campaign.editor){state.locked=false;window.dispatchEvent(new CustomEvent('ardua:phase-ended',{detail:{id:phase().id}}));return}const next=(state.phaseIndex+1)%PHASES.length;startPhase(next,true)}

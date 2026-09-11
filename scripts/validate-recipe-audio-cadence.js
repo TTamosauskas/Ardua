@@ -35,9 +35,10 @@ for(const legacy of ['OBJECTIVE_MOTIF_NOTE_MAIN_GAIN=.68','OBJECTIVE_MOTIF_NOTE_
 for(const token of ["if(kind==='note3-main')","if(kind==='chord-main')","recipeMotifLift:1","recipePeak:null","recipeLimiter:false","recipeReference:'quarks-v1'",'AUDIO_PROFILE.noteStrongGain','AUDIO_PROFILE.chordMainGain'])if(!polish.includes(token))throw new Error('Roteamento Quarks ausente: '+token);
 if(!polish.includes("if(kind&&routed)booster.gain.value=0")||!polish.includes('else if(kind)booster.gain.value=1'))throw new Error('Fallback musical deve ficar sem booster, exatamente como Quarks');
 
-// A música de vitória continua sendo o efeito separado solicitado: três frases em oitavas ascendentes, mas com o mesmo timbre/dinâmica de Quarks.
-for(const token of ['async function victorySong()','for(let octave=0;octave<3;octave++)','mult=2**octave','AUDIO_PROFILE.noteStrongGain','AUDIO_PROFILE.noteMainGain','AUDIO_PROFILE.harmonicRatio','setTimeout(resolve,3640)'])if(!recipe.includes(token))throw new Error('Música de vitória perdeu contrato: '+token);
-for(const token of ['async function ensureAudioReady()','const ctx=await ensureAudioReady();if(!ctx)return false'])if(!recipe.includes(token))throw new Error('Victory song não garante AudioContext ativo: '+token);
+// A antiga música final em três oitavas foi removida. O motivo de combinação nota-nota-nota-acorde permanece intacto.
+for(const token of ['async function victorySong()','for(let octave=0;octave<3;octave++)','mult=2**octave','setTimeout(resolve,3640)','async function ensureAudioReady()'])if(recipe.includes(token))throw new Error('Música final em oitavas ainda presente: '+token);
+if(engine.includes('ARDUA_RECIPE_AUDIO_SYNC?.victorySong'))throw new Error('Botão final ainda dispara a música em oitavas');
+for(const token of ['function playFrequency(','function playChord(','function engineChord()','playNote(2,motif.root,motif.ratios)','playChord(motif.root,motif.ratios)'])if(!recipe.includes(token))throw new Error('Motivo nota-nota-nota-acorde foi alterado: '+token);
 
 // Audit all JS owners of the three-note/chord recipe motif. Any new parallel implementation fails CI until it adopts the shared profile.
 const jsDir='assets/js';
@@ -48,9 +49,9 @@ if(JSON.stringify(owners.sort())!==JSON.stringify(expected.sort()))throw new Err
 
 if(!engine.includes("bindReliableTap($('phaseEndBtn'),endPhaseAction)"))throw new Error('Botão final não usa tap confiável');
 if(!css.includes('.center-action.stage-end{z-index:2147483647!important;pointer-events:auto!important;'))throw new Error('Botão final perdeu z-index absoluto');
-const version='20260911-scatter-appreciation-1';
+const version='20260911-no-octave-victory-1';
 for(const asset of ['recipe-sound-profile.js','audio-polish.js','ardua.js','recipe-audio-sync.js','campaign-quarks.js'])if(!index.includes('assets/js/'+asset+'?v='+version))throw new Error('Cache-busting musical ausente: '+asset);
 const profilePos=index.indexOf('recipe-sound-profile.js'),polishPos=index.indexOf('audio-polish.js'),enginePos=index.indexOf('ardua.js');
 if(!(profilePos>=0&&profilePos<polishPos&&profilePos<enginePos))throw new Error('Perfil Quarks precisa carregar antes dos consumidores');
 
-console.log('Quarks audio parity OK: every three-note/chord implementation uses one shared Quarks profile; standard combinations keep a fixed register; victory song remains separate.');
+console.log('Quarks audio parity OK: note-note-note-chord remains canonical; the octave-rising final song is removed.');
