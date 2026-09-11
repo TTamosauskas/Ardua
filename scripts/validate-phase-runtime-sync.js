@@ -14,7 +14,7 @@ assert(runtime.includes("C.setActive(id);document.documentElement.dataset.arduaA
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
-assert(index.includes('ardua.js?v=20260911-no-octave-victory-1'),'Engine sem cache bust da correção');
+assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da correção');
 assert(index.includes('campaign-phase-labels.js?v=20260911-scatter-appreciation-1'),'Labels sem cache bust da correção');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-scatter-appreciation-1'),'Runtime sync sem cache bust da correção');
 console.log('Phase runtime sync validation passed: engine phase is authoritative and recipe guidance follows rebuildable objective precursors.');

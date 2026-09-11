@@ -100,6 +100,9 @@ jobs:
       - name: Validate stellar dispersal appreciation pause
         run: node scripts/validate-scatter-appreciation.js
 
+      - name: Validate global victory fanfare
+        run: node scripts/validate-victory-fanfare.js
+
       - name: Validate parallel beta-decay gameplay
         run: node scripts/validate-beta-parallel.js
 
