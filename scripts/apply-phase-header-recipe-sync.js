@@ -13,7 +13,14 @@ const replace=(file,from,to)=>{let s=fs.readFileSync(file,'utf8');if(!s.includes
  if(!s.includes(old))throw new Error('conciseRecipeLine fallback anchor missing');s=s.replace(old,neu);fs.writeFileSync(file,s);
 }
 replace('assets/js/campaign-runtime-sync.js'," const id=resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;"," const engineId=document.documentElement.dataset.arduaEnginePhase||'';const id=(G.runtimeOrder||[]).includes(engineId)?engineId:resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;");
-replace('assets/js/campaign-runtime-sync.js',"window.addEventListener('ardua:forge-names',sync);","window.addEventListener('ardua:engine-phase',sync);\nwindow.addEventListener('ardua:forge-names',sync);");
+replace('assets/js/campaign-runtime-sync.js',"window.addEventListener('ardua:forge-names',sync);",`function syncFromEngine(e){
+ const id=e?.detail?.id||document.documentElement.dataset.arduaEnginePhase||'';
+ if(window.ARDUA_QUARKS?.isActive?.()||!(G.runtimeOrder||[]).includes(id))return;
+ const st=C.getState?.();if(!st||st.activeId===id){document.documentElement.dataset.arduaActivePhase=id;return}
+ busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
+}
+window.addEventListener('ardua:engine-phase',syncFromEngine);
+window.addEventListener('ardua:forge-names',sync);`);
 replace('assets/js/campaign-phase-labels.js',"function activeId(){return C.getState?.().activeId||''}","function activeId(){if(window.ARDUA_QUARKS?.isActive?.())return'quarks';return document.documentElement.dataset.arduaEnginePhase||C.getState?.().activeId||''}");
 {
  const file='index.html';let s=fs.readFileSync(file,'utf8');s=s.replaceAll('20260911-objective-safe-chain-1','20260911-phase-runtime-sync-1');s=s.replace(/assets\/js\/campaign-phase-labels\.js\?v=[^\"]+/,'assets/js/campaign-phase-labels.js?v=20260911-phase-runtime-sync-1');s=s.replace('assets/js/campaign-runtime-sync.js\"></script>','assets/js/campaign-runtime-sync.js?v=20260911-phase-runtime-sync-1\"></script>');fs.writeFileSync(file,s);
