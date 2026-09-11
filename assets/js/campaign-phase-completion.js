@@ -92,7 +92,7 @@ async function scatterQuarksFinale(){
 async function scatterQuasarFinale(){
  const board=$('starBoard'),stage=board?.querySelector('.quasar-layer'),layer=$('explosion');if(!board||!stage||!layer)return;
  layer.innerHTML='';const box=board.getBoundingClientRect(),size=Math.min(box.width,box.height),ghost=stage.cloneNode(true);let maxMotionMs=0;
- ghost.classList.add('quasar-finale-ghost');ghost.style.pointerEvents='none';ghost.style.transformOrigin='50% 50%';layer.appendChild(ghost);stage.style.visibility='hidden';
+ ghost.classList.add('quasar-finale-ghost');ghost.style.pointerEvents='none';ghost.style.transformOrigin='50% 50%';layer.appendChild(ghost);stage.classList.add('quasar-finale-exit');stage.style.visibility='hidden';
  for(let i=0;i<34;i++){
   const d=document.createElement('i');d.className='dust-speck';layer.appendChild(d);const a=Math.random()*Math.PI*2,dist=size*(.42+Math.random()*.35),dur=520+Math.random()*420;maxMotionMs=Math.max(maxMotionMs,dur);
   requestAnimationFrame(()=>{d.style.transition=`transform ${dur}ms ease-out,opacity ${dur}ms ease`;d.style.transform=`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(.25)`;d.style.opacity='0'});
@@ -125,6 +125,7 @@ function adapterFor(context){for(const [id,adapter] of adapters)if(adapter.match
 document.addEventListener('click',e=>{
  const button=e.target instanceof Element?e.target.closest('#phaseEndBtn'):null;if(!button)return;
  if(replaying.has(button)){replaying.delete(button);return}
+ if(busy){e.preventDefault();e.stopImmediatePropagation();return}
  const phaseId=activePhaseId(),found=adapterFor({button,phaseId,event:e});
  if(found){e.preventDefault();e.stopImmediatePropagation();void run({phaseId,button,source:found.id,celebrate:found.adapter.celebrate,commit:found.adapter.commit});return}
  if(button.classList.contains('show'))emit('awaiting-confirmation',{phaseId,source:'native-engine'});
