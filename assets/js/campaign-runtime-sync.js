@@ -94,7 +94,7 @@ async function completeWithFallback(button){
  try{window.ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()}catch(_e){}
  try{await fallbackStellarScatter()}finally{
   const original=objectiveEndOriginal;restoreObjectiveEndButton();
-  if(original){original.classList.remove('show');original.click()}
+  if(original){original.classList.remove('show');original.addEventListener('click',e=>e.stopImmediatePropagation(),{capture:true,once:true});original.click()}
   objectiveEndBusy=false;
  }
 }
