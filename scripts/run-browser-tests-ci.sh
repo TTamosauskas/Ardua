@@ -5,12 +5,17 @@ PLAYWRIGHT_VERSION="1.55.0"
 PORT="4173"
 BASE_URL="http://127.0.0.1:${PORT}/"
 
+cleanup(){
+  if [[ -n "${SERVER_PID:-}" ]]; then kill "${SERVER_PID}" 2>/dev/null || true; fi
+  rm -rf node_modules
+}
+trap cleanup EXIT
+
 npm install --no-save --no-package-lock "playwright@${PLAYWRIGHT_VERSION}"
 npx playwright install --with-deps chromium
 
 python3 -m http.server "${PORT}" --bind 127.0.0.1 >/tmp/ardua-browser-tests-http.log 2>&1 &
 SERVER_PID=$!
-trap 'kill "${SERVER_PID}" 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 30); do
   if curl -fsS "${BASE_URL}" >/dev/null; then
