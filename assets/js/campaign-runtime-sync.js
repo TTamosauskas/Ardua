@@ -120,7 +120,7 @@ function quarksFinaleReady(button){
 async function scatterQuarksFinale(){
  const board=document.getElementById('starBoard'),stage=board?.querySelector('.quarks-stage'),layer=document.getElementById('explosion');
  if(!board||!stage||!layer)return;
- stopMotion?.();layer.innerHTML='';const box=board.getBoundingClientRect(),size=Math.min(box.width,box.height),c=size/2,ghost=stage.cloneNode(true),items=[...ghost.querySelectorAll('.quark-piece,.quarks-baryon')];let maxMotionMs=0;
+ layer.innerHTML='';const box=board.getBoundingClientRect(),size=Math.min(box.width,box.height),c=size/2,ghost=stage.cloneNode(true),items=[...ghost.querySelectorAll('.quark-piece,.quarks-baryon')];let maxMotionMs=0;
  ghost.classList.add('quarks-finale-ghost');ghost.style.pointerEvents='none';layer.appendChild(ghost);stage.style.visibility='hidden';
  for(let i=0;i<34;i++){
   const d=document.createElement('i');d.className='dust-speck';layer.appendChild(d);const a=Math.random()*Math.PI*2,dist=size*(.42+Math.random()*.35),dur=520+Math.random()*420;maxMotionMs=Math.max(maxMotionMs,dur);
