@@ -87,11 +87,11 @@ const learnedFusionEnd=s.indexOf('const STELLAR_SANDBOX_VISUALS',learnedFusionSt
 const learnedFusion=s.slice(learnedFusionStart,learnedFusionEnd);
 if(learnedFusionStart<0||learnedFusionEnd<0)fail('Memoria cumulativa de fusao perdeu a ancora');
 for(const token of [
- 'for(let i=0;i<PHASES.length;i++)',
- "if(!reached(p,i)||p.mode!=='fusion')continue",
- 'phaseFusionRecipes(p).forEach',
- 'done.has(p.id)||p.id===currentId'
-])if(!learnedFusion.includes(token))fail('Memoria de fusao deixou de acumular fases anteriores: '+token);
+ 'canonicalKnowledgePhaseIds(current)',
+ "if(!known.has(p.id)||p.mode!=='fusion')continue",
+ 'phaseFusionRecipes(p).forEach'
+])if(!learnedFusion.includes(token))fail('Memória canônica de fusão perdeu regra: '+token);
+if(/graphState|done\.has\(p\.id\)|currentId/.test(learnedFusion))fail('Revisita ainda depende do histórico futuro do jogador');
 if(!s.includes("const r=FUSIONS[s.new];\n  return r?[r]:[];"))fail('Fases de fusao precisam registrar sua receita no catalogo cumulativo');
 
 // Se o primeiro reagente mostra parceiros validos, o segundo toque deve chegar a fuse().
