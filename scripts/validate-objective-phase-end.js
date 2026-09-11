@@ -15,6 +15,7 @@ ok(runtime.includes('playVictoryFanfare?.()'), 'fallback must play the canonical
 ok(runtime.includes("d.className='dust-speck'"), 'fallback stellar-dust particles are missing');
 ok(runtime.includes("pieces.classList.add('hidden')"), 'fallback must hide the original board pieces during dispersal');
 ok(runtime.includes('maxMotionMs+(reducedMotion()?160:700)'), 'fallback must preserve the post-dispersal appreciation pause');
+ok(runtime.includes("original.addEventListener('click',e=>e.stopImmediatePropagation(),{capture:true,once:true})"), 'fallback must hand completion to the map listener without replaying the engine transition');
 ok(runtime.includes('original.click()'), 'fallback must hand completion back to the canonical campaign end-button listeners');
 
 ok(/id:'he_red'[^\n]*target:6/.test(engine), 'Anã vermelha Hélio-4 regression fixture changed');
