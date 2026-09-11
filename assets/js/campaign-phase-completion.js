@@ -14,7 +14,12 @@ let objectiveEndTimer=0,objectiveEndOriginal=null;
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const reducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
-function activePhaseId(){return window.ARDUA_QUARKS?.isActive?.()?'quarks':(document.documentElement.dataset.arduaEnginePhase||C.getState?.().activeId||'')}
+function activePhaseId(){
+ const campaignId=C.getState?.().activeId||'';
+ if(window.ARDUA_QUARKS?.isActive?.())return'quarks';
+ if(window.ARDUA_QUASAR?.id&&campaignId===window.ARDUA_QUASAR.id)return campaignId;
+ return document.documentElement.dataset.arduaEnginePhase||campaignId;
+}
 function objectiveRatiosComplete(text){
  const ratios=[...String(text||'').matchAll(/(\d+)\s*\/\s*(\d+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
  return ratios.length>0&&ratios.every(([done,target])=>target>0&&done>=target);
@@ -84,10 +89,27 @@ async function scatterQuarksFinale(){
  });
  await wait(Math.ceil(maxMotionMs+(reducedMotion()?160:700)));
 }
+async function scatterQuasarFinale(){
+ const board=$('starBoard'),stage=board?.querySelector('.quasar-layer'),layer=$('explosion');if(!board||!stage||!layer)return;
+ layer.innerHTML='';const box=board.getBoundingClientRect(),size=Math.min(box.width,box.height),ghost=stage.cloneNode(true);let maxMotionMs=0;
+ ghost.classList.add('quasar-finale-ghost');ghost.style.pointerEvents='none';ghost.style.transformOrigin='50% 50%';layer.appendChild(ghost);stage.style.visibility='hidden';
+ for(let i=0;i<34;i++){
+  const d=document.createElement('i');d.className='dust-speck';layer.appendChild(d);const a=Math.random()*Math.PI*2,dist=size*(.42+Math.random()*.35),dur=520+Math.random()*420;maxMotionMs=Math.max(maxMotionMs,dur);
+  requestAnimationFrame(()=>{d.style.transition=`transform ${dur}ms ease-out,opacity ${dur}ms ease`;d.style.transform=`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(.25)`;d.style.opacity='0'});
+ }
+ const sceneDur=reducedMotion()?160:820;maxMotionMs=Math.max(maxMotionMs,sceneDur);
+ requestAnimationFrame(()=>{ghost.style.transition=`transform ${sceneDur}ms cubic-bezier(.15,.72,.2,1),opacity ${sceneDur}ms ease`;ghost.style.transform='scale(1.12)';ghost.style.opacity='0'});
+ await wait(Math.ceil(maxMotionMs+(reducedMotion()?160:700)));
+}
 
 registerAdapter('quarks',{
  matches:({button,phaseId})=>phaseId==='quarks'&&!!window.ARDUA_QUARKS?.isActive?.()&&C.getState?.().activeId==='quarks'&&button?.classList.contains('show')&&objectiveRatiosComplete($('goalText')?.textContent),
  celebrate:scatterQuarksFinale,
+ commit:({button})=>replayButton(button)
+});
+registerAdapter('quasar',{
+ matches:({button,phaseId})=>!!window.ARDUA_QUASAR?.id&&phaseId===window.ARDUA_QUASAR.id&&C.getState?.().activeId===phaseId&&!button?.hidden&&button?.style.display!=='none'&&objectiveRatiosComplete($('goalText')?.textContent),
+ celebrate:scatterQuasarFinale,
  commit:({button})=>replayButton(button)
 });
 registerAdapter('objective-fallback',{
