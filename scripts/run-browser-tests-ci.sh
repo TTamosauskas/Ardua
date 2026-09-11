@@ -11,6 +11,7 @@ cleanup(){
 }
 trap cleanup EXIT
 
+node scripts/validate-victory-reward-flow.js
 npm install --no-save --no-package-lock "playwright@${PLAYWRIGHT_VERSION}"
 npx playwright install --with-deps chromium
 
@@ -32,5 +33,7 @@ fi
 export ARDUA_TEST_URL="${BASE_URL}"
 node --check scripts/test-phase-goal-hierarchy-browser.mjs
 node --check scripts/test-p0-player-experience-browser.mjs
+node --check scripts/test-p1-victory-next-browser.mjs
 node scripts/test-phase-goal-hierarchy-browser.mjs
 node scripts/test-p0-player-experience-browser.mjs
+node scripts/test-p1-victory-next-browser.mjs
