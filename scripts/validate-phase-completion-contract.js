@@ -1,0 +1,12 @@
+const fs=require('fs');
+const fail=m=>{throw new Error(m)};
+const completion=fs.readFileSync('assets/js/campaign-phase-completion.js','utf8');
+const runtime=fs.readFileSync('assets/js/campaign-runtime-sync.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+const delay=Number(completion.match(/OBJECTIVE_END_FALLBACK_DELAY=(\d+)/)?.[1]||0);
+if(delay<=720)fail('Completion fallback must yield to the native 720 ms arming path');
+for(const token of ["window.ARDUA_PHASE_COMPLETION=Object.freeze",'function registerAdapter(id,adapter)',"emit('celebrating'","emit('committing'","emit('completed'","new CustomEvent('ardua:phase-completion-state'","registerAdapter('quarks'","registerAdapter('objective-fallback'",'function scatterQuarksFinale()','function scatterStellarFallback()','playVictoryFanfare()','replayButton(button)'])if(!completion.includes(token))fail('Completion contract missing: '+token);
+if(runtime.includes('OBJECTIVE_END_FALLBACK_DELAY')||runtime.includes('scatterQuarksFinale')||runtime.includes('fallbackStellarScatter'))fail('Completion behavior leaked back into runtime identity sync');
+const completionPos=index.indexOf('assets/js/campaign-phase-completion.js'),runtimePos=index.indexOf('assets/js/campaign-runtime-sync.js');
+if(completionPos<0||runtimePos<0||completionPos>runtimePos)fail('Completion contract must load before runtime sync');
+console.log('Universal phase completion contract OK.');
