@@ -25,6 +25,7 @@ const result=await page.evaluate(()=>{
  checks.fragileGoal=choose('fragile',['He','He','He3']);
  const oxygenPieces=setup('o',['C','H','He']);checks.oxygen=T.autoFusionCandidate(oxygenPieces[0])?.r?.out||null;
  checks.oxygenManualNitrogen=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='C+H>N');
+ checks.oxygenDiag={canonical:[...T.canonicalKnowledgePhaseIds()],known:T.learnedFusionRecipes().map(r=>T.recipeKey(r)),active:T.activeFusionRecipes().map(r=>T.recipeKey(r)),modes:Object.fromEntries(['c','n','o'].map(id=>{const i=T.phaseIndexById.get(id),p=T.PHASES[i];return[id,p?{mode:p.mode,anchorId:p.anchorId||null}:null]}))};
  checks.magnesium=choose('mg',['Ne','H','He']);
  checks.silicon=choose('si',['Mg','H','He']);
  checks.sulfur=choose('s',['Si','H','He']);
