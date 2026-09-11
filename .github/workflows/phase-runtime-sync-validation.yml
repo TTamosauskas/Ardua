@@ -1,0 +1,95 @@
+name: Validate phase runtime sync
+
+on:
+  push:
+    branches: ["fix/phase-header-recipe-sync"]
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-commit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: fix/phase-header-recipe-sync
+
+      - name: Apply fix
+        run: node scripts/apply-phase-header-recipe-sync.js
+
+      - name: Focused validation
+        run: |
+          node --check assets/js/ardua.js
+          node --check assets/js/campaign-runtime-sync.js
+          node --check assets/js/campaign-phase-labels.js
+          node scripts/validate-phase-runtime-sync.js
+          node scripts/validate-objective-safe-chain.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-phase-goal-hierarchy.js
+          node scripts/validate-recipe-audio-cadence.js
+
+      - name: Full regression suite
+        run: |
+          node scripts/validate-element-sources.mjs
+          node scripts/validate-element-bohr.js
+          node scripts/validate-phenomenon-sources.mjs
+          node scripts/validate-phenomena-discoveries.mjs
+          node scripts/validate-stellar-plasma.js
+          node scripts/validate-coronal-jets.js
+          node scripts/validate-convection-regression.js
+          node scripts/validate-movement-chain-particles.js
+          node scripts/validate-cumulative-recipes.js
+          node scripts/validate-objective-safe-chain.js
+          node scripts/validate-recipe-planner.js
+          node scripts/validate-beta-parallel.js
+          node scripts/validate-rotation-option.js
+          node scripts/validate-recipe-audio-cadence.js
+          node scripts/validate-menu-discoveries-ux.js
+          node scripts/validate-discovery-inbox.js
+          node scripts/validate-campaign-phase-flow.js
+          node scripts/validate-campaign-runtime-regressions.js
+          node scripts/validate-phase-goal-hierarchy.js
+          node scripts/validate-phase-layout-consistency.js
+          node scripts/validate-quarks-phase.js
+          node scripts/validate-quarks-chrome.js
+          node scripts/validate-phase-runtime-sync.js
+
+      - name: Install Chromium test dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+
+      - name: Expose test-only engine hooks
+        run: |
+          cp assets/js/ardua.js /tmp/ardua-production.js
+          node <<'NODE'
+          const fs=require('fs'),p='assets/js/ardua.js';let s=fs.readFileSync(p,'utf8');
+          const at=s.lastIndexOf('})();');if(at<0)throw new Error('engine closure missing');
+          const hook="\nwindow.__ARDUA_PHASE_SYNC_TEST={state,phase,PHASES,phaseIndexById,startPhase,clearBoard,activeCells,createPiece,render,activeFusionRecipes};\n";
+          s=s.slice(0,at)+hook+s.slice(at);fs.writeFileSync(p,s);
+          NODE
+
+      - name: Browser regression
+        run: |
+          python3 -m http.server 4173 >/tmp/ardua-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+          node scripts/test-phase-runtime-sync-browser.mjs
+
+      - name: Restore production engine and commit permanent fix
+        run: |
+          cp /tmp/ardua-production.js assets/js/ardua.js
+          rm -rf node_modules
+          rm -f scripts/apply-phase-header-recipe-sync.js scripts/test-phase-runtime-sync-browser.mjs
+          node --check assets/js/ardua.js
+          node scripts/validate-phase-runtime-sync.js
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/js/ardua.js assets/js/campaign-runtime-sync.js assets/js/campaign-phase-labels.js index.html .github/workflows/pages.yml scripts/validate-phase-runtime-sync.js scripts/validate-recipe-audio-cadence.js scripts/apply-phase-header-recipe-sync.js scripts/test-phase-runtime-sync-browser.mjs
+          git commit -m "Keep phase header and recipe guidance synchronized"
+          git push origin HEAD:fix/phase-header-recipe-sync
