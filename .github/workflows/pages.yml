@@ -94,6 +94,9 @@ jobs:
       - name: Validate precursor recipe planner
         run: node scripts/validate-recipe-planner.js
 
+      - name: Validate phase runtime identity and recipe guidance
+        run: node scripts/validate-phase-runtime-sync.js
+
       - name: Validate parallel beta-decay gameplay
         run: node scripts/validate-beta-parallel.js
 
