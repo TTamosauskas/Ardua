@@ -88,6 +88,6 @@ jobs:
           node scripts/validate-objective-safe-chain.js
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add assets/js/ardua.js index.html scripts/validate-cumulative-recipes.js scripts/validate-movement-chain-particles.js scripts/validate-objective-safe-chain.js .github/workflows/pages.yml scripts/apply-objective-safe-chain-patch.js scripts/fix-objective-safe-chain-legacy-validator.js scripts/fix-objective-safe-chain-cache.js scripts/test-objective-safe-chain-browser.mjs .github/workflows/objective-safe-chain-validation.yml
+          git add assets/js/ardua.js index.html scripts/validate-cumulative-recipes.js scripts/validate-movement-chain-particles.js scripts/validate-recipe-audio-cadence.js scripts/validate-objective-safe-chain.js .github/workflows/pages.yml scripts/apply-objective-safe-chain-patch.js scripts/fix-objective-safe-chain-legacy-validator.js scripts/fix-objective-safe-chain-cache.js scripts/test-objective-safe-chain-browser.mjs .github/workflows/objective-safe-chain-validation.yml
           git commit -m "Make reaction chains objective-safe"
           git push origin HEAD:fix/objective-safe-chain-knowledge
