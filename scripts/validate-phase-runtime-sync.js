@@ -16,5 +16,6 @@ assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDepen
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
 assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da correção');
 assert(index.includes('campaign-phase-labels.js?v=20260911-scatter-appreciation-1'),'Labels sem cache bust da correção');
-assert(index.includes('campaign-runtime-sync.js?v=20260911-scatter-appreciation-1'),'Runtime sync sem cache bust da correção');
-console.log('Phase runtime sync validation passed: engine phase is authoritative and recipe guidance follows rebuildable objective precursors.');
+assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-1'),'Runtime sync sem cache bust do contrato P0');
+assert(index.includes('campaign-phase-completion.js?v=20260911-p0-1'),'Contrato de conclusão sem cache bust P0');
+console.log('Phase runtime sync validation passed: engine phase is authoritative, completion is separated, and recipe guidance follows rebuildable objective precursors.');
