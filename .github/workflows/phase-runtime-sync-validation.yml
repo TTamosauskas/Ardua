@@ -84,12 +84,13 @@ jobs:
       - name: Restore production engine and commit permanent fix
         run: |
           cp /tmp/ardua-production.js assets/js/ardua.js
+          git checkout -- .github/workflows/pages.yml
           rm -rf node_modules
           rm -f scripts/apply-phase-header-recipe-sync.js scripts/test-phase-runtime-sync-browser.mjs
           node --check assets/js/ardua.js
           node scripts/validate-phase-runtime-sync.js
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add assets/js/ardua.js assets/js/campaign-runtime-sync.js assets/js/campaign-phase-labels.js index.html .github/workflows/pages.yml scripts/validate-phase-runtime-sync.js scripts/validate-phase-goal-hierarchy.js scripts/validate-recipe-audio-cadence.js scripts/apply-phase-header-recipe-sync.js scripts/test-phase-runtime-sync-browser.mjs
+          git add assets/js/ardua.js assets/js/campaign-runtime-sync.js assets/js/campaign-phase-labels.js index.html scripts/validate-phase-runtime-sync.js scripts/validate-phase-goal-hierarchy.js scripts/validate-recipe-audio-cadence.js scripts/apply-phase-header-recipe-sync.js scripts/test-phase-runtime-sync-browser.mjs
           git commit -m "Keep phase header and recipe guidance synchronized"
           git push origin HEAD:fix/phase-header-recipe-sync
