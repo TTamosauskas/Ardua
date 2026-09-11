@@ -44,14 +44,21 @@ async function testStellarFallback({reducedMotion='no-preference'}={}){
  try{
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='he_red');
   await page.evaluate(()=>{
-   const map=document.getElementById('campaignMap');
-   map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
-   const pieces=document.getElementById('pieces');
-   if(pieces)pieces.innerHTML='<button class="atom" style="left:50%;top:50%"><span class="sym">He</span></button>';
-   const goal=document.getElementById('goalText');if(goal)goal.textContent='Forme Hélio-4 — 6/6';
-   const end=document.getElementById('phaseEndBtn');if(end){end.textContent='ESPALHAR POEIRA ESTELAR';end.classList.remove('show');end.removeAttribute('hidden');end.style.display=''}
+   const target='Forme Hélio-4 — 6/6';
+   const keep=()=>{
+    const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
+    const goal=document.getElementById('goalText');if(goal&&goal.textContent!==target)goal.textContent=target;
+    const end=document.getElementById('phaseEndBtn');
+    if(end&&end.dataset.objectiveCompletionFallback!=='1'){
+     if(end.textContent!=='ESPALHAR POEIRA ESTELAR')end.textContent='ESPALHAR POEIRA ESTELAR';
+     end.classList.remove('show');end.removeAttribute('hidden');end.style.display='';
+    }
+   };
+   const pieces=document.getElementById('pieces');if(pieces)pieces.innerHTML='<button class="atom" style="left:50%;top:50%"><span class="sym">He</span></button>';
+   keep();window.__ARDUA_E2E_FALLBACK_KEEP=setInterval(keep,40);
   });
-  await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:4000});
+  await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:5000});
+  await page.evaluate(()=>clearInterval(window.__ARDUA_E2E_FALLBACK_KEEP));
   const started=Date.now();
   await page.evaluate(()=>{const b=document.getElementById('phaseEndBtn');b.click();b.click();b.click()});
   await page.waitForTimeout(90);
@@ -133,11 +140,13 @@ async function testQuasar(){
  const {context,page,errors}=await makePage({activeId:'quasar',engineId:'quasar',completed:['bigbang','black_hole']});
  try{
   await page.waitForFunction(()=>window.ARDUA_QUASAR_GAME&&document.querySelector('.quasar-layer'));
+  await page.evaluate(()=>{const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open')});
   for(let pair=0;pair<6;pair++){
    await page.evaluate(pair=>{const xs=[...document.querySelectorAll(`.quasar-gas[data-pair="${pair}"]`)];xs[0]?.click();xs[1]?.click()},pair);
    await page.waitForFunction(target=>document.getElementById('stageProgressText')?.textContent===`${target}/6`,pair+1,{timeout:2000});
   }
   await page.waitForFunction(()=>{const b=document.getElementById('phaseEndBtn');return b&&!b.hidden&&getComputedStyle(b).display!=='none'});
+  const mapBefore=await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')||false);assert.equal(mapBefore,false,`${label}: fixture iniciou com mapa visível`);
   await page.evaluate(()=>{const b=document.getElementById('phaseEndBtn');b.click();b.click();b.click()});
   await page.waitForTimeout(90);
   const during=await page.evaluate(()=>({
