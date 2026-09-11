@@ -8,11 +8,13 @@ assert(engine.includes("document.documentElement.dataset.arduaEnginePhase=s.id")
 assert(engine.includes("ardua:engine-phase"),'Engine não emite evento de fase exata');
 assert(labels.includes("document.documentElement.dataset.arduaEnginePhase||C.getState?.().activeId"),'Cabeçalho ainda depende primeiro do activeId da campanha');
 assert(runtime.includes("const engineId=document.documentElement.dataset.arduaEnginePhase||''"),'Runtime sync não prioriza a fase real do engine');
-assert(runtime.includes("window.addEventListener('ardua:engine-phase',sync)"),'Runtime sync não reage à fase real do engine');
+assert(runtime.includes('function syncFromEngine(e)'),'Runtime sync não possui caminho autoritativo do engine');
+assert(runtime.includes("window.addEventListener('ardua:engine-phase',syncFromEngine)"),'Runtime sync não reage autoritativamente à fase real do engine');
+assert(runtime.includes("C.setActive(id);document.documentElement.dataset.arduaActivePhase=id"),'Evento do engine não corrige o activeId da campanha');
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
 assert(index.includes('ardua.js?v=20260911-phase-runtime-sync-1'),'Engine sem cache bust da correção');
 assert(index.includes('campaign-phase-labels.js?v=20260911-phase-runtime-sync-1'),'Labels sem cache bust da correção');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-phase-runtime-sync-1'),'Runtime sync sem cache bust da correção');
-console.log('Phase runtime sync validation passed: header follows engine identity and recipe guidance follows rebuildable objective precursors.');
+console.log('Phase runtime sync validation passed: engine phase is authoritative and recipe guidance follows rebuildable objective precursors.');
