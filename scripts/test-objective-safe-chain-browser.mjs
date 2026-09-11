@@ -23,11 +23,12 @@ const result=await page.evaluate(()=>{
  const checks={};
  checks.fragileDiversion=choose('fragile',['He','He3']);
  checks.fragileGoal=choose('fragile',['He','He','He3']);
- const oxygenPieces=setup('o',['C','H','He']);checks.oxygen=T.autoFusionCandidate(oxygenPieces[0])?.r?.out||null;
- checks.oxygenManualNitrogen=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='C+H>N');
- checks.oxygenDiag={canonical:[...T.canonicalKnowledgePhaseIds()],known:T.learnedFusionRecipes().map(r=>T.recipeKey(r)),active:T.activeFusionRecipes().map(r=>T.recipeKey(r)),modes:Object.fromEntries(['c','n','o'].map(id=>{const i=T.phaseIndexById.get(id),p=T.PHASES[i];return[id,p?{mode:p.mode,anchorId:p.anchorId||null}:null]}))};
+ setPhase('fragile');checks.fragileManualBe7=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='He+He3>Be7');
+ checks.oxygen=choose('o',['C','H','He']);
  checks.magnesium=choose('mg',['Ne','H','He']);
+ checks.magnesiumManualSodium=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='H+Ne>Na');
  checks.silicon=choose('si',['Mg','H','He']);
+ checks.siliconManualAluminum=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='H+Mg>Al');
  checks.sulfur=choose('s',['Si','H','He']);
  checks.argon=choose('ar',['S','H','He']);
  checks.calcium=choose('ca',['Ar','H','He']);
@@ -43,7 +44,7 @@ const result=await page.evaluate(()=>{
 });
 await browser.close();
 if(pageErrors.length)throw new Error('Browser JS errors: '+pageErrors.join(' | '));
-const expect={fragileDiversion:null,fragileGoal:'Be8',oxygen:'O',oxygenManualNitrogen:true,magnesium:'Mg',silicon:'Si',sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAtlasNoAuto:null,ironAtlasOwnsRecipe:true,nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
+const expect={fragileDiversion:null,fragileGoal:'Be8',fragileManualBe7:true,oxygen:'O',magnesium:'Mg',magnesiumManualSodium:true,silicon:'Si',siliconManualAluminum:true,sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAtlasNoAuto:null,ironAtlasOwnsRecipe:true,nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
 for(const [k,v] of Object.entries(expect))if(result[k]!==v)throw new Error(`${k}: expected ${v}, got ${result[k]} :: ${JSON.stringify(result)}`);
 for(const required of ['Be7','Be8'])if(!result.fragileKnown.includes(required))throw new Error('Fragile canonical knowledge missing '+required);
 for(const future of ['C','N','O','Ne','Mg'])if(result.fragileKnown.includes(future))throw new Error('Fragile revisit inherited future fusion output '+future);
