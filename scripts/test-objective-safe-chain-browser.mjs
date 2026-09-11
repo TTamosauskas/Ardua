@@ -28,8 +28,8 @@ const result=await page.evaluate(()=>{
  checks.magnesium=choose('mg',['Ne','H','He']);
  checks.magnesiumManualSodium=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='H+Ne>Na');
  checks.silicon=choose('si',['Mg','H','He']);
- checks.siliconManualAluminum=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='H+Mg>Al');
  checks.sulfur=choose('s',['Si','H','He']);
+ checks.sulfurManualPhosphorus=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='H+Si>P');
  checks.argon=choose('ar',['S','H','He']);
  checks.calcium=choose('ca',['Ar','H','He']);
  checks.titanium=choose('ti',['Ca','H','He']);
@@ -44,7 +44,7 @@ const result=await page.evaluate(()=>{
 });
 await browser.close();
 if(pageErrors.length)throw new Error('Browser JS errors: '+pageErrors.join(' | '));
-const expect={fragileDiversion:null,fragileGoal:'Be8',fragileManualBe7:true,oxygen:'O',magnesium:'Mg',magnesiumManualSodium:true,silicon:'Si',siliconManualAluminum:true,sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAtlasNoAuto:null,ironAtlasOwnsRecipe:true,nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
+const expect={fragileDiversion:null,fragileGoal:'Be8',fragileManualBe7:true,oxygen:'O',magnesium:'Mg',magnesiumManualSodium:true,silicon:'Si',sulfur:'S',sulfurManualPhosphorus:true,argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAtlasNoAuto:null,ironAtlasOwnsRecipe:true,nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
 for(const [k,v] of Object.entries(expect))if(result[k]!==v)throw new Error(`${k}: expected ${v}, got ${result[k]} :: ${JSON.stringify(result)}`);
 for(const required of ['Be7','Be8'])if(!result.fragileKnown.includes(required))throw new Error('Fragile canonical knowledge missing '+required);
 for(const future of ['C','N','O','Ne','Mg'])if(result.fragileKnown.includes(future))throw new Error('Fragile revisit inherited future fusion output '+future);
