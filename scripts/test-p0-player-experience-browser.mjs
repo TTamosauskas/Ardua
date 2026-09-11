@@ -12,9 +12,12 @@ function engineState(phaseId){return{phaseId,phaseIndex:0,version:'10.80',discov
 async function makePage({activeId='primordial_d',engineId=activeId,completed=[],reducedMotion='no-preference',fixedRandom=false}={}){
  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion});
  await context.addInitScript(({campaign,engine,fixedRandom})=>{
-  localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));
-  localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));
-  localStorage.setItem('arduaRotationEnabledV2','0');
+  if(!sessionStorage.getItem('__arduaE2ESeeded')){
+   localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));
+   localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));
+   localStorage.setItem('arduaRotationEnabledV2','0');
+   sessionStorage.setItem('__arduaE2ESeeded','1');
+  }
   if(fixedRandom)Math.random=()=>.5;
   window.__ARDUA_E2E={events:[]};
   const push=(type,detail={})=>window.__ARDUA_E2E.events.push({type,time:performance.now(),detail:JSON.parse(JSON.stringify(detail||{}))});
@@ -41,12 +44,14 @@ async function testStellarFallback({reducedMotion='no-preference'}={}){
  try{
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='he_red');
   await page.evaluate(()=>{
+   const map=document.getElementById('campaignMap');
+   map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
    const pieces=document.getElementById('pieces');
    if(pieces)pieces.innerHTML='<button class="atom" style="left:50%;top:50%"><span class="sym">He</span></button>';
    const goal=document.getElementById('goalText');if(goal)goal.textContent='Forme Hélio-4 — 6/6';
-   const end=document.getElementById('phaseEndBtn');if(end){end.textContent='ESPALHAR POEIRA ESTELAR';end.classList.remove('show');end.removeAttribute('hidden')}
+   const end=document.getElementById('phaseEndBtn');if(end){end.textContent='ESPALHAR POEIRA ESTELAR';end.classList.remove('show');end.removeAttribute('hidden');end.style.display=''}
   });
-  await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'));
+  await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:4000});
   const started=Date.now();
   await page.evaluate(()=>{const b=document.getElementById('phaseEndBtn');b.click();b.click();b.click()});
   await page.waitForTimeout(90);
@@ -60,14 +65,14 @@ async function testStellarFallback({reducedMotion='no-preference'}={}){
   assert.ok(during.dust>=34,`${label}: dispersão não criou 34 partículas`);
   assert.equal(during.piecesHidden,true,`${label}: peças originais não foram escondidas durante a dispersão`);
   assert.equal(during.mapVisible,false,`${label}: mapa abriu antes da celebração acabar`);
-  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',{timeout:5000});
+  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',undefined,{timeout:5000});
   const elapsed=Date.now()-started;
   const events=await completionEvents(page),states=events.map(x=>x.detail.status);
   assert.equal(states.filter(x=>x==='celebrating').length,1,`${label}: celebração duplicada`);
   assert.equal(states.filter(x=>x==='committing').length,1,`${label}: commit duplicado`);
   assert.equal(states.filter(x=>x==='completed').length,1,`${label}: conclusão duplicada`);
   assert.equal(await fanfareCount(page),1,`${label}: fanfarra deve tocar uma única vez`);
-  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'),undefined,{timeout:2000});
   const saved=await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState());
   assert.ok(saved.completed.includes('he_red'),`${label}: fase não persistiu como concluída`);
   await assertNoErrors(errors,label);
@@ -81,11 +86,11 @@ async function completeQuarks(page){
  await page.evaluate(()=>document.querySelector('.quark-piece.quark-d')?.click());
  await page.waitForFunction(()=>document.querySelectorAll('.quark-piece.candidate').length===2);
  await page.evaluate(()=>document.querySelector('.quark-piece.candidate')?.click());
- await page.waitForFunction(()=>document.getElementById('goalText')?.textContent.includes('1/2'),{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('goalText')?.textContent.includes('1/2'),undefined,{timeout:3000});
  await page.evaluate(()=>document.querySelector('.quark-piece.quark-u')?.click());
  await page.waitForFunction(()=>document.querySelectorAll('.quark-piece.candidate').length===2);
  await page.evaluate(()=>document.querySelector('.quark-piece.candidate')?.click());
- await page.waitForFunction(()=>document.getElementById('phaseEndBtn')?.classList.contains('show')&&document.getElementById('goalText')?.textContent.includes('2/2'),{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('phaseEndBtn')?.classList.contains('show')&&document.getElementById('goalText')?.textContent.includes('2/2'),undefined,{timeout:3000});
 }
 
 async function testQuarks(){
@@ -98,19 +103,21 @@ async function testQuarks(){
   await page.waitForTimeout(90);
   const during=await page.evaluate(()=>({
    state:document.documentElement.dataset.arduaCompletionState,
-   stageHidden:document.querySelector('.quarks-stage')?.style.visibility==='hidden',
+   stageHidden:document.querySelector('.quarks-stage:not(.quarks-finale-ghost)')?.style.visibility==='hidden',
+   ghost:!!document.querySelector('#explosion .quarks-finale-ghost'),
    dust:document.querySelectorAll('#explosion .dust-speck').length,
    mapVisible:document.getElementById('campaignMap')?.classList.contains('show')||false
   }));
   assert.equal(during.state,'celebrating',`${label}: não entrou em celebrating`);
   assert.equal(during.stageHidden,true,`${label}: campo de quarks não foi ocultado na dispersão`);
+  assert.equal(during.ghost,true,`${label}: clone de dispersão não foi criado`);
   assert.ok(during.dust>=34,`${label}: partículas finais ausentes`);
   assert.equal(during.mapVisible,false,`${label}: mapa abriu antes do final audiovisual`);
-  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',{timeout:5000});
+  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',undefined,{timeout:5000});
   assert.equal(await fanfareCount(page),1,`${label}: clique repetido duplicou a fanfarra`);
   const states=(await completionEvents(page)).map(x=>x.detail.status);
   for(const state of ['celebrating','committing','completed'])assert.equal(states.filter(x=>x===state).length,1,`${label}: estado ${state} ocorreu mais de uma vez`);
-  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'),undefined,{timeout:2000});
   let saved=await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState());
   assert.ok(saved.completed.includes('quarks'),`${label}: conclusão não foi salva`);
   await page.reload({waitUntil:'domcontentloaded'});
@@ -135,17 +142,23 @@ async function testQuasar(){
   await page.waitForTimeout(90);
   const during=await page.evaluate(()=>({
    state:document.documentElement.dataset.arduaCompletionState,
-   exiting:document.querySelector('.quasar-layer')?.classList.contains('quasar-finale-exit')||false,
+   exiting:document.querySelector('.quasar-layer:not(.quasar-finale-ghost)')?.classList.contains('quasar-finale-exit')||false,
+   stageHidden:document.querySelector('.quasar-layer:not(.quasar-finale-ghost)')?.style.visibility==='hidden',
+   ghost:!!document.querySelector('#explosion .quasar-finale-ghost'),
    dust:document.querySelectorAll('#explosion .dust-speck').length,
    mapVisible:document.getElementById('campaignMap')?.classList.contains('show')||false
   }));
   assert.equal(during.state,'celebrating',`${label}: não entrou em celebrating`);
   assert.equal(during.exiting,true,`${label}: quasar não entrou na saída visual`);
+  assert.equal(during.stageHidden,true,`${label}: palco original do quasar não foi ocultado`);
+  assert.equal(during.ghost,true,`${label}: clone audiovisual do quasar não foi criado`);
   assert.ok(during.dust>=34,`${label}: partículas finais ausentes`);
   assert.equal(during.mapVisible,false,`${label}: mapa abriu antes da celebração`);
-  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',{timeout:5000});
+  await page.waitForFunction(()=>document.documentElement.dataset.arduaCompletionState==='completed',undefined,{timeout:5000});
   assert.equal(await fanfareCount(page),1,`${label}: clique repetido duplicou a fanfarra`);
-  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
+  const states=(await completionEvents(page)).map(x=>x.detail.status);
+  for(const state of ['celebrating','committing','completed'])assert.equal(states.filter(x=>x===state).length,1,`${label}: estado ${state} ocorreu mais de uma vez`);
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'),undefined,{timeout:2000});
   let saved=await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState());
   assert.ok(saved.completed.includes('quasar'),`${label}: conclusão não foi salva`);
   await page.reload({waitUntil:'domcontentloaded'});
