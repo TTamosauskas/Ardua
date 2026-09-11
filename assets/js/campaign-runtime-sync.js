@@ -41,11 +41,18 @@ function sync(){
  /* The engine title is stale while the campaign map owns the screen, and Quarks is a
     custom phase outside runtimeOrder. Neither state may be inferred from that title. */
  if(busy||map?.classList.contains('show')||window.ARDUA_QUARKS?.isActive?.())return;
- const id=resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;
+ const engineId=document.documentElement.dataset.arduaEnginePhase||'';const id=(G.runtimeOrder||[]).includes(engineId)?engineId:resolve();if(!id)return;const st=C.getState?.();if(!st||st.activeId===id)return;
  busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
 }
 new MutationObserver(sync).observe(phaseTitle,{childList:true,subtree:true,characterData:true});
 if(branchLabel)new MutationObserver(sync).observe(branchLabel,{childList:true,subtree:true,characterData:true});
+function syncFromEngine(e){
+ const id=e?.detail?.id||document.documentElement.dataset.arduaEnginePhase||'';
+ if(window.ARDUA_QUARKS?.isActive?.()||!(G.runtimeOrder||[]).includes(id))return;
+ const st=C.getState?.();if(!st||st.activeId===id){document.documentElement.dataset.arduaActivePhase=id;return}
+ busy=true;try{C.setActive(id);document.documentElement.dataset.arduaActivePhase=id;window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id,state:C.getState?.(),source:'runtime-sync'}}))}finally{busy=false}
+}
+window.addEventListener('ardua:engine-phase',syncFromEngine);
 window.addEventListener('ardua:forge-names',sync);
 window.addEventListener('ardua:campaign-progress',e=>{if(e.detail?.source!=='runtime-sync')setTimeout(sync,0)});
 setTimeout(sync,0);setTimeout(sync,250);void sourceReady;
