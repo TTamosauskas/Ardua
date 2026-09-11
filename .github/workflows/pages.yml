@@ -88,6 +88,9 @@ jobs:
       - name: Validate cumulative recipe architecture
         run: node scripts/validate-cumulative-recipes.js
 
+      - name: Validate objective-safe reaction chains
+        run: node scripts/validate-objective-safe-chain.js
+
       - name: Validate precursor recipe planner
         run: node scripts/validate-recipe-planner.js
 

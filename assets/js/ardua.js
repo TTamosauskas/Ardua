@@ -2189,16 +2189,32 @@ async function attemptProtonCapture(cell,protonId){
  if(route.gamma!==false)await emitGamma(target.x,target.y);if(route.countsCapture!==false){state.protonCaptures++;state.discovered.add(route.out);if(s.mode==='protonCapture')recordFlow(1);if(s.mode==='rpProcess'){state.created[route.out]=(state.created[route.out]||0)+1;recordFlow(route.pattern==='waiting'?3:2)}}
  setTimeout(()=>{const q=state.pieces.get(target.id);if(q){q.newborn=false;renderPieces()}},360);await afterNuclearAction({advanceRound:true,protectedPieceIds:[target.id]});state.protonCaptureAttempts[key]=0;ensureProtonCaptureFuel(s.mode==='protonCapture'?3:(rpStep(s)?.fuel==='p'?4:1));state.selected=[];state.locked=false;render();checkComplete();const chainCtx=state.chainAutoContext,chainRoot=chainCtx?.rootId||startChainEvent('proton',target.x,target.y),chainDepth=chainCtx?.depth||1;if(!pieceIsUnstable(target))scheduleAutoProtonCascade(target.id,chainRoot,chainDepth);
 }
+function canonicalKnowledgePhaseIds(s=phase()){
+  const graph=window.ARDUA_CAMPAIGN_GRAPH,out=new Set(),visiting=new Set();
+  const visit=id=>{
+    if(!id||out.has(id)||visiting.has(id))return;
+    visiting.add(id);
+    const rule=graph?.prerequisites?.[id],deps=[];
+    if(Array.isArray(rule?.allOf))deps.push(...rule.allOf);
+    if(Array.isArray(rule?.anyOf))for(const group of rule.anyOf)if(Array.isArray(group))deps.push(...group);
+    deps.forEach(visit);visiting.delete(id);out.add(id);
+  };
+  const anchor=s?.id&&graph?.prerequisites?.[s.id]?s.id:(s?.anchorId&&graph?.prerequisites?.[s.anchorId]?s.anchorId:null);
+  if(anchor){visit(anchor);if(s?.id)out.add(s.id);return out}
+  const idx=s?.id?phaseIndexById.get(s.id):state.phaseIndex,cut=Number.isInteger(idx)?idx:state.phaseIndex;
+  for(let i=0;i<=Math.max(0,cut);i++)if(PHASES[i]?.id)out.add(PHASES[i].id);
+  if(s?.id)out.add(s.id);return out;
+}
 function learnedFusionRecipes(){
-  // Conhecimento cumulativo real: a campanha guarda as fases efetivamente alcançadas,
-  // então ramos paralelos deixam de conceder receitas que o jogador ainda não viveu.
-  const map=new Map(),campaign=window.ARDUA_CAMPAIGN,graphState=campaign?.getState?.(),done=new Set(graphState?.completed||[]),currentId=graphState?.activeId||phase()?.id,campaignAware=!!campaign&&!campaign.editor&&Array.isArray(graphState?.completed);
-  const reached=(p,i)=>campaignAware?(done.has(p.id)||p.id===currentId):i<=state.phaseIndex;
-  for(let i=0;i<PHASES.length;i++){
-    const p=PHASES[i];if(!reached(p,i)||p.mode!=='fusion')continue;
+  // O repertório pertence ao ponto canônico da campanha, não ao histórico futuro do jogador.
+  // Ao revisitar uma fase antiga, receitas aprendidas depois dela deixam de aparecer.
+  const map=new Map(),current=phase(),known=canonicalKnowledgePhaseIds(current);
+  for(const p of PHASES){
+    if(!known.has(p.id)||p.mode!=='fusion')continue;
     phaseFusionRecipes(p).forEach(r=>{const key=[...r.ing].sort().join('+')+'>'+r.out;map.set(key,r)})
   }
-  const current=phase();if(current?.mode==='fusion')phaseFusionRecipes(current).forEach(r=>{const key=[...r.ing].sort().join('+')+'>'+r.out;map.set(key,r)});
+  // Fases de fusão sempre conhecem a própria receita, inclusive na primeira visita.
+  if(current?.mode==='fusion')phaseFusionRecipes(current).forEach(r=>map.set(recipeKey(r),r));
   return[...map.values()]
 }
 const STELLAR_SANDBOX_VISUALS=new Set(['redGiant','massive','supergiant','advanced','ironCore','agb','whiteDwarf']);
@@ -2945,11 +2961,41 @@ function cascadeFlowAward(points,ctx,s=phase()){
 }
 function objectiveFlowFloorApplies(s=phase()){return s.mode!=='opening'&&s.id!=='brown'&&s.mode!=='whiteCompact'&&Number(s.flowTarget||0)>0}
 function sameAutoRecipe(a,b){return !!a&&!!b&&a.out===b.out&&same(a.ing||[],b.ing||[])}
-function fusionAutoRecipePreviouslyLearned(r){
+function canonicalFusionRecipeKnown(r,s=phase()){
+ if(!r)return false;return learnedFusionRecipes().some(q=>sameAutoRecipe(q,r));
+}
+function objectiveAutoTargetRecipes(s=phase()){
+ if(s.mode==='whiteCompact')return[whiteTargetRecipe(s)].filter(Boolean);
+ if(s.mode!=='fusion')return[];
+ const recipes=phaseFusionRecipes(s).filter(Boolean),direct=recipes.filter(r=>r.out===s.new);
+ return direct.length?direct:(recipes.length?[recipes[recipes.length-1]]:[]);
+}
+function objectiveAutoDependencyDistances(s=phase()){
+ const available=activeFusionRecipes(),dist=new Map(),seen=new Map();
+ const walk=(r,d=0)=>{
+   if(!r)return;const key=recipeKey(r),best=seen.get(key);if(best!==undefined&&best<=d)return;seen.set(key,d);
+   const current=dist.get(r.out);if(current===undefined||d<current)dist.set(r.out,d);
+   for(const sym of r.ing||[]){
+     const next=d+1,old=dist.get(sym);if(old===undefined||next<old)dist.set(sym,next);
+     for(const producer of available)if(producer!==r&&producer.out===sym)walk(producer,next);
+   }
+ };
+ objectiveAutoTargetRecipes(s).forEach(r=>walk(r,0));return dist;
+}
+function autoChainPreservesObjectiveReserve(r,s=phase()){
  if(!r)return false;
- for(const p of PHASES){if(p.mode!=='fusion'||!campaignKnowledgeCompleted(p.id))continue;if(phaseFusionRecipes(p).some(q=>sameAutoRecipe(q,r)))return true}
- for(const pr of PRIMORDIAL_NUCLEAR_REACTIONS){if(!campaignKnowledgeCompleted(pr.unlock))continue;const q=primordialFusionRecipe(pr);if(q&&sameAutoRecipe(q,r))return true}
- return false
+ if(s.mode!=='whiteCompact')return true;
+ const info=whiteCounts(s),need=counts(r.ing||[]),afterC=info.c-(need.C||0)+(r.out==='C'?1:0),afterO=info.o-(need.O||0)+(r.out==='O'?1:0);
+ // Carbono e Oxigênio já conquistados até a meta são reservas: só excedentes podem alimentar outra reação automática.
+ if(afterC<Math.min(info.c,info.targetC))return false;
+ if(afterO<Math.min(info.o,info.targetO))return false;
+ return true;
+}
+function objectiveAutoRecipeAllowed(r,product,s=phase(),distances=objectiveAutoDependencyDistances(s)){
+ if(!r||!product||!canonicalFusionRecipeKnown(r,s)||!autoChainPreservesObjectiveReserve(r,s))return false;
+ const fromDistance=distances.get(product.sym),toDistance=distances.get(r.out);
+ // A cascata só anda para mais perto do objetivo. Rotas laterais continuam disponíveis manualmente.
+ return fromDistance!==undefined&&toDistance!==undefined&&toDistance<fromDistance;
 }
 function neutronAutoTargetPreviouslyLearned(p,s=phase()){
  if(!p)return false;if(universalNeutronCaptureEligible(p)&&campaignKnowledgeCompleted('primordial_d'))return true;
@@ -2957,9 +3003,14 @@ function neutronAutoTargetPreviouslyLearned(p,s=phase()){
 }
 function protonAutoRoutePreviouslyLearned(s=phase()){return s.mode==='rpProcess'?campaignKnowledgeCompleted(s.id):campaignKnowledgeCompleted('proton_capture')}
 function autoFusionCandidate(product,s=phase()){
- if(!product||product.free||product.cell===null||product.cell===undefined||!fusionSandboxAllowed(s))return null;const options=[];
- for(const cell of neigh[product.cell]||[]){const id=state.board[cell],other=id?state.pieces.get(id):null;if(!other)continue;const r=exactRecipe([product.sym,other.sym]);if(!r||!fusionAutoRecipePreviouslyLearned(r))continue;options.push({other,r,goal:r.out===s.new?1:0})}
- options.sort((a,b)=>b.goal-a.goal||(E[b.r.out]?.n||0)-(E[a.r.out]?.n||0));return options[0]||null;
+ if(!product||product.free||product.cell===null||product.cell===undefined||!fusionSandboxAllowed(s))return null;
+ const distances=objectiveAutoDependencyDistances(s),fromDistance=distances.get(product.sym);if(fromDistance===undefined)return null;const options=[];
+ for(const cell of neigh[product.cell]||[]){
+   const id=state.board[cell],other=id?state.pieces.get(id):null;if(!other)continue;
+   const r=exactRecipe([product.sym,other.sym]);if(!r||!objectiveAutoRecipeAllowed(r,product,s,distances))continue;
+   options.push({other,r,distance:distances.get(r.out)??999,goal:r.out===s.new?1:0});
+ }
+ options.sort((a,b)=>a.distance-b.distance||b.goal-a.goal||(E[b.r.out]?.n||0)-(E[a.r.out]?.n||0));return options[0]||null;
 }
 function scheduleAutoFusionCascade(pieceId,rootId,depth=1,kind='nuclear'){
  if(depth>=CHAIN_MAX_AUTO_DEPTH)return;setTimeout(async()=>{if(state.phaseDone||state.readyToAdvance||state.locked||state.selected.length||state.primordialSelected!==null)return;const product=state.pieces.get(pieceId),candidate=autoFusionCandidate(product);if(!product||!candidate)return;await teachChainEffectOnce(kind,product.x,product.y);if(state.phaseDone||state.readyToAdvance||!state.pieces.has(product.id))return;const refreshed=autoFusionCandidate(product);if(!refreshed)return;candidate.other=refreshed.other;candidate.r=refreshed.r;const ctx={rootId,depth:depth+1,kind,x:product.x,y:product.y,creditUsed:false,feedbackUsed:false};state.chainAutoContext=ctx;state.selected=[product.cell,candidate.other.cell];render();try{await fuse(candidate.r)}finally{if(state.chainAutoContext===ctx)state.chainAutoContext=null}},240);
