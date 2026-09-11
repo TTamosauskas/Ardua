@@ -1,0 +1,18 @@
+const fs=require('fs');
+const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
+const engine=fs.readFileSync('assets/js/ardua.js','utf8');
+const sync=fs.readFileSync('assets/js/recipe-audio-sync.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+for(const token of ['function playVictoryFanfare(){','const C4=261.63,E4=329.63,G4=392,A4=440,C5=523.25','[C4,.16,.110,0]','[E4,.16,.110,.205]','[G4,.17,.124,.410]','[A4,.15,.118,.620]','[G4,.18,.128,.805]','victoryChord([C4,E4,G4],.48,.056,1.075)','victoryChord([C4,G4,C5],.34,.052,1.635)',"new CustomEvent('ardua:victory-fanfare'",'playVictoryFanfare,cadence:'])assert(sync.includes(token),'Contrato da fanfarra E ausente: '+token);
+const endAction=engine.match(/async function endPhaseAction\(\)\{[\s\S]*?\n\}/)?.[0]||'';
+assert(endAction.includes('ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()'),'Botão redondo não dispara a fanfarra global');
+assert(endAction.indexOf('playVictoryFanfare')>=0&&endAction.indexOf('playVictoryFanfare')<endAction.indexOf('state.phaseDone=true'),'Fanfarra não começa imediatamente antes da transição');
+for(const branch of ["if(isPrimordial(s))","if(s.endEvent==='plasmaTransition')","if(s.endEvent==='stellarBirth')","if(s.endEvent==='finale')","if(s.endEvent==='postTransition')",'return scatterStage()'])assert(endAction.includes(branch),'Fluxo global perdeu ramificação: '+branch);
+const scatter=engine.match(/async function scatterStage\(\)\{[\s\S]*?\n\}/)?.[0]||'';
+assert(scatter.includes("if(supernova)setTimeout(()=>"),'Supernova ainda bloqueia o início da dispersão');
+assert(!scatter.includes('if(supernova){await wait('),'Supernova ainda espera antes de dispersar os átomos');
+assert(scatter.includes('requestAnimationFrame(()=>{el.style.transition='),'Dispersão atômica não está no mesmo fluxo do botão');
+assert(index.includes('recipe-audio-sync.js?v=20260911-victory-fanfare-e-1'),'Sync sem cache bust da fanfarra');
+assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da fanfarra');
+for(const legacy of ['async function victorySong()','for(let octave=0;octave<3;octave++)','mult=2**octave'])assert(!sync.includes(legacy),'Música antiga em oitavas retornou: '+legacy);
+console.log('Global victory fanfare OK: theme E starts on the round button and scatter/supernova begin concurrently when present.');

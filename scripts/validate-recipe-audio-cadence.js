@@ -40,6 +40,11 @@ for(const token of ['async function victorySong()','for(let octave=0;octave<3;oc
 if(engine.includes('ARDUA_RECIPE_AUDIO_SYNC?.victorySong'))throw new Error('Botão final ainda dispara a música em oitavas');
 for(const token of ['function playFrequency(','function playChord(','function engineChord()','playNote(2,motif.root,motif.ratios)','playChord(motif.root,motif.ratios)'])if(!recipe.includes(token))throw new Error('Motivo nota-nota-nota-acorde foi alterado: '+token);
 
+// A fanfarra E é global no botão final, sem restaurar a antiga escalada de oitavas.
+for(const token of ['function playVictoryFanfare(){','const C4=261.63,E4=329.63,G4=392,A4=440,C5=523.25','[C4,.16,.110,0]','[E4,.16,.110,.205]','[G4,.17,.124,.410]','[A4,.15,.118,.620]','victoryChord([C4,E4,G4],.48,.056,1.075)','victoryChord([C4,G4,C5],.34,.052,1.635)',"new CustomEvent('ardua:victory-fanfare'",'playVictoryFanfare,cadence:'])if(!recipe.includes(token))throw new Error('Fanfarra E incompleta: '+token);
+const endAction=engine.match(/async function endPhaseAction\(\)\{[\s\S]*?\n\}/)?.[0]||'';
+if(!endAction.includes('ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()'))throw new Error('Botão final não dispara a fanfarra E');
+if(endAction.indexOf('playVictoryFanfare')>endAction.indexOf('state.phaseDone=true'))throw new Error('Fanfarra precisa começar antes da transição da fase');
 // Audit all JS owners of the three-note/chord recipe motif. Any new parallel implementation fails CI until it adopts the shared profile.
 const jsDir='assets/js';
 const owners=[];
@@ -49,7 +54,7 @@ if(JSON.stringify(owners.sort())!==JSON.stringify(expected.sort()))throw new Err
 
 if(!engine.includes("bindReliableTap($('phaseEndBtn'),endPhaseAction)"))throw new Error('Botão final não usa tap confiável');
 if(!css.includes('.center-action.stage-end{z-index:2147483647!important;pointer-events:auto!important;'))throw new Error('Botão final perdeu z-index absoluto');
-const version='20260911-no-octave-victory-1';
+const version='20260911-victory-fanfare-e-1';
 for(const asset of ['recipe-sound-profile.js','audio-polish.js','ardua.js','recipe-audio-sync.js','campaign-quarks.js'])if(!index.includes('assets/js/'+asset+'?v='+version))throw new Error('Cache-busting musical ausente: '+asset);
 const profilePos=index.indexOf('recipe-sound-profile.js'),polishPos=index.indexOf('audio-polish.js'),enginePos=index.indexOf('ardua.js');
 if(!(profilePos>=0&&profilePos<polishPos&&profilePos<enginePos))throw new Error('Perfil Quarks precisa carregar antes dos consumidores');

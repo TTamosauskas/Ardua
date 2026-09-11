@@ -4399,7 +4399,7 @@ async function advanceStellarAtomicPhase(){
 async function scatterStage(){
  if(!state.phaseDone)return;
  const s=phase(),supernova=s.endEvent==='supernova';$('phaseEndBtn').classList.remove('show');
- if(supernova){await wait(rewardReducedMotion()?60:240);registerRewardDiscovery('phenomenon:supernova',{title:'SUPERNOVA',text:'Matéria enriquecida foi dispersa.',silent:true});playScientificSignature('supernova')}
+ if(supernova)setTimeout(()=>{if(phase()!==s)return;registerRewardDiscovery('phenomenon:supernova',{title:'SUPERNOVA',text:'Matéria enriquecida foi dispersa.',silent:true});playScientificSignature('supernova')},rewardReducedMotion()?60:240)
  const layer=$('explosion');layer.innerHTML='';const size=starSize(),c=size/2,clones=[];let maxMotionMs=0;
  state.pieces.forEach((p,idx)=>{const el=document.createElement('div');el.className='atom '+((p.matterState||'nucleus')==='atom'?'atomic-piece':'nucleus-piece');el.style.background=elementStyle(p.sym);const shownSym=pieceDisplaySymbol(p);el.innerHTML=`<span class="sym">${shownSym}</span>`;el.style.left=p.x+'px';el.style.top=p.y+'px';layer.appendChild(el);clones.push({el,p,idx})});
  for(let i=0;i<(supernova?78:34);i++){const d=document.createElement('i');d.className='dust-speck';layer.appendChild(d);const a=Math.random()*Math.PI*2,dist=size*((supernova?.72:.42)+Math.random()*(supernova?.70:.35)),dur=(supernova?430:520)+Math.random()*(supernova?520:420);maxMotionMs=Math.max(maxMotionMs,dur);requestAnimationFrame(()=>{d.style.transition=`transform ${dur}ms ease-out,opacity ${dur}ms ease`;d.style.transform=`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist}px)) scale(${supernova?.12:.25})`;d.style.opacity='0'})}
@@ -4417,6 +4417,7 @@ async function finishCampaign(){
 }
 async function endPhaseAction(){
  const s=phase();if(!state.readyToAdvance||state.phaseDone)return;
+ try{window.ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()}catch(_e){}
  state.phaseDone=true;state.locked=true;$('phaseEndBtn').classList.remove('show');stopPrimordialDrift();cancelParticleDrag();stopAccretionFeed();stopCosmicRaySystem();stopNeutronSystem();
  if(phase()!==s)return;
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='plasmaTransition')return advanceStellarAtomicPhase();if(s.endEvent==='stellarBirth')return stellarFormationAdvance();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()

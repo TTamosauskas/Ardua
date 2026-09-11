@@ -43,16 +43,30 @@ function rootForCurrentFormula(){return ROOTS[hash(nativeRecipeKey())%ROOTS.leng
 function phaseSignature(){return`${activeId()}|${phaseTitle?.textContent||''}`}
 function ratiosForProduct(sym=product()){return new Set(['HeU','FeU','Be7','Be8']).has(sym)?[1,4/3,1.5]:[1,1.25,1.5]}
 
-let audioCtx=null;const replicaVoices=new Set();
+let audioCtx=null;const replicaVoices=new Set(),victoryVoices=new Set();
 function audio(){try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;audioCtx??=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch(_e){return null}}
-function nativeTone(freq=440,duration=.05,type='sine',gain=.03,delay=0){
- try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime+Math.max(0,Number(delay)||0);g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(ctx.destination);const item={osc,g};replicaVoices.add(item);osc.onended=()=>replicaVoices.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
+function nativeTone(freq=440,duration=.05,type='sine',gain=.03,delay=0,voiceSet=replicaVoices){
+ try{const ctx=audio();if(!ctx)return;const play=()=>{try{const osc=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime+Math.max(0,Number(delay)||0);g.__arduaRecipeReplica=true;osc.type=type;osc.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(Math.max(.0001,gain),now);osc.connect(g);g.connect(ctx.destination);const item={osc,g};voiceSet.add(item);osc.onended=()=>voiceSet.delete(item);osc.start(now);g.gain.exponentialRampToValueAtTime(.0001,now+duration);osc.stop(now+duration+.02)}catch(_e){}};if(ctx.state==='suspended'){const resumed=ctx.resume();if(resumed&&typeof resumed.then==='function')resumed.then(play).catch(()=>{});else play()}else play()}catch(_e){}
 }
 function stopReplicaVoices(){const ctx=audioCtx;if(!ctx)return;const now=ctx.currentTime;for(const item of [...replicaVoices]){try{item.osc.stop(now+.01)}catch(_e){}}replicaVoices.clear()}
 function playFrequency(freq,strong=false){const d=strong?AUDIO_PROFILE.strongDuration:AUDIO_PROFILE.noteDuration,g=strong?AUDIO_PROFILE.noteStrongGain:AUDIO_PROFILE.noteMainGain;nativeTone(freq,d,'triangle',g);nativeTone(freq*2,d*AUDIO_PROFILE.harmonicDurationRatio,'sine',g*AUDIO_PROFILE.harmonicRatio)}
 function playNote(index,root,ratios=ratiosForProduct()){playFrequency(root*ratios[Math.max(0,Math.min(2,index))],index===2)}
 function playChord(root,ratios=ratiosForProduct()){for(const ratio of ratios){const f=root*ratio;nativeTone(f,AUDIO_PROFILE.chordDuration,'triangle',AUDIO_PROFILE.chordMainGain);nativeTone(f*2,AUDIO_PROFILE.chordHarmDuration,'sine',AUDIO_PROFILE.chordHarmGain)}}
 function playFinalAccent(root){nativeTone(root*2,AUDIO_PROFILE.finalAccentDuration,'triangle',AUDIO_PROFILE.finalAccentGain)}
+function victoryVoice(freq,duration,gain,delay=0){
+ nativeTone(freq,duration,'triangle',gain,delay,victoryVoices);
+ nativeTone(freq*2,duration*.82,'sine',gain*.24,delay,victoryVoices);
+ nativeTone(freq*3,duration*.72,'sine',gain*.08,delay,victoryVoices);
+}
+function victoryChord(freqs,duration,gain,delay=0){for(const freq of freqs)victoryVoice(freq,duration,gain,delay)}
+function playVictoryFanfare(){
+ const C4=261.63,E4=329.63,G4=392,A4=440,C5=523.25,startedAt=performance.now();
+ audio();window.dispatchEvent(new CustomEvent('ardua:victory-fanfare',{detail:{startedAt,durationMs:1975,theme:'E'}}));
+ [[C4,.16,.110,0],[E4,.16,.110,.205],[G4,.17,.124,.410],[A4,.15,.118,.620],[G4,.18,.128,.805]].forEach(([freq,duration,gain,delay])=>victoryVoice(freq,duration,gain,delay));
+ victoryChord([C4,E4,G4],.48,.056,1.075);
+ victoryChord([C4,G4,C5],.34,.052,1.635);
+ return true;
+}
 
 document.addEventListener('pointerdown',()=>audio(),{capture:true,passive:true});document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')audio()},{capture:true});
 let sessionSerial=0,phaseSig=phaseSignature(),motif=null,engineCueSerial=0;
@@ -71,7 +85,7 @@ function emitThirdForHighlight(stage){if(!motif||motif.step!==2)return false;con
 function engineNote(freq){syncPhase();engineCueSerial++;const pair=reactants();if(pair.length<2)return;const f=Number(freq)||rootForCurrentFormula();if(!motif||motif.done||pairKey(motif.pair)!==pairKey(pair)){const m=freshMotif(pair,f);m.step=1;m.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===0){motif.root=f;motif.step=1;motif.first={token:pair[0],key:'engine:first',slot:0};playFrequency(f);return}if(motif.step===1){motif.second={token:pair[1],key:'engine:second',slot:1};motif.step=2;playFrequency(f);queueMicrotask(()=>emitThirdForHighlight(currentStage()))}}
 function engineChord(){syncPhase();engineCueSerial++;if(!motif)return;emitThirdForHighlight(currentStage());if(motif.step!==3||motif.done)return;motif.step=4;motif.done=true;playChord(motif.root,motif.ratios)}
 function engineChordFinal(){if(motif?.done)playFinalAccent(motif.root)}
-window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,cadence:Object.freeze({note2To3:'2x',note3ToChord:'2x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
+window.ARDUA_RECIPE_AUDIO_SYNC=Object.freeze({engineNote,engineChord,engineChordFinal,playVictoryFanfare,cadence:Object.freeze({note2To3:'2x',note3ToChord:'2x'}),state:()=>motif?{session:motif.session,step:motif.step,root:motif.root,pair:[...motif.pair]}:null});
 
 document.addEventListener('click',e=>{const el=e.target instanceof Element?e.target.closest(SELECTOR):null;if(!el||!board.contains(el))return;syncPhase();const pair=reactants();if(pair.length<2)return;const token=tokenOf(el),key=keyOf(el);if(!token)return;const preSelected=el.classList.contains('selected'),preCandidate=el.classList.contains('candidate'),currentPairKey=pairKey(pair);let targetIntent=false;if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey)targetIntent=matchingSlot(token,pair)>=0;else if(motif.step===1)targetIntent=matchingSlot(token,motif.pair,motif.first?.slot??-1)>=0&&(preCandidate||!preSelected);if(targetIntent)window.ARDUA_AUDIO_POLISH?.armSelectionMute?.(90);const beforeCue=engineCueSerial,beforeStages=board.querySelectorAll('.objective-motif-stage').length;setTimeout(()=>{syncPhase();if(engineCueSerial>beforeCue)return;const nowSelected=el.isConnected&&el.classList.contains('selected'),stageCount=board.querySelectorAll('.objective-motif-stage').length,newStage=stageCount>beforeStages;if(preSelected){if(motif?.first?.key===key&&motif.step===1&&!nowSelected)resetMotif();return}if(!motif||motif.done||pairKey(motif.pair)!==currentPairKey){const slot=matchingSlot(token,pair);if(slot>=0&&nowSelected)markFirst(token,key,slot,combinationRoot());return}if(motif.step===1){const slot=matchingSlot(token,motif.pair,motif.first?.slot??-1);if(slot>=0&&(preCandidate||nowSelected||newStage)){markSecond(token,key,slot);return}}emitThirdForHighlight(currentStage())},0)},true);
 
