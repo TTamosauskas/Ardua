@@ -4,7 +4,7 @@
 const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH;
 const $=id=>document.getElementById(id);
 if(!C||!G)return;
-const map=$('campaignMap');
+const map=$('campaignMap'),canonicalMapOpener=$('menuOpenBtn');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false;
 
@@ -84,7 +84,7 @@ function restoreRevisit(snapshot){
  C.setActive?.(target);window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id:target,state:C.getState?.(),source:'victory-revisit-return'}}));
  if(revisit?.id===snapshot.phaseId)revisit=null;
 }
-function openMapNow(){suppressedMap=false;$('menuOpenBtn')?.click()}
+function openMapNow(){suppressedMap=false;(canonicalMapOpener||$('menuOpenBtn'))?.click()}
 async function handoffMap(current){
  if(!current||reward!==current)return;setActionsDisabled(true);emit('handing-off',{phaseId:current.snapshot.phaseId,route:current.route.kind});restoreRevisit(current.snapshot);
  const phaseId=current.snapshot.phaseId,serial=current.serial;reward=null;pending=null;hide();setActionsDisabled(false);emit('completed',{phaseId,serial,route:'map'});queueMicrotask(openMapNow);
@@ -130,11 +130,18 @@ document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null,node=target?.closest('#campaignMap .phase-node[data-phase]');if(!node)return;
  const id=node.dataset.phase||'',st=C.getState?.()||{},done=new Set(st.completed||[]);if(id&&done.has(id)&&st.activeId&&st.activeId!==id)revisit={id,returnId:st.activeId};
 },true);
+document.addEventListener('click',e=>{
+ const opener=e.target instanceof Element?e.target.closest('#menuOpenBtn'):null;
+ if(!opener||!canonicalMapOpener||opener===canonicalMapOpener)return;
+ e.preventDefault();e.stopImmediatePropagation();canonicalMapOpener.click();
+},true);
+function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener)opener.textContent='Mapa'}
+new MutationObserver(syncMapOpenerLabel).observe(document.body,{subtree:true,childList:true});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&reward){e.preventDefault();void handoffMap(reward)}});
 
 window.ARDUA_VICTORY_REWARD=Object.freeze({
  capture,present:snapshot=>show({...snapshot,discoveries:[...(snapshot?.discoveries||[])]}),nextOptions,openMap:()=>reward?handoffMap(reward):(openMapNow(),true),
  get active(){return !!reward},get pending(){return pending?{...pending,discoveries:[...pending.discoveries]}:null},get route(){return reward?{kind:reward.route.kind,options:[...reward.route.options]}:null}
 });
-ensureHost();
+syncMapOpenerLabel();ensureHost();
 })();
