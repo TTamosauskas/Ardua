@@ -9,7 +9,9 @@ function engineState(phaseId){return{phaseId,phaseIndex:0,version:'10.80',discov
 async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
  const context=await browser.newContext({viewport:{width:390,height:844}});
  await context.addInitScript(({campaign,engine})=>{
-  localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));localStorage.setItem('arduaRotationEnabledV2','0');
+  if(!sessionStorage.getItem('__arduaE2ESeeded')){
+   localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));localStorage.setItem('arduaRotationEnabledV2','0');sessionStorage.setItem('__arduaE2ESeeded','1');
+  }
   window.__ARDUA_E2E={events:[]};window.__ARDUA_P1_E2E=true;Math.random=()=>.5;
   window.addEventListener('ardua:victory-reward-state',e=>window.__ARDUA_E2E.events.push({type:'reward',detail:e.detail}));
  },{campaign:campaignState(activeId,completed),engine:engineState(engineId)});
@@ -20,11 +22,16 @@ async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
 async function noErrors(errors,label){assert.deepEqual(errors,[],`${label}: erros JS: ${errors.join(' | ')}`)}
 
 async function stellarContinue(){
- const label='stellar victory → continue', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red',completed:['bigbang','quarks','low_mass_formation']});
+ const label='stellar victory → continue', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red'});
  try{
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='he_red');
   await page.evaluate(()=>{
-   const target='Forme Hélio-4 — 6/6';const keep=()=>{const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');const goal=document.getElementById('goalText');if(goal)goal.textContent=target;const end=document.getElementById('phaseEndBtn');if(end&&end.dataset.objectiveCompletionFallback!=='1'){end.textContent='ESPALHAR POEIRA ESTELAR';end.classList.remove('show');end.removeAttribute('hidden');end.style.display=''}};
+   const target='Forme Hélio-4 — 6/6';
+   const keep=()=>{
+    const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
+    const goal=document.getElementById('goalText');if(goal&&goal.textContent!==target)goal.textContent=target;
+    const end=document.getElementById('phaseEndBtn');if(end&&end.dataset.objectiveCompletionFallback!=='1'){if(end.textContent!=='ESPALHAR POEIRA ESTELAR')end.textContent='ESPALHAR POEIRA ESTELAR';end.classList.remove('show');end.removeAttribute('hidden');end.style.display=''}
+   };
    const pieces=document.getElementById('pieces');if(pieces)pieces.innerHTML='<button class="atom" style="left:50%;top:50%"><span class="sym">He</span></button>';keep();window.__p1Keep=setInterval(keep,40);
   });
   await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:5000});await page.evaluate(()=>clearInterval(window.__p1Keep));
@@ -37,12 +44,12 @@ async function stellarContinue(){
 }
 
 async function branchChoice(){
- const label='branch choice', {context,page,errors}=await pageFor({activeId:'primordial_d',engineId:'primordial_d',completed:['bigbang','quarks','primordial_d']});
+ const label='stellar mass branch', {context,page,errors}=await pageFor({activeId:'first_generation_formation',engineId:'first_generation_formation',completed:['first_generation_formation']});
  try{
-  await page.evaluate(()=>window.ARDUA_VICTORY_REWARD.present({phaseId:'primordial_d',goal:'Crie Deutério — 1/1',name:'Deutério',wasCompleted:false,discoveries:[]}));
+  await page.evaluate(()=>window.ARDUA_VICTORY_REWARD.present({phaseId:'first_generation_formation',goal:'Forme a primeira estrela — 1/1',name:'Primeira estrela',wasCompleted:false,discoveries:[]}));
   const ui=await page.evaluate(()=>({route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,secondaryHidden:document.querySelector('[data-victory-map]')?.hidden}));
-  assert.equal(ui.route?.kind,'choose');assert.ok(ui.route.options.includes('primordial_t')&&ui.route.options.includes('primordial_he3'),`${label}: bifurcação incompleta`);assert.equal(ui.primary,'ESCOLHER CAMINHO');assert.equal(ui.secondaryHidden,true);
-  await page.click('[data-victory-primary]');await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));assert.equal(await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState().activeId),'primordial_d',`${label}: o jogo escolheu um ramo pelo jogador`);await noErrors(errors,label);
+  assert.equal(ui.route?.kind,'choose');for(const id of ['brown_formation','low_mass_formation','intermediate_mass_formation','high_mass_formation'])assert.ok(ui.route.options.includes(id),`${label}: caminho ${id} ausente`);assert.equal(ui.primary,'ESCOLHER CAMINHO');assert.equal(ui.secondaryHidden,true);
+  await page.click('[data-victory-primary]');await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));assert.equal(await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState().activeId),'first_generation_formation',`${label}: o jogo escolheu uma massa estelar pelo jogador`);await noErrors(errors,label);
  }finally{await context.close()}
 }
 
@@ -57,4 +64,4 @@ async function revisitReturn(){
 
 for(const [name,fn] of [['stellar',stellarContinue],['branch',branchChoice],['revisit',revisitReturn]]){try{await fn()}catch(e){failures.push(`${name}: ${e.stack||e.message||e}`)}}
 await browser.close();if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n\n'));process.exit(1)}
-console.log('P1 browser E2E OK: completion is saved before reward, linear Continue skips the map, branches defer choice to the map, and revisits preserve the active path.');
+console.log('P1 browser E2E OK: completion is saved before reward, linear Continue skips the map, stellar-mass branches defer choice to the map, and revisits preserve the active path.');
