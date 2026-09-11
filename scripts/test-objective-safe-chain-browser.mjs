@@ -32,7 +32,9 @@ const result=await page.evaluate(()=>{
  checks.calcium=choose('ca',['Ar','H','He']);
  checks.titanium=choose('ti',['Ca','H','He']);
  checks.chromium=choose('cr',['Ti','H','He']);
- checks.ironAlpha=choose('cr_alpha_fe',['Cr','H','He']);
+ const ironPieces=setup('cr_alpha_fe',['Cr','H','He']);
+ checks.ironAlpha=T.autoFusionCandidate(ironPieces[0])?.r?.out||null;
+ checks.ironDiag={phaseRecipes:T.phaseFusionRecipes().map(r=>T.recipeKey(r)),known:T.learnedFusionRecipes().filter(r=>(r.ing||[]).includes('Cr')||r.out==='Fe').map(r=>T.recipeKey(r)),active:T.activeFusionRecipes().filter(r=>(r.ing||[]).includes('Cr')||r.out==='Fe').map(r=>T.recipeKey(r)),dist:[...T.objectiveAutoDependencyDistances().entries()],neighbors:(T.neigh[ironPieces[0].cell]||[]).map(c=>{const id=T.state.board[c],p=id?T.state.pieces.get(id):null;return p?.sym||null})};
  checks.nickel=choose('ni_fusion',['Si','H','He','Si']);
  setPhase('fragile');checks.fragileKnown=T.learnedFusionRecipes().map(r=>r.out);
  let pieces=setup('white',['C','He','C','C']);checks.whiteAtQuota=T.autoFusionCandidate(pieces[0])?.r?.out||null;
@@ -42,7 +44,7 @@ const result=await page.evaluate(()=>{
 await browser.close();
 if(pageErrors.length)throw new Error('Browser JS errors: '+pageErrors.join(' | '));
 const expect={fragileDiversion:null,fragileGoal:'Be8',oxygen:'O',magnesium:'Mg',silicon:'Si',sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAlpha:'Fe',nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
-for(const [k,v] of Object.entries(expect))if(result[k]!==v)throw new Error(`${k}: expected ${v}, got ${result[k]}`);
+for(const [k,v] of Object.entries(expect))if(result[k]!==v)throw new Error(`${k}: expected ${v}, got ${result[k]} :: ${JSON.stringify(result)}`);
 for(const required of ['Be7','Be8'])if(!result.fragileKnown.includes(required))throw new Error('Fragile canonical knowledge missing '+required);
 for(const future of ['C','N','O','Ne','Mg'])if(result.fragileKnown.includes(future))throw new Error('Fragile revisit inherited future fusion output '+future);
 console.log('Browser objective-safe chain scenarios passed:',JSON.stringify(result));
