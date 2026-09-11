@@ -97,6 +97,9 @@ jobs:
       - name: Validate phase runtime identity and recipe guidance
         run: node scripts/validate-phase-runtime-sync.js
 
+      - name: Validate stalled objective phase endings
+        run: node scripts/validate-objective-phase-end.js
+
       - name: Validate stellar dispersal appreciation pause
         run: node scripts/validate-scatter-appreciation.js
 
