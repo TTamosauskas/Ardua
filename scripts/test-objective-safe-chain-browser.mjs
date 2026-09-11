@@ -17,14 +17,14 @@ const result=await page.evaluate(()=>{
    const center=[...active].find(c=>(T.neigh[c]||[]).filter(n=>active.has(n)).length>=syms.length-1);
    if(center===undefined)throw new Error('no center for '+id);
    const cells=[center,...(T.neigh[center]||[]).filter(n=>active.has(n)).slice(0,syms.length-1)];
-   const pieces=syms.map((sym,i)=>T.createPiece(sym,cells[i],false));
-   return pieces;
+   return syms.map((sym,i)=>T.createPiece(sym,cells[i],false));
  };
  const choose=(id,syms)=>{const pieces=setup(id,syms),c=T.autoFusionCandidate(pieces[0]);return c?.r?.out||null};
  const checks={};
  checks.fragileDiversion=choose('fragile',['He','He3']);
  checks.fragileGoal=choose('fragile',['He','He','He3']);
- checks.oxygen=choose('o',['C','H','He']);
+ const oxygenPieces=setup('o',['C','H','He']);checks.oxygen=T.autoFusionCandidate(oxygenPieces[0])?.r?.out||null;
+ checks.oxygenManualNitrogen=T.activeFusionRecipes().some(r=>T.recipeKey(r)==='C+H>N');
  checks.magnesium=choose('mg',['Ne','H','He']);
  checks.silicon=choose('si',['Mg','H','He']);
  checks.sulfur=choose('s',['Si','H','He']);
@@ -32,9 +32,8 @@ const result=await page.evaluate(()=>{
  checks.calcium=choose('ca',['Ar','H','He']);
  checks.titanium=choose('ti',['Ca','H','He']);
  checks.chromium=choose('cr',['Ti','H','He']);
- const ironPieces=setup('cr_alpha_fe',['Cr','H','He']);
- checks.ironAlpha=T.autoFusionCandidate(ironPieces[0])?.r?.out||null;
- checks.ironDiag={phaseRecipes:T.phaseFusionRecipes().map(r=>T.recipeKey(r)),known:T.learnedFusionRecipes().filter(r=>(r.ing||[]).includes('Cr')||r.out==='Fe').map(r=>T.recipeKey(r)),active:T.activeFusionRecipes().filter(r=>(r.ing||[]).includes('Cr')||r.out==='Fe').map(r=>T.recipeKey(r)),dist:[...T.objectiveAutoDependencyDistances().entries()],neighbors:(T.neigh[ironPieces[0].cell]||[]).map(c=>{const id=T.state.board[c],p=id?T.state.pieces.get(id):null;return p?.sym||null})};
+ const ironPieces=setup('cr_alpha_fe',['Cr','H','He']);checks.ironAtlasNoAuto=T.autoFusionCandidate(ironPieces[0])?.r?.out||null;
+ checks.ironAtlasOwnsRecipe=T.phaseFusionRecipes().some(r=>T.recipeKey(r)==='Cr+He>Fe')&&!T.activeFusionRecipes().some(r=>T.recipeKey(r)==='Cr+He>Fe');
  checks.nickel=choose('ni_fusion',['Si','H','He','Si']);
  setPhase('fragile');checks.fragileKnown=T.learnedFusionRecipes().map(r=>r.out);
  let pieces=setup('white',['C','He','C','C']);checks.whiteAtQuota=T.autoFusionCandidate(pieces[0])?.r?.out||null;
@@ -43,7 +42,7 @@ const result=await page.evaluate(()=>{
 });
 await browser.close();
 if(pageErrors.length)throw new Error('Browser JS errors: '+pageErrors.join(' | '));
-const expect={fragileDiversion:null,fragileGoal:'Be8',oxygen:'O',magnesium:'Mg',silicon:'Si',sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAlpha:'Fe',nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
+const expect={fragileDiversion:null,fragileGoal:'Be8',oxygen:'O',oxygenManualNitrogen:true,magnesium:'Mg',silicon:'Si',sulfur:'S',argon:'Ar',calcium:'Ca',titanium:'Ti',chromium:'Cr',ironAtlasNoAuto:null,ironAtlasOwnsRecipe:true,nickel:'Ni',whiteAtQuota:null,whiteWithExcess:'O'};
 for(const [k,v] of Object.entries(expect))if(result[k]!==v)throw new Error(`${k}: expected ${v}, got ${result[k]} :: ${JSON.stringify(result)}`);
 for(const required of ['Be7','Be8'])if(!result.fragileKnown.includes(required))throw new Error('Fragile canonical knowledge missing '+required);
 for(const future of ['C','N','O','Ne','Mg'])if(result.fragileKnown.includes(future))throw new Error('Fragile revisit inherited future fusion output '+future);
