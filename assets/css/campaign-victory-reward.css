@@ -1,21 +1,44 @@
-/* Ardua — P1 victory → reward → next. */
-.campaign-victory-reward{position:fixed;inset:0;z-index:1400;display:grid;place-items:end center;padding:18px;background:linear-gradient(180deg,rgba(4,8,20,.16),rgba(4,8,20,.78) 48%,rgba(4,8,20,.96));backdrop-filter:blur(5px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .26s ease,visibility .26s ease}
+/* Ardua — P1/P1.5 victory → reward → next. */
+.campaign-victory-reward{--reward-glow:125,176,255;position:fixed;inset:0;z-index:1400;display:grid;place-items:end center;padding:18px;background:radial-gradient(circle at 50% 42%,rgba(var(--reward-glow),.09),transparent 34%),linear-gradient(180deg,rgba(4,8,20,.12),rgba(4,8,20,.74) 46%,rgba(4,8,20,.96));backdrop-filter:blur(5px);opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;transition:opacity .26s ease,visibility .26s ease}
+.campaign-victory-reward::before,.campaign-victory-reward::after{content:"";position:absolute;left:50%;top:42%;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.35)}
+.campaign-victory-reward::before{width:min(74vw,430px);aspect-ratio:1;border:1px solid rgba(var(--reward-glow),.28);box-shadow:0 0 46px rgba(var(--reward-glow),.11)}
+.campaign-victory-reward::after{width:min(48vw,270px);aspect-ratio:1;background:radial-gradient(circle,rgba(var(--reward-glow),.20),rgba(var(--reward-glow),.04) 42%,transparent 70%);filter:blur(2px)}
 .campaign-victory-reward.show{opacity:1;visibility:visible;pointer-events:auto}
-.campaign-victory-card{width:min(520px,100%);padding:24px 22px calc(22px + env(safe-area-inset-bottom));border:1px solid rgba(175,211,255,.24);border-radius:26px 26px 20px 20px;background:radial-gradient(circle at 50% -12%,rgba(125,176,255,.18),transparent 42%),linear-gradient(180deg,rgba(15,25,51,.98),rgba(7,12,29,.99));box-shadow:0 -18px 70px rgba(0,0,0,.42),0 0 42px rgba(91,142,255,.10);text-align:center;color:#f5f8ff;transform:translateY(18px) scale(.985);transition:transform .3s cubic-bezier(.18,.8,.2,1)}
+.campaign-victory-reward.show::before{animation:victoryRewardRing 1.05s cubic-bezier(.12,.7,.18,1) both}
+.campaign-victory-reward.show::after{animation:victoryRewardGlow .86s ease-out both}
+.campaign-victory-reward[data-tone="primordial"]{--reward-glow:142,180,255}
+.campaign-victory-reward[data-tone="stellar"]{--reward-glow:255,190,102}
+.campaign-victory-reward[data-tone="forge"]{--reward-glow:255,145,99}
+.campaign-victory-reward[data-tone="collapse"]{--reward-glow:202,128,255}
+.campaign-victory-reward[data-tone="remnant"]{--reward-glow:132,184,255}
+.campaign-victory-reward[data-tone="quasar"]{--reward-glow:203,148,255}
+.campaign-victory-card{position:relative;z-index:1;width:min(520px,100%);padding:25px 22px calc(22px + env(safe-area-inset-bottom));border:1px solid rgba(var(--reward-glow),.25);border-radius:26px 26px 20px 20px;background:radial-gradient(circle at 50% -12%,rgba(var(--reward-glow),.21),transparent 43%),linear-gradient(180deg,rgba(15,25,51,.985),rgba(7,12,29,.995));box-shadow:0 -18px 70px rgba(0,0,0,.44),0 0 48px rgba(var(--reward-glow),.13),inset 0 1px 0 rgba(255,255,255,.04);text-align:center;color:#f5f8ff;transform:translateY(20px) scale(.982);transition:transform .32s cubic-bezier(.18,.8,.2,1),opacity .18s ease,filter .18s ease}
 .campaign-victory-reward.show .campaign-victory-card{transform:translateY(0) scale(1)}
-.victory-reward-kicker{display:block;margin-bottom:9px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#9fc2ff}
-.campaign-victory-card h2{margin:0;font-size:clamp(25px,7vw,38px);line-height:1.04;letter-spacing:-.025em;text-wrap:balance}
-.victory-reward-phase{margin:10px auto 0;max-width:38ch;color:#b8c5df;font-size:13px;line-height:1.45}
-.victory-reward-discovery,.victory-reward-next{margin:18px auto 0;padding:13px 14px;border:1px solid rgba(174,209,255,.14);border-radius:16px;background:rgba(255,255,255,.035)}
+.campaign-victory-reward.leaving .campaign-victory-card{transform:translateY(-7px) scale(.992);opacity:0;filter:blur(2px)}
+.victory-reward-kicker{display:block;margin-bottom:10px;font-size:10px;font-weight:850;letter-spacing:.21em;text-transform:uppercase;color:rgba(var(--reward-glow),.88)}
+.campaign-victory-card h2{margin:0;font-size:clamp(27px,7.4vw,40px);line-height:1.02;letter-spacing:-.032em;text-wrap:balance;text-shadow:0 0 24px rgba(var(--reward-glow),.12)}
+.campaign-victory-reward.heroic .campaign-victory-card h2{text-shadow:0 0 30px rgba(var(--reward-glow),.22)}
+.victory-reward-consequence{margin:12px auto 0;max-width:41ch;color:#d7e1f4;font-size:14px;line-height:1.48;text-wrap:balance}
+.victory-reward-consequence[hidden]{display:none}
+.victory-reward-phase{margin:10px auto 0;max-width:38ch;color:#8f9db9;font-size:11px;font-weight:750;line-height:1.4;letter-spacing:.075em;text-transform:uppercase}
+.victory-reward-discovery,.victory-reward-next{position:relative;margin:18px auto 0;padding:14px 15px;border:1px solid rgba(174,209,255,.14);border-radius:16px;background:rgba(255,255,255,.035);overflow:hidden}
+.victory-reward-discovery{border-color:rgba(var(--reward-glow),.28);background:linear-gradient(135deg,rgba(var(--reward-glow),.14),rgba(255,255,255,.035));box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 8px 26px rgba(var(--reward-glow),.06)}
+.victory-reward-discovery::before{content:"✦";position:absolute;left:14px;top:50%;transform:translateY(-52%);font-size:18px;color:rgba(var(--reward-glow),.94);text-shadow:0 0 18px rgba(var(--reward-glow),.45)}
+.victory-reward-discovery small,.victory-reward-discovery strong{padding-left:24px;text-align:left}
 .victory-reward-discovery[hidden],.victory-reward-next[hidden]{display:none}
-.victory-reward-discovery small,.victory-reward-next small{display:block;margin-bottom:4px;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#8fa9d5}
+.victory-reward-discovery small,.victory-reward-next small{display:block;margin-bottom:4px;font-size:10px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;color:#8fa9d5}
+.victory-reward-discovery small{color:rgba(var(--reward-glow),.88)}
 .victory-reward-discovery strong,.victory-reward-next strong{display:block;font-size:15px;line-height:1.3;color:#f4f7ff}
+.victory-reward-next{background:rgba(255,255,255,.025)}
 .victory-reward-actions{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:10px;margin-top:20px}
 .victory-reward-actions.single{grid-template-columns:1fr}
-.victory-reward-actions button{min-height:52px;border-radius:15px;border:1px solid rgba(181,210,255,.18);font:inherit;font-weight:850;letter-spacing:.045em;cursor:pointer}
+.victory-reward-actions button{min-height:52px;border-radius:15px;border:1px solid rgba(181,210,255,.18);font:inherit;font-weight:850;letter-spacing:.045em;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease,opacity .14s ease}
+.victory-reward-actions button:active:not(:disabled){transform:translateY(1px) scale(.992)}
 .victory-reward-map{background:rgba(255,255,255,.055);color:#d6e1f6}
-.victory-reward-primary{background:linear-gradient(180deg,#eff6ff,#bfd7ff);color:#071127;box-shadow:0 9px 28px rgba(76,131,229,.22)}
+.victory-reward-primary{background:linear-gradient(180deg,#f3f8ff,#c7dcff);color:#071127;box-shadow:0 9px 30px rgba(var(--reward-glow),.18)}
 .victory-reward-actions button:disabled{opacity:.5;cursor:default}
 body.victory-reward-open .app{pointer-events:none}
-@media (min-width:700px){.campaign-victory-reward{place-items:center}.campaign-victory-card{border-radius:26px;padding:29px 28px}}
-@media (prefers-reduced-motion:reduce){.campaign-victory-reward,.campaign-victory-card{transition-duration:.08s}.campaign-victory-card{transform:none}.campaign-victory-reward.show .campaign-victory-card{transform:none}}
+@keyframes victoryRewardRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.28)}36%{opacity:.72}100%{opacity:0;transform:translate(-50%,-50%) scale(1.14)}}
+@keyframes victoryRewardGlow{0%{opacity:0;transform:translate(-50%,-50%) scale(.42)}45%{opacity:.8}100%{opacity:.12;transform:translate(-50%,-50%) scale(1.06)}}
+@media (min-width:700px){.campaign-victory-reward{place-items:center}.campaign-victory-card{border-radius:26px;padding:30px 28px}}
+@media (prefers-reduced-motion:reduce){.campaign-victory-reward,.campaign-victory-card,.victory-reward-actions button{transition-duration:.06s}.campaign-victory-card,.campaign-victory-reward.show .campaign-victory-card,.campaign-victory-reward.leaving .campaign-victory-card{transform:none;filter:none}.campaign-victory-reward::before,.campaign-victory-reward::after,.campaign-victory-reward.show::before,.campaign-victory-reward.show::after{animation:none;opacity:.08;transform:translate(-50%,-50%) scale(1)}}
