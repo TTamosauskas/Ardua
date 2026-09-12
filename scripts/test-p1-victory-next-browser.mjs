@@ -46,7 +46,11 @@ async function stellarContinue(){
   });
   await page.click('#menuOpenBtn');await page.waitForTimeout(350);
   const afterMap=await page.evaluate(()=>({visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show'),transitions:window.__mapTransitions}));
-  assert.equal(afterMap.visible,true,`${label}: item Mapa não abriu o mapa. before=${JSON.stringify(beforeMap)} after=${JSON.stringify(afterMap)}`);
+  let apiProbe=null;
+  if(!afterMap.visible){
+   apiProbe=await page.evaluate(()=>{const source=String(window.ARDUA_VICTORY_REWARD.openMap);const result=window.ARDUA_VICTORY_REWARD.openMap();return{result,source,visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden')}});
+  }
+  assert.equal(afterMap.visible,true,`${label}: item Mapa não abriu o mapa. before=${JSON.stringify(beforeMap)} after=${JSON.stringify(afterMap)} apiProbe=${JSON.stringify(apiProbe)}`);
   assert.equal(afterMap.legacyMenu,false,`${label}: item Mapa abriu o menu legado em vez do mapa`);
   await noErrors(errors,label);
  }finally{await context.close()}
