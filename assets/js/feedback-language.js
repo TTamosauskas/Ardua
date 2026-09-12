@@ -23,8 +23,8 @@ function reducedMotion(){return window.matchMedia?.('(prefers-reduced-motion: re
 function profile(kind){return PROFILES[kind]||null}
 function dedupeKey(kind,detail){return`${kind}|${detail.key||detail.title||detail.step||detail.tier||''}`}
 function shouldDedupe(kind,detail,at){
- const key=dedupeKey(kind,detail),last=dedupe.get(key)||0,windowMs=kind==='victory'?1900:kind==='selection'?70:150;
- if(at-last<windowMs)return true;dedupe.set(key,at);return false;
+ const key=dedupeKey(kind,detail),last=dedupe.get(key),windowMs=kind==='victory'?1900:kind==='selection'?70:150;
+ if(last!==undefined&&at-last<windowMs)return true;dedupe.set(key,at);return false;
 }
 function audioBlocked(){return performance.now()<victoryUntil||!!window.ARDUA_VICTORY_REWARD?.active||!!window.ARDUA_VICTORY_REWARD?.pending}
 function clearSurfaceMarks(){
