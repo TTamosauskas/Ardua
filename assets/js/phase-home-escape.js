@@ -18,18 +18,36 @@ function installButton(){
  });
  return true;
 }
+function visibleCurrentPhase(){
+ const active=window.ARDUA_CAMPAIGN?.getState?.().activeId;
+ if(!active||active==='bigbang')return null;
+ return [...document.querySelectorAll(`#campaignMap .phase-node.current[data-phase="${active}"]`)].find(el=>el.getClientRects().length>0)||null;
+}
+function phaseMapReady(){
+ const map=$('campaignMap'),trail=$('campaignTrail');
+ return !!map&&map.classList.contains('show')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!visibleCurrentPhase();
+}
 function openPhaseMapAfterReload(){
  let attempts=0;
  const open=()=>{
   attempts++;
   const trigger=$('menuOpenBtn'),map=$('campaignMap');
-  if((!trigger||!map||!window.ARDUA_CAMPAIGN)&&attempts<30){setTimeout(open,50);return}
+  if((!trigger||!map||!window.ARDUA_CAMPAIGN)&&attempts<40){setTimeout(open,50);return}
   if(!trigger||!map){cleanHomeParam();return}
-  // campaign-map.js owns refresh, branch expansion, required state and current-phase scroll.
-  // This synthetic click bypasses the quick-menu trusted-click handler and reaches the
-  // canonical map opener after the normal boot timer has completed.
+  // campaign-map.js owns refresh, branch expansion and required state. Synthetic clicks
+  // bypass the quick-menu trusted-click interception and reach the canonical map opener.
   trigger.click();
-  setTimeout(cleanHomeParam,0);
+  setTimeout(()=>{
+   const current=visibleCurrentPhase();
+   if(phaseMapReady()){
+    current?.scrollIntoView({block:'center',behavior:'auto'});
+    cleanHomeParam();
+    return;
+   }
+   if(attempts<30){setTimeout(open,70);return}
+   // Keep the revealed map available even if a legacy save has no resolvable current node.
+   cleanHomeParam();
+  },100);
  };
  setTimeout(open,0);
 }
