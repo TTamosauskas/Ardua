@@ -16,6 +16,8 @@ for(const token of ['.campaign-victory-reward.show','.campaign-victory-reward.he
 if(!index.includes('campaign-victory-reward.css?v=20260912-p1-5-1'))fail('P1.5 victory reward CSS is not cache-busted in index');
 if(!index.includes('campaign-victory-reward.js?v=20260912-p1-5-1'))fail('P1.5 victory reward JS is not cache-busted in index');
 if(!index.includes('campaign-victory-intent.js?v=20260911-p1-1'))fail('Victory intent bridge cache-bust unexpectedly changed');
+if(!index.includes('campaign-fork-links.js?v=20260912-map-exit-1'))fail('Phase menu navigation must be cache-busted so the direct Map bridge reaches returning players');
+if(index.includes('<script src="assets/js/campaign-fork-links.js"></script>'))fail('Unversioned phase menu navigation can strand players on a stale synthetic Map handler');
 const rewardPos=index.indexOf('assets/js/campaign-victory-reward.js'),intentPos=index.indexOf('assets/js/campaign-victory-intent.js'),completionPos=index.indexOf('assets/js/campaign-phase-completion.js'),modalPos=index.indexOf('assets/js/campaign-phase-modal.js');
 if(rewardPos<0||intentPos<0||completionPos<0||modalPos<0||rewardPos>intentPos||intentPos>completionPos||completionPos>modalPos)fail('P1.5 reward + intent bridge must listen before P0 completion and reuse the later canonical phase preview launcher');
-console.log('P1.5 victory reward contract OK: P0 remains canonical; scientific hero copy, discovery hierarchy, cosmic visual tones, subtle haptics and handoff transition are layered only on the reward interstitial.');
+console.log('P1.5 victory reward contract OK: P0 remains canonical; the phase menu Map bridge is direct and cache-busted; scientific hero copy, discovery hierarchy, cosmic visual tones, subtle haptics and handoff transition are layered only on the reward interstitial.');
