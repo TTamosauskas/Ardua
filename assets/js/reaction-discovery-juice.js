@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id),board=$('starBoard'),fx=$('fx');
 if(!board||!window.ARDUA_FEEDBACK_LANGUAGE)return;
 const PIECES='.atom,.primordial-particle,.cosmic-ray,.neutron,.quark-piece,.quarks-baryon';
-let serial=0,lastPoint={xPct:50,yPct:50,at:0},rewardObserver=null,discoveryObserver=null;
+let serial=0,lastPoint={xPct:50,yPct:50,at:0},rewardObserver=null,discoveryObserver=null,lastDiscoverySignature='',lastRewardSignature='';
 
 function reducedMotion(){return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true}
 function clamp(v,min=0,max=100){return Math.max(min,Math.min(max,Number(v)||0))}
@@ -47,13 +47,17 @@ function ensureCollectionChrome(card){
  return{mark,meta};
 }
 function decorateDiscoveryModal(){
- const host=$('discoveryUnlockModal'),card=host?.querySelector('.discovery-unlock-card'),title=$('discoveryUnlockTitle');if(!host||!card||!title||!host.classList.contains('show'))return false;
- const info=collectionFor(title.textContent),chrome=ensureCollectionChrome(card);if(!chrome)return false;
+ const host=$('discoveryUnlockModal'),card=host?.querySelector('.discovery-unlock-card'),title=$('discoveryUnlockTitle');
+ if(!host||!card||!title||!host.classList.contains('show')){lastDiscoverySignature='';return false}
+ const signature=title.textContent?.trim()||'';if(signature===lastDiscoverySignature&&card.querySelector('.p23-collection-mark')&&card.querySelector('.p23-collection-meta'))return true;lastDiscoverySignature=signature;
+ const info=collectionFor(signature),chrome=ensureCollectionChrome(card);if(!chrome)return false;
  host.dataset.p23Collection=info.kind;chrome.mark.textContent=info.mark;chrome.meta.textContent=info.label;card.classList.remove('p23-collection-arrival');void card.offsetWidth;card.classList.add('p23-collection-arrival');emit('discovery',{collection:info.kind,title:info.name});return true;
 }
 function decorateReward(){
- const host=$('campaignVictoryReward'),box=host?.querySelector('[data-victory-discovery]'),strong=box?.querySelector('strong');if(!host||!box||!strong||box.hidden||!host.classList.contains('show'))return false;
- const raw=strong.textContent?.trim()||'',countMatch=raw.match(/^(\d+)\s+descobertas/i),info=countMatch?{kind:'collection',label:'ADICIONADAS À COLEÇÃO',mark:`+${countMatch[1]}`,name:raw}:collectionFor(raw),chrome=ensureCollectionChrome(box);if(!chrome)return false;
+ const host=$('campaignVictoryReward'),box=host?.querySelector('[data-victory-discovery]'),strong=box?.querySelector('strong');
+ if(!host||!box||!strong||box.hidden||!host.classList.contains('show')){lastRewardSignature='';return false}
+ const raw=strong.textContent?.trim()||'',signature=`${host.dataset.phaseId||''}|${raw}`;if(signature===lastRewardSignature&&box.querySelector('.p23-collection-mark')&&box.querySelector('.p23-collection-meta'))return true;lastRewardSignature=signature;
+ const countMatch=raw.match(/^(\d+)\s+descobertas/i),info=countMatch?{kind:'collection',label:'ADICIONADAS À COLEÇÃO',mark:`+${countMatch[1]}`,name:raw}:collectionFor(raw),chrome=ensureCollectionChrome(box);if(!chrome)return false;
  host.dataset.p23Collection=info.kind;chrome.mark.textContent=info.mark;chrome.meta.textContent=info.label;
  if(!countMatch&&/(DESCOBERTA|DESCOBERTO)$/iu.test(raw))strong.textContent=info.name;
  box.classList.remove('p23-collection-arrival');void box.offsetWidth;box.classList.add('p23-collection-arrival');host.classList.add('p23-reaction-handoff');emit('reward-collection',{collection:info.kind,title:info.name});return true;
