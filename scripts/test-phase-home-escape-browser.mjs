@@ -47,6 +47,26 @@ async function exposeSeededPhaseForFixture(){
   });
 }
 
+async function homeDebug(){
+  await page.waitForTimeout(1200);
+  return page.evaluate(()=>{
+    const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
+    const nodeInfo=[...document.querySelectorAll('#campaignMap .phase-node.current')].map(el=>({phase:el.dataset.phase,rects:el.getClientRects().length,hidden:!!el.closest('[hidden]'),panel:el.closest('.branch-panel')?.dataset.branchPanel||null}));
+    const primordialButtons=[...document.querySelectorAll('#campaignMap .branch-cluster[data-branch-group="primordial"] .branch-choice')].map(el=>({key:el.dataset.branchOpen,cls:el.className,pressed:el.getAttribute('aria-pressed'),expanded:el.getAttribute('aria-expanded'),rects:el.getClientRects().length}));
+    const primordialPanels=[...document.querySelectorAll('#campaignMap .branch-cluster[data-branch-group="primordial"] .branch-panel')].map(el=>({key:el.dataset.branchPanel,hidden:el.hidden,rects:el.getClientRects().length}));
+    const show=id=>document.getElementById(id)?.classList.contains('show')||false;
+    return{
+      url:location.href,
+      campaign:window.ARDUA_CAMPAIGN?.getState?.()||null,
+      mapClass:map?.className||'',mapAria:map?.getAttribute('aria-hidden')||'',trailAria:trail?.getAttribute('aria-hidden')||'',
+      surface:document.documentElement.dataset.arduaSurface||'',suppressed:map?.dataset.arduaSurfaceSuppressed||'',background:map?.dataset.arduaSurfaceBackground||'',inert:map?.hasAttribute('inert')||false,
+      close:{disabled:document.getElementById('campaignClose')?.disabled||false,text:document.getElementById('campaignClose')?.textContent?.trim()||''},
+      nodeInfo,primordialButtons,primordialPanels,
+      surfaces:{discovery:show('discoveryUnlockModal'),intro:show('stellarIntro'),event:show('eventTooltip'),reward:show('campaignVictoryReward'),preview:show('campaignPhasePreview'),quick:show('phaseQuickMenu')}
+    };
+  });
+}
+
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
@@ -73,11 +93,12 @@ try{
     page.click('#phaseQuickHome')
   ]);
   await dismissBlockingSurface();
+  console.log('HOME DEBUG '+JSON.stringify(await homeDebug()));
   await page.waitForFunction(()=>{
     const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
     const current=[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].find(el=>el.getClientRects().length>0);
     return !!map&&map.classList.contains('show')&&map.getAttribute('aria-hidden')==='false'&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!current;
-  });
+  },{timeout:5000});
   await page.waitForFunction(()=>!new URL(window.location.href).searchParams.has('arduaHome'));
 
   const state=await page.evaluate(()=>({
