@@ -46,14 +46,17 @@ async function finishSessionOpening(){
 
 async function launchSeededPhase(){
   await finishSessionOpening();
+  await dismissBlockingSurface();
   await page.waitForFunction(()=>{
     const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
     return nodes.some(node=>node.getClientRects().length>0);
   });
-  const node=page.locator('#campaignMap .phase-node[data-phase="primordial_t"]:visible').first();
-  await node.click();
+  await page.evaluate(()=>{
+    const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
+    nodes.find(node=>node.getClientRects().length>0)?.click();
+  });
   await page.waitForFunction(()=>document.querySelector('#mapDetail [data-launch="primordial_t"]'));
-  await page.click('#mapDetail [data-launch="primordial_t"]');
+  await page.evaluate(()=>document.querySelector('#mapDetail [data-launch="primordial_t"]')?.click());
   await page.waitForFunction(()=>!document.getElementById('campaignMap')?.classList.contains('show'));
   await dismissBlockingSurface();
   await page.waitForFunction(()=>{
