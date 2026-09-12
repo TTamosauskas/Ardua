@@ -13,6 +13,7 @@ trap cleanup EXIT
 
 node scripts/validate-victory-reward-flow.js
 node scripts/validate-feedback-language.js
+node scripts/validate-reaction-discovery-juice.js
 node scripts/validate-recipe-audio-cadence.js
 node scripts/validate-phase-runtime-sync.js
 node scripts/validate-scatter-appreciation.js
@@ -42,9 +43,11 @@ node --check scripts/test-p1-victory-next-browser.mjs
 node --check scripts/test-quarks-completion-mobile-browser.mjs
 node --check scripts/test-p2-mobile-foundation-browser.mjs
 node --check scripts/test-p2-feedback-language-browser.mjs
+node --check scripts/test-p2-reaction-discovery-juice-browser.mjs
 node scripts/test-phase-goal-hierarchy-browser.mjs
 node scripts/test-p0-player-experience-browser.mjs
 node scripts/test-p1-victory-next-browser.mjs
 node scripts/test-quarks-completion-mobile-browser.mjs
 node scripts/test-p2-mobile-foundation-browser.mjs
 node scripts/test-p2-feedback-language-browser.mjs
+node scripts/test-p2-reaction-discovery-juice-browser.mjs
