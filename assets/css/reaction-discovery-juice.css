@@ -1,0 +1,33 @@
+/* Ardua — P2.3 reaction resolve + discovery collection arrival. */
+.p23-reaction-resolve{--p23-rgb:187,228,255;--p23-size:72px;position:absolute;z-index:49;left:50%;top:50%;width:var(--p23-size);height:var(--p23-size);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen}
+.p23-reaction-resolve::before,.p23-reaction-resolve::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+.p23-reaction-resolve::before{inset:34%;background:radial-gradient(circle,#fff 0 18%,rgba(var(--p23-rgb),.92) 32%,rgba(var(--p23-rgb),0) 72%);box-shadow:0 0 22px rgba(var(--p23-rgb),.78);animation:p23CoreResolve .48s cubic-bezier(.2,.72,.2,1) both}
+.p23-reaction-resolve::after{border:1.5px solid rgba(var(--p23-rgb),.72);box-shadow:0 0 24px rgba(var(--p23-rgb),.28),inset 0 0 18px rgba(var(--p23-rgb),.13);animation:p23MatterResolve .52s cubic-bezier(.12,.72,.18,1) both}
+.p23-reaction-resolve[data-kind="chain"]{--p23-rgb:255,217,139;--p23-size:112px}
+.p23-reaction-resolve[data-kind="chain"][data-tier="major"]{--p23-size:142px}
+.p23-reaction-resolve[data-kind="chain"][data-tier="cosmic"]{--p23-rgb:255,238,188;--p23-size:176px}
+.p23-reaction-resolve[data-kind="chain"]::after{border-width:2px;animation-duration:.72s}
+@keyframes p23CoreResolve{0%{opacity:0;transform:scale(1.8)}30%{opacity:1;transform:scale(.52)}58%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(1.45)}}
+@keyframes p23MatterResolve{0%{opacity:0;transform:scale(.18)}32%{opacity:.9}100%{opacity:0;transform:scale(1.55)}}
+
+/* A discovery should read as an object entering the player's collection, not as another score popup. */
+.discovery-unlock-card,.victory-reward-discovery{position:relative}
+.p23-collection-mark{display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:1px solid rgba(151,216,255,.34);background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.20),rgba(132,191,255,.10) 48%,rgba(6,13,29,.54));box-shadow:0 0 24px rgba(132,198,255,.13),inset 0 1px 0 rgba(255,255,255,.08);color:#f6fbff;font-weight:950;font-size:17px;line-height:1;letter-spacing:-.02em}
+.p23-collection-meta{display:block;margin:0 0 5px;color:#9fc4f3;font-size:9px!important;font-weight:900;line-height:1.2;letter-spacing:.14em;text-transform:uppercase}
+.discovery-unlock-card>.p23-collection-mark{margin:0 auto 12px;width:52px;height:52px;font-size:19px}
+.discovery-unlock-card>.p23-collection-meta{margin-bottom:7px}
+.discovery-unlock-modal[data-p23-collection="elements"] .p23-collection-mark,.campaign-victory-reward[data-p23-collection="elements"] .p23-collection-mark{border-color:rgba(255,218,139,.42);background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.24),rgba(255,197,102,.13) 48%,rgba(25,15,8,.45));box-shadow:0 0 24px rgba(255,201,104,.14)}
+.victory-reward-discovery{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:12px;align-items:center;text-align:left}
+.victory-reward-discovery>.p23-collection-mark{grid-row:1 / span 2}
+.victory-reward-discovery>.p23-collection-meta,.victory-reward-discovery>small,.victory-reward-discovery>strong{grid-column:2;padding-left:0!important;text-align:left}
+.victory-reward-discovery.p23-collection-arrival::before{display:none}
+.victory-reward-discovery.p23-collection-arrival>small:not(.p23-collection-meta){display:none}
+.victory-reward-discovery.p23-collection-arrival,.discovery-unlock-card.p23-collection-arrival{animation:p23CollectionArrival .56s cubic-bezier(.16,.76,.18,1) both}
+@keyframes p23CollectionArrival{0%{filter:brightness(.88);box-shadow:0 0 0 rgba(132,198,255,0)}38%{filter:brightness(1.12);box-shadow:0 0 34px rgba(132,198,255,.18)}100%{filter:brightness(1);box-shadow:inherit}}
+
+/* Carry a little of the board's last transformation into the reward without adding a new modal or audio owner. */
+.campaign-victory-reward.show.p23-reaction-handoff .campaign-victory-card::before{content:"";position:absolute;z-index:-1;left:50%;top:-26px;width:min(74%,330px);height:82px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(var(--reward-glow),.16),transparent 70%);filter:blur(5px);pointer-events:none;animation:p23RewardHandoff .62s ease-out both}
+@keyframes p23RewardHandoff{0%{opacity:0;transform:translateX(-50%) scale(.62)}42%{opacity:.9}100%{opacity:.18;transform:translateX(-50%) scale(1.05)}}
+
+@media(max-width:420px){.victory-reward-discovery{grid-template-columns:40px minmax(0,1fr);column-gap:10px}.victory-reward-discovery>.p23-collection-mark{width:40px;height:40px}.discovery-unlock-card>.p23-collection-mark{width:48px;height:48px}}
+@media(prefers-reduced-motion:reduce){.p23-reaction-resolve::before,.p23-reaction-resolve::after,.victory-reward-discovery.p23-collection-arrival,.discovery-unlock-card.p23-collection-arrival,.campaign-victory-reward.show.p23-reaction-handoff .campaign-victory-card::before{animation:none}.p23-reaction-resolve{opacity:.22}.p23-reaction-resolve::before{opacity:.42;transform:none}.p23-reaction-resolve::after{opacity:.22;transform:none}.campaign-victory-reward.show.p23-reaction-handoff .campaign-victory-card::before{opacity:.12;transform:translateX(-50%)}}
