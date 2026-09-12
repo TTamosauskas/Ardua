@@ -14,6 +14,7 @@ trap cleanup EXIT
 node scripts/validate-victory-reward-flow.js
 node scripts/validate-feedback-language.js
 node scripts/validate-recipe-audio-cadence.js
+node scripts/validate-phase-runtime-sync.js
 npm install --no-save --no-package-lock "playwright@${PLAYWRIGHT_VERSION}"
 npx playwright install --with-deps chromium
 
