@@ -32,8 +32,20 @@ async function dismissBlockingSurface(){
   }
 }
 
-async function launchSeededPhase(){
+async function finishSessionOpening(){
   await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
+  const awaiting=await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('awaiting-bigbang')||false);
+  if(awaiting){
+    await page.click('#campaignMap .singularity-map');
+    await page.waitForFunction(()=>{
+      const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
+      return !!map&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false';
+    },{timeout:8000});
+  }
+}
+
+async function launchSeededPhase(){
+  await finishSessionOpening();
   await page.waitForFunction(()=>{
     const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
     return nodes.some(node=>node.getClientRects().length>0);
