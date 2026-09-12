@@ -39,7 +39,10 @@ function sync(){
   if(spec.key==='map'&&allowMapBackdrop){el.dataset.arduaSurfaceBackground='1';setOwnedInert(el,true)}
   else{el.dataset.arduaSurfaceSuppressed='1';setOwnedInert(el,true)}
  }
- const app=document.querySelector('.app'),blockApp=!!top&&top.spec.key!=='event';setOwnedInert(app,blockApp);
+ /* Quick/legacy menus already own a full-screen backdrop. Keep the app focusable there so
+    their synchronous close handlers can return focus to the menu trigger before this
+    coordinator's next frame; higher modal surfaces still inert gameplay underneath. */
+ const app=document.querySelector('.app'),blockApp=!!top&&!['event','quick-menu','menu'].includes(top.spec.key);setOwnedInert(app,blockApp);
  document.body.classList.toggle('ardua-surface-lock',!!top);
  if(top){document.documentElement.dataset.arduaSurface=top.spec.key;document.documentElement.dataset.arduaSurfaceCount=String(active.length)}
  else{delete document.documentElement.dataset.arduaSurface;delete document.documentElement.dataset.arduaSurfaceCount}
