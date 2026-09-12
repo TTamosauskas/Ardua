@@ -4,9 +4,9 @@
 const C=window.ARDUA_CAMPAIGN,G=window.ARDUA_CAMPAIGN_GRAPH;
 const $=id=>document.getElementById(id);
 if(!C||!G)return;
-const map=$('campaignMap'),canonicalMapOpener=$('menuOpenBtn');
+const map=$('campaignMap');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false;
+let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false,legacyMapButtonPassUntil=0;
 
 function unique(xs){return[...new Set((xs||[]).filter(Boolean))]}
 function cleanGoal(text){return String(text||'').replace(/\s*[—-]\s*\d+\s*\/\s*\d+\s*$/,'').trim()}
@@ -91,7 +91,7 @@ function openMapSurface(){
  const close=$('campaignClose');if(close){close.disabled=false;close.textContent='Voltar'}
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));return true;
 }
-function openMapNow(){suppressedMap=false;(canonicalMapOpener||$('menuOpenBtn'))?.click();queueMicrotask(()=>{if(!map?.classList.contains('show'))openMapSurface()})}
+function openMapNow(){return openMapSurface()}
 async function handoffMap(current){
  if(!current||reward!==current)return;setActionsDisabled(true);emit('handing-off',{phaseId:current.snapshot.phaseId,route:current.route.kind});restoreRevisit(current.snapshot);
  const phaseId=current.snapshot.phaseId,serial=current.serial;reward=null;pending=null;hide();setActionsDisabled(false);emit('completed',{phaseId,serial,route:'map'});queueMicrotask(openMapNow);
@@ -138,8 +138,9 @@ document.addEventListener('click',e=>{
  const id=node.dataset.phase||'',st=C.getState?.()||{},done=new Set(st.completed||[]);if(id&&done.has(id)&&st.activeId&&st.activeId!==id)revisit={id,returnId:st.activeId};
 },true);
 document.addEventListener('click',e=>{
- const opener=e.target instanceof Element?e.target.closest('#menuOpenBtn'):null;
- if(!opener||!e.isTrusted)return;
+ const target=e.target instanceof Element?e.target:null;
+ if(target?.closest('#campaignData')){legacyMapButtonPassUntil=performance.now()+160;return}
+ const opener=target?.closest('#menuOpenBtn');if(!opener||performance.now()<legacyMapButtonPassUntil)return;
  e.preventDefault();e.stopImmediatePropagation();openMapSurface();
 },true);
 function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener&&opener.textContent!=='Mapa')opener.textContent='Mapa'}
