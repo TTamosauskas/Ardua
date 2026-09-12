@@ -86,8 +86,10 @@ for(const vp of viewports){
   await assertButtonsAtLeast(page,'.campaign-close',44,`${label}: map close`);
   await assertNoHorizontalOverflow(page,`${label}: map`);
 
-  const node=page.locator('#campaignMap .phase-node[data-phase="primordial_d"]').first();
-  await node.waitFor({state:'visible'});await node.click({force:true});
+  /* P1 launches a phase through the canonical map node handler even when that node is
+     outside the currently expanded visual branch. Reuse that exact DOM path here; node
+     visibility is not part of this geometry contract. */
+  await page.evaluate(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_d"]')?.click());
   await page.waitForFunction(()=>document.getElementById('campaignPhasePreview')?.classList.contains('show')&&window.ARDUA_SURFACE_COORDINATOR.top==='phase-preview');
   const previewState=await page.evaluate(()=>({
    mapBackground:document.getElementById('campaignMap')?.dataset.arduaSurfaceBackground||'',
@@ -111,8 +113,8 @@ for(const vp of viewports){
   await assertButtonsAtLeast(page,'.victory-reward-actions button',44,`${label}: reward CTAs`);
   await assertNoHorizontalOverflow(page,`${label}: reward`);
 
-  const coarse=await page.evaluate(()=>({coarse:matchMedia('(pointer: coarse)').matches,quarkAfter:getComputedStyle(document.documentElement,'::after').content}));
-  assert.equal(coarse.coarse,true,`${label}: contexto mobile não expôs pointer coarse`);
+  const coarse=await page.evaluate(()=>matchMedia('(pointer: coarse)').matches);
+  assert.equal(coarse,true,`${label}: contexto mobile não expôs pointer coarse`);
   assert.deepEqual(errors,[],`${label}: erros JavaScript inesperados: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
