@@ -16,6 +16,7 @@ body.ardua-surface-lock{overflow:hidden;overscroll-behavior:none}
 .phase-card small,.phase-card strong,.goal-line,.formula-line{overflow-wrap:anywhere}
 .phase-menu-trigger{min-width:var(--ardua-touch-min);min-height:var(--ardua-touch-min);touch-action:manipulation}
 .phase-quick-actions>button,.phase-quick-close,.campaign-close,.phase-modal-close,.phase-modal-actions .stellar-start,.victory-reward-actions button,#discoveryUnlockContinue,#closeMenu{min-height:var(--ardua-touch-min);touch-action:manipulation}
+.phase-quick-close{min-width:var(--ardua-touch-min)}
 
 /* Fixed surfaces respect browser notches, gesture bars and short viewports. */
 .modal{
