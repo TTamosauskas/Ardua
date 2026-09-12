@@ -184,8 +184,8 @@ host.addEventListener('click',e=>{
 });
 $('phaseQuickMap')?.addEventListener('click',()=>{
  closeQuickMenu(false);
- const reward=window.ARDUA_VICTORY_REWARD;
- if(reward?.openMap){reward.openMap();return}
+ // The campaign map owns its own refresh/required state. A synthetic trigger bypasses
+ // this quick-menu's trusted-click interception and reaches campaign-map.js directly.
  trigger.click();
 });
 $('phaseQuickDiscoveries')?.addEventListener('click',()=>{closeQuickMenu(false);$('campaignData')?.click()});
