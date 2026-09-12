@@ -32,6 +32,10 @@ async function dismissBlockingTeaching(){
   }
 }
 
+async function clickFirst(selector){
+  await page.locator(selector).first().evaluate(el=>el.click());
+}
+
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION&&window.ARDUA_CAMPAIGN);
@@ -45,9 +49,9 @@ try{
 
   for(let made=1;made<=4;made++){
     await dismissBlockingTeaching();
-    await page.locator('#primordialLayer .primordial-particle.proton:not(.reacting)').first().click();
+    await clickFirst('#primordialLayer .primordial-particle.proton:not(.reacting)');
     await page.waitForFunction(()=>!!document.querySelector('#primordialLayer .primordial-particle.neutronfree.candidate'),undefined,{timeout:2500});
-    await page.locator('#primordialLayer .primordial-particle.neutronfree.candidate').first().click();
+    await clickFirst('#primordialLayer .primordial-particle.neutronfree.candidate');
     await page.waitForFunction(target=>document.getElementById('goalText')?.textContent.includes(`${target}/4`),made,{timeout:4000});
     await dismissBlockingTeaching();
   }
