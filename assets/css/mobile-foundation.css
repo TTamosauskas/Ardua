@@ -1,0 +1,151 @@
+/* Ardua — P2.1 mobile foundation: safe areas, touch targets and surface geometry. */
+:root{
+ --ardua-safe-top:env(safe-area-inset-top,0px);
+ --ardua-safe-right:env(safe-area-inset-right,0px);
+ --ardua-safe-bottom:env(safe-area-inset-bottom,0px);
+ --ardua-safe-left:env(safe-area-inset-left,0px);
+ --ardua-touch-min:44px;
+}
+html,body{width:100%;max-width:100%;overflow-x:clip}
+body.ardua-surface-lock{overflow:hidden;overscroll-behavior:none}
+.app{
+ padding-left:max(13px,calc(var(--ardua-safe-left) + 8px));
+ padding-right:max(13px,calc(var(--ardua-safe-right) + 8px));
+}
+.top,.phase-card,.objective,.stage-progress,.star-shell,.info-panel{min-width:0}
+.phase-card small,.phase-card strong,.goal-line,.formula-line{overflow-wrap:anywhere}
+.phase-menu-trigger{min-width:var(--ardua-touch-min);min-height:var(--ardua-touch-min);touch-action:manipulation}
+.phase-quick-actions>button,.phase-quick-close,.campaign-close,.phase-modal-close,.phase-modal-actions .stellar-start,.victory-reward-actions button,#discoveryUnlockContinue,#closeMenu{min-height:var(--ardua-touch-min);touch-action:manipulation}
+
+/* Fixed surfaces respect browser notches, gesture bars and short viewports. */
+.modal{
+ padding-top:max(12px,calc(var(--ardua-safe-top) + 8px));
+ padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
+ padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
+}
+.modal>.card{
+ max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 20px);
+ overscroll-behavior:contain;
+}
+.stellar-intro,#campaignPhasePreview{
+ padding-top:max(12px,calc(var(--ardua-safe-top) + 8px));
+ padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
+ padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
+}
+.stellar-intro .stellar-card,#campaignPhasePreview .stellar-card{
+ max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 24px);
+ overflow:auto;
+ overscroll-behavior:contain;
+}
+.phase-quick-menu{
+ padding-top:max(68px,calc(var(--ardua-safe-top) + 68px));
+ padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
+ padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
+}
+.phase-quick-card{
+ max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 82px);
+ overflow:auto;
+ overscroll-behavior:contain;
+}
+.campaign-victory-reward{
+ padding-top:max(12px,calc(var(--ardua-safe-top) + 8px));
+ padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
+ padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
+}
+.campaign-victory-card{
+ max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 24px);
+ overflow:auto;
+ overscroll-behavior:contain;
+}
+.discovery-unlock-modal{
+ padding-top:max(12px,calc(var(--ardua-safe-top) + 8px));
+ padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
+ padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
+}
+.discovery-unlock-card{max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 24px);overflow:auto}
+
+/* Campaign map header and trail stay clear of safe areas. */
+.campaign-head{
+ padding-top:calc(var(--ardua-safe-top) + 12px);
+ padding-right:max(14px,calc(var(--ardua-safe-right) + 10px));
+ padding-left:max(14px,calc(var(--ardua-safe-left) + 10px));
+}
+.campaign-content{
+ padding-top:calc(92px + var(--ardua-safe-top));
+ padding-right:max(14px,calc(var(--ardua-safe-right) + 10px));
+ padding-bottom:calc(110px + var(--ardua-safe-bottom));
+ padding-left:max(14px,calc(var(--ardua-safe-left) + 10px));
+}
+.campaign-close{min-width:var(--ardua-touch-min)}
+.phase-node,.branch-choice{touch-action:manipulation}
+
+/* A lower active surface may remain alive internally, but never compete for interaction. */
+[data-ardua-surface-suppressed="1"]{pointer-events:none!important}
+#phaseQuickMenu[data-ardua-surface-suppressed="1"],
+#menuModal[data-ardua-surface-suppressed="1"],
+#discoveryUnlockModal[data-ardua-surface-suppressed="1"],
+#stellarIntro[data-ardua-surface-suppressed="1"],
+#campaignPhasePreview[data-ardua-surface-suppressed="1"],
+#campaignVictoryReward[data-ardua-surface-suppressed="1"],
+#eventTooltip[data-ardua-surface-suppressed="1"]{
+ opacity:0!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+#campaignMap[data-ardua-surface-suppressed="1"]{opacity:0!important;pointer-events:none!important}
+#campaignMap[data-ardua-surface-background="1"]{pointer-events:none!important}
+
+/* Small particles keep their visual scale while gaining a less punishing coarse-pointer target. */
+@media(pointer:coarse){
+ .quark-piece,.primordial-particle{isolation:isolate}
+ .quark-piece::after,.primordial-particle::after{
+  content:"";
+  position:absolute;
+  inset:-7px;
+  border-radius:50%;
+ }
+ .phase-quick-actions>button,.phase-modal-actions button,.victory-reward-actions button,.big{min-height:48px}
+}
+
+@media(max-width:390px){
+ .app{gap:8px}
+ .top{gap:8px}
+ .phase-card{padding:8px 10px}
+ .phase-card strong{font-size:16px}
+ .objective{min-height:56px;padding:8px 10px}
+ .campaign-victory-card{padding-left:18px;padding-right:18px}
+}
+
+/* Landscape phones are a valid play mode: compress chrome, not content or controls. */
+@media(max-height:520px) and (orientation:landscape){
+ :root{--starSize:min(55dvh,46vw,320px);--cellSize:min(9.5dvh,6.4vw,44px)}
+ .app{gap:6px;padding-top:max(6px,calc(var(--ardua-safe-top) + 4px));padding-bottom:max(6px,calc(var(--ardua-safe-bottom) + 4px))}
+ .top{gap:7px}
+ .phase-card{padding:6px 9px;border-radius:13px}
+ .phase-card small{font-size:8px}.phase-card strong{font-size:14px}
+ .phase-menu-trigger{min-height:46px;width:50px}
+ .objective{min-height:44px;padding:5px 9px;border-radius:12px;gap:2px}
+ .goal-line{font-size:11px}.formula-line{font-size:10px}
+ .stage-progress{font-size:9px}
+ .stellar-intro .stellar-card,#campaignPhasePreview .stellar-card{padding:14px;border-radius:20px}
+ #stellarIntro .stellar-portrait,#campaignPhasePreview .stellar-portrait{height:min(34dvh,126px);margin:7px 0 8px}
+ #stellarIntro .stellar-card h2,#campaignPhasePreview .stellar-card h2{font-size:22px}
+ .campaign-victory-reward{place-items:center}
+ .campaign-victory-card{padding:16px 18px calc(16px + var(--ardua-safe-bottom));border-radius:20px}
+ .campaign-victory-card h2{font-size:23px}.victory-reward-consequence{font-size:12px;margin-top:7px}.victory-reward-phase{margin-top:6px}
+ .victory-reward-discovery,.victory-reward-next{margin-top:9px;padding:9px 11px}.victory-reward-actions{margin-top:11px}
+ .phase-quick-menu{padding-top:max(52px,calc(var(--ardua-safe-top) + 50px))}
+ .phase-quick-card{max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 60px)}
+ .campaign-head{padding-top:calc(var(--ardua-safe-top) + 7px);padding-bottom:7px}
+ .campaign-content{padding-top:calc(74px + var(--ardua-safe-top))}
+}
+
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .phase-quick-actions>button,.phase-menu-trigger{transition:none!important}
+}
