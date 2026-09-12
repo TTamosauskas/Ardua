@@ -1,0 +1,22 @@
+/* Ardua — P2.2 shared visual grammar for selection → victory feedback. */
+.feedback-language-pulse{--feedback-rgb:138,216,255;--feedback-size:48%;position:absolute;z-index:48;left:var(--feedback-x,50%);top:var(--feedback-y,50%);width:var(--feedback-size);aspect-ratio:1;border:1px solid rgba(var(--feedback-rgb),.5);border-radius:50%;box-shadow:0 0 24px rgba(var(--feedback-rgb),.16),inset 0 0 18px rgba(var(--feedback-rgb),.08);opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.62);mix-blend-mode:screen}
+.feedback-language-pulse[data-kind="selection"]{--feedback-rgb:138,216,255;--feedback-size:22%}
+.feedback-language-pulse[data-kind="reaction"]{--feedback-rgb:188,229,255;--feedback-size:58%}
+.feedback-language-pulse[data-kind="chain"]{--feedback-rgb:255,218,139;--feedback-size:86%;border-width:2px}
+.feedback-language-pulse[data-kind="chain"][data-variant="cosmic"]{--feedback-rgb:255,238,186;--feedback-size:96%;box-shadow:0 0 42px rgba(var(--feedback-rgb),.24),inset 0 0 28px rgba(var(--feedback-rgb),.09)}
+.feedback-language-pulse.run{animation:arduaFeedbackPulse .52s cubic-bezier(.15,.74,.2,1) both}
+.feedback-language-pulse[data-kind="selection"].run{animation-duration:.18s}
+.feedback-language-pulse[data-kind="reaction"].run{animation-duration:.30s}
+@keyframes arduaFeedbackPulse{0%{opacity:0;transform:translate(-50%,-50%) scale(.58)}28%{opacity:.72}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
+
+/* Discoveries and milestones share the same edge-light language without changing geometry. */
+.discovery-unlock-modal.show[data-ardua-feedback-language="discovery"] .discovery-unlock-card{position:relative;box-shadow:0 20px 70px rgba(0,0,0,.5),0 0 34px rgba(138,216,255,.20),inset 0 1px 0 rgba(255,255,255,.07)}
+.discovery-unlock-modal.show[data-ardua-feedback-language="discovery"] .discovery-unlock-card::after{content:"";position:absolute;inset:-1px;border:1px solid rgba(138,216,255,.42);border-radius:inherit;pointer-events:none;animation:arduaSurfaceResolve .72s ease-out both}
+.ambient-banner.show[data-ardua-feedback-language="milestone"]{box-shadow:0 18px 54px rgba(0,0,0,.38),0 0 38px rgba(255,216,128,.22);border-color:rgba(255,225,155,.36)}
+.campaign-victory-reward.show[data-ardua-feedback-language="victory"] .campaign-victory-card{box-shadow:0 -18px 70px rgba(0,0,0,.44),0 0 54px rgba(var(--reward-glow),.17),inset 0 1px 0 rgba(255,255,255,.05)}
+@keyframes arduaSurfaceResolve{0%{opacity:0;transform:scale(.985)}36%{opacity:1}100%{opacity:.12;transform:scale(1.018)}}
+
+@media(prefers-reduced-motion:reduce){
+ .feedback-language-pulse.run{animation:none;opacity:.16;transform:translate(-50%,-50%) scale(1)}
+ .discovery-unlock-modal.show[data-ardua-feedback-language="discovery"] .discovery-unlock-card::after{animation:none;opacity:.18;transform:none}
+}
