@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 if(!C||!G)return;
 const map=$('campaignMap');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false,legacyMapButtonPass=false;
+let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false;
 
 function unique(xs){return[...new Set((xs||[]).filter(Boolean))]}
 function cleanGoal(text){return String(text||'').replace(/\s*[—-]\s*\d+\s*\/\s*\d+\s*$/,'').trim()}
@@ -137,23 +137,11 @@ document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null,node=target?.closest('#campaignMap .phase-node[data-phase]');if(!node)return;
  const id=node.dataset.phase||'',st=C.getState?.()||{},done=new Set(st.completed||[]);if(id&&done.has(id)&&st.activeId&&st.activeId!==id)revisit={id,returnId:st.activeId};
 },true);
-document.addEventListener('click',e=>{
- const target=e.target instanceof Element?e.target:null;
- if(target?.closest('#campaignData')){
-  legacyMapButtonPass=true;
-  queueMicrotask(()=>{legacyMapButtonPass=false});
-  return;
- }
- const opener=target?.closest('#menuOpenBtn');if(!opener||legacyMapButtonPass)return;
- e.preventDefault();e.stopImmediatePropagation();openMapSurface();
-},true);
-function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener&&opener.textContent!=='Mapa')opener.textContent='Mapa'}
-new MutationObserver(syncMapOpenerLabel).observe(document.body,{subtree:true,childList:true});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&reward){e.preventDefault();void handoffMap(reward)}});
 
 window.ARDUA_VICTORY_REWARD=Object.freeze({
  capture,present:snapshot=>show({...snapshot,discoveries:[...(snapshot?.discoveries||[])]}),nextOptions,openMap:()=>reward?handoffMap(reward):(openMapNow(),true),
  get active(){return !!reward},get pending(){return pending?{...pending,discoveries:[...pending.discoveries]}:null},get route(){return reward?{kind:reward.route.kind,options:[...reward.route.options]}:null}
 });
-syncMapOpenerLabel();ensureHost();
+ensureHost();
 })();
