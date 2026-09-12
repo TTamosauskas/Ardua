@@ -29,7 +29,16 @@
 <link rel="stylesheet" href="assets/css/mobile-foundation.css?v=20260912-p2-1-1"/>
 <link rel="stylesheet" href="assets/css/feedback-language.css?v=20260912-p2-2-1"/>
 <link rel="stylesheet" href="assets/css/reaction-discovery-juice.css?v=20260912-p2-3-1"/>
-
+<style>
+.info-panel{align-items:stretch}
+.info-copy{justify-content:flex-start;gap:10px;padding:4px 2px 2px}
+.info-copy .info-selected-name{display:block;font-size:18px;line-height:1.1;font-weight:950;color:#fff!important;white-space:normal;overflow:visible;text-overflow:clip;text-shadow:none}
+.info-copy .info-recipes{gap:7px;padding:0 1px 4px;flex-wrap:wrap;overflow-x:hidden;overflow-y:auto;align-content:flex-start}
+.info-copy .info-recipe{font-size:10.5px;line-height:1.2;padding:6px 9px;max-width:100%;white-space:normal}
+.info-copy .info-empty{font-size:10.5px;line-height:1.25}
+body.bigbang-phase .info-copy .info-selected-name{color:#080b12!important}
+@media(max-width:390px){.info-copy{gap:8px}.info-copy .info-selected-name{font-size:16px}.info-copy .info-recipe,.info-copy .info-empty{font-size:9.5px}}
+</style>
 </head>
 <body>
 <audio id="arduaSoundtrack" preload="auto" autoplay playsinline hidden>
@@ -76,8 +85,9 @@
   </div>
 
   <div class="info-panel" id="infoPanel" aria-live="polite">
-    <div class="info-tile particle" id="infoTile"><span class="info-z" id="infoZ">COSMOLOGIA</span><strong class="info-symbol" id="infoSymbol">∞</strong><span class="info-name" id="infoName">Singularidade</span><span class="info-mass" id="infoMass">estado inicial · limite</span></div>
-    <div class="info-copy"><div class="info-context" id="infoContext">Toque em uma peça para explorar</div><div class="info-fact" id="infoFact">Representa o limite em que nossos modelos clássicos deixam de descrever o Universo.</div><div class="info-recipes-title">Receitas descobertas</div><div class="info-recipes" id="infoRecipes"></div></div>
+    <div class="info-tile particle" id="infoTile"><span class="info-z" id="infoZ">COSMOLOGIA</span><strong class="info-symbol" id="infoSymbol">∞</strong><span class="info-mass" id="infoMass">estado inicial · limite</span></div>
+    <div class="info-copy"><strong class="info-name info-selected-name" id="infoName">Singularidade</strong><div class="info-recipes" id="infoRecipes"></div></div>
+    <div id="infoContext" hidden>Toque em uma peça para explorar</div><div id="infoFact" hidden>Representa o limite em que nossos modelos clássicos deixam de descrever o Universo.</div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
