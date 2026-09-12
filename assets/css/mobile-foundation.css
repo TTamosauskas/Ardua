@@ -51,14 +51,17 @@ body.ardua-surface-lock{overflow:hidden;overscroll-behavior:none}
  overflow:auto;
  overscroll-behavior:contain;
 }
+/* Keep the full 20px reward entrance motion inside the visual viewport. The larger
+   bottom reserve also protects gesture bars without changing the final card geometry. */
 .campaign-victory-reward{
  padding-top:max(12px,calc(var(--ardua-safe-top) + 8px));
  padding-right:max(12px,calc(var(--ardua-safe-right) + 8px));
- padding-bottom:max(12px,calc(var(--ardua-safe-bottom) + 8px));
+ padding-bottom:max(32px,calc(var(--ardua-safe-bottom) + 28px));
  padding-left:max(12px,calc(var(--ardua-safe-left) + 8px));
 }
 .campaign-victory-card{
- max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 24px);
+ box-sizing:border-box;
+ max-height:calc(100dvh - var(--ardua-safe-top) - var(--ardua-safe-bottom) - 52px);
  overflow:auto;
  overscroll-behavior:contain;
 }
