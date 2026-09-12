@@ -21,6 +21,7 @@ try{
   await page.evaluate(()=>{
     const target='Forme Deutério — 4/4';
     const keep=()=>{
+      const intro=document.getElementById('stellarIntro');if(intro?.classList.contains('show'))document.getElementById('stellarStartBtn')?.click();
       const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
       const goal=document.getElementById('goalText');if(goal&&goal.textContent!==target)goal.textContent=target;
       const end=document.getElementById('phaseEndBtn');if(end&&end.dataset.objectiveCompletionFallback!=='1'){
@@ -31,7 +32,7 @@ try{
     keep();window.__mapExitKeep=setInterval(keep,40);
   });
   await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:5000});
-  await page.evaluate(()=>clearInterval(window.__mapExitKeep));
+  await page.evaluate(()=>{clearInterval(window.__mapExitKeep);const intro=document.getElementById('stellarIntro');if(intro?.classList.contains('show'))document.getElementById('stellarStartBtn')?.click()});
   await page.click('#phaseEndBtn');
   await page.waitForFunction(()=>document.getElementById('campaignVictoryReward')?.classList.contains('show'),undefined,{timeout:7000});
   const reward=await page.evaluate(()=>({route:window.ARDUA_VICTORY_REWARD.route,completed:window.ARDUA_CAMPAIGN.getState().completed}));
