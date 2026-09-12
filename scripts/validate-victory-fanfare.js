@@ -12,7 +12,7 @@ const scatter=engine.match(/async function scatterStage\(\)\{[\s\S]*?\n\}/)?.[0]
 assert(scatter.includes("if(supernova)setTimeout(()=>"),'Supernova ainda bloqueia o início da dispersão');
 assert(!scatter.includes('if(supernova){await wait('),'Supernova ainda espera antes de dispersar os átomos');
 assert(scatter.includes('requestAnimationFrame(()=>{el.style.transition='),'Dispersão atômica não está no mesmo fluxo do botão');
-assert(index.includes('recipe-audio-sync.js?v=20260911-victory-fanfare-e-1'),'Sync sem cache bust da fanfarra');
-assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da fanfarra');
+assert(index.includes('recipe-audio-sync.js?v=20260912-p2-2-1'),'Sync sem cache bust P2.2 da fanfarra');
+assert(index.includes('ardua.js?v=20260912-p2-2-1'),'Engine sem cache bust P2.2 da fanfarra');
 for(const legacy of ['async function victorySong()','for(let octave=0;octave<3;octave++)','mult=2**octave'])assert(!sync.includes(legacy),'Música antiga em oitavas retornou: '+legacy);
 console.log('Global victory fanfare OK: theme E starts on the round button and scatter/supernova begin concurrently when present.');
