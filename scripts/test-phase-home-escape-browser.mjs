@@ -95,23 +95,19 @@ try{
   const state=await page.evaluate(()=>({
     activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
     map:document.getElementById('campaignMap')?.classList.contains('show')||false,
-    closeDisabled:document.getElementById('campaignClose')?.disabled||false,
-    closeText:document.getElementById('campaignClose')?.textContent?.trim()||'',
     homeExists:!!document.getElementById('phaseQuickHome'),
     quickOpen:document.getElementById('phaseQuickMenu')?.classList.contains('show')||false,
     rewardOpen:document.getElementById('campaignVictoryReward')?.classList.contains('show')||false,
     previewOpen:document.getElementById('campaignPhasePreview')?.classList.contains('show')||false
   }));
   assert.equal(state.activeId,'primordial_t','A saída para Início deve preservar o progresso e a fase ativa');
-  assert.equal(state.map,true,'Início deve abrir a home da campanha após navegação completa');
-  assert.equal(state.closeDisabled,false,'A home aberta pelo escape não pode ficar em modo obrigatório');
-  assert.equal(state.closeText,'Voltar','A home deve permitir retorno à fase');
+  assert.equal(state.map,true,'Início deve retornar à entrada nativa da campanha após navegação completa');
   assert.equal(state.homeExists,true,'O botão independente deve continuar disponível após a recarga');
-  assert.equal(state.quickOpen,false,'O menu rápido não pode reaparecer sobre a home');
-  assert.equal(state.rewardOpen,false,'Reward residual não pode cobrir a home');
-  assert.equal(state.previewOpen,false,'Preview residual não pode cobrir a home');
+  assert.equal(state.quickOpen,false,'O menu rápido não pode reaparecer sobre a entrada da campanha');
+  assert.equal(state.rewardOpen,false,'Reward residual não pode cobrir a entrada da campanha');
+  assert.equal(state.previewOpen,false,'Preview residual não pode cobrir a entrada da campanha');
   assert.deepEqual(errors,[],`Erros JS: ${errors.join(' | ')}`);
-  console.log('Independent Home escape OK: phaseQuickHome hard-navigates to campaign home, preserves progress and stays independent from the legacy Map action.');
+  console.log('Independent Home escape OK: phaseQuickHome hard-navigates to the native campaign entry, preserves progress and stays independent from the legacy Map action.');
 } finally {
   await context.close();await browser.close();
 }
