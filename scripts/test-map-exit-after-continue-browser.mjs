@@ -23,7 +23,10 @@ try{
     const keep=()=>{
       const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
       const goal=document.getElementById('goalText');if(goal&&goal.textContent!==target)goal.textContent=target;
-      const end=document.getElementById('phaseEndBtn');if(end&&end.dataset.objectiveCompletionFallback!=='1'){end.classList.remove('show');end.removeAttribute('hidden');end.style.display='';}
+      const end=document.getElementById('phaseEndBtn');if(end&&end.dataset.objectiveCompletionFallback!=='1'){
+        if(end.textContent!=='ESPALHAR POEIRA ESTELAR')end.textContent='ESPALHAR POEIRA ESTELAR';
+        end.classList.remove('show');end.removeAttribute('hidden');end.style.display='';
+      }
     };
     keep();window.__mapExitKeep=setInterval(keep,40);
   });
