@@ -22,7 +22,7 @@ async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
 async function noErrors(errors,label){assert.deepEqual(errors,[],`${label}: erros JS: ${errors.join(' | ')}`)}
 
 async function stellarContinue(){
- const label='stellar victory → continue', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red'});
+ const label='stellar victory → continue → menu → map', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red'});
  try{
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='he_red');
   await page.evaluate(()=>{
@@ -39,7 +39,25 @@ async function stellarContinue(){
   const during=await page.evaluate(()=>({saved:window.ARDUA_CAMPAIGN.getState(),map:document.getElementById('campaignMap')?.classList.contains('show'),route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,next:document.querySelector('[data-victory-next] strong')?.textContent,result:document.querySelector('[data-victory-result]')?.textContent}));
   assert.ok(during.saved.completed.includes('he_red'),`${label}: save não ocorreu antes da recompensa`);assert.equal(during.map,false,`${label}: mapa apareceu sob a recompensa`);assert.equal(during.route?.kind,'continue');assert.deepEqual(during.route?.options,['stellar_movement']);assert.equal(during.primary,'CONTINUAR');assert.ok(during.next?.length);assert.ok(/formou|hélio/i.test(during.result||''));
   await page.click('[data-victory-primary]');await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='stellar_movement',undefined,{timeout:4000});
-  assert.equal(await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')),false,`${label}: mapa piscou como pedágio antes da próxima fase`);await noErrors(errors,label);
+  assert.equal(await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')),false,`${label}: mapa piscou como pedágio antes da próxima fase`);
+
+  await page.click('#menuOpenBtn');
+  await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'),undefined,{timeout:2500});
+  await page.click('#phaseQuickMap');
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'),undefined,{timeout:2500});
+  const mapState=await page.evaluate(()=>({
+   map:document.getElementById('campaignMap')?.classList.contains('show'),
+   mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden'),
+   quickMenu:document.getElementById('phaseQuickMenu')?.classList.contains('show'),
+   legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),
+   activeId:window.ARDUA_CAMPAIGN.getState().activeId
+  }));
+  assert.equal(mapState.map,true,`${label}: item Mapa do menu não abriu o mapa`);
+  assert.equal(mapState.mapHidden,'false',`${label}: mapa continuou aria-hidden`);
+  assert.equal(mapState.quickMenu,false,`${label}: menu rápido não fechou após abrir o mapa`);
+  assert.equal(mapState.legacyMenu,false,`${label}: item Mapa abriu o menu legado em vez do mapa`);
+  assert.equal(mapState.activeId,'stellar_movement',`${label}: abrir o mapa alterou a fase ativa`);
+  await noErrors(errors,label);
  }finally{await context.close()}
 }
 
@@ -64,4 +82,4 @@ async function revisitReturn(){
 
 for(const [name,fn] of [['stellar',stellarContinue],['branch',branchChoice],['revisit',revisitReturn]]){try{await fn()}catch(e){failures.push(`${name}: ${e.stack||e.message||e}`)}}
 await browser.close();if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n\n'));process.exit(1)}
-console.log('P1 browser E2E OK: completion is saved before reward, linear Continue skips the map, branch points defer choice to the map, and revisits preserve the active path.');
+console.log('P1 browser E2E OK: completion is saved before reward, linear Continue skips the map, the phase menu Map action still opens it after handoff, branch points defer choice to the map, and revisits preserve the active path.');
