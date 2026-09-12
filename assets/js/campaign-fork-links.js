@@ -172,8 +172,7 @@ function closeQuickMenu(returnFocus=true){
  if(returnFocus)trigger.focus();
 }
 
-// The campaign map owns the same button for its legacy/programmatic launch path.
-// Trusted user clicks open this utility menu; synthetic clicks keep the existing map/discovery bridge intact.
+// Trusted player clicks open the utility menu. Synthetic clicks keep legacy bootstrap paths intact.
 document.addEventListener('click',e=>{
  const button=e.target instanceof Element?e.target.closest('#menuOpenBtn'):null;
  if(!button||e.isTrusted===false)return;
@@ -183,7 +182,12 @@ document.addEventListener('click',e=>{
 host.addEventListener('click',e=>{
  if(e.target instanceof Element&&e.target.closest('[data-quick-close]'))closeQuickMenu();
 });
-$('phaseQuickMap')?.addEventListener('click',()=>{closeQuickMenu(false);trigger.click()});
+$('phaseQuickMap')?.addEventListener('click',()=>{
+ closeQuickMenu(false);
+ const reward=window.ARDUA_VICTORY_REWARD;
+ if(reward?.openMap){reward.openMap();return}
+ trigger.click();
+});
 $('phaseQuickDiscoveries')?.addEventListener('click',()=>{closeQuickMenu(false);$('campaignData')?.click()});
 $('phaseQuickRestart')?.addEventListener('click',()=>{
  const id=window.ARDUA_CAMPAIGN?.getState?.().activeId;
