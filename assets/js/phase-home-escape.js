@@ -8,14 +8,12 @@ function cleanHomeParam(){
  const url=new URL(window.location.href);if(!url.searchParams.has(HOME_PARAM))return;
  url.searchParams.delete(HOME_PARAM);history.replaceState(history.state,'',`${url.pathname}${url.search}${url.hash}`);
 }
-function installButton(){
- const mapBtn=$('phaseQuickMap');if(!mapBtn||$('phaseQuickHome'))return false;
- const home=document.createElement('button');home.type='button';home.id='phaseQuickHome';
- home.innerHTML='<span>Início</span><small>Voltar ao mapa de fases</small>';
- mapBtn.before(home);
- home.addEventListener('click',()=>{
-  const url=new URL(window.location.href);url.searchParams.set(HOME_PARAM,'1');url.hash='';window.location.assign(url.href);
- });
+function configureQuickMap(){
+ const mapBtn=$('phaseQuickMap');if(!mapBtn)return false;
+ $('phaseQuickHome')?.remove();
+ const label=mapBtn.querySelector('span');
+ if(label)label.textContent='Início';
+ else mapBtn.textContent='Início';
  return true;
 }
 function releaseSessionOpening(){
@@ -72,9 +70,9 @@ function openPhaseMapAfterReload(){
 }
 function boot(){
  const requested=new URLSearchParams(window.location.search).get(HOME_PARAM)==='1';
- installButton();
+ configureQuickMap();
  if(requested)openPhaseMapAfterReload();
 }
 boot();
-new MutationObserver(()=>installButton()).observe(document.body,{childList:true,subtree:true});
+new MutationObserver(()=>configureQuickMap()).observe(document.body,{childList:true,subtree:true});
 })();
