@@ -13,6 +13,17 @@ async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
    localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));localStorage.setItem('arduaRotationEnabledV2','0');sessionStorage.setItem('__arduaE2ESeeded','1');
   }
   window.__ARDUA_E2E={events:[]};window.__ARDUA_P1_E2E=true;Math.random=()=>.5;
+  window.__ARDUA_LISTENER_TRACE=[];
+  const nativeAdd=EventTarget.prototype.addEventListener,nativeStop=Event.prototype.stopImmediatePropagation;let listenerSerial=0;
+  EventTarget.prototype.addEventListener=function(type,listener,options){
+   if(this===document&&type==='click'&&typeof listener==='function'){
+    const id=++listenerSerial,source=String(listener).slice(0,420);
+    const wrapped=function(ev){if(ev.target instanceof Element&&ev.target.closest('#menuOpenBtn'))window.__ARDUA_LISTENER_TRACE.push({kind:'listener',id,source,phase:ev.eventPhase,cancelBubble:ev.cancelBubble});return listener.call(this,ev)};
+    return nativeAdd.call(this,type,wrapped,options);
+   }
+   return nativeAdd.call(this,type,listener,options);
+  };
+  Event.prototype.stopImmediatePropagation=function(){if(this.target instanceof Element&&this.target.closest('#menuOpenBtn'))window.__ARDUA_LISTENER_TRACE.push({kind:'stopImmediate',stack:new Error().stack});return nativeStop.call(this)};
   window.addEventListener('ardua:victory-reward-state',e=>window.__ARDUA_E2E.events.push({type:'reward',detail:e.detail}));
  },{campaign:campaignState(activeId,completed),engine:engineState(engineId)});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
@@ -41,15 +52,13 @@ async function stellarContinue(){
   await page.click('[data-victory-primary]');await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='stellar_movement',undefined,{timeout:4000});
   assert.equal(await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')),false,`${label}: mapa piscou como pedágio antes da próxima fase`);
   const beforeMap=await page.evaluate(()=>{
-   const map=document.getElementById('campaignMap');window.__mapTransitions=[];new MutationObserver(()=>window.__mapTransitions.push({at:performance.now(),cls:map.className,hidden:map.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:!!window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState})).observe(map,{attributes:true,attributeFilter:['class','aria-hidden']});
+   const map=document.getElementById('campaignMap');window.__mapTransitions=[];window.__ARDUA_LISTENER_TRACE.length=0;new MutationObserver(()=>window.__mapTransitions.push({at:performance.now(),cls:map.className,hidden:map.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:!!window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState})).observe(map,{attributes:true,attributeFilter:['class','aria-hidden']});
    return{active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,mapClass:map.className,mapHidden:map.getAttribute('aria-hidden'),button:document.getElementById('menuOpenBtn')?.outerHTML,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show')};
   });
   await page.click('#menuOpenBtn');await page.waitForTimeout(350);
-  const afterMap=await page.evaluate(()=>({visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show'),transitions:window.__mapTransitions}));
+  const afterMap=await page.evaluate(()=>({visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden'),active:window.ARDUA_VICTORY_REWARD.active,pending:window.ARDUA_VICTORY_REWARD.pending,rewardState:document.documentElement.dataset.arduaRewardState,activeId:window.ARDUA_CAMPAIGN.getState().activeId,engine:document.documentElement.dataset.arduaEnginePhase,legacyMenu:document.getElementById('menuModal')?.classList.contains('show'),preview:document.getElementById('campaignPhasePreview')?.classList.contains('show'),transitions:window.__mapTransitions,listenerTrace:window.__ARDUA_LISTENER_TRACE}));
   let apiProbe=null;
-  if(!afterMap.visible){
-   apiProbe=await page.evaluate(()=>{const source=String(window.ARDUA_VICTORY_REWARD.openMap);const result=window.ARDUA_VICTORY_REWARD.openMap();return{result,source,visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden')}});
-  }
+  if(!afterMap.visible){apiProbe=await page.evaluate(()=>{const source=String(window.ARDUA_VICTORY_REWARD.openMap);const result=window.ARDUA_VICTORY_REWARD.openMap();return{result,source,visible:document.getElementById('campaignMap')?.classList.contains('show'),mapClass:document.getElementById('campaignMap')?.className,mapHidden:document.getElementById('campaignMap')?.getAttribute('aria-hidden')}})}
   assert.equal(afterMap.visible,true,`${label}: item Mapa não abriu o mapa. before=${JSON.stringify(beforeMap)} after=${JSON.stringify(afterMap)} apiProbe=${JSON.stringify(apiProbe)}`);
   assert.equal(afterMap.legacyMenu,false,`${label}: item Mapa abriu o menu legado em vez do mapa`);
   await noErrors(errors,label);
