@@ -14,6 +14,7 @@ async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
   }
   window.__ARDUA_E2E={events:[]};window.__ARDUA_P1_E2E=true;Math.random=()=>.5;
   window.addEventListener('ardua:victory-reward-state',e=>window.__ARDUA_E2E.events.push({type:'reward',detail:e.detail}));
+  window.addEventListener('ardua:victory-reward-feedback',e=>window.__ARDUA_E2E.events.push({type:'feedback',detail:e.detail}));
  },{campaign:campaignState(activeId,completed),engine:engineState(engineId)});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto(base,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION&&window.ARDUA_CAMPAIGN);
@@ -22,7 +23,7 @@ async function pageFor({activeId='he_red',engineId=activeId,completed=[]}={}){
 async function noErrors(errors,label){assert.deepEqual(errors,[],`${label}: erros JS: ${errors.join(' | ')}`)}
 
 async function stellarContinue(){
- const label='stellar victory → continue → menu → map', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red'});
+ const label='stellar victory → polished reward → continue → menu → map', {context,page,errors}=await pageFor({activeId:'he_red',engineId:'he_red'});
  try{
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='he_red');
   await page.evaluate(()=>{
@@ -36,9 +37,14 @@ async function stellarContinue(){
   });
   await page.waitForFunction(()=>document.querySelector('#phaseEndBtn[data-objective-completion-fallback="1"].show'),undefined,{timeout:5000});await page.evaluate(()=>clearInterval(window.__p1Keep));
   await page.evaluate(()=>document.getElementById('phaseEndBtn')?.click());await page.waitForFunction(()=>document.getElementById('campaignVictoryReward')?.classList.contains('show'),undefined,{timeout:6000});
-  const during=await page.evaluate(()=>({saved:window.ARDUA_CAMPAIGN.getState(),map:document.getElementById('campaignMap')?.classList.contains('show'),route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,next:document.querySelector('[data-victory-next] strong')?.textContent,result:document.querySelector('[data-victory-result]')?.textContent}));
-  assert.ok(during.saved.completed.includes('he_red'),`${label}: save não ocorreu antes da recompensa`);assert.equal(during.map,false,`${label}: mapa apareceu sob a recompensa`);assert.equal(during.route?.kind,'continue');assert.deepEqual(during.route?.options,['stellar_movement']);assert.equal(during.primary,'CONTINUAR');assert.ok(during.next?.length);assert.ok(/formou|hélio/i.test(during.result||''));
-  await page.click('[data-victory-primary]');await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='stellar_movement',undefined,{timeout:4000});
+  const during=await page.evaluate(()=>{
+   const host=document.getElementById('campaignVictoryReward'),result=document.querySelector('[data-victory-result]'),phase=document.querySelector('[data-victory-phase]'),card=document.querySelector('.campaign-victory-card');
+   return{saved:window.ARDUA_CAMPAIGN.getState(),map:document.getElementById('campaignMap')?.classList.contains('show'),route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,next:document.querySelector('[data-victory-next] strong')?.textContent,result:result?.textContent,consequence:document.querySelector('[data-victory-consequence]')?.textContent,tone:host?.dataset.tone,heroic:host?.classList.contains('heroic'),resultSize:parseFloat(getComputedStyle(result).fontSize),phaseSize:parseFloat(getComputedStyle(phase).fontSize),cardShadow:getComputedStyle(card).boxShadow,feedback:window.__ARDUA_E2E.events.filter(x=>x.type==='feedback')};
+  });
+  assert.ok(during.saved.completed.includes('he_red'),`${label}: save não ocorreu antes da recompensa`);assert.equal(during.map,false,`${label}: mapa apareceu sob a recompensa`);assert.equal(during.route?.kind,'continue');assert.deepEqual(during.route?.options,['stellar_movement']);assert.equal(during.primary,'CONTINUAR');assert.ok(during.next?.length);
+  assert.equal(during.result,'Hélio-4 se acumulou no núcleo',`${label}: marco científico heroico não foi usado`);assert.match(during.consequence||'',/fusão/i,`${label}: consequência científica ausente`);assert.equal(during.tone,'stellar');assert.equal(during.heroic,true);assert.ok(during.resultSize>during.phaseSize*2,`${label}: resultado não domina a hierarquia visual`);assert.notEqual(during.cardShadow,'none',`${label}: cartão perdeu profundidade visual`);assert.equal(during.feedback.length,1,`${label}: feedback P1.5 deve ocorrer uma vez`);assert.equal(during.feedback[0].detail.audioOwner,'victory-fanfare',`${label}: P1.5 tentou criar outro dono de áudio`);
+  await page.evaluate(()=>document.querySelector('[data-victory-primary]')?.click());await page.waitForFunction(()=>document.getElementById('campaignVictoryReward')?.classList.contains('leaving'),undefined,{timeout:800});
+  await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='stellar_movement',undefined,{timeout:4000});
   assert.equal(await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')),false,`${label}: mapa piscou como pedágio antes da próxima fase`);
 
   await page.click('#menuOpenBtn');
@@ -62,12 +68,23 @@ async function stellarContinue(){
 }
 
 async function branchChoice(){
- const label='stellar mass branch', {context,page,errors}=await pageFor({activeId:'first_generation_formation',engineId:'first_generation_formation',completed:['first_generation_formation']});
+ const label='stellar mass branch + discovery hierarchy', {context,page,errors}=await pageFor({activeId:'first_generation_formation',engineId:'first_generation_formation',completed:['first_generation_formation']});
  try{
-  await page.evaluate(()=>window.ARDUA_VICTORY_REWARD.present({phaseId:'first_generation_formation',goal:'Forme a primeira estrela — 1/1',name:'Primeira estrela',wasCompleted:false,discoveries:[]}));
-  const ui=await page.evaluate(()=>({route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,secondaryHidden:document.querySelector('[data-victory-map]')?.hidden}));
+  await page.evaluate(()=>window.ARDUA_VICTORY_REWARD.present({phaseId:'first_generation_formation',goal:'Forme a primeira estrela — 1/1',name:'Primeira estrela',wasCompleted:false,discoveries:['Primeiras estrelas']}));
+  const ui=await page.evaluate(()=>{const host=document.getElementById('campaignVictoryReward'),discovery=document.querySelector('[data-victory-discovery]');return{route:window.ARDUA_VICTORY_REWARD.route,primary:document.querySelector('[data-victory-primary]')?.textContent,secondaryHidden:document.querySelector('[data-victory-map]')?.hidden,result:document.querySelector('[data-victory-result]')?.textContent,consequence:document.querySelector('[data-victory-consequence]')?.textContent,tone:host?.dataset.tone,heroic:host?.classList.contains('heroic'),hasDiscovery:host?.classList.contains('has-discovery'),discoveryHidden:discovery?.hidden,discoveryTitle:discovery?.querySelector('strong')?.textContent,discoveryBackground:getComputedStyle(discovery).backgroundImage,nextHidden:document.querySelector('[data-victory-next]')?.hidden};});
   assert.equal(ui.route?.kind,'choose');assert.ok((ui.route?.options||[]).length>1,`${label}: não expôs múltiplos caminhos canônicos`);assert.equal(ui.primary,'ESCOLHER CAMINHO');assert.equal(ui.secondaryHidden,true);
-  await page.click('[data-victory-primary]');await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));assert.equal(await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState().activeId),'first_generation_formation',`${label}: o jogo escolheu uma massa estelar pelo jogador`);await noErrors(errors,label);
+  assert.equal(ui.result,'A primeira estrela nasceu');assert.match(ui.consequence||'',/gravidade/i);assert.equal(ui.tone,'stellar');assert.equal(ui.heroic,true);assert.equal(ui.hasDiscovery,true);assert.equal(ui.discoveryHidden,false);assert.equal(ui.discoveryTitle,'Primeiras estrelas');assert.notEqual(ui.discoveryBackground,'none',`${label}: descoberta não recebeu destaque visual`);assert.equal(ui.nextHidden,true,`${label}: A SEGUIR não deve competir com uma bifurcação`);
+  await page.evaluate(()=>document.querySelector('[data-victory-primary]')?.click());await page.waitForFunction(()=>document.getElementById('campaignVictoryReward')?.classList.contains('leaving'),undefined,{timeout:800});
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));assert.equal(await page.evaluate(()=>window.ARDUA_CAMPAIGN.getState().activeId),'first_generation_formation',`${label}: o jogo escolheu uma massa estelar pelo jogador`);await noErrors(errors,label);
+ }finally{await context.close()}
+}
+
+async function fallbackCopy(){
+ const label='non-heroic fallback copy', {context,page,errors}=await pageFor({activeId:'na',engineId:'na',completed:['na']});
+ try{
+  await page.evaluate(()=>window.ARDUA_VICTORY_REWARD.present({phaseId:'na',goal:'Forme Sódio — 4/4',name:'Síntese de Sódio',wasCompleted:true,discoveries:[]}));
+  const ui=await page.evaluate(()=>({result:document.querySelector('[data-victory-result]')?.textContent,consequenceHidden:document.querySelector('[data-victory-consequence]')?.hidden,heroic:document.getElementById('campaignVictoryReward')?.classList.contains('heroic'),tone:document.getElementById('campaignVictoryReward')?.dataset.tone}));
+  assert.equal(ui.result,'Você formou Sódio');assert.equal(ui.consequenceHidden,true);assert.equal(ui.heroic,false);assert.equal(ui.tone,'forge');await noErrors(errors,label);
  }finally{await context.close()}
 }
 
@@ -80,6 +97,6 @@ async function revisitReturn(){
  }finally{await context.close()}
 }
 
-for(const [name,fn] of [['stellar',stellarContinue],['branch',branchChoice],['revisit',revisitReturn]]){try{await fn()}catch(e){failures.push(`${name}: ${e.stack||e.message||e}`)}}
+for(const [name,fn] of [['stellar',stellarContinue],['branch',branchChoice],['fallback',fallbackCopy],['revisit',revisitReturn]]){try{await fn()}catch(e){failures.push(`${name}: ${e.stack||e.message||e}`)}}
 await browser.close();if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n\n'));process.exit(1)}
-console.log('P1 browser E2E OK: completion is saved before reward, linear Continue skips the map, the phase menu Map action still opens it after handoff, branch points defer choice to the map, and revisits preserve the active path.');
+console.log('P1.5 browser E2E OK: scientific hero copy, discovery hierarchy, cosmic visual state, handoff transition, fallback copy, explicit Map access, branch choice and revisit safety passed.');
