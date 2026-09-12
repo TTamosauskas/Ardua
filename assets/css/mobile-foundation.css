@@ -139,6 +139,9 @@ body.ardua-surface-lock{overflow:hidden;overscroll-behavior:none}
  .stellar-intro .stellar-card,#campaignPhasePreview .stellar-card{padding:14px;border-radius:20px}
  #stellarIntro .stellar-portrait,#campaignPhasePreview .stellar-portrait{height:min(34dvh,126px);margin:7px 0 8px}
  #stellarIntro .stellar-card h2,#campaignPhasePreview .stellar-card h2{font-size:22px}
+ /* The preview card starts at scale(.98); 45px keeps the rendered target above 44px
+    throughout that entrance instead of only after the transform settles. */
+ #campaignPhasePreview .phase-modal-actions .stellar-start,#campaignPhasePreview .phase-modal-close{height:45px;min-height:45px}
  .campaign-victory-reward{place-items:center}
  .campaign-victory-card{padding:16px 18px calc(16px + var(--ardua-safe-bottom));border-radius:20px}
  .campaign-victory-card h2{font-size:23px}.victory-reward-consequence{font-size:12px;margin-top:7px}.victory-reward-phase{margin-top:6px}
