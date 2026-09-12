@@ -72,6 +72,7 @@ try{
     page.waitForNavigation({waitUntil:'domcontentloaded'}),
     page.click('#phaseQuickHome')
   ]);
+  await dismissBlockingSurface();
   await page.waitForFunction(()=>{
     const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
     const current=[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].find(el=>el.getClientRects().length>0);
