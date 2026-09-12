@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 if(!C||!G)return;
 const map=$('campaignMap');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false,legacyMapButtonPassUntil=0;
+let pending=null,reward=null,revisit=null,rewardSerial=0,suppressedMap=false,legacyMapButtonPass=false;
 
 function unique(xs){return[...new Set((xs||[]).filter(Boolean))]}
 function cleanGoal(text){return String(text||'').replace(/\s*[—-]\s*\d+\s*\/\s*\d+\s*$/,'').trim()}
@@ -139,8 +139,12 @@ document.addEventListener('click',e=>{
 },true);
 document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null;
- if(target?.closest('#campaignData')){legacyMapButtonPassUntil=performance.now()+160;return}
- const opener=target?.closest('#menuOpenBtn');if(!opener||performance.now()<legacyMapButtonPassUntil)return;
+ if(target?.closest('#campaignData')){
+  legacyMapButtonPass=true;
+  queueMicrotask(()=>{legacyMapButtonPass=false});
+  return;
+ }
+ const opener=target?.closest('#menuOpenBtn');if(!opener||legacyMapButtonPass)return;
  e.preventDefault();e.stopImmediatePropagation();openMapSurface();
 },true);
 function syncMapOpenerLabel(){const opener=$('menuOpenBtn');if(opener&&opener.textContent!=='Mapa')opener.textContent='Mapa'}
