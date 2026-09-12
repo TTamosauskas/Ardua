@@ -32,10 +32,38 @@ async function dismissBlockingSurface(){
   }
 }
 
+async function launchSeededPhase(){
+  await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
+  await page.waitForFunction(()=>{
+    const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
+    return nodes.some(node=>node.getClientRects().length>0);
+  });
+  const node=page.locator('#campaignMap .phase-node[data-phase="primordial_t"]:visible').first();
+  await node.click();
+  await page.waitForFunction(()=>document.querySelector('#mapDetail [data-launch="primordial_t"]'));
+  await page.click('#mapDetail [data-launch="primordial_t"]');
+  await page.waitForFunction(()=>!document.getElementById('campaignMap')?.classList.contains('show'));
+  await dismissBlockingSurface();
+  await page.waitForFunction(()=>{
+    const map=document.getElementById('campaignMap');
+    const intro=document.getElementById('stellarIntro');
+    const discovery=document.getElementById('discoveryUnlockModal');
+    return !map?.classList.contains('show')&&!intro?.classList.contains('show')&&!discovery?.classList.contains('show');
+  });
+}
+
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
-  await dismissBlockingSurface();
+  await launchSeededPhase();
+
+  const beforeMenu=await page.evaluate(()=>({
+    activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
+    mapOpen:document.getElementById('campaignMap')?.classList.contains('show')||false,
+    homeExists:!!document.getElementById('phaseQuickHome')
+  }));
+  assert.deepEqual(beforeMenu,{activeId:'primordial_t',mapOpen:false,homeExists:true},'Fixture deve estar dentro de Trítio antes de testar Início');
+
   await page.click('#menuOpenBtn');
   await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'));
 
