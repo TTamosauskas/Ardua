@@ -90,7 +90,10 @@ for(const vp of viewports){
      outside the currently expanded visual branch. Reuse that exact DOM path here; node
      visibility is not part of this geometry contract. */
   await page.evaluate(()=>document.querySelector('#campaignMap .phase-node[data-phase="primordial_d"]')?.click());
-  await page.waitForFunction(()=>document.getElementById('campaignPhasePreview')?.classList.contains('show')&&window.ARDUA_SURFACE_COORDINATOR.top==='phase-preview');
+  await page.waitForFunction(()=>{
+   const preview=document.getElementById('campaignPhasePreview'),map=document.getElementById('campaignMap');
+   return preview?.classList.contains('show')&&window.ARDUA_SURFACE_COORDINATOR.top==='phase-preview'&&map?.dataset.arduaSurfaceBackground==='1'&&map.inert===true;
+  });
   const previewState=await page.evaluate(()=>({
    mapBackground:document.getElementById('campaignMap')?.dataset.arduaSurfaceBackground||'',
    mapSuppressed:document.getElementById('campaignMap')?.dataset.arduaSurfaceSuppressed||'',
