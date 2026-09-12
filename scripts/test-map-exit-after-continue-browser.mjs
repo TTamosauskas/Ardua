@@ -16,8 +16,10 @@ const page=await context.newPage();
 const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
 
 async function dismissBlockingTeaching(){
-  for(let i=0;i<8;i++){
+  for(let i=0;i<10;i++){
     const handled=await page.evaluate(()=>{
+      const intro=document.getElementById('stellarIntro');
+      if(intro?.classList.contains('show')){document.getElementById('stellarStartBtn')?.click();return true}
       const discovery=document.getElementById('discoveryUnlockModal');
       if(discovery?.classList.contains('show')){document.getElementById('discoveryUnlockContinue')?.click();return true}
       const tip=document.getElementById('eventTooltip');
@@ -28,7 +30,7 @@ async function dismissBlockingTeaching(){
       return false;
     });
     if(!handled)break;
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(90);
   }
 }
 
@@ -40,9 +42,9 @@ try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION&&window.ARDUA_CAMPAIGN);
   await page.waitForFunction(()=>document.documentElement.dataset.arduaEnginePhase==='primordial_d');
+  await page.waitForTimeout(250);
+  await dismissBlockingTeaching();
   await page.evaluate(()=>{
-    const intro=document.getElementById('stellarIntro');
-    if(intro?.classList.contains('show'))document.getElementById('stellarStartBtn')?.click();
     const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open');
   });
   await page.waitForFunction(()=>document.querySelectorAll('#primordialLayer .primordial-particle.proton').length>=1&&document.querySelectorAll('#primordialLayer .primordial-particle.neutronfree').length>=1);
