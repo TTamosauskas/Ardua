@@ -36,7 +36,7 @@ async function finishSessionOpening(){
   await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
   const awaiting=await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('awaiting-bigbang')||false);
   if(awaiting){
-    await page.click('#campaignMap .singularity-map');
+    await page.evaluate(()=>document.querySelector('#campaignMap .singularity-map')?.click());
     await page.waitForFunction(()=>{
       const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
       return !!map&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false';
