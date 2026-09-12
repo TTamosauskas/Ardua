@@ -47,26 +47,6 @@ async function exposeSeededPhaseForFixture(){
   });
 }
 
-async function homeDebug(){
-  await page.waitForTimeout(1200);
-  return page.evaluate(()=>{
-    const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
-    const nodeInfo=[...document.querySelectorAll('#campaignMap .phase-node.current')].map(el=>({phase:el.dataset.phase,rects:el.getClientRects().length,hidden:!!el.closest('[hidden]'),panel:el.closest('.branch-panel')?.dataset.branchPanel||null}));
-    const primordialButtons=[...document.querySelectorAll('#campaignMap .branch-cluster[data-branch-group="primordial"] .branch-choice')].map(el=>({key:el.dataset.branchOpen,cls:el.className,pressed:el.getAttribute('aria-pressed'),expanded:el.getAttribute('aria-expanded'),rects:el.getClientRects().length}));
-    const primordialPanels=[...document.querySelectorAll('#campaignMap .branch-cluster[data-branch-group="primordial"] .branch-panel')].map(el=>({key:el.dataset.branchPanel,hidden:el.hidden,rects:el.getClientRects().length}));
-    const show=id=>document.getElementById(id)?.classList.contains('show')||false;
-    return{
-      url:location.href,
-      campaign:window.ARDUA_CAMPAIGN?.getState?.()||null,
-      mapClass:map?.className||'',mapAria:map?.getAttribute('aria-hidden')||'',trailAria:trail?.getAttribute('aria-hidden')||'',
-      surface:document.documentElement.dataset.arduaSurface||'',suppressed:map?.dataset.arduaSurfaceSuppressed||'',background:map?.dataset.arduaSurfaceBackground||'',inert:map?.hasAttribute('inert')||false,
-      close:{disabled:document.getElementById('campaignClose')?.disabled||false,text:document.getElementById('campaignClose')?.textContent?.trim()||''},
-      nodeInfo,primordialButtons,primordialPanels,
-      surfaces:{discovery:show('discoveryUnlockModal'),intro:show('stellarIntro'),event:show('eventTooltip'),reward:show('campaignVictoryReward'),preview:show('campaignPhasePreview'),quick:show('phaseQuickMenu')}
-    };
-  });
-}
-
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
@@ -93,17 +73,17 @@ try{
     page.click('#phaseQuickHome')
   ]);
   await dismissBlockingSurface();
-  console.log('HOME DEBUG '+JSON.stringify(await homeDebug()));
   await page.waitForFunction(()=>{
     const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
     const current=[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].find(el=>el.getClientRects().length>0);
-    return !!map&&map.classList.contains('show')&&map.getAttribute('aria-hidden')==='false'&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!current;
+    return !!map&&map.classList.contains('show')&&map.getAttribute('aria-hidden')==='false'&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!current;
   },{timeout:5000});
   await page.waitForFunction(()=>!new URL(window.location.href).searchParams.has('arduaHome'));
 
   const state=await page.evaluate(()=>({
     activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
     map:document.getElementById('campaignMap')?.classList.contains('show')||false,
+    awaitingBigBang:document.getElementById('campaignMap')?.classList.contains('awaiting-bigbang')||false,
     trail:document.getElementById('campaignMap')?.classList.contains('trail-revealed')||false,
     currentVisible:[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].some(el=>el.getClientRects().length>0),
     closeDisabled:document.getElementById('campaignClose')?.disabled||false,
@@ -115,6 +95,7 @@ try{
   }));
   assert.equal(state.activeId,'primordial_t','A saída para Início deve preservar o progresso e a fase ativa');
   assert.equal(state.map,true,'Início deve abrir o mapa da campanha após navegação completa');
+  assert.equal(state.awaitingBigBang,false,'Início não pode deixar o mapa preso no ritual do Big Bang');
   assert.equal(state.trail,true,'Início deve revelar a trilha de fases em vez de parar no Big Bang');
   assert.equal(state.currentVisible,true,'A fase atual deve estar visível no mapa após a recarga');
   assert.equal(state.closeDisabled,false,'O mapa aberto por Início deve ser opcional');
@@ -124,7 +105,7 @@ try{
   assert.equal(state.rewardOpen,false,'Reward residual não pode cobrir o mapa');
   assert.equal(state.previewOpen,false,'Preview residual não pode cobrir o mapa');
   assert.deepEqual(errors,[],`Erros JS: ${errors.join(' | ')}`);
-  console.log('Independent Home escape OK: phaseQuickHome hard-reloads into the revealed phase map, preserves progress and keeps Voltar available.');
+  console.log('Independent Home escape OK: phaseQuickHome hard-reloads into the revealed phase map, skips the session Big Bang ritual, preserves progress and keeps Voltar available.');
 } finally {
   await context.close();await browser.close();
 }
