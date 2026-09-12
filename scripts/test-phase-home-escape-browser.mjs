@@ -6,7 +6,7 @@ const browser=await chromium.launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844}});
 await context.addInitScript(()=>{
   const campaign={version:14,introduced:true,activeId:'primordial_t',completed:['bigbang','primordial_d'],generation:0,heritage:{level:0,seeds:[],sourceGeneration:0}};
-  const engine={phaseId:'primordial_t',phaseIndex:1,version:'10.80',discovered:['D'],ignited:false,productLessons:[],rewardDiscoveries:[],rewardAchievements:[],signatureSeen:[]};
+  const engine={phaseId:'primordial_t',phaseIndex:1,version:'10.80',discovered:[],ignited:false,productLessons:[],rewardDiscoveries:[],rewardAchievements:[],signatureSeen:[]};
   localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));
   localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));
   localStorage.setItem('arduaRotationEnabledV2','0');
@@ -15,18 +15,27 @@ await context.addInitScript(()=>{
 const page=await context.newPage();
 const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
 
-async function dismissIntro(){
+async function dismissBlockingSurface(){
   await page.waitForTimeout(220);
-  await page.evaluate(()=>{
-    const intro=document.getElementById('stellarIntro');
-    if(intro?.classList.contains('show'))document.getElementById('stellarStartBtn')?.click();
-  });
+  for(let i=0;i<8;i++){
+    const handled=await page.evaluate(()=>{
+      const discovery=document.getElementById('discoveryUnlockModal');
+      if(discovery?.classList.contains('show')){document.getElementById('discoveryUnlockContinue')?.click();return true}
+      const intro=document.getElementById('stellarIntro');
+      if(intro?.classList.contains('show')){document.getElementById('stellarStartBtn')?.click();return true}
+      const tip=document.getElementById('eventTooltip');
+      if(tip?.classList.contains('show')){document.getElementById('eventTooltipBtn')?.click();return true}
+      return false;
+    });
+    if(!handled)break;
+    await page.waitForTimeout(90);
+  }
 }
 
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
-  await dismissIntro();
+  await dismissBlockingSurface();
   await page.click('#menuOpenBtn');
   await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'));
 
