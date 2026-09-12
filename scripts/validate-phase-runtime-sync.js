@@ -18,7 +18,7 @@ assert(runtime.includes('if(customPhaseOwnsScreen()||!(G.runtimeOrder||[]).inclu
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
-assert(index.includes('ardua.js?v=20260911-victory-fanfare-e-1'),'Engine sem cache bust da correção');
+assert(index.includes('ardua.js?v=20260912-p2-2-1'),'Engine sem cache bust P2.2');
 assert(index.includes('campaign-phase-labels.js?v=20260911-scatter-appreciation-1'),'Labels sem cache bust da correção');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-e2e-1'),'Runtime sync sem cache bust do hardening E2E');
 assert(index.includes('campaign-phase-completion.js?v=20260911-p0-e2e-1'),'Contrato de conclusão sem cache bust do hardening E2E');
