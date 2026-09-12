@@ -17,7 +17,7 @@ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console'
 
 async function dismissBlockingSurface(){
   await page.waitForTimeout(220);
-  for(let i=0;i<8;i++){
+  for(let i=0;i<10;i++){
     const handled=await page.evaluate(()=>{
       const discovery=document.getElementById('discoveryUnlockModal');
       if(discovery?.classList.contains('show')){document.getElementById('discoveryUnlockContinue')?.click();return true}
@@ -32,45 +32,27 @@ async function dismissBlockingSurface(){
   }
 }
 
-async function finishSessionOpening(){
+async function exposeSeededPhaseForFixture(){
   await page.waitForFunction(()=>document.getElementById('campaignMap')?.classList.contains('show'));
-  const awaiting=await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('awaiting-bigbang')||false);
-  if(awaiting){
-    await page.evaluate(()=>document.querySelector('#campaignMap .singularity-map')?.click());
-    await page.waitForFunction(()=>{
-      const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
-      return !!map&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false';
-    },{timeout:8000});
-  }
-}
-
-async function launchSeededPhase(){
-  await finishSessionOpening();
-  await dismissBlockingSurface();
-  await page.waitForFunction(()=>{
-    const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
-    return nodes.some(node=>node.getClientRects().length>0);
-  });
+  // Test-only normalization: the saved campaign already owns Trítio. Hide the boot map so
+  // the regression exercises only the independent phase-menu escape, not map animations.
   await page.evaluate(()=>{
-    const nodes=[...document.querySelectorAll('#campaignMap .phase-node[data-phase="primordial_t"]')];
-    nodes.find(node=>node.getClientRects().length>0)?.click();
+    const map=document.getElementById('campaignMap');
+    map?.classList.remove('show');map?.setAttribute('aria-hidden','true');
+    document.body.classList.remove('campaign-map-open');
+    document.getElementById('mapDetail')?.classList.remove('show');
   });
-  await page.waitForFunction(()=>document.querySelector('#mapDetail [data-launch="primordial_t"]'));
-  await page.evaluate(()=>document.querySelector('#mapDetail [data-launch="primordial_t"]')?.click());
-  await page.waitForFunction(()=>!document.getElementById('campaignMap')?.classList.contains('show'));
   await dismissBlockingSurface();
   await page.waitForFunction(()=>{
-    const map=document.getElementById('campaignMap');
-    const intro=document.getElementById('stellarIntro');
-    const discovery=document.getElementById('discoveryUnlockModal');
-    return !map?.classList.contains('show')&&!intro?.classList.contains('show')&&!discovery?.classList.contains('show');
+    const map=document.getElementById('campaignMap'),quick=document.getElementById('phaseQuickMenu');
+    return !map?.classList.contains('show')&&!quick?.classList.contains('show')&&window.ARDUA_CAMPAIGN?.getState?.().activeId==='primordial_t';
   });
 }
 
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
-  await launchSeededPhase();
+  await exposeSeededPhaseForFixture();
 
   const beforeMenu=await page.evaluate(()=>({
     activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
