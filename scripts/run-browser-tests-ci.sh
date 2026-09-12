@@ -12,6 +12,7 @@ cleanup(){
 trap cleanup EXIT
 
 node scripts/validate-victory-reward-flow.js
+node scripts/validate-feedback-language.js
 npm install --no-save --no-package-lock "playwright@${PLAYWRIGHT_VERSION}"
 npx playwright install --with-deps chromium
 
@@ -36,8 +37,10 @@ node --check scripts/test-p0-player-experience-browser.mjs
 node --check scripts/test-p1-victory-next-browser.mjs
 node --check scripts/test-quarks-completion-mobile-browser.mjs
 node --check scripts/test-p2-mobile-foundation-browser.mjs
+node --check scripts/test-p2-feedback-language-browser.mjs
 node scripts/test-phase-goal-hierarchy-browser.mjs
 node scripts/test-p0-player-experience-browser.mjs
 node scripts/test-p1-victory-next-browser.mjs
 node scripts/test-quarks-completion-mobile-browser.mjs
 node scripts/test-p2-mobile-foundation-browser.mjs
+node scripts/test-p2-feedback-language-browser.mjs
