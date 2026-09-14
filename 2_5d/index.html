@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#070b18"/>
+<base href="../"/>
+<title>Ardua 2.5D — Astrofísica Nuclear</title>
+<link rel="preload" href="assets/AaronCopland.m4a" as="fetch" type="audio/mp4" fetchpriority="low"/>
+<link rel="stylesheet" href="assets/css/ardua.css?v=20260910-victory-click-1"/>
+<link rel="stylesheet" href="assets/css/stellar-formation.css"/>
+<link rel="stylesheet" href="assets/css/campaign-map.css"/>
+<link rel="stylesheet" href="assets/css/campaign-opening.css"/>
+<link rel="stylesheet" href="assets/css/campaign-discoveries.css"/>
+<link rel="stylesheet" href="assets/css/campaign-exploration.css"/>
+<link rel="stylesheet" href="assets/css/campaign-cosmic-polish.css"/>
+<link rel="stylesheet" href="assets/css/campaign-supergiants.css"/>
+<link rel="stylesheet" href="assets/css/campaign-giants.css"/>
+<link rel="stylesheet" href="assets/css/campaign-quasar.css"/>
+<link rel="stylesheet" href="assets/css/campaign-generations.css"/>
+<link rel="stylesheet" href="assets/css/phase-polish.css"/>
+<link rel="stylesheet" href="assets/css/phase-goal-layout.css?v=20260911-phase-goals-1"/>
+<link rel="stylesheet" href="assets/css/campaign-preamble.css"/>
+<link rel="stylesheet" href="assets/css/campaign-home-polish.css"/>
+<link rel="stylesheet" href="assets/css/campaign-phase-modal.css"/>
+<link rel="stylesheet" href="assets/css/campaign-discovery-notifications.css"/>
+<link rel="stylesheet" href="assets/css/phase-layout-consistency.css?v=20260910-phase-layout-1"/>
+<link rel="stylesheet" href="assets/css/reaction-chain-feedback.css?v=20260911-p0-1"/>
+<link rel="stylesheet" href="assets/css/campaign-victory-reward.css?v=20260912-p1-5-1"/>
+<link rel="stylesheet" href="assets/css/mobile-foundation.css?v=20260912-p2-1-1"/>
+<link rel="stylesheet" href="assets/css/feedback-language.css?v=20260912-p2-2-1"/>
+<link rel="stylesheet" href="assets/css/reaction-discovery-juice.css?v=20260912-p2-3-1"/>
+<link rel="stylesheet" href="2_5d/ardua-25d.css?v=20260914-1"/>
+</head>
+<body class="ardua-25d">
+<audio id="arduaSoundtrack" preload="auto" autoplay playsinline hidden>
+  <source src="assets/AaronCopland.m4a" type="audio/mp4"/>
+  <source src="https://raw.githubusercontent.com/TTamosauskas/Ardua/main/assets/AaronCopland.m4a" type="audio/mp4"/>
+</audio>
+<script src="assets/js/music.js"></script>
+<script src="assets/js/recipe-sound-profile.js?v=20260912-p2-2-1"></script>
+<script src="assets/js/audio-polish.js?v=20260912-p2-2-1"></script>
+<div class="app">
+  <div class="top">
+    <div class="phase-card"><small id="branchLabel">Nascimento da primeira estrela</small><strong id="phaseTitle">Nebulosa</strong><span id="phaseMeta">Novo elemento: Hélio</span></div>
+    <button class="map-btn" id="menuOpenBtn">Menu</button>
+  </div>
+
+  <div class="objective" id="objective"><strong class="goal-line" id="goalText">Crie 10 átomos de Hélio — 0/10</strong><span class="formula-line" id="formulaText">Hidrogênio + Hidrogênio → Hélio</span></div>
+  <div class="stage-progress"><span id="stageProgressLabel">ATIVIDADE</span><div class="progress-track"><div id="stageProgress"></div></div><span id="stageProgressText">0/0</span></div>
+
+  <div class="star-shell">
+    <div class="star-board" id="starBoard">
+      <div class="star-core" id="starCore"></div>
+      <div class="stellar-zones" id="stellarZones" aria-hidden="true"></div>
+      <div class="electron-mesh" id="electronMesh" aria-hidden="true"></div>
+      <div class="primordial-layer" id="primordialLayer"></div>
+      <button class="singularity" id="singularityBtn" aria-label="Iniciar o Big Bang"></button>
+      <div class="remnant-layer" id="remnantLayer">
+        <div class="beam-spinner" id="beamSpinner"></div>
+        <div class="accretion-disk" id="accretionDisk"></div>
+        <button class="remnant-core" id="remnantCore" aria-label="Remanescente compacto"></button>
+      </div>
+      <div class="rings"><div class="ring r0"></div><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+      <div class="cells" id="cells"></div>
+      <div class="lines" id="lines"></div>
+      <div class="pieces" id="pieces"></div>
+      <div class="cosmic-rays" id="cosmicRays"></div>
+      <div class="neutrons" id="neutrons"></div>
+      <div class="fx" id="fx"></div>
+      <div class="explosion" id="explosion"></div>
+      <button class="center-action stage-end" id="phaseEndBtn">ESPALHAR<br>POEIRA ESTELAR</button>
+      <div class="event-tooltip" id="eventTooltip" role="dialog" aria-live="assertive" aria-hidden="true">
+        <strong id="eventTooltipTitle"></strong><p id="eventTooltipText"></p><button type="button" id="eventTooltipBtn">CONTINUAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel" id="infoPanel" aria-live="polite">
+    <div class="info-tile particle" id="infoTile"><span class="info-z" id="infoZ">COSMOLOGIA</span><strong class="info-symbol" id="infoSymbol">∞</strong><span class="info-name" id="infoName">Singularidade</span><span class="info-mass" id="infoMass">estado inicial · limite</span></div>
+    <div class="info-copy"><div class="info-context" id="infoContext">Toque em uma peça para explorar</div><div class="info-fact" id="infoFact">Representa o limite em que nossos modelos clássicos deixam de descrever o Universo.</div><div class="info-recipes-title">Receitas descobertas</div><div class="info-recipes" id="infoRecipes"></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="ambient-banner" id="ambientBanner" role="status"><span class="ak" id="ambientKicker"></span><strong id="ambientTitle"></strong><small id="ambientText"></small><button type="button" class="ambient-continue" id="ambientContinueBtn" hidden>CONTINUAR</button></div>
+
+<div class="modal" id="menuModal"><div class="card">
+  <div class="eyebrow" id="phaseMenuMode">Campanha</div><h2>Fases</h2><p id="phaseMenuHint">As fases são liberadas conforme o avanço da campanha. Fases já alcançadas podem ser revisitadas.</p>
+  <div class="phase-menu" id="phaseMenu"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-section"><h3>Reações descobertas</h3><div class="reaction-catalog" id="reactionCatalog"></div><div class="catalog-detail reaction-detail" id="reactionDetail"><strong>Reações cumulativas</strong><span>Uma reação aprendida continua disponível quando o ambiente atual alcança as condições físicas necessárias.</span><p>O objetivo da fase permanece principal; reações antigas são opcionais.</p></div><h3 style="margin-top:13px">Capturas de prótons</h3><div class="reaction-catalog" id="protonCaptureCatalog"></div><div class="catalog-detail reaction-detail" id="protonCaptureDetail"><strong>Captura p</strong><span>Desbloqueada depois da fase de Captura de Prótons.</span><p>Selecione um próton livre e depois um núcleo. A carga do núcleo e o ambiente controlam a dificuldade da aproximação.</p></div></div>
+  <div class="menu-sep"></div>
+  <div class="menu-section"><h3>Atlas de descobertas</h3><div class="discovery-atlas" id="discoveryAtlas"></div><div class="catalog-detail discovery-detail" id="discoveryDetail"><strong>Mapa da matéria</strong><span>Descobertas aparecem sem porcentagem, moeda ou recompensa externa.</span><p>Toque em uma entrada revelada para rever o fenômeno.</p></div></div>
+  <div class="menu-sep"></div>
+  <div class="menu-section"><h3>Elementos</h3><div class="catalog" id="catalog"></div><div class="catalog-detail" id="catalogDetail"><strong>Catálogo</strong><span>Toque em um elemento.</span><p>Origem e processo aparecem aqui sem interromper a partida.</p></div></div>
+  <button class="big" id="closeMenu">Voltar</button>
+</div></div>
+
+<div class="stellar-intro" id="stellarIntro" aria-modal="true" role="dialog">
+  <div class="stellar-card">
+    <div class="intro-kicker" id="introKicker">Fase estelar</div>
+    <h2 id="introTitle">NEBULOSA</h2>
+    <p class="intro-sub" id="introSub">Onde uma estrela começa</p>
+    <p class="intro-line" id="introLine">Concentre a matéria para prosseguir</p>
+    <div class="stellar-portrait" aria-hidden="true"><div class="stellar-art nebula" id="stellarArt"></div></div>
+    <button class="stellar-start" id="stellarStartBtn">COMEÇAR</button>
+  </div>
+</div>
+
+<script src="assets/js/campaign-graph.js"></script>
+<script src="assets/js/campaign-preamble-order.js"></script>
+<script src="assets/js/campaign-generations.js"></script>
+<script src="assets/js/campaign-required-atlas.js"></script>
+<script src="assets/js/campaign-quarks-graph.js"></script>
+<script src="assets/js/campaign-supergiants.js"></script>
+<script src="assets/js/campaign-giants.js"></script>
+<script src="assets/js/campaign-quasar-rules.js"></script>
+<script src="assets/js/campaign-mode.js"></script>
+<script src="assets/js/rotation-polish.js"></script>
+<script src="assets/js/ardua.js?v=20260912-p2-2-1"></script>
+<script src="assets/js/recipe-audio-sync.js?v=20260912-p2-2-1"></script>
+<script src="assets/js/campaign-quasar-game.js"></script>
+<script src="assets/js/campaign-phase-labels.js?v=20260911-scatter-appreciation-1"></script>
+<script src="assets/js/campaign-phase-names.js?v=20260911-phase-goals-1"></script>
+<script src="assets/js/campaign-quarks.js?v=20260912-p2-2-1"></script>
+<script src="assets/js/campaign-quarks-chrome.js?v=20260912-quarks-single-cta-1"></script>
+<script src="assets/js/campaign-map.js?v=20260912-map-nav-2"></script>
+<script src="assets/js/campaign-quarks-map.js"></script>
+<script src="assets/js/campaign-preamble-map.js"></script>
+<script src="assets/js/campaign-opening.js"></script>
+<script src="assets/js/campaign-quasar-map.js"></script>
+<script src="assets/js/campaign-discoveries.js"></script>
+<script src="assets/js/campaign-quarks-discoveries.js"></script>
+<script src="assets/js/campaign-fundamental-forces.js"></script>
+<script src="assets/js/campaign-discoveries-elements.js?v=20260910-element-detail-render-3"></script>
+<script src="assets/js/campaign-element-bohr.js"></script>
+<script src="assets/js/campaign-discoveries-phenomena.js"></script>
+<script src="assets/js/campaign-forge-names.js?v=20260911-phase-goals-1"></script>
+<script src="assets/js/campaign-quasar-discovery.js"></script>
+<script src="assets/js/campaign-exploration.js"></script>
+<script src="assets/js/campaign-supergiants-map.js"></script>
+<script src="assets/js/campaign-giants-map.js"></script>
+<script src="assets/js/campaign-fork-links.js?v=20260912-map-nav-2"></script>
+<script src="assets/js/campaign-discovery-notifications.js"></script>
+<script src="assets/js/campaign-generations-map.js"></script>
+<script src="assets/js/phase-polish.js"></script>
+<script src="assets/js/campaign-home-polish.js"></script>
+<script src="assets/js/reaction-chain-feedback.js?v=20260911-p0-1"></script>
+<script src="assets/js/campaign-victory-reward.js?v=20260912-map-nav-2"></script>
+<script src="assets/js/campaign-victory-intent.js?v=20260911-p1-1"></script>
+<script src="assets/js/campaign-phase-completion.js?v=20260911-p0-e2e-1"></script>
+<script src="assets/js/campaign-runtime-sync.js?v=20260911-p0-e2e-1"></script>
+<script src="assets/js/campaign-phase-modal.js?v=20260912-map-nav-2"></script>
+<script src="assets/js/mobile-surface-coordinator.js?v=20260912-p2-1-1"></script>
+<script src="assets/js/feedback-language.js?v=20260912-p2-2-1"></script>
+<script src="assets/js/reaction-discovery-juice.js?v=20260912-p2-3-1"></script>
+<script src="assets/js/phase-home-escape.js?v=20260912-home-escape-2"></script>
+<script src="2_5d/ardua-25d.js?v=20260914-1"></script>
+</body>
+</html>
