@@ -14,8 +14,8 @@ async function openPhase(id,expectedTitle,expectedContext){
  },id);
  const page=await context.newPage();
  const pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
- await page.goto(base,{waitUntil:'commit',timeout:30000});
- await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.body.classList.contains('phase-goal-hierarchy'),undefined,{timeout:90000});
+ await page.goto(base,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.body.classList.contains('phase-goal-hierarchy'));
  if(id==='quarks'){
   await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_QUARKS?.isActive);
   await page.evaluate(()=>window.ARDUA_QUARKS.start());
@@ -55,8 +55,8 @@ await openPhase('black_hole','Atraia matéria — 0/6','BURACO NEGRO');
 
 const context=await browser.newContext({viewport:{width:390,height:844}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(base,{waitUntil:'commit',timeout:30000});
-await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'),undefined,{timeout:90000});
+await page.goto(base,{waitUntil:'domcontentloaded'});
+await page.waitForFunction(()=>window.ARDUA_PHASE_LABELS&&document.getElementById('campaignMap'));
 await page.waitForTimeout(1200);
 await page.evaluate(()=>window.ARDUA_PHASE_LABELS?.sync?.());
 await page.waitForTimeout(300);
