@@ -1,4 +1,4 @@
-/* Ardua — independent hard-navigation escape from a phase to the campaign map. */
+/* Ardua — campaign Home escape from a phase to the current campaign map. */
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
@@ -7,14 +7,6 @@ const HOME_PARAM='arduaHome';
 function cleanHomeParam(){
  const url=new URL(window.location.href);if(!url.searchParams.has(HOME_PARAM))return;
  url.searchParams.delete(HOME_PARAM);history.replaceState(history.state,'',`${url.pathname}${url.search}${url.hash}`);
-}
-function configureQuickMap(){
- const mapBtn=$('phaseQuickMap');if(!mapBtn)return false;
- const legacy=$('phaseQuickHome');if(legacy)legacy.remove();
- const label=mapBtn.querySelector('span');
- if(label){if(label.textContent!=='Início')label.textContent='Início'}
- else if(mapBtn.textContent!=='Início')mapBtn.textContent='Início';
- return true;
 }
 function releaseSessionOpening(){
  const map=$('campaignMap'),trail=$('campaignTrail');if(!map||!trail)return;
@@ -25,7 +17,7 @@ function releaseSessionOpening(){
  const oldRoot=map.querySelector('.singularity-map');
  if(oldRoot&&!oldRoot.dataset.arduaHomeReleased){
   // campaign-opening owns a direct capture listener that replays the session Big Bang.
-  // Clone only on this explicit escape load so the map's delegated canonical handler remains.
+  // Clone only for Home navigation so the map's delegated canonical handler remains.
   const root=oldRoot.cloneNode(true);root.dataset.arduaHomeReleased='1';root.setAttribute('aria-label','Big Bang');oldRoot.replaceWith(root);
  }
  const prompt=map.querySelector('.bigbang-start-prompt');prompt?.remove();
@@ -39,6 +31,28 @@ function visibleCurrentPhase(){
 function phaseMapReady(){
  const map=$('campaignMap'),trail=$('campaignTrail');
  return !!map&&map.classList.contains('show')&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!visibleCurrentPhase();
+}
+function settleHomeMap(){
+ releaseSessionOpening();
+ window.dispatchEvent(new Event('resize'));
+ requestAnimationFrame(()=>{
+  releaseSessionOpening();
+  visibleCurrentPhase()?.scrollIntoView({block:'center',behavior:'auto'});
+ });
+}
+function configureQuickMap(){
+ const mapBtn=$('phaseQuickMap');if(!mapBtn)return false;
+ const legacy=$('phaseQuickHome');if(legacy)legacy.remove();
+ const label=mapBtn.querySelector('span');
+ if(label){if(label.textContent!=='Início')label.textContent='Início'}
+ else if(mapBtn.textContent!=='Início')mapBtn.textContent='Início';
+ if(!mapBtn.dataset.arduaHomeBound){
+  mapBtn.dataset.arduaHomeBound='1';
+  // campaign-fork-links opens the canonical map first; this listener then releases
+  // the session Big Bang ritual and focuses the already-active campaign phase.
+  mapBtn.addEventListener('click',()=>setTimeout(settleHomeMap,0));
+ }
+ return true;
 }
 function openPhaseMapAfterReload(){
  let attempts=0;
