@@ -49,36 +49,32 @@ async function exposeSeededPhaseForFixture(){
 
 try{
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.getElementById('phaseQuickHome')&&window.ARDUA_CAMPAIGN);
+  await page.waitForFunction(()=>document.getElementById('phaseQuickMap')&&window.ARDUA_CAMPAIGN);
   await exposeSeededPhaseForFixture();
 
   const beforeMenu=await page.evaluate(()=>({
     activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
     mapOpen:document.getElementById('campaignMap')?.classList.contains('show')||false,
-    homeExists:!!document.getElementById('phaseQuickHome')
+    legacyHomeExists:!!document.getElementById('phaseQuickHome')
   }));
-  assert.deepEqual(beforeMenu,{activeId:'primordial_t',mapOpen:false,homeExists:true},'Fixture deve estar dentro de Trítio antes de testar Início');
+  assert.deepEqual(beforeMenu,{activeId:'primordial_t',mapOpen:false,legacyHomeExists:false},'Fixture deve estar dentro de Trítio com uma única ação de Início');
 
   await page.click('#menuOpenBtn');
   await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'));
 
-  const order=await page.evaluate(()=>{
+  const menuState=await page.evaluate(()=>{
     const home=document.getElementById('phaseQuickHome'),map=document.getElementById('phaseQuickMap');
-    return{home:!!home,map:!!map,above:home?.nextElementSibling===map};
+    return{legacyHome:!!home,map:!!map,label:map?.querySelector('span')?.textContent?.trim()||map?.textContent?.trim()||''};
   });
-  assert.deepEqual(order,{home:true,map:true,above:true},'Início deve existir imediatamente acima de Mapa com ID independente');
+  assert.deepEqual(menuState,{legacyHome:false,map:true,label:'Início'},'Menu rápido deve expor uma única ação Início, reutilizando o antigo botão Mapa');
 
-  await Promise.all([
-    page.waitForNavigation({waitUntil:'domcontentloaded'}),
-    page.click('#phaseQuickHome')
-  ]);
+  await page.click('#phaseQuickMap');
   await dismissBlockingSurface();
   await page.waitForFunction(()=>{
     const map=document.getElementById('campaignMap'),trail=document.getElementById('campaignTrail');
     const current=[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].find(el=>el.getClientRects().length>0);
     return !!map&&map.classList.contains('show')&&map.getAttribute('aria-hidden')==='false'&&!map.classList.contains('awaiting-bigbang')&&map.classList.contains('trail-revealed')&&trail?.getAttribute('aria-hidden')==='false'&&!!current;
   },{timeout:5000});
-  await page.waitForFunction(()=>!new URL(window.location.href).searchParams.has('arduaHome'));
 
   const state=await page.evaluate(()=>({
     activeId:window.ARDUA_CAMPAIGN?.getState?.().activeId||'',
@@ -88,24 +84,24 @@ try{
     currentVisible:[...document.querySelectorAll('#campaignMap .phase-node.current[data-phase="primordial_t"]')].some(el=>el.getClientRects().length>0),
     closeDisabled:document.getElementById('campaignClose')?.disabled||false,
     closeText:document.getElementById('campaignClose')?.textContent?.trim()||'',
-    homeExists:!!document.getElementById('phaseQuickHome'),
+    legacyHomeExists:!!document.getElementById('phaseQuickHome'),
     quickOpen:document.getElementById('phaseQuickMenu')?.classList.contains('show')||false,
     rewardOpen:document.getElementById('campaignVictoryReward')?.classList.contains('show')||false,
     previewOpen:document.getElementById('campaignPhasePreview')?.classList.contains('show')||false
   }));
-  assert.equal(state.activeId,'primordial_t','A saída para Início deve preservar o progresso e a fase ativa');
-  assert.equal(state.map,true,'Início deve abrir o mapa da campanha após navegação completa');
-  assert.equal(state.awaitingBigBang,false,'Início não pode deixar o mapa preso no ritual do Big Bang');
-  assert.equal(state.trail,true,'Início deve revelar a trilha de fases em vez de parar no Big Bang');
-  assert.equal(state.currentVisible,true,'A fase atual deve estar visível no mapa após a recarga');
+  assert.equal(state.activeId,'primordial_t','Início deve preservar o progresso e a fase ativa');
+  assert.equal(state.map,true,'Início deve abrir o mapa da campanha');
+  assert.equal(state.awaitingBigBang,false,'Início deve abrir a trilha atual da campanha');
+  assert.equal(state.trail,true,'Início deve revelar a trilha de fases');
+  assert.equal(state.currentVisible,true,'A fase atual deve estar visível no mapa');
   assert.equal(state.closeDisabled,false,'O mapa aberto por Início deve ser opcional');
   assert.equal(state.closeText,'Voltar','O mapa aberto por Início deve permitir retorno à fase');
-  assert.equal(state.homeExists,true,'O botão independente deve continuar disponível após a recarga');
-  assert.equal(state.quickOpen,false,'O menu rápido não pode reaparecer sobre o mapa');
-  assert.equal(state.rewardOpen,false,'Reward residual não pode cobrir o mapa');
-  assert.equal(state.previewOpen,false,'Preview residual não pode cobrir o mapa');
+  assert.equal(state.legacyHomeExists,false,'A interface deve manter uma única ação Início');
+  assert.equal(state.quickOpen,false,'O menu rápido deve fechar ao abrir o mapa');
+  assert.equal(state.rewardOpen,false,'Reward residual não deve cobrir o mapa');
+  assert.equal(state.previewOpen,false,'Preview residual não deve cobrir o mapa');
   assert.deepEqual(errors,[],`Erros JS: ${errors.join(' | ')}`);
-  console.log('Independent Home escape OK: phaseQuickHome hard-reloads into the revealed phase map, skips the session Big Bang ritual, preserves progress and keeps Voltar available.');
+  console.log('Single Home action OK: phaseQuickMap is labeled Início, opens the revealed phase map, preserves progress and keeps Voltar available.');
 } finally {
   await context.close();await browser.close();
 }
