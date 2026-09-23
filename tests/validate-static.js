@@ -3,6 +3,7 @@ const path=require('path');
 const root=path.resolve(__dirname,'..');
 const engine=fs.readFileSync(path.join(root,'assets/js/ardua.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const formationCss=fs.readFileSync(path.join(root,'assets/css/stellar-formation.css'),'utf8');
 function ok(cond,msg){if(!cond)throw new Error(msg);console.log('✓',msg)}
 const ids=[...engine.matchAll(/id:'(rp_[a-z]+)'/g)].map(m=>m[1]);
 ok(ids.length===24,'24 fases próprias do rp-process');
@@ -49,6 +50,14 @@ ok(engine.includes('const relocated=await relocateNewbornCoreProduct()')&&engine
 ok(engine.includes("if(s.mode==='primordialNuclear')return{p:2,n:2,e:0}")&&engine.includes("if(s.mode==='atomicRecombination'||s.mode==='primordialMolecule')return{p:2,n:2,e:2}"),'matéria-base primordial mantém piso renovável sem repor intermediários');
 ok(engine.includes('ensureBaseMatterReserve(phase())')&&engine.includes('const baseMatterChanged=ensureBaseMatterReserve(s)'),'reserva de matéria-base é reavaliada após reações e na recuperação de oportunidades');
 ok(engine.includes("const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:2}"),'fase molecular posterior preserva nêutrons suficientes para reconstruir a cadeia primordial');
+ok(engine.includes("pairCount<=3?2:pairCount<=9?3:pairCount<=18?4:5")&&engine.includes("pairCount<=3?2:pairCount<=9?4:pairCount<=18?5:6"),'formação estelar limita grupos simultâneos conforme a escala da estrela');
+ok(engine.includes("const cap=spec.pairCount<=3?38:spec.pairCount<=9?36:spec.pairCount<=18?32:30")&&engine.includes("fit=starSize()*.72/(2*spec.radius+3)"),'átomos da formação usam escala visual menor e adaptativa');
+ok(engine.includes('function stellarFormationSoftSeparate(f,dt)')&&engine.includes(")*.62"),'grupos independentes recebem separação suave sem colisão rígida');
+ok(engine.includes('function stellarFormationEntryPoint(f)')&&engine.includes('spawnRadius=center+stellarFormationAtomSize(f.spec)*1.35'),'novas duplas entram pela borda externa do campo');
+ok(engine.includes('function stellarFormationScheduleSupply(f,delay=620)')&&engine.includes("stellarFormationSpawnPair(f,{incoming:true})"),'novas duplas chegam gradualmente após liberar espaço');
+ok(engine.includes('for(let i=0;i<spec.initialGroups;i++)stellarFormationSpawnPair(f,{incoming:false})'),'formação não cria toda a matéria de uma vez');
+ok(formationCss.includes('.formation-atom::before')&&formationCss.includes('inset:-7px'),'átomos menores preservam uma área clicável confortável');
+ok(formationCss.includes('.formation-atom.formation-incoming')&&formationCss.includes('.formation-g-field.formation-incoming'),'matéria em entrada possui estado visual próprio');
 
 ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
 ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
