@@ -52,18 +52,13 @@ const WAITING_RP=new Set(['rp_ge','rp_se','rp_kr']);
 let scientificNames={},forgeNames={},syncFrame=0,applying=false,observedMap=null,mapObserver=null;
 
 function activeId(){if(window.ARDUA_QUARKS?.isActive?.())return'quarks';return document.documentElement.dataset.arduaEnginePhase||C.getState?.().activeId||''}
-function firstProgress(text){return String(text||'').match(/\b\d+\/\d+\b/)?.[0]||''}
 function compactGoal(raw,id=activeId()){
  if(STATIC_GOAL[id])return STATIC_GOAL[id];
  const text=String(raw||'').replace(/\s+/g,' ').trim();
  if(!text)return'';
- if(id==='first_atomic_bonds')return `Forme HeH⁺${firstProgress(text)?' — '+firstProgress(text):''}`;
- if(id==='first_nebulae')return `Crie gás primordial${firstProgress(text)?' — '+firstProgress(text):''}`;
- if(id==='white'){
-  const counts=[...text.matchAll(/\b[CO]\s+\d+\/\d+/g)].map(m=>m[0]);
-  return `Forme C e O${counts.length?' — '+counts.join(' · '):''}`;
- }
- const progress=firstProgress(text);
+ if(id==='first_atomic_bonds')return'Forme HeH⁺';
+ if(id==='first_nebulae')return'Crie gás primordial';
+ if(id==='white')return'Forme C e O';
  let base=text.split(/\s+—\s+/)[0].replace(/\s+·\s+observe\b.*$/i,'').trim();
  if(id==='quarks')base='Forme Prótons e Nêutrons';
  else if(id==='solar_wind')base='Ionize Hidrogênio';
@@ -103,7 +98,7 @@ function compactGoal(raw,id=activeId()){
    .replace(/\s+por\s+Fusão$/i,'');
  }
  base=base.replace(/\s+\d+\/\d+.*$/,'').trim();
- return progress?`${base} — ${progress}`:base;
+ return base;
 }
 function contextFor(id=activeId()){
  if(WAITING_RP.has(id))return'WAITING POINT · rp-PROCESS';
