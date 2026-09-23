@@ -20,7 +20,7 @@ ok(completion.includes('replayButton(original)'), 'fallback must hand completion
 
 ok(/id:'he_red'[^\n]*target:6/.test(engine), 'Anã vermelha Hélio-4 regression fixture changed');
 ok(/id:'stellar_movement'[^\n]*target:1,flowTarget:0/.test(engine), 'Movimentação Estelar regression fixture changed');
-ok(engine.includes("Leve o Hélio até o núcleo estelar. — ${done}/${s.target}"), 'movement objective ratio contract changed');
+ok(engine.includes("$('goalText').textContent='Leve o Hélio até o núcleo estelar.'")&&engine.includes("if(s.mode==='movementTutorial')return count(objectiveSatisfied(s)?1:0,s.target||1)"), 'movement objective must keep its counter in the progress bar');
 ok(engine.includes("setTimeout(()=>{if(phase()===s&&state.readyToAdvance)$('phaseEndBtn').classList.add('show')},720)"), 'normal engine end-button arming contract changed');
 
 console.log('Objective phase-end fallback validation passed through the universal completion contract.');
