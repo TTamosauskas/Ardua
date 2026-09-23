@@ -23,6 +23,7 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
  }
  await page.waitForFunction(({title,context})=>{const phaseTitle=document.getElementById('phaseTitle')?.textContent?.trim()||'',branch=document.getElementById('branchLabel'),branchText=branch?.hidden?'':(branch?.textContent?.trim()||'');return phaseTitle===title&&branchText===context},{title:expectedTitle,context:expectedContext},{timeout:4000});
  const result=await page.evaluate(()=>{
+  window.ARDUA_PHASE_LABELS?.sync?.();
   const title=document.getElementById('phaseTitle'),context=document.getElementById('branchLabel'),goal=document.getElementById('goalText'),formula=document.getElementById('formulaText');
   const ts=getComputedStyle(title),gs=getComputedStyle(goal),fs=getComputedStyle(formula);
   const nameLine=formula.querySelector('.recipe-name-line'),symbolLine=formula.querySelector('.recipe-symbol-line');
