@@ -39,6 +39,8 @@ ok(engine.includes('coulombRollBlocks(blockedCell,s,blockedPiece.sym)')&&engine.
 ok(engine.includes("coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'}"),'tooltip da Barreira de Coulomb usa sempre a mensagem didática fixa');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
 ok(engine.includes("['Próton','Próton','(+)']")&&engine.includes("['n','Nêutron','(n)']")&&engine.includes("['γ','Fóton gama','γ']"),'receitas mantêm nomes e símbolos em representações separadas');
+ok(engine.includes("['p','Próton','(+)']")&&engine.includes("['n','Nêutron','(n)']"),'tokens nucleares p/n usam (+)/(n)');
+ok(engine.includes("add(e.name.toLocaleLowerCase('pt-BR'),e.name,symbol)")&&engine.includes("(?=$|[\\\\s+→/·,)])\`,'g');"),'símbolos químicos diferenciam maiúsculas de partículas minúsculas');
 ok(engine.includes("return{name:restore('name'),symbol:restore('symbol')}")&&engine.includes('function recipeSymbolLine(label)'), 'formatador gera linha nominal e linha simbólica');
 ok(engine.includes('class="recipe-name-line"')&&engine.includes('class="recipe-symbol-line"'),'HUD renderiza receitas em duas linhas');
 ok(engine.includes("sub:headerRecipeLine(modalPrimaryLine(s))"),'modal de abertura preserva a linha nominal compacta');
