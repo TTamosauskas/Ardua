@@ -355,6 +355,7 @@ async function testQuasarDragAndChrome(){
     name:f?.querySelector('.recipe-name-line')?.textContent||'',
     symbol:f?.querySelector('.recipe-symbol-line')?.textContent||'',
     progressVisible:!!p&&!p.hidden&&style?.visibility!=='hidden'&&style?.display!=='none',
+    progressLabel:document.getElementById('stageProgressLabel')?.textContent||'',
     progressText:document.getElementById('stageProgressText')?.textContent||'',
     width:document.getElementById('stageProgress')?.style.width||'',
     visualWidth:document.getElementById('stageProgress')?getComputedStyle(document.getElementById('stageProgress')).width:'',
@@ -364,7 +365,8 @@ async function testQuasarDragAndChrome(){
   assert.equal(chrome.name,'Gás orbital + Gás orbital → Gás em acreção + radiação','Quasar: primeira linha da receita ausente');
   assert.equal(chrome.symbol,'m₁ + m₂ → mₐcc + hν','Quasar: segunda linha simbólica ausente');
   assert.equal(chrome.progressVisible,true,'Quasar: barra de progresso oculta');
-  assert.equal(chrome.progressText,'0% (0 de 6)','Quasar: progresso inicial deveria usar porcentagem + meta');
+  assert.equal(chrome.progressLabel,'0 de 6','Quasar: meta inicial deveria ficar no início da barra');
+  assert.equal(chrome.progressText,'0%','Quasar: porcentagem inicial deveria ficar no fim da barra');
   assert.ok(parseFloat(chrome.visualWidth)>=8,'Quasar: barra inicial deveria conservar preenchimento visual mínimo');
   assert.equal(chrome.goal,'Crie 6 unidades de Gás em Acreção','Quasar: objetivo não deveria repetir contador de progresso');
 
@@ -379,7 +381,7 @@ async function testQuasarDragAndChrome(){
   await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.dragging'),undefined,{timeout:1200});
   await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.drag-target'),undefined,{timeout:1200});
   await page.mouse.up();
-  await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='17% (1 de 6)',undefined,{timeout:2200});
+  await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='1 de 6'&&document.getElementById('stageProgressText')?.textContent==='17%',undefined,{timeout:2200});
   const after=await page.evaluate(()=>({width:document.getElementById('stageProgress')?.style.width||'',dragging:document.querySelectorAll('.quasar-gas.dragging').length,target:document.querySelectorAll('.quasar-gas.drag-target').length}));
   assert.equal(after.width,'17%','Quasar: progresso visual após uma acreção deveria ser 17%');
   assert.equal(after.dragging,0,'Quasar: estado dragging permaneceu após pointerup');
