@@ -20,8 +20,7 @@ function ensureProgressVisible(){
  if(progress.hidden)progress.hidden=false;if(progress.style.visibility!=='visible')progress.style.visibility='visible';if(progress.style.display==='none')progress.style.display='';if(progress.getAttribute('aria-hidden')==='true')progress.removeAttribute('aria-hidden');
 }
 function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
-function goalWithProgress(){const progress=$('goalText')?.textContent?.match(/\b\d+\/2\b/)?.[0]||'0/2';return`${GOAL} — ${progress}`}
-function objectiveComplete(){return /\b2\s*\/\s*2\b/.test($('goalText')?.textContent||'')}
+function objectiveComplete(){const bar=$('stageProgress'),current=Number(bar?.dataset.current||0),total=Number(bar?.dataset.total||0);return total>0&&current>=total}
 function restoreCompletionChrome(){
  clearTimeout(completionTimer);completionTimer=0;completionArmed=false;
  const end=$('phaseEndBtn');
@@ -48,14 +47,13 @@ function armAutomaticCompletion(){
 }
 function applyQuarksChrome(){
  if(!active)return;
- const goal=goalWithProgress();
  setClass(document.documentElement,'quarks-phase-root',true);
  setClass(document.body,'quarks-phase-active',true);
  setClass(document.body,'prebang',false);
  setClass(document.body,'bigbang-phase',false);
  setText('branchLabel','QUARKS');
- setText('phaseTitle',goal);
- setText('goalText',goal);
+ setText('phaseTitle',GOAL);
+ setText('goalText',GOAL);
  renderRecipe();ensureProgressVisible();
  setText('phaseEndBtn',NEXT_LABEL);
  armAutomaticCompletion();
@@ -71,6 +69,7 @@ function startOwnership(){
   observer.observe(el,options);
  }
  const progress=$('stageProgress')?.closest('.stage-progress');if(progress)observer.observe(progress,{attributes:true,attributeFilter:['style','hidden','aria-hidden']});
+ const bar=$('stageProgress');if(bar)observer.observe(bar,{attributes:true,attributeFilter:['style','data-current','data-total']});
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 }
 function stopOwnership(){
