@@ -2466,8 +2466,11 @@ function updateMoveTargets(){
 }
 function stellarBoardDragMechanicClear(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
 function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
- if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s)||['reactionExplore','rpProcess'].includes(s.mode))return null;
+ if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s)||s.mode==='rpProcess')return null;
  if(!(neigh[source.cell]||[]).includes(target.cell))return null;
+ if(s.mode==='reactionExplore'){
+  const sp=atlasSpec(s);return atlasPairMatches(sp,[source.sym,target.sym])?{atlas:true,ing:[sp.a,sp.b],out:sp.mainSym}:null
+ }
  return exactRecipe([source.sym,target.sym])||null
 }
 function stellarBoardDragSourceAvailable(p,s=phase()){
@@ -2506,7 +2509,7 @@ function finishStellarBoardDrag(id,ev,cancel=false){
  if(!wasActive){updateMoveTargets();return false}
  ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;
  if(!source){render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true}
- if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');setTimeout(()=>fuse(recipe),95);return true}}
+ if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){const cells=[source.cell,other.cell];state.selected=[...cells];if(recipe.atlas){render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');setTimeout(()=>resolveAtlasAttempt(cells),80);return true}objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');setTimeout(()=>fuse(recipe),95);return true}}
  if(target?.type==='move'){state.selected=[source.cell];render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');moveSelectedAtom(target.cell);return true}
  if(target?.type==='swap'){window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');swapBoardPieces(d.sourceCell,target.cell);return true}
  render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true
