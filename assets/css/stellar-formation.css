@@ -21,7 +21,8 @@
 .formation-g-field.dragging{opacity:1;border-color:rgba(216,248,255,.62);box-shadow:0 0 24px rgba(126,220,255,.24)}
 .formation-g-field.drag-target{border-color:rgba(67,242,138,.96);box-shadow:0 0 0 3px rgba(67,242,138,.14),0 0 28px rgba(67,242,138,.34);opacity:1}
 .formation-atom.drag-target{outline:4px solid rgba(67,242,138,.98);outline-offset:2px;box-shadow:0 0 24px rgba(67,242,138,.48),inset 0 0 18px rgba(255,255,255,.18)}
-.formation-atom.drag-anchored{cursor:pointer}
+.formation-atom.drag-anchored{cursor:not-allowed;filter:saturate(.88)}
+.formation-g-field.drag-anchored::after{content:"ancorado";right:6%;top:8%;padding:2px 4px;border-radius:999px;background:rgba(8,15,31,.72);border:1px solid rgba(255,255,255,.16);color:rgba(236,248,255,.62);font-size:6px;letter-spacing:.02em}
 .formation-atom::before{content:"";position:absolute;inset:-7px;border-radius:50%}
 .formation-atom.formation-incoming{pointer-events:none;opacity:.72;filter:saturate(.82) brightness(.96)}
 .formation-g-field.formation-incoming{opacity:.34;border-style:dashed}
