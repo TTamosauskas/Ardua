@@ -179,6 +179,14 @@ async function testCentralFusionProductRelocation(){
     return null;
    },{beforeIds,centerCell:g.center.cell});
   }
+  if(!product){
+   const snapshot=await page.evaluate(({beforeIds,centerCell})=>({
+    centerCell,
+    tooltip:document.getElementById('eventTooltip')?.classList.contains('show')||false,
+    atoms:[...document.querySelectorAll('#pieces .atom[data-id]')].map(el=>({id:Number(el.dataset.id),cell:el.dataset.cell,sym:el.querySelector('.sym')?.textContent?.trim()||'',fresh:!beforeIds.includes(Number(el.dataset.id)),classes:el.className}))
+   }),{beforeIds,centerCell:g.center.cell});
+   console.log('CORE_RELOCATION_SNAPSHOT',JSON.stringify(snapshot));
+  }
   assert.ok(product,'Anã marrom: Hélio-3 formado no núcleo permaneceu na célula central após concluir a reação');
   assert.equal(product.sym,'³He','Anã marrom: reação central deveria produzir Hélio-3');
   assert.notEqual(product.cell,g.center.cell,'Produto ³He permaneceu na célula central sob o controle ↕');
