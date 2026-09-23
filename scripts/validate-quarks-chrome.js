@@ -9,7 +9,7 @@ function expect(condition,message){if(!condition)throw new Error(`Quarks chrome 
 function before(a,b){return index.indexOf(a)>=0&&index.indexOf(b)>=0&&index.indexOf(a)<index.indexOf(b)}
 
 expect(chrome.includes("const GOAL='Forme Prótons e Nêutrons'"),'Quarks objective must use the compact Forme wording');
-expect(chrome.includes("function goalWithProgress()")&&chrome.includes("return`${GOAL} — ${progress}`"),'Quarks objective must carry its 0/2 progress in the header');
+expect(!chrome.includes('function goalWithProgress()')&&chrome.includes("bar?.dataset.current")&&chrome.includes("bar?.dataset.total"),'Quarks completion must read progress data instead of a header counter');
 expect(chrome.includes("const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron'"),'visible recipe must explain both baryon combinations');
 expect(chrome.includes("const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰'"),'visible recipe must include the symbolic second line');
 expect(chrome.includes('function renderRecipe()')&&chrome.includes('recipe-name-line')&&chrome.includes('recipe-symbol-line'),'Quarks chrome must preserve two-line recipe markup');
@@ -18,7 +18,7 @@ expect(chrome.includes("const NEXT_LABEL='Próxima fase'"),'final circular butto
 expect(chrome.includes("setText('phaseEndBtn',NEXT_LABEL)"),'Quarks must own the final button label even after native updates');
 expect(chrome.includes("'formulaText','phaseEndBtn'"),'final button text must be observed with the rest of the Quarks chrome');
 expect(chrome.includes("setText('branchLabel','QUARKS')"),'Quarks identity must remain as the small contextual label');
-expect(chrome.includes("setText('phaseTitle',goal)")&&chrome.includes("setText('goalText',goal)"),'visible phase title must be the compact live objective');
+expect(chrome.includes("setText('phaseTitle',GOAL)")&&chrome.includes("setText('goalText',GOAL)"),'visible phase title and objective must stay counter-free');
 expect(chrome.includes("C.markCompleted?.('quarks')"),'successful Quarks completion must be persisted before returning to the map');
 expect(chrome.includes("end.classList.contains('show')"),'Quarks completion must only be persisted after the successful final state is visible');
 expect(chrome.includes("function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}"),'class ownership must be idempotent so its MutationObserver cannot feed itself');
