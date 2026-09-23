@@ -356,13 +356,17 @@ async function testQuasarDragAndChrome(){
     symbol:f?.querySelector('.recipe-symbol-line')?.textContent||'',
     progressVisible:!!p&&!p.hidden&&style?.visibility!=='hidden'&&style?.display!=='none',
     progressText:document.getElementById('stageProgressText')?.textContent||'',
-    width:document.getElementById('stageProgress')?.style.width||''
+    width:document.getElementById('stageProgress')?.style.width||'',
+    visualWidth:document.getElementById('stageProgress')?getComputedStyle(document.getElementById('stageProgress')).width:'',
+    goal:document.getElementById('goalText')?.textContent||''
    };
   });
   assert.equal(chrome.name,'Gás orbital + Gás orbital → Gás em acreção + radiação','Quasar: primeira linha da receita ausente');
   assert.equal(chrome.symbol,'m₁ + m₂ → mₐcc + hν','Quasar: segunda linha simbólica ausente');
   assert.equal(chrome.progressVisible,true,'Quasar: barra de progresso oculta');
-  assert.equal(chrome.progressText,'0/6','Quasar: progresso inicial deveria ser 0/6');
+  assert.equal(chrome.progressText,'0% (0 de 6)','Quasar: progresso inicial deveria usar porcentagem + meta');
+  assert.ok(parseFloat(chrome.visualWidth)>=8,'Quasar: barra inicial deveria conservar preenchimento visual mínimo');
+  assert.equal(chrome.goal,'Crie 6 unidades de Gás em Acreção','Quasar: objetivo não deveria repetir contador de progresso');
 
   const source=page.locator('.quasar-gas[data-gas-index="0"]'),target=page.locator('.quasar-gas[data-gas-index="1"]'),sb=await source.boundingBox(),tb=await target.boundingBox();
   assert.ok(sb&&tb,'Quasar: parcelas iniciais sem geometria');
@@ -375,7 +379,7 @@ async function testQuasarDragAndChrome(){
   await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.dragging'),undefined,{timeout:1200});
   await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.drag-target'),undefined,{timeout:1200});
   await page.mouse.up();
-  await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='1/6',undefined,{timeout:2200});
+  await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='17% (1 de 6)',undefined,{timeout:2200});
   const after=await page.evaluate(()=>({width:document.getElementById('stageProgress')?.style.width||'',dragging:document.querySelectorAll('.quasar-gas.dragging').length,target:document.querySelectorAll('.quasar-gas.drag-target').length}));
   assert.equal(after.width,'17%','Quasar: progresso visual após uma acreção deveria ser 17%');
   assert.equal(after.dragging,0,'Quasar: estado dragging permaneceu após pointerup');
