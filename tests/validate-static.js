@@ -43,6 +43,9 @@ ok(engine.includes("const symbol=infoSymbolFor(sym),shown=\`\${e.name} (\${symbo
 ok(engine.includes("sub:headerRecipeLine(modalPrimaryLine(s))"),'modal de abertura usa o mesmo formato nome + símbolo do HUD');
 ok(engine.includes('async function relocateNewbornCoreProduct()')&&engine.includes('const center=(byRing[0]||[])[0]')&&engine.includes('const ringOne=(byRing[1]||[])'),'produto recém-formado no núcleo central é deslocado para a primeira camada');
 ok(engine.includes('const relocated=await relocateNewbornCoreProduct()')&&engine.includes('protectedPieceIds:protectedIds'),'produto deslocado do núcleo fica protegido do pulso gravitacional da mesma reação');
+ok(engine.includes("if(s.mode==='primordialNuclear')return{p:2,n:2,e:0}")&&engine.includes("if(s.mode==='atomicRecombination'||s.mode==='primordialMolecule')return{p:2,n:2,e:2}"),'matéria-base primordial mantém piso renovável sem repor intermediários');
+ok(engine.includes('ensureBaseMatterReserve(phase())')&&engine.includes('const baseMatterChanged=ensureBaseMatterReserve(s)'),'reserva de matéria-base é reavaliada após reações e na recuperação de oportunidades');
+ok(engine.includes("const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:2}"),'fase molecular posterior preserva nêutrons suficientes para reconstruir a cadeia primordial');
 
 ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
 ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
