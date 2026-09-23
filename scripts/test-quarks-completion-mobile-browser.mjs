@@ -33,7 +33,7 @@ try{
  await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION);
  await page.evaluate(()=>window.ARDUA_QUARKS.start());
  await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&document.querySelectorAll('.quark-piece').length===6);
- await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='0% (0 de 2)'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
+ await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='0 de 2'&&document.getElementById('stageProgressText')?.textContent==='0%'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
 
  const chrome=await page.evaluate(()=>{
   const formula=document.getElementById('formulaText'),progress=document.querySelector('.stage-progress'),bar=document.getElementById('stageProgress'),style=progress?getComputedStyle(progress):null;
@@ -41,6 +41,7 @@ try{
    name:formula?.querySelector('.recipe-name-line')?.textContent||'',
    symbol:formula?.querySelector('.recipe-symbol-line')?.textContent||'',
    progressVisible:!!progress&&!progress.hidden&&style?.visibility!=='hidden'&&style?.display!=='none',
+   progressLabel:document.getElementById('stageProgressLabel')?.textContent||'',
    progressText:document.getElementById('stageProgressText')?.textContent||'',
    progressWidth:bar?.style.width||'',
    progressVisualWidth:bar?getComputedStyle(bar).width:'',
@@ -51,7 +52,8 @@ try{
  assert.equal(chrome.name,'2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron','Quarks: primeira linha da receita ausente');
  assert.equal(chrome.symbol,'u + u + d → p⁺ · u + d + d → n⁰','Quarks: segunda linha simbólica ausente');
  assert.equal(chrome.progressVisible,true,'Quarks: barra de progresso continua oculta');
- assert.equal(chrome.progressText,'0% (0 de 2)','Quarks: progresso inicial deveria usar porcentagem + meta');
+ assert.equal(chrome.progressLabel,'0 de 2','Quarks: meta inicial deveria ficar no início da barra');
+ assert.equal(chrome.progressText,'0%','Quarks: porcentagem inicial deveria ficar no fim da barra');
  assert.equal(chrome.progressWidth,'0%','Quarks: valor lógico inicial deveria continuar em 0%');
  assert.ok(parseFloat(chrome.progressVisualWidth)>=8,'Quarks: barra em 0% deveria manter preenchimento visual mínimo');
  assert.equal(chrome.goal,'Forme Prótons e Nêutrons','Quarks: objetivo não deveria repetir a meta numérica');
@@ -69,12 +71,13 @@ try{
  await page.locator('.phase-quick-close').click();
 
  await makeBaryonByDrag('.quark-piece.quark-d','.quark-piece.quark-u');
- await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='50% (1 de 2)',undefined,{timeout:3000});
- const halfway=await page.evaluate(()=>({text:document.getElementById('stageProgressText')?.textContent||'',width:document.getElementById('stageProgress')?.style.width||''}));
- assert.equal(halfway.text,'50% (1 de 2)','Quarks: progresso intermediário deveria usar porcentagem + meta');
+ await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='1 de 2'&&document.getElementById('stageProgressText')?.textContent==='50%',undefined,{timeout:3000});
+ const halfway=await page.evaluate(()=>({label:document.getElementById('stageProgressLabel')?.textContent||'',text:document.getElementById('stageProgressText')?.textContent||'',width:document.getElementById('stageProgress')?.style.width||''}));
+ assert.equal(halfway.label,'1 de 2','Quarks: meta intermediária deveria ficar no início da barra');
+ assert.equal(halfway.text,'50%','Quarks: porcentagem intermediária deveria ficar no fim da barra');
  assert.equal(halfway.width,'50%','Quarks: barra intermediária deveria estar em 50%');
  await makeBaryonByDrag('.quark-piece.quark-u','.quark-piece.quark-d');
- await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='100% (2 de 2)',undefined,{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='2 de 2'&&document.getElementById('stageProgressText')?.textContent==='100%',undefined,{timeout:3000});
  await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD.pending?.phaseId==='quarks'||document.documentElement.dataset.arduaCompletionState==='celebrating',undefined,{timeout:1200});
  await page.waitForFunction(()=>!document.getElementById('discoveryUnlockModal')?.classList.contains('show'),undefined,{timeout:1200});
 
