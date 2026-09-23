@@ -77,9 +77,6 @@ function buildLayer(){
   b.style.left=`${x}%`;b.style.top=`${y}%`;b.setAttribute('aria-label',`Gás orbital ${i+1}`);b.innerHTML='<span></span>';
   b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('click',onGasClick);field.appendChild(b);
  });
- layer.addEventListener('pointermove',ev=>{if(drag)moveGasDrag(drag.source,ev)},{capture:true,passive:false});
- layer.addEventListener('pointerup',ev=>{if(drag)finishGasDrag(drag.source,ev,false)},true);
- layer.addEventListener('pointercancel',ev=>{if(drag)finishGasDrag(drag.source,ev,true)},true);
  board.appendChild(layer);
 }
 function invalidPair(a,b){
@@ -101,6 +98,15 @@ function armGasDrag(source,ev){if(complete||source.classList.contains('spent')||
 function moveGasDrag(source,ev){const d=drag;if(!d||d.source!==source||d.pointerId!==ev.pointerId||complete)return;const pt=gasPointerPoint(ev);if(!pt)return;if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;if(!d.active){d.active=true;if(selected){selected.classList.remove('selected');selected=null}source.classList.add('dragging');window.ARDUA_ROTATION?.beginInteraction?.('quasar-drag')}
  ev.preventDefault();ev.stopPropagation();source.style.left=`${(pt.x/Math.max(1,pt.width)*100).toFixed(3)}%`;source.style.top=`${(pt.y/Math.max(1,pt.height)*100).toFixed(3)}%`;clearGasDragTarget();d.target=gasDragTarget(source,ev);d.target?.classList.add('drag-target')}
 function finishGasDrag(source,ev,cancel=false){const d=drag;if(!d||d.source!==source||d.pointerId!==ev.pointerId)return false;const wasActive=d.active,target=!cancel?d.target:null;drag=null;try{source.releasePointerCapture(ev.pointerId)}catch(_e){};if(!wasActive)return false;ev.preventDefault();ev.stopPropagation();suppressClickUntil=performance.now()+520;source.classList.remove('dragging');clearGasDragTarget();window.ARDUA_ROTATION?.endInteraction?.('quasar-drag');if(target){react(source,target);return true}source.style.left=d.originLeft;source.style.top=d.originTop;return true}
+function trackGasDrag(ev){
+ const d=drag;if(!d||d.pointerId!==ev.pointerId)return;moveGasDrag(d.source,ev)
+}
+function releaseGasDrag(ev,cancel=false){
+ const d=drag;if(!d||d.pointerId!==ev.pointerId)return;finishGasDrag(d.source,ev,cancel)
+}
+document.addEventListener('pointermove',trackGasDrag,{capture:true,passive:false});
+document.addEventListener('pointerup',ev=>releaseGasDrag(ev,false),true);
+document.addEventListener('pointercancel',ev=>releaseGasDrag(ev,true),true);
 function reactionPoint(a,b){
  const lr=layer.getBoundingClientRect(),ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),x=((ar.left+ar.width/2+br.left+br.width/2)/2-lr.left)/Math.max(1,lr.width)*100,y=((ar.top+ar.height/2+br.top+br.height/2)/2-lr.top)/Math.max(1,lr.height)*100;
  return{x,y};
