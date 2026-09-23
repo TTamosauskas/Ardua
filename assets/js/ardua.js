@@ -3499,67 +3499,92 @@ function conciseRecipeLine(s=phase()){
  }
  return s.meta||'';
 }
+function stageProgressLabel(s=phase()){
+ if(state.readyToAdvance){if(s.mode==='stellarFormation')return'ESTRELA PRONTA';if(s.id==='brown')return'RESERVATÓRIO ESGOTADO';return'CONCLUÍDA'}
+ if(s.id==='solar_wind')return'VENTO SOLAR';if(s.mode==='stellarIonization')return'IONIZAÇÃO';if(s.mode==='stellarRecombination')return'RECOMBINAÇÃO';
+ if(s.mode==='stellarFormation')return'AGLOMERAÇÃO';if(s.mode==='primordialMolecule')return'QUÍMICA PRIMORDIAL';if(s.id==='brown')return'QUEIMA DE DEUTÉRIO';
+ if(s.coronalJetTutorial)return'JATOS CORONAIS';if(s.mode==='convection')return'CONVECÇÃO';return''
+}
+function stageProgressMetric(s=phase(),{formationSpec=null,formationLargest=0}={}){
+ const count=(current,total,detail='')=>({current:Math.max(0,Number(current)||0),total:Math.max(0,Number(total)||0),detail});
+ if(s.mode==='opening'||s.mode==='showcase'||s.mode==='collapseFinal')return{current:null,total:null,detail:''};
+ if(s.mode==='movementTutorial')return count(objectiveSatisfied(s)?1:0,s.target||1);
+ if(s.mode==='stellarFormation')return count(formationLargest,formationSpec?.total||stellarFormationSpec(s).total);
+ if(s.mode==='stellarIonization')return count(state.stellarIonizations,s.target);
+ if(s.mode==='stellarRecombination')return count(state.stellarRecombinations,s.target);
+ if(s.coronalJetTutorial)return count(state.coronalJetCount||0,s.target);
+ if(s.mode==='convection')return count(state.convectionMoves||0,s.target);
+ if(s.mode==='reactionExplore')return count(state.atlasProgress||0,s.target);
+ if(s.mode==='primordialMolecule'||s.mode==='primordialNuclear'||s.mode==='atomicRecombination')return count(primordialGoalCount(s),s.target);
+ if(s.mode==='whiteCompact'){const w=whiteCounts(s),c=Math.min(w.c,w.targetC),o=Math.min(w.o,w.targetO);return count(c+o,w.targetC+w.targetO,`C ${c} de ${w.targetC} · O ${o} de ${w.targetO}`)}
+ if(s.mode==='neutronize')return count(state.crushed,s.target);
+ if(s.mode==='blackhole'||['remnant','pulsar','accretion'].includes(s.mode))return count(state.absorbed,s.target);
+ if(s.mode==='protonCapture')return count(state.protonCaptures,s.target);
+ if(s.mode==='rpProcess'){const made=state.created[s.new]||0,step=rpStep(s),parts=[`${Math.min(made,s.target)} de ${s.target}`];if(step?.pattern==='waiting')parts.push(`waiting point ${Math.min(1,state.rpWaitDecays)} de 1`);if(step?.pattern==='cycle')parts.push(`ciclo ${Math.min(1,state.rpCyclesObserved)} de 1`);return count(made,s.target,parts.join(' · '))}
+ if(s.mode==='decayGarden')return count(decayDiscoveryCount(s),s.target);
+ if(s.mode==='neutron'){const g=neutronGameplay(s),made=state.created[s.new]||0,parts=[`${Math.min(made,s.target)} de ${s.target}`];if(s.id==='tc'||s.id==='pm')parts.push(`radioatividade ${state.radioactiveProofDone?1:0} de 1`);if(g.requiresSource)parts.push(`fonte ${Math.min(1,state.neutronSourceActivations)} de 1`);if(g.requiresBranch)parts.push(`ramificação ${Math.min(1,state.neutronBranchesObserved)} de 1`);if(g.requiresFreezeout)parts.push(`freeze-out ${Math.min(1,state.neutronFreezeouts)} de 1`);return count(made,s.target,parts.join(' · '))}
+ if(s.id==='brown')return count(state.created.He3||0,brownBurnLimit());
+ if(Number.isFinite(Number(s.target))&&Number(s.target)>0)return count(state.created[s.new]||0,s.target);
+ return{current:null,total:null,detail:''}
+}
+function renderStageProgress({percent=0,current=null,total=null,label='',detail='',ready=false,visible=true}={}){
+ const wrap=document.querySelector('.stage-progress'),bar=$('stageProgress'),text=$('stageProgressText'),labelEl=$('stageProgressLabel');if(!wrap||!bar||!text||!labelEl)return;
+ const logical=Math.max(0,Math.min(100,Number(percent)||0)),shown=ready?100:Math.min(99,Math.floor(logical));
+ const hasCount=Number.isFinite(Number(current))&&Number.isFinite(Number(total))&&Number(total)>0,metric=detail||(hasCount?`${Math.min(Math.max(0,Number(current)||0),Number(total))} de ${Number(total)}`:'');
+ labelEl.textContent=label||'';text.textContent=metric?`${shown}% (${metric})`:`${shown}%`;
+ bar.style.width=`${logical}%`;bar.dataset.current=hasCount?String(Math.max(0,Number(current)||0)):'';bar.dataset.total=hasCount?String(Number(total)):'';
+ wrap.classList.toggle('ready',!!ready);wrap.style.visibility=visible?'visible':'hidden';wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax','100');wrap.setAttribute('aria-valuenow',String(shown));wrap.setAttribute('aria-valuetext',text.textContent)
+}
+window.ARDUA_PROGRESS_UI=Object.freeze({render:renderStageProgress});
 function updateHUD(){
  const s=phase();
  dom.singularity.classList.toggle('show',s.mode==='opening'&&!state.bigBangStarted);
  $('branchLabel').textContent='';$('phaseTitle').textContent=s.title;$('phaseMeta').textContent='';
  const formationSpec=s.mode==='stellarFormation'?stellarFormationSpec(s):null,formationLargest=s.mode==='stellarFormation'&&state.stellarFormation?Math.max(0,...[...state.stellarFormation.groups.values()].map(g=>g.members.length)):0;
- const p=s.mode==='stellarFormation'?Math.min(100,formationLargest/formationSpec.total*100):s.mode==='stellarIonization'?Math.min(100,state.stellarIonizations/Math.max(1,s.target)*100):s.mode==='stellarRecombination'?Math.min(100,state.stellarRecombinations/Math.max(1,s.target)*100):s.coronalJetTutorial?Math.min(100,(state.coronalJetCount||0)/Math.max(1,s.target)*100):currentProgress(),flowTarget=Math.max(0,s.flowTarget||0);
- $('stageProgress').style.width=p+'%';
- if(s.mode==='stellarFormation')$('stageProgressText').textContent=`${formationLargest}/${formationSpec.total}`;
- else if(s.mode==='stellarIonization')$('stageProgressText').textContent=`${state.stellarIonizations}/${s.target}`;
- else if(s.mode==='stellarRecombination')$('stageProgressText').textContent=`${state.stellarRecombinations}/${s.target}`;
- else if(s.mode==='primordialMolecule')$('stageProgressText').textContent=`${primordialGoalCount(s)}/${s.target}`;
- else if(s.id==='brown')$('stageProgressText').textContent=`${state.created.He3||0}/${brownBurnLimit()}`;
- else if(s.coronalJetTutorial)$('stageProgressText').textContent=`${state.coronalJetCount||0}/${s.target}`;
- else if(s.mode==='convection')$('stageProgressText').textContent=`${state.convectionMoves||0}/${s.target}`;
- else if(s.mode==='whiteCompact'){const w=whiteCounts(s);$('stageProgressText').textContent=`C ${Math.min(w.c,w.targetC)}/${w.targetC} · O ${Math.min(w.o,w.targetO)}/${w.targetO}`}
- else {const shown=state.readyToAdvance?100:Math.min(99,Math.floor(p));$('stageProgressText').textContent=flowTarget?`${shown}%`:'';}
- $('stageProgressLabel').textContent=s.id==='solar_wind'?(state.readyToAdvance?'CONCLUÍDA':'VENTO SOLAR'):s.mode==='stellarIonization'?(state.readyToAdvance?'CONCLUÍDA':'IONIZAÇÃO'):s.mode==='stellarRecombination'?(state.readyToAdvance?'CONCLUÍDA':'RECOMBINAÇÃO'):s.mode==='stellarFormation'?(state.readyToAdvance?'ESTRELA PRONTA':'AGLOMERAÇÃO'):s.mode==='primordialMolecule'?(state.readyToAdvance?'CONCLUÍDA':'QUÍMICA PRIMORDIAL'):s.id==='brown'?(state.readyToAdvance?'RESERVATÓRIO ESGOTADO':'QUEIMA DE DEUTÉRIO'):s.coronalJetTutorial?(state.readyToAdvance?'CONCLUÍDA':'JATOS CORONAIS'):s.mode==='convection'?(state.readyToAdvance?'CONCLUÍDA':'CONVECÇÃO'):(state.readyToAdvance?'CONCLUÍDA':'PROGRESSO');
- const progressEl=document.querySelector('.stage-progress');progressEl.classList.toggle('ready',state.readyToAdvance);progressEl.style.visibility=s.mode==='opening'?'hidden':'visible';
+ const p=s.mode==='stellarFormation'?Math.min(100,formationLargest/formationSpec.total*100):s.mode==='stellarIonization'?Math.min(100,state.stellarIonizations/Math.max(1,s.target)*100):s.mode==='stellarRecombination'?Math.min(100,state.stellarRecombinations/Math.max(1,s.target)*100):s.coronalJetTutorial?Math.min(100,(state.coronalJetCount||0)/Math.max(1,s.target)*100):currentProgress(),metric=stageProgressMetric(s,{formationSpec,formationLargest});
+ renderStageProgress({percent:p,current:metric.current,total:metric.total,detail:metric.detail,label:stageProgressLabel(s),ready:state.readyToAdvance,visible:s.mode!=='opening'});
  const stellarDustEnd=!isPrimordial(s)&&s.mode!=='stellarFormation'&&s.mode!=='campaignMilestone'&&s.endEvent!=='supernova'&&s.endEvent!=='finale';$('phaseEndBtn').innerHTML=stellarDustEnd?'ESPALHAR<br>POEIRA ESTELAR':(s.endLabel||'ESPALHAR<br>POEIRA ESTELAR');updateObjective();applyVisual();applyRewardProgressVisuals();renderInfoPanel()
 }
 function updateObjective(){
  const s=phase();
- if(s.mode==='movementTutorial'){const done=objectiveSatisfied(s)?1:0;$('goalText').textContent=`Leve o Hélio até o núcleo estelar. — ${done}/${s.target}`;setFormula('Clique no átomo e avance um espaço por vez');return}
- if(s.id==='solar_wind'){$('goalText').textContent=`Ionize átomos de Hidrogênio ${state.stellarIonizations}/${s.target}`;setFormula('H + e⁻ → p⁺ + 2e⁻');return}
- if(s.mode==='stellarIonization'){$('goalText').textContent=`Ionize átomos ${state.stellarIonizations}/${s.target}`;setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');return}
- if(s.mode==='stellarRecombination'){$('goalText').textContent=`Recombine íons ${state.stellarRecombinations}/${s.target}`;setFormula('Íon⁺ + e⁻ → Átomo + γ');return}
-
- if(s.mode==='stellarFormation'){const spec=stellarFormationSpec(s),f=state.stellarFormation,largest=f?Math.max(0,...[...f.groups.values()].map(g=>g.members.length)):0;$('goalText').textContent=`Reúna as ${spec.pairCount} duplas de H — maior aglomerado ${Math.min(largest,spec.visibleTotal)}/${spec.visibleTotal}`;setFormula('O último H permanece oculto e completa automaticamente a vaga final');return}
- if(s.mode==='reactionExplore'){const sp=atlasSpec(s),done=state.atlasProgress||0;if(sp?.category==='inaccessible')$('goalText').textContent=`Teste a aproximação ${s.target} vezes — ${done}/${s.target}`;else if(sp?.category==='fragment')$('goalText').textContent=`Observe ${s.target} fragmentações completas — ${done}/${s.target}`;else $('goalText').textContent=`Complete ${s.target} observações desta reação — ${done}/${s.target}`;setFormula(atlasNextRecipeLine(s));return}
+ if(s.mode==='movementTutorial'){$('goalText').textContent='Leve o Hélio até o núcleo estelar.';setFormula('Clique no átomo e avance um espaço por vez');return}
+ if(s.id==='solar_wind'){$('goalText').textContent='Ionize átomos de Hidrogênio';setFormula('H + e⁻ → p⁺ + 2e⁻');return}
+ if(s.mode==='stellarIonization'){$('goalText').textContent='Ionize átomos';setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');return}
+ if(s.mode==='stellarRecombination'){$('goalText').textContent='Recombine íons';setFormula('Íon⁺ + e⁻ → Átomo + γ');return}
+ if(s.mode==='stellarFormation'){const spec=stellarFormationSpec(s);$('goalText').textContent=`Reúna as ${spec.pairCount} duplas de H`;setFormula('O último H permanece oculto e completa automaticamente a vaga final');return}
+ if(s.mode==='reactionExplore'){const sp=atlasSpec(s);if(sp?.category==='inaccessible')$('goalText').textContent=`Teste a aproximação ${s.target} vezes`;else if(sp?.category==='fragment')$('goalText').textContent=`Observe ${s.target} fragmentações completas`;else $('goalText').textContent=`Complete ${s.target} observações desta reação`;setFormula(atlasNextRecipeLine(s));return}
  if(s.mode==='opening'){$('goalText').textContent='Inicie o Big Bang';setFormula(conciseRecipeLine(s));return}
- if(s.mode==='primordialMolecule'){const made=primordialGoalCount(s);if(s.id==='first_atomic_bonds')$('goalText').textContent=`Forme Moléculas ${made}/${s.target}`;else $('goalText').textContent=`Crie gás primordial ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='primordialNuclear'){const made=primordialGoalCount(s);$('goalText').textContent=`Forme ${s.target} ${s.target===1?'núcleo':'núcleos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='atomicRecombination'){const made=primordialGoalCount(s);$('goalText').textContent=`Forme ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='coulomb_intro'){const made=state.created.He||0;$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão — ${made}/${s.target}`;setFormula('Hélio-3 + Hélio-3 → Hélio-4 + 2 prótons');return}
- if(s.coronalJetTutorial){$('goalText').textContent=`Ejete matéria pelo campo magnético — ${state.coronalJetCount||0}/${s.target}`;const outer=phaseRadius(s),ready=[...state.pieces.values()].some(p=>!p.free&&p.cell!==null&&p.cell!==undefined&&coords[p.cell]?.ring===outer&&p.matterState==='atom'&&pieceCharge(p)>0);if(!ready)setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');else if(state.convectionCharge)setFormula('2º Ative a Convecção e selecione um íon na superfície.');else setFormula('1º Provoque uma reação no núcleo estelar');return}
-  if(s.mode==='convection'){$('goalText').textContent=`Realize ${s.target} correntes convectivas — ${state.convectionMoves||0}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='stellar_li'){const made=state.created.Li||0;$('goalText').textContent=`Produza ${s.target} núcleos de Lítio-7 pelo mecanismo Cameron–Fowler — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='protonCapture'){$('goalText').textContent=`Realize ${s.target} capturas de prótons — ${state.protonCaptures}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='rpProcess'){const made=state.created[s.new]||0,step=rpStep(s),suffix=step?.pattern==='waiting'?' · observe o waiting point':step?.pattern==='cycle'?' · observe o ciclo terminal':'';$('goalText').textContent=`Forme ${s.target} núcleos de ${E[s.new].name}${suffix} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='spallation'){const made=state.created[s.new]||0;$('goalText').textContent=`Produza ${s.target} núcleos de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='neutrino'){const made=state.created.F||0;$('goalText').textContent=`Produza ${s.target} núcleos de Flúor — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='gamma'){const made=state.created[s.new]||0;$('goalText').textContent=`Realize ${s.target} fotodesintegrações — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='guidedDecay'){const made=state.created[s.new]||0;$('goalText').textContent=`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} por decaimento — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='decayGarden'){const found=decayDiscoveryCount(s);$('goalText').textContent=`Descubra ${s.target} descendentes — ${found}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='explosive'){const made=state.created.Zn||0;$('goalText').textContent=`Produza ${s.target} núcleos de Zinco — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='whiteCompact'){const info=whiteCounts(s);$('goalText').textContent=`Crie ${info.targetC} Carbonos e ${info.targetO} Oxigênios — C ${Math.min(info.c,info.targetC)}/${info.targetC} · O ${Math.min(info.o,info.targetO)}/${info.targetO}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='primordialMolecule'){$('goalText').textContent=s.id==='first_atomic_bonds'?'Forme Moléculas':'Crie gás primordial';setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='primordialNuclear'){$('goalText').textContent=`Forme ${s.target} ${s.target===1?'núcleo':'núcleos'} de ${E[s.new].name}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='atomicRecombination'){$('goalText').textContent=`Forme ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name}`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='coulomb_intro'){$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão`;setFormula('Hélio-3 + Hélio-3 → Hélio-4 + 2 prótons');return}
+ if(s.coronalJetTutorial){$('goalText').textContent='Ejete matéria pelo campo magnético';const outer=phaseRadius(s),ready=[...state.pieces.values()].some(p=>!p.free&&p.cell!==null&&p.cell!==undefined&&coords[p.cell]?.ring===outer&&p.matterState==='atom'&&pieceCharge(p)>0);if(!ready)setFormula('Átomo + e⁻ → Íon⁺ + 2e⁻');else if(state.convectionCharge)setFormula('2º Ative a Convecção e selecione um íon na superfície.');else setFormula('1º Provoque uma reação no núcleo estelar');return}
+ if(s.mode==='convection'){$('goalText').textContent=`Realize ${s.target} correntes convectivas`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='stellar_li'){$('goalText').textContent=`Produza ${s.target} núcleos de Lítio-7 pelo mecanismo Cameron–Fowler`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='protonCapture'){$('goalText').textContent=`Realize ${s.target} capturas de prótons`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='rpProcess'){const step=rpStep(s),suffix=step?.pattern==='waiting'?' · observe o waiting point':step?.pattern==='cycle'?' · observe o ciclo terminal':'';$('goalText').textContent=`Forme ${s.target} núcleos de ${E[s.new].name}${suffix}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='spallation'){$('goalText').textContent=`Produza ${s.target} núcleos de ${E[s.new].name}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='neutrino'){$('goalText').textContent=`Produza ${s.target} núcleos de Flúor`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='gamma'){$('goalText').textContent=`Realize ${s.target} fotodesintegrações`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='guidedDecay'){$('goalText').textContent=`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} por decaimento`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='decayGarden'){$('goalText').textContent=`Descubra ${s.target} descendentes`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='explosive'){$('goalText').textContent=`Produza ${s.target} núcleos de Zinco`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='whiteCompact'){const info=whiteCounts(s);$('goalText').textContent=`Crie ${info.targetC} Carbonos e ${info.targetO} Oxigênios`;setFormula(conciseRecipeLine(s));return}
  if(s.mode==='showcase'){$('goalText').textContent='Observe o remanescente';setFormula(conciseRecipeLine(s));return}
- if(s.mode==='neutronize'){$('goalText').textContent=`Comprima ${s.target} núcleos em nêutrons — ${state.crushed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='remnant'){$('goalText').textContent=`Comprima ${s.target} núcleos — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='pulsar'){$('goalText').textContent=`Incorpore ${s.target} núcleos — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='accretion'){$('goalText').textContent=`Alimente o remanescente — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='neutronize'){$('goalText').textContent=`Comprima ${s.target} núcleos em nêutrons`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='remnant'){$('goalText').textContent=`Comprima ${s.target} núcleos`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='pulsar'){$('goalText').textContent=`Incorpore ${s.target} núcleos`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='accretion'){$('goalText').textContent='Alimente o remanescente';setFormula(conciseRecipeLine(s));return}
  if(s.mode==='collapseFinal'){$('goalText').textContent='Supere o limite de estabilidade';setFormula(conciseRecipeLine(s));return}
- if(s.mode==='blackhole'){$('goalText').textContent=`Atraia ${s.target} átomos ao Buraco Negro — ${state.absorbed}/${s.target}`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='blackhole'){$('goalText').textContent=`Atraia ${s.target} átomos ao Buraco Negro`;setFormula(conciseRecipeLine(s));return}
  const made=state.created[s.new]||0;
- if(s.uniqueMatterObjective){$('goalText').textContent=`Observe ${s.target} formações independentes de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='brown'){$('goalText').textContent=`Queime ${s.target} núcleos de Deutério — ${state.created.He3||0}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='he_red'){$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='he_orange'){$('goalText').textContent=`Crie ${s.target} núcleos de Hélio-3 por Fusão — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.id==='he_yellow'){$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));return}
- if(s.mode==='neutron'){const g=neutronGameplay(s),extras=[];if(g.requiresSource)extras.push(`fonte ${Math.min(1,state.neutronSourceActivations)}/1`);if(g.requiresBranch)extras.push(`ramificação ${Math.min(1,state.neutronBranchesObserved)}/1`);if(g.requiresFreezeout)extras.push(`freeze-out ${Math.min(1,state.neutronFreezeouts)}/1`);$('goalText').textContent=`Crie ${s.target} ${E[s.new].name} — ${made}/${s.target}${extras.length?' · '+extras.join(' · '):''}`;setFormula(conciseRecipeLine(s));return}
- $('goalText').textContent=s.mode==='fusion'?`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} por Fusão — ${made}/${s.target}`:`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} — ${made}/${s.target}`;setFormula(conciseRecipeLine(s));
+ if(s.uniqueMatterObjective){$('goalText').textContent=`Observe ${s.target} formações independentes de ${E[s.new].name}`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='brown'){$('goalText').textContent=`Queime ${s.target} núcleos de Deutério`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='he_red'){$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='he_orange'){$('goalText').textContent=`Crie ${s.target} núcleos de Hélio-3 por Fusão`;setFormula(conciseRecipeLine(s));return}
+ if(s.id==='he_yellow'){$('goalText').textContent=`Crie ${s.target} núcleos estáveis de Hélio por Fusão`;setFormula(conciseRecipeLine(s));return}
+ if(s.mode==='neutron'){const g=neutronGameplay(s),extras=[];if(g.requiresSource)extras.push('ative uma fonte de nêutrons');if(g.requiresBranch)extras.push('observe uma ramificação');if(g.requiresFreezeout)extras.push('observe o freeze-out');$('goalText').textContent=`Crie ${s.target} ${E[s.new].name}${extras.length?' · '+extras.join(' · '):''}`;setFormula(conciseRecipeLine(s));return}
+ $('goalText').textContent=s.mode==='fusion'?`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name} por Fusão`:`Crie ${s.target} ${s.target===1?'átomo':'átomos'} de ${E[s.new].name}`;setFormula(conciseRecipeLine(s));
 }
 function applyVisual(){const s=phase(),v=s.visual,root=document.documentElement,styles={nebula:['#fff3bc','#ffae5f','#4d2e82','rgba(255,126,72,.27)',.96],brownDwarf:['#ffe0a6','#9f532d','#351d31','rgba(169,86,47,.30)',.72],redDwarf:['#fff0ca','#ff7757','#6c2231','rgba(255,84,65,.38)',.84],orangeDwarf:['#fff6ce','#ffad56','#8c3e28','rgba(255,145,67,.42)',.91],yellowDwarf:['#fffbe0','#ffd66e','#a25228','rgba(255,199,81,.48)',1],whiteDwarf:['#ffffff','#dff2ff','#819bc2','rgba(210,237,255,.62)',.72],solar:['#fff9ce','#ffd06c','#9a4e28','rgba(255,192,83,.4)',1],redGiant:['#fff0b0','#ff7e48','#771d28','rgba(255,80,46,.48)',1.06],agb:['#ffe7a3','#f06d42','#6c2148','rgba(255,88,55,.42)',1.04],massive:['#eff8ff','#93c8ff','#3340a1','rgba(99,160,255,.48)',1.02],supergiant:['#fff','#b1d6ff','#4b4ac7','rgba(111,158,255,.58)',1.07],advanced:['#fffbd7','#ffb64f','#8d2843','rgba(255,132,67,.62)',1.08],ironCore:['#fff','#ff975a','#521722','rgba(255,72,47,.65)',1.08],kilonova:['#fff','#a6d8ff','#9e54d8','rgba(177,110,255,.6)',.96],interstellar:['#dfeaff','#6686c9','#18254d','rgba(85,129,215,.28)',.96],neutronStar:['#eaf9ff','#78baff','#1a2d80','rgba(104,178,255,.55)',.90],pulsar:['#fff','#89c9ff','#203ca3','rgba(128,199,255,.68)',.90],accretion:['#fff6cf','#ffb24e','#491d42','rgba(255,142,61,.58)',.92],xrayBurst:['#fffbe6','#8fd6ff','#44206d','rgba(132,206,255,.68)',.94],collapseFinal:['#fff','#ff8b62','#270b18','rgba(255,74,57,.66)',.88],blackHole:['#1b2543','#070914','#000','rgba(89,126,255,.20)',.90]};const a=styles[v]||styles.solar,prebang=s.mode==='opening'&&!state.bigBangColorized;document.body.classList.toggle('prebang',prebang);document.body.classList.toggle('bigbang-phase',s.mode==='opening');const spaceColors={bigBang:'#e10b17',primordialH:'#9f0814',primordialHe:'#4e0710',primordialLi:'#160307'};root.style.setProperty('--spaceBg',prebang?'#fff':(spaceColors[v]||'#000'));root.style.setProperty('--primordialGlow',prebang?'rgba(255,255,255,0)':v==='bigBang'?'rgba(255,210,130,.58)':v==='primordialH'?'rgba(255,80,40,.36)':v==='primordialHe'?'rgba(201,41,31,.28)':'rgba(112,24,29,.20)');dom.star.classList.toggle('primordial-mode',isPrimordial(s));dom.star.classList.toggle('primordial-molecule-mode',s.mode==='primordialMolecule');dom.star.classList.toggle('spallation-mode',['spallation','neutrino','gamma'].includes(s.mode));dom.star.classList.toggle('decay-mode',s.mode==='guidedDecay');dom.star.classList.toggle('electron-network',s.mode==='guidedDecay'||s.mode==='whiteCompact');dom.star.classList.toggle('white-electron-network',s.mode==='whiteCompact');dom.star.classList.toggle('white-structure',s.mode==='whiteCompact');dom.star.classList.toggle('cumulative-shells',s.mode!=='fusion'&&s.mode!=='whiteCompact'&&fusionSandboxAllowed(s)&&stratificationStrength(s)>0);dom.star.classList.toggle('large-board-uniform-atoms',phaseRadius(s)>=4);root.style.setProperty('--starA',a[0]);root.style.setProperty('--starB',a[1]);root.style.setProperty('--starC',a[2]);
   let glow=a[3];
