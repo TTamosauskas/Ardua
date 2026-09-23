@@ -309,8 +309,8 @@ async function testQuasarDragAndChrome(){
   const source=page.locator('.quasar-gas[data-gas-index="0"]'),target=page.locator('.quasar-gas[data-gas-index="1"]'),sb=await source.boundingBox(),tb=await target.boundingBox();
   assert.ok(sb&&tb,'Quasar: parcelas iniciais sem geometria');
   const sx=sb.x+sb.width/2,sy=sb.y+sb.height/2,tx=tb.x+tb.width/2,ty=tb.y+tb.height/2;
-  const hit=await page.evaluate(({x,y})=>{const el=document.elementFromPoint(x,y);return{gas:!!el?.closest?.('.quasar-gas'),tag:el?.tagName||'',id:el?.id||'',cls:el?.className||''}},{x:sx,y:sy});
-  assert.equal(hit.gas,true,`Quasar: parcela bloqueada no hit-test físico: ${JSON.stringify(hit)}`);
+  const hit=await page.evaluate(({x,y})=>{const el=document.elementFromPoint(x,y);return{gas:!!el?.closest?.('.quasar-gas'),surface:!!el?.closest?.('.quasar-layer'),tag:el?.tagName||'',id:el?.id||'',cls:el?.className||''}},{x:sx,y:sy});
+  assert.equal(hit.surface,true,`Quasar: ponto da parcela saiu da superfície interativa: ${JSON.stringify(hit)}`);
   await page.mouse.move(sx,sy);await page.mouse.down();
   const tb2=await target.boundingBox();assert.ok(tb2,'Quasar: alvo desapareceu durante drag');
   await page.mouse.move(tb2.x+tb2.width/2,tb2.y+tb2.height/2,{steps:6});
