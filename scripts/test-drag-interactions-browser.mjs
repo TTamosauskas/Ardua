@@ -94,18 +94,22 @@ async function stellarBoardGeometry(page,{fusion=false}={}){
   const occupied=new Set(atoms.map(el=>el.dataset.cell)),preferred=[...atoms].sort((a,b)=>{
    const as=a.querySelector('.sym')?.textContent?.trim(),bs=b.querySelector('.sym')?.textContent?.trim();
    return (['H','He'].includes(as)?0:1)-(['H','He'].includes(bs)?0:1)
-  });
-  let best=null;
+  }),board=document.getElementById('starBoard')?.getBoundingClientRect();
+  let best=null,fallback=null;
   for(const atom of preferred){
    const a=center(atom);
    for(const cell of cellPoints){
     if(occupied.has(cell.cell))continue;
-    const d=Math.hypot(a.x-cell.x,a.y-cell.y);
-    if(d<=step*1.12&&(!best||d<best.dist))best={sourceId:atom.dataset.id,sourceCell:atom.dataset.cell,targetCell:cell.cell,source:a,target:cell,dist:d,step};
+    const d=Math.hypot(a.x-cell.x,a.y-cell.y);if(d>step*1.12)continue;
+    const overshoot={x:cell.x+(cell.x-a.x)*.86,y:cell.y+(cell.y-a.y)*.86};
+    const candidate={sourceId:atom.dataset.id,sourceCell:atom.dataset.cell,targetCell:cell.cell,source:a,target:cell,overshoot,dist:d,step};
+    if(!fallback||d<fallback.dist)fallback=candidate;
+    const safe=board&&overshoot.x>board.left+28&&overshoot.x<board.right-28&&overshoot.y>board.top+28&&overshoot.y<board.bottom-28;
+    if(safe&&(!best||d<best.dist))best=candidate;
    }
    if(best)break
   }
-  return best
+  return best||fallback
  },{fusion})
 }
 
@@ -205,6 +209,9 @@ async function testStellarBoardMovementDrag(){
   await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1000});
   await page.mouse.move(g.target.x,g.target.y,{steps:4});
   await page.waitForFunction(cell=>document.querySelector(`#cells .cell[data-cell="${cell}"]`)?.classList.contains('stellar-drag-hover'),g.targetCell,{timeout:1200});
+  assert.ok(g.overshoot,'Carbono movimento por drag: alvo sem ponto seguro para atravessar completamente');
+  await page.mouse.move(g.overshoot.x,g.overshoot.y,{steps:4});
+  await page.waitForFunction(()=>!document.querySelector('#cells .cell.stellar-drag-hover'),undefined,{timeout:1200});
   await page.mouse.up();
   await page.waitForFunction(({id,cell})=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.dataset.cell===cell,{id:g.sourceId,cell:g.targetCell},{timeout:2500});
   assert.deepEqual(errors,[],`Carbono movimento por drag: erros JavaScript: ${errors.join(' | ')}`);
@@ -401,7 +408,7 @@ try{
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
  await testQuasarDragAndChrome();
- console.log('Drag interactions OK: primordial reactions, stellar formation, stellar board movement/fusion/swap and Quasar direct manipulation all pass.');
+ console.log('Drag interactions OK: primordial reactions, stellar formation, persistent stellar movement targets, fusion/swap and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
