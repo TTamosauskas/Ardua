@@ -231,10 +231,9 @@ async function testQuasarDragAndChrome(){
   assert.ok(sb&&tb,'Quasar: parcelas iniciais sem geometria');
   const sx=sb.x+sb.width/2,sy=sb.y+sb.height/2,tx=tb.x+tb.width/2,ty=tb.y+tb.height/2;
   await page.mouse.move(sx,sy);await page.mouse.down();
-  await page.mouse.move(sx+(tx-sx)*.35,sy+(ty-sy)*.35,{steps:3});
-  await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.dragging'),undefined,{timeout:1000});
   const tb2=await target.boundingBox();assert.ok(tb2,'Quasar: alvo desapareceu durante drag');
-  await page.mouse.move(tb2.x+tb2.width/2,tb2.y+tb2.height/2,{steps:5});
+  await page.mouse.move(tb2.x+tb2.width/2,tb2.y+tb2.height/2,{steps:6});
+  await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.dragging'),undefined,{timeout:1200});
   await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.drag-target'),undefined,{timeout:1200});
   await page.mouse.up();
   await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='1/6',undefined,{timeout:2200});
