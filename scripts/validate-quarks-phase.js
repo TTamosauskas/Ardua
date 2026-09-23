@@ -27,10 +27,16 @@ expect(game.includes("if(u===1&&d===2)return'neutron'"),'udd must produce a neut
 expect(game.includes("made.proton!==1||made.neutron!==1"),'completion must require one proton and one neutron');
 expect(game.includes("eligible.slice(0,2)"),'selecting a quark must expose exactly two complementary candidates');
 expect(game.includes("if(eligible.length<2&&live.length===3)")&&game.includes("baryonKind([id,...remainder.map(x=>x.id)])"),'when only the final valid trio remains, any of its quarks must expose the other two without deadlocking');
-expect(game.includes("if(candidateIds.includes(id)){fuse();return}"),'one click on either highlighted partner must execute the three-quark recipe');
+expect(game.includes("if(candidateIds.includes(id)){fuse();return}"),'click fallback on a highlighted partner must still execute the three-quark recipe');
+expect(game.includes('function armQuarkDrag(id,el,ev)')&&game.includes('function moveQuarkDrag(id,ev)')&&game.includes('function finishQuarkDrag(id,ev,cancel=false)'),'Quarks must support direct pointer drag');
+expect(game.includes("window.ARDUA_ROTATION?.beginInteraction?.('quarks-drag')")&&game.includes("window.ARDUA_ROTATION?.endInteraction?.('quarks-drag')"),'Quarks drag must suspend and release motion interaction state');
+expect(game.includes('function quarkDropTarget(id,x,y)')&&game.includes("d.target=quarkDropTarget(id,pt.x,pt.y)"),'Quarks drag must resolve a compatible baryon drop target');
 expect(!game.includes('picked=new Set')&&!game.includes('candidateIds.every'),'Quarks recipe must not require a third click');
 expect(game.includes("Crie Prótons e Nêutrons — ${total}/2"),'objective counter must be 0/2 through 2/2');
-expect(game.includes("3 quarks → 1 próton ou nêutron"),'objective formula must explain the three-quark result');
+expect(game.includes("const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron'"),'objective recipe must explain both baryon combinations');
+expect(game.includes("const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰'"),'objective recipe must expose the symbolic second line');
+expect(game.includes('function renderRecipe()')&&game.includes('recipe-name-line')&&game.includes('recipe-symbol-line'),'Quarks must preserve the shared two-line recipe markup');
+expect(game.includes('function showProgress()')&&game.includes("progress.style.visibility='visible'"),'Quarks must explicitly own a visible progress bar');
 expect(game.includes("end.textContent='Proxima fase'"),'final central button must say exactly Proxima fase');
 expect(game.includes("primordial-particle ${isProton?'proton':'neutronfree'} quarks-baryon"),'formed baryons must reuse the native free proton/neutron visual classes from primordial gameplay');
 expect(game.includes("returnActiveId=C.getState?.().activeId||''"),'Quarks must remember the campaign phase that owned the map before launch');
@@ -46,6 +52,7 @@ expect(!game.includes('quarks-hint')&&!game.includes('quarks-field'),'the obsole
 expect(!css.includes('.quarks-hint')&&!css.includes('.quarks-field'),'no obsolete text box or circular field styling may remain');
 expect(game.includes("board?.classList.add('primordial-mode','quarks-free-mode')"),'Quarks must use the open primordial board mode rather than a stellar grid');
 expect(css.includes('.quarks-stage{position:absolute;inset:0;z-index:42;overflow:visible'),'Quarks play area must stay open with no clipped circular arena');
+expect(css.includes('touch-action:none')&&css.includes('.quark-piece.dragging')&&css.includes('.quark-piece.drag-target'),'Quarks mobile drag must reserve pointer gestures and expose drag feedback');
 expect(!css.includes('.quarks-stage{position:absolute;inset:0;z-index:42;border-radius:50%'),'Quarks stage must not delimit play with a circular boundary');
 
 expect(game.includes('function rotationMotionEnabled(){return window.ARDUA_ROTATION?.enabled?.()!==false}'),'Quarks particle drift must follow the global rotation preference');
