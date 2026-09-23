@@ -2463,7 +2463,8 @@ function updateMoveTargets(){
  const targets=new Set(movementTargetCells()),d=state.boardDrag?.active?state.boardDrag:null,dragMoves=d?new Set(movableEmptyNeighbors(d.sourceCell,phase())):new Set(),hover=d?.target?.type==='move'?d.target.cell:null;
  dom.cells.querySelectorAll('.cell').forEach(el=>{const cell=+el.dataset.cell,move=targets.has(cell)||dragMoves.has(cell);el.classList.toggle('move-target',move);el.classList.toggle('stellar-drag-hover',hover===cell)})
 }
-function stellarBoardDragMechanicClear(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
+function stellarBoardMovementDragAllowed(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'}
+function stellarBoardDragMechanicClear(s=phase()){return (stellarBoardMovementDragAllowed(s)||fusionSandboxAllowed(s))&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
 function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
  if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s)||s.mode==='rpProcess')return null;
  if(!(neigh[source.cell]||[]).includes(target.cell))return null;
@@ -2474,15 +2475,16 @@ function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
 }
 function stellarBoardDragSourceAvailable(p,s=phase()){
  if(!stellarBoardDragMechanicClear(s)||!p||p.free||p.cell===null||p.cell===undefined)return false;
- if(movableEmptyNeighbors(p.cell,s).length||swappableOccupiedNeighbors(p.cell,s).length)return true;
- return (neigh[p.cell]||[]).some(cell=>{const id=state.board[cell],q=id?state.pieces.get(id):null;return !!stellarBoardAdjacentFusionTarget(p,q,s)})
+ if((neigh[p.cell]||[]).some(cell=>{const id=state.board[cell],q=id?state.pieces.get(id):null;return !!stellarBoardAdjacentFusionTarget(p,q,s)}))return true;
+ if(!stellarBoardMovementDragAllowed(s))return false;
+ return movableEmptyNeighbors(p.cell,s).length>0||swappableOccupiedNeighbors(p.cell,s).length>0
 }
 function stellarBoardLogicalPoint(x,y){
  const p=window.ARDUA_ROTATION?.toLogicalPoint?.(x,y);return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:{x,y}
 }
 function stellarBoardDragTarget(d,x=d?.logicalX??d?.x,y=d?.logicalY??d?.y){
  if(!d?.active)return null;const s=phase(),source=state.pieces.get(d.sourceId);if(!source)return null;const threshold=Math.max(26,cellSize()*.72),options=[];
- for(const cell of movableEmptyNeighbors(d.sourceCell,s)){const q=pos(coords[cell]),dist=Math.hypot(x-q.x,y-q.y);if(dist<=threshold)options.push({type:'move',cell,dist})}
+ if(stellarBoardMovementDragAllowed(s))for(const cell of movableEmptyNeighbors(d.sourceCell,s)){const q=pos(coords[cell]),dist=Math.hypot(x-q.x,y-q.y);if(dist<=threshold)options.push({type:'move',cell,dist})}
  for(const cell of neigh[d.sourceCell]||[]){
   const id=state.board[cell],target=id?state.pieces.get(id):null;if(!target)continue;
   const r=stellarBoardAdjacentFusionTarget(source,target,s),dist=Math.hypot(x-target.x,y-target.y);if(dist>threshold)continue;
