@@ -160,6 +160,8 @@ body.bigbang-phase .info-recipe{border-color:rgba(35,51,76,.15);background:rgba(
 .star-board.primordial-mode .star-core,.star-board.primordial-mode .rings,.star-board.primordial-mode .cells,.star-board.primordial-mode .lines,.star-board.primordial-mode .remnant-layer,.star-board.primordial-mode .neutrons{opacity:0!important;pointer-events:none!important}
 .star-board.primordial-mode .pieces{z-index:26;pointer-events:none}.star-board.primordial-mode .pieces .atom{pointer-events:auto}
 .star-board.primordial-mode .atom{width:clamp(48px,12vw,62px);height:clamp(48px,12vw,62px);box-shadow:inset 0 0 14px rgba(255,255,255,.18),0 0 18px rgba(255,214,170,.13),0 7px 15px rgba(0,0,0,.22);animation:primordialFloat 3.2s ease-in-out infinite;animation-delay:var(--floatDelay,0s)}
+.star-board.primordial-mode .atom.primordial-dragging{animation:none!important;transition:none!important;cursor:grabbing;z-index:42;filter:brightness(1.12)}
+.atom.drop-target,.primordial-particle.drop-target{outline:4px solid rgba(67,242,138,.98)!important;outline-offset:3px!important;box-shadow:0 0 0 4px rgba(67,242,138,.12),0 0 26px rgba(67,242,138,.48)!important}
 .atom.nucleus-piece{width:calc(var(--cellSize)*.78);height:calc(var(--cellSize)*.78)}
 .star-board.large-board-uniform-atoms .atom.nucleus-piece{width:var(--cellSize);height:var(--cellSize)}
 .atom.atomic-piece{width:var(--cellSize);height:var(--cellSize);box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
