@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id),SAVE_KEY='stellarForgeV1013';
 const AUDIO_PROFILE=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022,noteDuration:.24,strongDuration:.28,harmonicDurationRatio:.82,chordDuration:.52,chordHarmDuration:.42,finalAccentDuration:.56});
 const RECIPE_NAME='quark + quark + quark → hádron';
-const RECIPE_SYMBOL='u + dd ou d + uu → (+) ou (n)';
+const RECIPE_SYMBOL='junte três particulas';
 const C=window.ARDUA_CAMPAIGN;if(!C)return;
 
 window.ARDUA_PHASE_NAMES=Object.freeze({...(window.ARDUA_PHASE_NAMES||{}),quarks:'Quarks'});
