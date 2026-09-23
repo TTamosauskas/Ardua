@@ -146,14 +146,17 @@ host.innerHTML=`<div class="phase-quick-backdrop" data-quick-close></div>
    <button type="button" id="phaseQuickMap"><span>Mapa</span><small>Voltar ao mapa da campanha</small></button>
    <button type="button" id="phaseQuickDiscoveries"><span>Descobertas</span><small>Reações, elementos e fenômenos</small></button>
    <button type="button" id="phaseQuickRestart"><span>Recomeçar Fase</span><small>Reiniciar esta fase desde o início</small></button>
+   <button type="button" id="phaseQuickRotation"><span></span><small>Controla o movimento orbital da fase</small></button>
    <button type="button" id="phaseQuickSound"><span></span><small>Controla somente a trilha sonora</small></button>
   </div>
  </section>`;
 document.body.appendChild(host);
 
-const soundBtn=$('phaseQuickSound'),soundLabel=soundBtn?.querySelector('span');
+const soundBtn=$('phaseQuickSound'),soundLabel=soundBtn?.querySelector('span'),rotationBtn=$('phaseQuickRotation'),rotationLabel=rotationBtn?.querySelector('span');
 function soundtrackEnabled(){try{return localStorage.getItem(SOUND_KEY)!=='0'}catch(_e){return true}}
+function rotationEnabled(){return window.ARDUA_ROTATION?.enabled?.()!==false}
 function updateSoundLabel(){if(soundLabel)soundLabel.textContent=soundtrackEnabled()?'Desligar Trilha Sonora':'Ligar Trilha Sonora'}
+function updateRotationLabel(){if(rotationLabel)rotationLabel.textContent=rotationEnabled()?'Desligar Rotação':'Ligar Rotação'}
 function applySound(enabled,persist=true){
  const audio=$('arduaSoundtrack');
  if(audio)audio.muted=!enabled;
@@ -161,10 +164,10 @@ function applySound(enabled,persist=true){
  if(enabled)window.ARDUA_MUSIC?.play?.();
  updateSoundLabel();
 }
-applySound(soundtrackEnabled(),false);
+applySound(soundtrackEnabled(),false);updateRotationLabel();
 
 function openQuickMenu(){
- host.classList.add('show');host.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');updateSoundLabel();
+ host.classList.add('show');host.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');updateSoundLabel();updateRotationLabel();
  requestAnimationFrame(()=>$('phaseQuickMap')?.focus());
 }
 function closeQuickMenu(returnFocus=true){
@@ -195,6 +198,8 @@ $('phaseQuickRestart')?.addEventListener('click',()=>{
  closeQuickMenu(false);
  if(button)button.click();
 });
+rotationBtn?.addEventListener('click',()=>{window.ARDUA_ROTATION?.toggle?.();updateRotationLabel();closeQuickMenu(false)});
 soundBtn?.addEventListener('click',()=>{applySound(!soundtrackEnabled(),true);closeQuickMenu(false)});
+window.addEventListener('ardua:rotation-change',updateRotationLabel);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&host.classList.contains('show')){e.preventDefault();closeQuickMenu()}});
 })();
