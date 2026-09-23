@@ -385,9 +385,9 @@ async function testQuasarDragAndChrome(){
 }
 
 try{
+ await testCentralFusionProductRelocation();
  await testPrimordialParticleDrop();
  await testStellarFormationDrag();
- await testCentralFusionProductRelocation();
  await testStellarBoardMovementDrag();
  await testStellarBoardFusionDrag();
  await testStellarBoardSwapByClick();
