@@ -163,10 +163,12 @@ async function testCentralFusionProductRelocation(){
   assert.equal(g.centerAtom.sym,'²H','Anã marrom: Deutério inicial deveria ocupar o núcleo central');
   const partner=g.adjacent.find(a=>a.sym==='H');assert.ok(partner,'Anã marrom: Hidrogênio inicial deveria tocar o Deutério central');
   const beforeIds=await page.locator('#pieces .atom[data-id]').evaluateAll(els=>els.map(el=>Number(el.dataset.id)).filter(Number.isFinite));
-  const center=page.locator(`#pieces .atom[data-id="${g.centerAtom.id}"]`),hydrogen=page.locator(`#pieces .atom[data-id="${partner.id}"]`);
-  await center.click({force:true});
-  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('candidate'),partner.id,{timeout:1200});
-  await hydrogen.click({force:true});
+  await page.mouse.move(g.centerAtom.x,g.centerAtom.y);await page.mouse.down();
+  await page.mouse.move((g.centerAtom.x+partner.x)/2,(g.centerAtom.y+partner.y)/2,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.centerAtom.id,{timeout:1400});
+  await page.mouse.move(partner.x,partner.y,{steps:4});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-drop-target'),partner.id,{timeout:1400});
+  await page.mouse.up();
 
   let product=null;
   for(let i=0;i<28&&!product;i++){
@@ -224,6 +226,23 @@ async function testAtlasFusionDragWithoutPreclick(){
   assert.equal(await page.locator(`#pieces .atom[data-id="${g.sourceId}"]`).evaluate(el=>el.classList.contains('selected')),true,'Atlas H + Be: drag direto não entrou no fluxo da reação');
   await page.locator('#eventTooltipBtn').click({force:true});
   assert.deepEqual(errors,[],`Atlas H + Be drag direto: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
+async function testWhiteCompactFusionDrag(){
+ const {context,page,errors}=await openPhase('white');
+ try{
+  await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>=10,undefined,{timeout:4000});
+  const g=await stellarBoardGeometry(page,{fusion:true});assert.ok(g,'Anã branca: não foi encontrado par H + H adjacente para testar fusão cumulativa por drag');
+  await page.mouse.move(g.source.x,g.source.y);await page.mouse.down();
+  await page.mouse.move((g.source.x+g.target.x)/2,(g.source.y+g.target.y)/2,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1400});
+  await page.mouse.move(g.target.x,g.target.y,{steps:4});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-drop-target'),g.targetId,{timeout:1400});
+  await page.mouse.up();
+  await page.waitForFunction(({a,b})=>!document.querySelector(`#pieces .atom[data-id="${a}"]`)&&!document.querySelector(`#pieces .atom[data-id="${b}"]`),{a:g.sourceId,b:g.targetId},{timeout:6000});
+  const movedTargets=await page.locator('#cells .cell.move-target').count();assert.equal(movedTargets,0,'Anã branca: habilitar drag de fusão não deve liberar movimento para casas vazias');
+  assert.deepEqual(errors,[],`Anã branca fusão por drag: erros JavaScript: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
 
@@ -431,6 +450,7 @@ try{
  await testPrimordialParticleDrop();
  await testStellarFormationDrag();
  await testAtlasFusionDragWithoutPreclick();
+ await testWhiteCompactFusionDrag();
  await testStellarBoardMovementDrag();
  await testStellarBoardFusionDrag();
  await testStellarBoardSwapByClick();
@@ -438,7 +458,7 @@ try{
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
  await testQuasarDragAndChrome();
- console.log('Drag interactions OK: primordial reactions, direct Atlas fusion drag, stellar formation, persistent movement targets, fusion/swap and Quasar direct manipulation all pass.');
+ console.log('Drag interactions OK: primordial reactions, Brown Dwarf/White Dwarf/Atlas fusion drag, stellar formation, persistent movement targets, fusion/swap and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
