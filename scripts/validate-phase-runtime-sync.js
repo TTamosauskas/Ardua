@@ -18,7 +18,10 @@ assert(runtime.includes('if(customPhaseOwnsScreen()||!(G.runtimeOrder||[]).inclu
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
-assert(index.includes('ardua.js?v=20260923-convection-core-atlas-drag-1'),'Engine sem cache bust da reserva central da Convecção e drag direto do Atlas');
+assert(index.includes('ardua.js?v=20260923-recipe-clean-1'),'Engine sem cache bust da normalização das receitas');
+assert(engine.includes('function primaryRecipeLabel(label)')&&engine.includes("core.includes(' + ')?core.split(' + ')[0]") ,'Receitas visíveis ainda podem expor subprodutos secundários');
+assert(engine.includes("['e⁻','Elétron','(-)']")&&engine.includes("['2e⁻','2 Elétrons','2(-)']"),'Elétrons das receitas não usam a notação (-)');
+assert(engine.includes('label=catalogRecipeLabel(label)'),'Catálogo de receitas não compartilha a normalização visual');
 assert(index.includes('campaign-phase-labels.js?v=20260923-map-title-1'),'Labels sem cache bust da unificação dos títulos com o mapa');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-e2e-1'),'Runtime sync sem cache bust do hardening E2E');
 assert(index.includes('campaign-phase-completion.js?v=20260923-progress-ui-2'),'Contrato de conclusão sem cache bust da barra de progresso compartilhada');
