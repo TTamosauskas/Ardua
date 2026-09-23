@@ -5,7 +5,7 @@ const modal=fs.readFileSync('assets/js/campaign-phase-modal.js','utf8');
 const opening=fs.readFileSync('assets/js/campaign-opening.js','utf8');
 const music=fs.readFileSync('assets/js/music.js','utf8');
 const mode=fs.readFileSync('assets/js/campaign-mode.js','utf8');
-const must=["Leve o Hélio até o núcleo estelar. — ${done}/${s.target}","Clique no átomo e avance um espaço por vez","window.dispatchEvent(new CustomEvent('ardua:phase-ended'","const stellarDustEnd=!isPrimordial(s)"];
+const must=["$('goalText').textContent='Leve o Hélio até o núcleo estelar.'","if(s.mode==='movementTutorial')return count(objectiveSatisfied(s)?1:0,s.target||1)","Clique no átomo e avance um espaço por vez","window.dispatchEvent(new CustomEvent('ardua:phase-ended'","const stellarDustEnd=!isPrimordial(s)"];
 for(const x of must)if(!engine.includes(x))throw new Error('Contrato de fluxo ausente: '+x);
 if(map.includes('Evolução de longa vida'))throw new Error('Título removido voltou ao mapa');
 if(modal.includes('Descobertas da fase:')||modal.includes('phase-preview-discoveries'))throw new Error('Modal voltou a revelar descobertas');
