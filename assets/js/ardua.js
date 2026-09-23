@@ -2866,14 +2866,33 @@ function symbolicFusionLabel(r){
  return r.emissions?.includes('gamma')?base+' + γ':base;
 }
 function headerRecipeLine(label){
- const names={
-  p:'Próton','p⁺':'Próton',n:'Nêutron','e⁻':'Elétron','e⁺':'Pósitron','ν':'Neutrino','νₑ':'Neutrino','ν̄ₑ':'Antineutrino',γ:'Fóton gama',
-  'β−':'Decaimento beta menos','β+':'Decaimento beta mais','²H':'Deutério','³H':'Trítio','³He':'Hélio-3','⁴He':'Hélio-4','⁷Li':'Lítio-7','⁷Be':'Berílio-7','⁸Be':'Berílio-8',
-  'He*':'Hélio instável','Fe*':'Ferro instável','2p':'2 prótons','2e⁻':'2 elétrons','3e⁻':'3 elétrons','⁴He²⁺':'Hélio-4','⁷Li³⁺':'Lítio-7','RC':'Raio cósmico'
- };
- for(const sym of ORDER)if(E[sym]?.name)names[sym]=E[sym].name;
- names.D='Deutério';names.T='Trítio';names.He3='Hélio-3';names.Be7='Berílio-7';names.Be8='Berílio-8';names.HeU='Hélio instável';names.FeU='Ferro instável';
- return String(label||'').split(/(\s+|\+|→|\/|·|,|\(|\))/).map(t=>names[t]||t).join('');
+ const aliases=new Map(),add=(alias,shown)=>{if(alias&&shown&&!aliases.has(alias))aliases.set(alias,shown)};
+ for(const [sym,e] of Object.entries(E)){
+  if(!e?.name||sym==='Plus')continue;
+  const symbol=infoSymbolFor(sym),shown=`${e.name} (${symbol})`;
+  add(e.name,shown);add(symbol,shown);add(sym,shown);
+ }
+ [
+  ['Próton','Próton (+)'],['próton','Próton (+)'],['prótons','Prótons (+)'],['p⁺','Próton (+)'],['p','Próton (+)'],['2p','2 Prótons (+)'],
+  ['Nêutron','Nêutron (n)'],['nêutron','Nêutron (n)'],['nêutrons','Nêutrons (n)'],['n','Nêutron (n)'],
+  ['Elétron','Elétron (e⁻)'],['elétron','Elétron (e⁻)'],['elétrons','Elétrons (e⁻)'],['e⁻','Elétron (e⁻)'],['2e⁻','2 Elétrons (e⁻)'],['3e⁻','3 Elétrons (e⁻)'],
+  ['Pósitron','Pósitron (e⁺)'],['pósitron','Pósitron (e⁺)'],['pósitrons','Pósitrons (e⁺)'],['e⁺','Pósitron (e⁺)'],
+  ['Neutrino','Neutrino (νₑ)'],['neutrino','Neutrino (νₑ)'],['neutrinos','Neutrinos (νₑ)'],['ν','Neutrino (νₑ)'],['νₑ','Neutrino (νₑ)'],
+  ['Antineutrino','Antineutrino (ν̄ₑ)'],['antineutrino','Antineutrino (ν̄ₑ)'],['ν̄ₑ','Antineutrino (ν̄ₑ)'],
+  ['Fóton gama','Fóton gama (γ)'],['Fóton (γ)','Fóton gama (γ)'],['fóton gama','Fóton gama (γ)'],['γ','Fóton gama (γ)'],
+  ['Raio cósmico','Raio cósmico (RC)'],['RC','Raio cósmico (RC)'],
+  ['Decaimento beta menos','Decaimento beta menos (β−)'],['β−','Decaimento beta menos (β−)'],
+  ['Decaimento beta mais','Decaimento beta mais (β+)'],['β+','Decaimento beta mais (β+)'],
+  ['⁴He²⁺','Hélio-4 ionizado (⁴He²⁺)'],['⁷Li³⁺','Lítio-7 ionizado (⁷Li³⁺)'],
+  ['He instável','Hélio instável (He*)'],['Fe instável','Ferro instável (Fe*)']
+ ].forEach(([alias,shown])=>aliases.set(alias,shown));
+ const esc=s=>s.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&'),slots=[];
+ let out=String(label||'');
+ [...aliases.entries()].sort((a,b)=>b[0].length-a[0].length).forEach(([alias,shown])=>{
+  const re=new RegExp(`(^|[\\s+→/·,(])${esc(alias)}(?=$|[\\s+→/·,)])`,'gi');
+  out=out.replace(re,(match,prefix)=>{const token=`\uE000${slots.length}\uE001`;slots.push(shown);return prefix+token})
+ });
+ return out.replace(/\uE000(\d+)\uE001/g,(_,i)=>slots[Number(i)]||'');
 }
 function formulaHTML(label,boldSyms=null){
   const syms=[...new Set((Array.isArray(boldSyms)?boldSyms:[boldSyms]).filter(Boolean))];let out=label;
@@ -4547,8 +4566,8 @@ function phaseIntroTitle(s=phase(),base={}){
 }
 function showStellarPopup(force=false){
  const s=phase(),baseKey=stellarKeyForPhase(),base=STELLAR_POPUPS[baseKey];if(!base)return false;const key=`phase:${s.id}`;
- if(!force&&state.lastStellarKey===key)return false;let data={...base,kicker:phaseIntroGroup(s),title:phaseIntroTitle(s,base),sub:modalPrimaryLine(s),line:modalSecondaryLine(s),art:base.art||baseKey};
- if(s.id==='primordial_td')data={...data,sub:'³H + ²H → ⁴He + n',line:'Selecione ³H e depois ²H'};
+ if(!force&&state.lastStellarKey===key)return false;let data={...base,kicker:phaseIntroGroup(s),title:phaseIntroTitle(s,base),sub:headerRecipeLine(modalPrimaryLine(s)),line:modalSecondaryLine(s),art:base.art||baseKey};
+ if(s.id==='primordial_td')data={...data,sub:headerRecipeLine('³H + ²H → ⁴He + n'),line:'Selecione ³H e depois ²H'};
  if(s.id==='ni_fusion')data={...data,title:'FORMAÇÃO DE NÍQUEL'};
  if(s.id==='co')data={...data,title:'FORMAÇÃO DE COBALTO'};
  if(s.mode==='guidedDecay'&&E[s.new])data={...data,title:E[s.new].name.toUpperCase(),art:'interstellar'};
