@@ -5,7 +5,7 @@ const base=process.env.ARDUA_TEST_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
 const failures=[];
 
-async function openPhase(id,expectedTitle,expectedContext){
+async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null){
  const context=await browser.newContext({viewport:{width:360,height:800},deviceScaleFactor:1});
  await context.addInitScript(phaseId=>{
   const nativePhaseId=phaseId==='quarks'?'primordial_d':phaseId;
@@ -25,7 +25,9 @@ async function openPhase(id,expectedTitle,expectedContext){
  const result=await page.evaluate(()=>{
   const title=document.getElementById('phaseTitle'),context=document.getElementById('branchLabel'),goal=document.getElementById('goalText'),formula=document.getElementById('formulaText');
   const ts=getComputedStyle(title),gs=getComputedStyle(goal),fs=getComputedStyle(formula);
-  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize)};
+  const nameLine=formula.querySelector('.recipe-name-line'),symbolLine=formula.querySelector('.recipe-symbol-line');
+  const ns=nameLine?getComputedStyle(nameLine):null,ss=symbolLine?getComputedStyle(symbolLine):null;
+  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0};
  });
  try{
   assert.equal(result.title,expectedTitle,`${id}: título inesperado`);
@@ -36,12 +38,20 @@ async function openPhase(id,expectedTitle,expectedContext){
   assert.ok(result.formulaText.length>0,`${id}: receita/instrução ficou vazia`);
   assert.ok(result.formulaWeight>=900,`${id}: receita/instrução não herdou o peso do objetivo`);
   assert.ok(result.formulaSize>=12,`${id}: receita/instrução ficou pequena demais`);
+  if(expectedRecipe){
+   assert.equal(result.recipeName,expectedRecipe.name,`${id}: linha nominal da receita incorreta`);
+   assert.equal(result.recipeSymbols,expectedRecipe.symbols,`${id}: linha simbólica da receita incorreta`);
+   assert.equal(result.recipeNameSize,14,`${id}: linha nominal deve usar 14px`);
+   assert.equal(result.recipeSymbolSize,14,`${id}: linha simbólica deve usar 14px`);
+   assert.ok(result.recipeSymbolWeight<=500,`${id}: linha simbólica não pode ficar em negrito`);
+  }
   assert.deepEqual(pageErrors,[],`${id}: erros JavaScript: ${pageErrors.join(' | ')}`);
  }catch(e){failures.push(e.message)}
  await context.close();
 }
 
 await openPhase('quarks','Forme Prótons e Nêutrons — 0/2','QUARKS');
+await openPhase('primordial_d','Forme Deutério — 0/4','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
 await openPhase('primordial_t','Forme Trítio — 0/4','');
 await openPhase('first_nebulae','Crie gás primordial — 0/4','PRIMEIRAS NEBULOSAS');
 await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO');
