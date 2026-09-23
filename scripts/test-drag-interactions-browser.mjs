@@ -53,6 +53,7 @@ async function testStellarFormationDrag(){
   assert.equal(ids.length,2,'Formação: não há dois grupos iniciais para o teste');
   const source=page.locator(`.formation-atom[data-formation-group="${ids[0]}"]`).first(),target=page.locator(`.formation-g-field[data-group="${ids[1]}"]`);
   const sb=await source.boundingBox(),tb=await target.boundingBox();assert.ok(sb&&tb,'Formação: grupos iniciais não possuem geometria');
+  assert.equal(await source.evaluate(el=>getComputedStyle(el).touchAction),'none','Formação: drag móvel deve reservar o gesto de ponteiro');
   await page.mouse.move(sb.x+sb.width/2,sb.y+sb.height/2);
   await page.mouse.down();
   await page.mouse.move(tb.x+tb.width/2,tb.y+tb.height/2,{steps:7});
