@@ -57,7 +57,7 @@ try{
  assert.equal(chrome.progressWidth,'0%','Quarks: valor lógico inicial deveria continuar em 0%');
  assert.ok(parseFloat(chrome.progressVisualWidth)>=8,'Quarks: barra em 0% deveria manter preenchimento visual mínimo');
  assert.equal(chrome.goal,'Forme Prótons e Nêutrons','Quarks: objetivo não deveria repetir a meta numérica');
- assert.equal(chrome.title,'Forme Prótons e Nêutrons','Quarks: título não deveria repetir a meta numérica');
+ assert.equal(chrome.title,'Quarks','Quarks: título interno deve repetir exatamente o título canônico do mapa');
 
  if(await page.locator('#stellarIntro').evaluate(el=>el.classList.contains('show'))){
   await page.locator('#stellarStartBtn').click({force:true});
