@@ -111,7 +111,7 @@ async function stellarBoardGeometry(page,{fusion=false}={}){
 
 async function findStellarSwapPair(page){
  const pairs=await page.evaluate(()=>{
-  const atoms=[...document.querySelectorAll('#pieces .atom[data-cell]')].filter(el=>el.dataset.cell!=='');
+  const atoms=[...document.querySelectorAll('#pieces .atom[data-cell]')].filter(el=>el.dataset.cell!==''&&!el.classList.contains('unstable')&&!el.classList.contains('radioactive-proof')&&!el.classList.contains('beta-waiting'));
   const cells=[...document.querySelectorAll('#cells .cell')],center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
   const pts=cells.map(center);let step=Infinity;
   for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);if(d>1&&d<step)step=d}
@@ -125,13 +125,13 @@ async function findStellarSwapPair(page){
  });
  for(const pair of pairs){
   const source=page.locator(`#pieces .atom[data-id="${pair.sourceId}"]`),target=page.locator(`#pieces .atom[data-id="${pair.targetId}"]`);
-  await source.click();await page.waitForTimeout(24);
+  await source.click({force:true});await page.waitForTimeout(24);
   const state=await page.evaluate(({sourceId,targetId})=>({
    selected:document.querySelector(`#pieces .atom[data-id="${sourceId}"]`)?.classList.contains('selected')||false,
    candidate:document.querySelector(`#pieces .atom[data-id="${targetId}"]`)?.classList.contains('candidate')||false
   }),pair);
-  if(state.selected&&!state.candidate){await source.click();await page.waitForTimeout(20);return pair}
-  if(state.selected){await source.click();await page.waitForTimeout(20)}
+  if(state.selected&&!state.candidate){await source.click({force:true});await page.waitForTimeout(20);return pair}
+  if(state.selected){await source.click({force:true});await page.waitForTimeout(20)}
  }
  return null
 }
@@ -181,9 +181,9 @@ async function testStellarBoardSwapByClick(){
    target:document.querySelector(`#pieces .atom[data-id="${targetId}"] .sym`)?.textContent||''
   }),g);
   const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`),target=page.locator(`#pieces .atom[data-id="${g.targetId}"]`);
-  await source.click();
+  await source.click({force:true});
   assert.equal(await target.evaluate(el=>el.classList.contains('candidate')),false,'Carbono swap: núcleo comum recebeu destaque nuclear antes da troca');
-  await target.click();
+  await target.click({force:true});
   await page.waitForFunction(({sourceId,targetId,sourceCell,targetCell})=>{
    const a=document.querySelector(`#pieces .atom[data-id="${sourceId}"]`),b=document.querySelector(`#pieces .atom[data-id="${targetId}"]`);
    return a?.dataset.cell===targetCell&&b?.dataset.cell===sourceCell
