@@ -10,8 +10,8 @@ function before(a,b){return index.indexOf(a)>=0&&index.indexOf(b)>=0&&index.inde
 
 expect(chrome.includes("const GOAL='Forme Prótons e Nêutrons'"),'Quarks objective must use the compact Forme wording');
 expect(!chrome.includes('function goalWithProgress()')&&chrome.includes("bar?.dataset.current")&&chrome.includes("bar?.dataset.total"),'Quarks completion must read progress data instead of a header counter');
-expect(chrome.includes("const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron'"),'visible recipe must explain both baryon combinations');
-expect(chrome.includes("const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰'"),'visible recipe must include the symbolic second line');
+expect(chrome.includes("const RECIPE_NAME='quark + quark + quark → hádron'"),'visible recipe must use the compact hadron rule');
+expect(chrome.includes("const RECIPE_SYMBOL='u + dd ou d + uu → (+) ou (n)'"),'visible recipe must include the compact proton/neutron alternatives');
 expect(chrome.includes('function renderRecipe()')&&chrome.includes('recipe-name-line')&&chrome.includes('recipe-symbol-line'),'Quarks chrome must preserve two-line recipe markup');
 expect(chrome.includes('function ensureProgressVisible()')&&chrome.includes("progress.style.visibility='visible'"),'Quarks chrome must keep progress visible even over an opening-phase engine state');
 expect(chrome.includes("const NEXT_LABEL='Próxima fase'"),'final circular button must say Próxima fase');
