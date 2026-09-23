@@ -21,6 +21,8 @@ function activePhaseId(){
  return document.documentElement.dataset.arduaEnginePhase||campaignId;
 }
 function objectiveRatiosComplete(text){
+ const progress=$('stageProgress')?.closest('.stage-progress'),value=Number(progress?.getAttribute('aria-valuenow'));
+ if(Number.isFinite(value)&&value>=100)return true;
  const ratios=[...String(text||'').matchAll(/(\d+)\s*\/\s*(\d+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
  return ratios.length>0&&ratios.every(([done,target])=>target>0&&done>=target);
 }
