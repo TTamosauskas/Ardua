@@ -3813,13 +3813,30 @@ function stratificationStrength(s=phase()){
  return byVisual[s.visual]||0
 }
 function stellarStratificationActive(s=phase()){return stratificationStrength(s)>0}
+async function relocateNewbornCoreProduct(){
+ if(isPrimordial()||phaseRadius()<1)return[];
+ const center=(byRing[0]||[])[0];if(center===undefined)return[];
+ const id=state.board[center],piece=id?state.pieces.get(id):null;
+ if(!piece?.newborn||piece.free)return[];
+ const ringOne=(byRing[1]||[]).filter(cell=>activeSet().has(cell));if(!ringOne.length)return[];
+ const destination=ringOne.find(cell=>state.board[cell]===null)??ringOne[0],occupantId=state.board[destination],occupant=occupantId?state.pieces.get(occupantId):null;
+ const from=pos(coords[center]),to=pos(coords[destination]);
+ state.board[center]=occupantId||null;state.board[destination]=piece.id;piece.cell=destination;
+ if(occupant){occupant.cell=center;occupant.x=to.x;occupant.y=to.y}
+ piece.x=from.x;piece.y=from.y;renderPieces();
+ requestAnimationFrame(()=>{piece.x=to.x;piece.y=to.y;if(occupant){occupant.x=from.x;occupant.y=from.y}renderPieces()});
+ await wait(220);return[piece.id]
+}
 async function afterNuclearAction({advanceRound=false,forceBoardPulse=false,replenish=true,protectedPieceIds=[]}={}){
+ // Produtos recém-formados no núcleo central saem para a primeira camada para
+ // permanecerem visíveis e acessíveis, fora da área ocupada pelo botão central.
+ const relocated=await relocateNewbornCoreProduct(),protectedIds=[...new Set([...(protectedPieceIds||[]),...relocated])];
  // Toda transformação nuclear pode reorganizar a estrela; a estratificação depende
  // do ambiente físico, não do botão/mecânica usada para produzir a transformação.
  // Em um movimento manual, a peça recém-movida pode ser protegida daquele pulso
  // específico para que a resposta da estrela não desfaça imediatamente a escolha do jogador.
  if(advanceRound)await advanceNuclearRound();
- if(forceBoardPulse||stellarStratificationActive(phase()))await gravityPulse({replenish,protectedPieceIds});
+ if(forceBoardPulse||stellarStratificationActive(phase()))await gravityPulse({replenish,protectedPieceIds:protectedIds});
 }
 function stellarLayerGroup(sym){
  // Grupos de queima/estrutura estelar. Não são uma ordenação simples por massa.
