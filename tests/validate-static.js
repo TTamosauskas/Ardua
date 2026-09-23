@@ -58,6 +58,15 @@ ok(engine.includes('function stellarFormationScheduleSupply(f,delay=620)')&&engi
 ok(engine.includes('for(let i=0;i<spec.initialGroups;i++)stellarFormationSpawnPair(f,{incoming:false})'),'formação não cria toda a matéria de uma vez');
 ok(formationCss.includes('.formation-atom::before')&&formationCss.includes('inset:-7px'),'átomos menores preservam uma área clicável confortável');
 ok(formationCss.includes('.formation-atom.formation-incoming')&&formationCss.includes('.formation-g-field.formation-incoming'),'matéria em entrada possui estado visual próprio');
+ok(engine.includes('function primordialParticleDropTarget(p)')&&engine.includes('executePrimordialParticleDrop(p,target)'),'partículas primordiais podem reagir ao serem soltas sobre parceiro compatível');
+ok(engine.includes("target.mode==='bindElectron'")&&engine.includes("target.mode==='recombineH'"),'drag primordial cobre recombinação H e captura eletrônica em íons');
+ok(engine.includes('function primordialFreeDragTarget(d)')&&engine.includes("target.mode==='heh'")&&engine.includes("target.mode==='h+heh'"),'núcleos, átomos e moléculas primordiais possuem drag reativo próprio');
+ok(engine.includes("Math.hypot(pt.x-d.startX,pt.y-d.startY)<7"),'arraste primordial preserva clique com limiar de movimento');
+ok(engine.includes('function stellarFormationGroupDraggable(g){return !!g&&!g.incoming&&g.members.length<=12}'),'aglomerados estelares acima de 12 H ficam ancorados');
+ok(engine.includes('function stellarFormationDragTarget(f,g)')&&engine.includes('finishStellarFormationDrag(atomId,ev,cancel=false)'),'formação gravitacional une grupos compatíveis por drag e soltura');
+ok(engine.includes("if(a.id===dragged||b.id===dragged)continue"),'separação suave não disputa controle com o grupo arrastado');
+ok(formationCss.includes('touch-action:none')&&formationCss.includes('.formation-g-field.drag-target')&&formationCss.includes('.formation-atom.dragging'),'drag gravitacional tem gesto móvel e feedback visual próprios');
+ok(fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.atom.drop-target')&&fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.atom.primordial-dragging'),'drag primordial destaca alvo e suspende a flutuação visual durante o gesto');
 
 ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
 ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
