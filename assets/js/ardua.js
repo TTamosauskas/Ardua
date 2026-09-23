@@ -2455,32 +2455,35 @@ function stellarBoardDragSourceAvailable(p,s=phase()){
  if(movableEmptyNeighbors(p.cell,s).length)return true;
  return (neigh[p.cell]||[]).some(cell=>{const id=state.board[cell],q=id?state.pieces.get(id):null;return !!stellarBoardAdjacentFusionTarget(p,q,s)})
 }
-function stellarBoardDragTarget(d,x=d?.x,y=d?.y){
+function stellarBoardLogicalPoint(x,y){
+ const p=window.ARDUA_ROTATION?.toLogicalPoint?.(x,y);return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:{x,y}
+}
+function stellarBoardDragTarget(d,x=d?.logicalX??d?.x,y=d?.logicalY??d?.y){
  if(!d?.active)return null;const s=phase(),source=state.pieces.get(d.sourceId);if(!source)return null;const threshold=Math.max(26,cellSize()*.72),options=[];
  for(const cell of movableEmptyNeighbors(d.sourceCell,s)){const q=pos(coords[cell]),dist=Math.hypot(x-q.x,y-q.y);if(dist<=threshold)options.push({type:'move',cell,dist})}
  for(const cell of neigh[d.sourceCell]||[]){const id=state.board[cell],target=id?state.pieces.get(id):null,r=stellarBoardAdjacentFusionTarget(source,target,s);if(!r)continue;const dist=Math.hypot(x-target.x,y-target.y);if(dist<=threshold)options.push({type:'fusion',pieceId:target.id,cell:target.cell,recipe:r,dist:dist-.5})}
  return options.sort((a,b)=>a.dist-b.dist)[0]||null
 }
-function cancelStellarBoardDrag(){const d=state.boardDrag;if(!d)return;state.boardDrag=null;renderPieces();updateMoveTargets()}
+function cancelStellarBoardDrag(){const d=state.boardDrag;if(!d)return;state.boardDrag=null;renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag')}
 function armStellarBoardDrag(id,el,ev){
  const p=state.pieces.get(id),s=phase();if(!stellarBoardDragSourceAvailable(p,s)||ev.pointerType==='mouse'&&ev.button!==0)return;
- cancelStellarBoardDrag();const pt=particlePointerPoint(ev);state.boardDrag={sourceId:id,sourceCell:p.cell,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,x:p.x,y:p.y,target:null};
+ cancelStellarBoardDrag();const pt=particlePointerPoint(ev);state.boardDrag={sourceId:id,sourceCell:p.cell,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,x:p.x,y:p.y,logicalX:p.x,logicalY:p.y,target:null};
  try{el.setPointerCapture(ev.pointerId)}catch(e){}
 }
 function moveStellarBoardDrag(id,ev){
  const d=state.boardDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return;const p=state.pieces.get(id);if(!p||p.free||p.cell!==d.sourceCell)return cancelStellarBoardDrag();const pt=particlePointerPoint(ev);
  if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;
- if(!d.active){d.active=true;cancelCrushHold(id);state.selected=[];state.primordialSelected=null;objectiveMotifCancelSelection();vibrate(5)}
- ev.preventDefault();ev.stopPropagation();const pad=Math.max(24,cellSize()*.46);d.x=Math.max(pad,Math.min(starSize()-pad,pt.x));d.y=Math.max(pad,Math.min(starSize()-pad,pt.y));d.target=stellarBoardDragTarget(d,d.x,d.y);renderPieces();updateMoveTargets()
+ if(!d.active){d.active=true;cancelCrushHold(id);state.selected=[];state.primordialSelected=null;objectiveMotifCancelSelection();window.ARDUA_ROTATION?.beginInteraction?.('stellar-board-drag');vibrate(5)}
+ ev.preventDefault();ev.stopPropagation();const pad=Math.max(24,cellSize()*.46);d.x=Math.max(pad,Math.min(starSize()-pad,pt.x));d.y=Math.max(pad,Math.min(starSize()-pad,pt.y));const logical=stellarBoardLogicalPoint(d.x,d.y);d.logicalX=logical.x;d.logicalY=logical.y;d.target=stellarBoardDragTarget(d,d.logicalX,d.logicalY);renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.sync?.()
 }
 function finishStellarBoardDrag(id,ev,cancel=false){
  const d=state.boardDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return false;const wasActive=d.active,target=!cancel&&wasActive?(d.target||stellarBoardDragTarget(d)):null,source=state.pieces.get(id);state.boardDrag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}
  if(!wasActive){updateMoveTargets();return false}
  ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;
- if(!source){render();return true}
- if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();setTimeout(()=>fuse(recipe),95);return true}}
- if(target?.type==='move'){state.selected=[source.cell];render();moveSelectedAtom(target.cell);return true}
- render();return true
+ if(!source){render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true}
+ if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');setTimeout(()=>fuse(recipe),95);return true}}
+ if(target?.type==='move'){state.selected=[source.cell];render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');moveSelectedAtom(target.cell);return true}
+ render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true
 }
 function selectAtomForMovement(p){if(!canSelectAtomForMovement(p))return false;state.selected=[p.cell];state.primordialSelected=null;tone(300,.035,'sine',.018);render();return true}
 async function moveSelectedAtom(targetCell){
