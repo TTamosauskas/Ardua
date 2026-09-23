@@ -41,12 +41,12 @@ if(perform<0)fail('Rotina de Convecção ausente');
 const block=engine.slice(perform,perform+6500);
 const jetToken='await maybeEjectCoronalJet(path,s)';
 const jet=block.indexOf(jetToken);
-const recalc=jet<0?-1:block.indexOf('occupied=path.filter',jet+jetToken.length);
+const recalc=jet<0?-1:block.indexOf('path.map(cell=>state.board[cell]||null)',jet+jetToken.length);
 const reorder=block.indexOf('reversed=[...ids].reverse()');
 if(jet<0)fail('Convecção não verifica Jato Coronal');
-if(recalc<0||recalc<jet)fail('Linha convectiva não é recalculada após a ejeção');
+if(recalc<0||recalc<jet)fail('Linha convectiva completa não é recalculada após a ejeção');
 if(reorder<0||reorder<jet)fail('Jato Coronal precisa acontecer antes da reorganização da linha');
-if(block.includes('dest=occupied.map'))fail('Convecção foi alterada para rotação cíclica em vez da inversão histórica');
+if(block.includes('dest=occupied.map')||block.includes('occupied.map(cell=>state.board[cell])'))fail('Convecção voltou a ignorar vagas da linha durante a inversão');
 if(block.indexOf('maybeEjectCoronalJet',jet+jetToken.length)>=0)fail('Há uma segunda verificação de Jato depois da Convecção');
 need(block,'state.convectionMoves=(state.convectionMoves||0)+1','Convecção deixou de contabilizar/reorganizar normalmente');
 
