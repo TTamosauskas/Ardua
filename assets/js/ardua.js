@@ -161,9 +161,8 @@ function atlasSpec(s=phase()){return s?.atlasId?ATLAS_BY_ID.get(s.atlasId)||null
 function atlasSecondaryWord(ch){return ch==='alpha'?'Hélio-4':ch==='p'?'Próton':ch==='n'?'Nêutron':'Fóton gama'}
 function atlasHeaderLine(s=phase()){
  const sp=atlasSpec(s);if(!sp)return s.meta||'';
- const left=`${E[sp.a]?.name||sp.a} + ${E[sp.b]?.name||sp.b}`;
- if(sp.channel==='gamma')return `${left} → ${E[sp.compound]?.name||sp.compound} + Fóton gama`;
- return `${left} → ${E[sp.mainSym]?.name||sp.mainSym} + ${atlasSecondaryWord(sp.channel)}`;
+ const left=`${E[sp.a]?.name||sp.a} + ${E[sp.b]?.name||sp.b}`,out=sp.channel==='gamma'?sp.compound:sp.mainSym;
+ return `${left} → ${E[out]?.name||out}`;
 }
 function atlasSymbolicLine(s=phase()){return atlasSpec(s)?.label||s.meta||''}
 function atlasPhaseInstruction(s=phase()){
@@ -880,7 +879,7 @@ function baseElementSym(sym){return({D:'H',T:'H',He3:'He',HeU:'He',Be7:'Be',Be8:
 function discoveredInfoRecipes(){
  const out=[],seen=new Set(),cutoff=state.phaseIndex;
  const knownByPhase=id=>{const i=phaseIndexById.get(id);return i!==undefined&&i<=cutoff};
- const add=(label,reactants=[])=>{if(!label||seen.has(label))return;seen.add(label);out.push({label,reactants:new Set(reactants.filter(Boolean))})};
+ const add=(label,reactants=[])=>{label=primaryRecipeLabel(label);if(!label||seen.has(label))return;seen.add(label);out.push({label,reactants:new Set(reactants.filter(Boolean))})};
  // O painel é a memória curricular da fase atual: ao revisitar uma fase antiga,
  // receitas aprendidas depois dela ficam ocultas, mesmo que o save já tenha avançado.
  for(const r of PRIMORDIAL_NUCLEAR_REACTIONS)if(knownByPhase(r.unlock))add(r.label,[...(r.pieces||[]),...(r.particles||[])]);
@@ -3029,22 +3028,21 @@ async function fireCosmicRay(rayId,targetId){
  if(state.board[cell]===targetId)state.board[cell]=null;state.pieces.delete(targetId);renderPieces();const product=createPiece(out,cell,false);product.x=x;product.y=y;product.newborn=true;focusPieceInfo(product);state.created[out]=(state.created[out]||0)+1;state.discovered.add(out);if(s.mode==='spallation'){if(out===s.new)recordFlow(1)}else recordFlow(out===s.new?3:1);if(motif)await objectiveInteractionRevealPiece(motif,product,{x,y});else renderPieces();spallFragments(x,y);burst(x,y);vibrate([12,18,14]);setTimeout(()=>{const q=state.pieces.get(product.id);if(q){q.newborn=false;renderPieces()}},360);if(!triggerPhaseMilestone()){const tag=s.mode==='neutrino'?'ν-PROCESSO':s.mode==='gamma'?'γ-PROCESSO':'ESPALAÇÃO';announce(tag,`${E[out].name.toUpperCase()} FORMADO`,`${state.created[out]||0}/${s.target}`)}await afterNuclearAction({reactionProductIds:[product.id]});state.locked=false;render();checkComplete();const chainRoot=startChainEvent('energetic',product.x,product.y);scheduleAutoFusionCascade(product.id,chainRoot,1,'energetic');if(!state.phaseDone)setTimeout(spawnCosmicRay,120)
 }
 function drawLines(){if(isPrimordial()){dom.lines.innerHTML='';return}if(state.selected.length<2){dom.lines.innerHTML='';return}let svg=`<svg viewBox="0 0 ${starSize()} ${starSize()}">`;for(let i=1;i<state.selected.length;i++){const a=pos(coords[state.selected[i-1]]),b=pos(coords[state.selected[i]]);svg+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="rgba(255,255,255,.88)" stroke-width="4" stroke-linecap="round"/>`}dom.lines.innerHTML=svg+'</svg>'}
-function fusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He + γ';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H + e⁺ + νₑ';if(r===FUSIONS.He3)return'²H + H → ³He + γ';if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');return r.emissions?.includes('gamma')?base+' + γ':base}
-function topFusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H';if(r===FUSIONS.He3)return'²H + H → ³He';if(r===FUSIONS.He)return'³He + ³He → ⁴He';let base=`${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`;if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(x=>E[x]?.name||x).join(' + ');if(r.emissions?.includes('gamma'))base+=' + Fóton gama';return base}
+function fusionLabel(r){if(r===BROWN_FUSION)return'²H + H → ³He';if(r===RED_UNSTABLE_FUSION)return'H + próton → He instável';if(r===RED_STABLE_FUSION)return'He instável + He instável → He estável';if(r===FUSIONS.D)return'H + H → ²H';if(r===FUSIONS.He3)return'²H + H → ³He';if(r===FUSIONS.He)return'³He + ³He → ⁴He';return `${r.ing.map(x=>E[x].name).join(' + ')} → ${E[r.out].name}`}
+function topFusionLabel(r){return fusionLabel(r)}
 function infoSymbolFor(sym){
  const special={D:'²H',T:'³H',He3:'³He',HeU:'He*',Be7:'⁷Be',Be8:'⁸Be',FeU:'Fe*',Plus:'p'};
  return special[sym]||E[sym]?.symbol||sym;
 }
 function symbolicFusionLabel(r){
- if(r===BROWN_FUSION)return'²H + H → ³He + γ';
  if(r===RED_UNSTABLE_FUSION)return'H + p → He*';
  if(r===RED_STABLE_FUSION)return'He* + He* → He';
- if(r===FUSIONS.D)return'H + H → ²H + e⁺ + νₑ';
- if(r===FUSIONS.He3)return'²H + H → ³He + γ';
- if(r===FUSIONS.He)return'³He + ³He → He + 2p';
- let base=`${(r.ing||[]).map(infoSymbolFor).join(' + ')} → ${infoSymbolFor(r.out)}`;
- if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(infoSymbolFor).join(' + ');
- return r.emissions?.includes('gamma')?base+' + γ':base;
+ return `${(r.ing||[]).map(infoSymbolFor).join(' + ')} → ${infoSymbolFor(r.out)}`;
+}
+function primaryRecipeLabel(label){
+ const raw=String(label||''),parts=raw.split('→');if(parts.length!==2)return raw;
+ const rhs=parts[1],markers=[' · ',' • '],cuts=markers.map(m=>rhs.indexOf(m)).filter(i=>i>=0),cut=cuts.length?Math.min(...cuts):rhs.length,core=rhs.slice(0,cut),suffix=rhs.slice(cut),primary=core.includes(' + ')?core.split(' + ')[0].trimEnd():core.trimEnd();
+ return parts[0].trimEnd()+' → '+primary.trimStart()+suffix
 }
 function recipeDisplayLines(label){
  const aliases=new Map(),add=(alias,name,symbol)=>{if(alias&&name&&symbol&&!aliases.has(alias))aliases.set(alias,{name,symbol})};
@@ -3056,7 +3054,7 @@ function recipeDisplayLines(label){
  [
   ['2 Prótons','2 Prótons','2(+)'],['2 prótons','2 Prótons','2(+)'],['Próton','Próton','(+)'],['próton','Próton','(+)'],['prótons','Prótons','(+)'],['p⁺','Próton','(+)'],['p','Próton','(+)'],['2p','2 Prótons','2(+)'],
   ['2 Nêutrons','2 Nêutrons','2(n)'],['2 nêutrons','2 Nêutrons','2(n)'],['Nêutron','Nêutron','(n)'],['nêutron','Nêutron','(n)'],['nêutrons','Nêutrons','(n)'],['n','Nêutron','(n)'],
-  ['Elétron','Elétron','e⁻'],['elétron','Elétron','e⁻'],['elétrons','Elétrons','e⁻'],['e⁻','Elétron','e⁻'],['2e⁻','2 Elétrons','2e⁻'],['3e⁻','3 Elétrons','3e⁻'],
+  ['Elétron','Elétron','(-)'],['elétron','Elétron','(-)'],['elétrons','Elétrons','(-)'],['e⁻','Elétron','(-)'],['2e⁻','2 Elétrons','2(-)'],['3e⁻','3 Elétrons','3(-)'],
   ['Pósitron','Pósitron','e⁺'],['pósitron','Pósitron','e⁺'],['pósitrons','Pósitrons','e⁺'],['e⁺','Pósitron','e⁺'],
   ['Neutrino','Neutrino','νₑ'],['neutrino','Neutrino','νₑ'],['neutrinos','Neutrinos','νₑ'],['ν','Neutrino','νₑ'],['νₑ','Neutrino','νₑ'],
   ['Antineutrino','Antineutrino','ν̄ₑ'],['antineutrino','Antineutrino','ν̄ₑ'],['ν̄ₑ','Antineutrino','ν̄ₑ'],
@@ -3068,7 +3066,7 @@ function recipeDisplayLines(label){
   ['He instável','Hélio instável','He*'],['Fe instável','Ferro instável','Fe*']
  ].forEach(([alias,name,symbol])=>aliases.set(alias,{name,symbol}));
  const esc=s=>s.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&'),slots=[];
- let marked=String(label||'');
+ let marked=primaryRecipeLabel(label);
  [...aliases.entries()].sort((a,b)=>b[0].length-a[0].length).forEach(([alias,pair])=>{
   const re=new RegExp(`(^|[\\s+→/·,(])${esc(alias)}(?=$|[\\s+→/·,)])`,'g');
   marked=marked.replace(re,(match,prefix)=>{const token=`\uE000${slots.length}\uE001`;slots.push(pair);return prefix+token})
