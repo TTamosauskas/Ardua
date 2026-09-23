@@ -59,6 +59,10 @@ try{
   }));
   assert.deepEqual(beforeMenu,{activeId:'primordial_t',mapOpen:false,homeExists:true},'Fixture deve estar dentro de Trítio antes de testar Início');
 
+  // Descobertas podem chegar alguns frames depois da entrada da fase; exija uma janela
+  // limpa imediatamente antes de abrir o menu para evitar disputa entre superfícies.
+  await dismissBlockingSurface();await page.waitForTimeout(260);await dismissBlockingSurface();
+  await page.waitForFunction(()=>!document.getElementById('discoveryUnlockModal')?.classList.contains('show')&&!document.getElementById('stellarIntro')?.classList.contains('show')&&!document.getElementById('eventTooltip')?.classList.contains('show'),undefined,{timeout:2500});
   await page.click('#menuOpenBtn');
   await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'));
 
