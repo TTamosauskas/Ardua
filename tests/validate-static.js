@@ -38,9 +38,10 @@ ok(engine.includes("COULOMB_EXEMPT_SYMS=new Set(['H','D','T'])"),'H, Deutério e
 ok(engine.includes('coulombRollBlocks(blockedCell,s,blockedPiece.sym)')&&engine.includes('coulombRollBlocks(cell,s,target.sym)'),'fusão e captura de prótons usam a chance radial da Barreira de Coulomb');
 ok(engine.includes("coulomb:{title:'BARREIRA DE COULOMB',text:'Aproxime os átomos do núcleo estelar para diminuir a resistência.'}"),'tooltip da Barreira de Coulomb usa sempre a mensagem didática fixa');
 ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'index.html continua apontando para assets estáticos');
-ok(engine.includes("['Próton','Próton (+)']")&&engine.includes("['n','Nêutron (n)']")&&engine.includes("['γ','Fóton gama (γ)']"),'receitas exibem nome e símbolo para partículas');
-ok(engine.includes("const symbol=infoSymbolFor(sym),shown=\`\${e.name} (\${symbol})\`"),'receitas exibem nome e símbolo para elementos e isótopos');
-ok(engine.includes("sub:headerRecipeLine(modalPrimaryLine(s))"),'modal de abertura usa o mesmo formato nome + símbolo do HUD');
+ok(engine.includes("['Próton','Próton','(+)']")&&engine.includes("['n','Nêutron','(n)']")&&engine.includes("['γ','Fóton gama','γ']"),'receitas mantêm nomes e símbolos em representações separadas');
+ok(engine.includes("return{name:restore('name'),symbol:restore('symbol')}")&&engine.includes('function recipeSymbolLine(label)'), 'formatador gera linha nominal e linha simbólica');
+ok(engine.includes('class="recipe-name-line"')&&engine.includes('class="recipe-symbol-line"'),'HUD renderiza receitas em duas linhas');
+ok(engine.includes("sub:headerRecipeLine(modalPrimaryLine(s))"),'modal de abertura preserva a linha nominal compacta');
 ok(engine.includes('async function relocateNewbornCoreProduct()')&&engine.includes('const center=(byRing[0]||[])[0]')&&engine.includes('const ringOne=(byRing[1]||[])'),'produto recém-formado no núcleo central é deslocado para a primeira camada');
 ok(engine.includes('const relocated=await relocateNewbornCoreProduct()')&&engine.includes('protectedPieceIds:protectedIds'),'produto deslocado do núcleo fica protegido do pulso gravitacional da mesma reação');
 ok(engine.includes("if(s.mode==='primordialNuclear')return{p:2,n:2,e:0}")&&engine.includes("if(s.mode==='atomicRecombination'||s.mode==='primordialMolecule')return{p:2,n:2,e:2}"),'matéria-base primordial mantém piso renovável sem repor intermediários');
