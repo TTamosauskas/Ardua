@@ -2460,13 +2460,13 @@ function movementTargetCells(s=phase()){
  return movableEmptyNeighbors(source,s);
 }
 function updateMoveTargets(){
- const targets=new Set(movementTargetCells()),d=state.boardDrag?.active?state.boardDrag:null,dragMoves=d?new Set(movableEmptyNeighbors(d.sourceCell,phase())):new Set(),hover=d?.target?.type==='move'?d.target.cell:null;
+ const targets=new Set(movementTargetCells()),d=state.boardDrag?.active?state.boardDrag:null,dragMoves=d&&stellarBoardMovementDragAllowed(phase())?new Set(movableEmptyNeighbors(d.sourceCell,phase())):new Set(),hover=d?.target?.type==='move'?d.target.cell:null;
  dom.cells.querySelectorAll('.cell').forEach(el=>{const cell=+el.dataset.cell,move=targets.has(cell)||dragMoves.has(cell);el.classList.toggle('move-target',move);el.classList.toggle('stellar-drag-hover',hover===cell)})
 }
 function stellarBoardMovementDragAllowed(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'}
 function stellarBoardDragMechanicClear(s=phase()){return (stellarBoardMovementDragAllowed(s)||fusionSandboxAllowed(s))&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
 function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
- if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s)||s.mode==='rpProcess')return null;
+ if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s))return null;
  if(!(neigh[source.cell]||[]).includes(target.cell))return null;
  if(s.mode==='reactionExplore'){
   const sp=atlasSpec(s);return atlasPairMatches(sp,[source.sym,target.sym])?{atlas:true,ing:[sp.a,sp.b],out:sp.mainSym}:null
