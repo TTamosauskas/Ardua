@@ -33,7 +33,7 @@ try{
  await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION);
  await page.evaluate(()=>window.ARDUA_QUARKS.start());
  await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&document.querySelectorAll('.quark-piece').length===6);
- await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='0 de 2'&&document.getElementById('stageProgressText')?.textContent==='0%'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
+ await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='0 de 2'&&document.getElementById('stageProgressText')?.textContent==='0%'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + dd ou d + uu → (+) ou (n)',undefined,{timeout:2500});
 
  const chrome=await page.evaluate(()=>{
   const formula=document.getElementById('formulaText'),progress=document.querySelector('.stage-progress'),bar=document.getElementById('stageProgress'),style=progress?getComputedStyle(progress):null;
@@ -49,8 +49,8 @@ try{
    title:document.getElementById('phaseTitle')?.textContent||''
   };
  });
- assert.equal(chrome.name,'2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron','Quarks: primeira linha da receita ausente');
- assert.equal(chrome.symbol,'u + u + d → p⁺ · u + d + d → n⁰','Quarks: segunda linha simbólica ausente');
+ assert.equal(chrome.name,'quark + quark + quark → hádron','Quarks: primeira linha compacta da receita ausente');
+ assert.equal(chrome.symbol,'u + dd ou d + uu → (+) ou (n)','Quarks: segunda linha compacta da receita ausente');
  assert.equal(chrome.progressVisible,true,'Quarks: barra de progresso continua oculta');
  assert.equal(chrome.progressLabel,'0 de 2','Quarks: meta inicial deveria ficar no início da barra');
  assert.equal(chrome.progressText,'0%','Quarks: porcentagem inicial deveria ficar no fim da barra');
