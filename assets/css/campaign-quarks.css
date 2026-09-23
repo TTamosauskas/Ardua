@@ -25,12 +25,14 @@ body.quarks-phase-active .quarks-info-tile{background:linear-gradient(135deg,#32
 
 /* No rings, cells or circular arena: the six quarks occupy the same open field language as primordial nucleons. */
 .quarks-stage{position:absolute;inset:0;z-index:42;overflow:visible;isolation:isolate;touch-action:manipulation}
-.quark-piece{position:absolute;width:32px;height:32px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.40);display:grid;place-items:center;color:#071018;font-weight:950;font-size:18px;line-height:1;cursor:pointer;z-index:5;box-shadow:0 0 13px rgba(255,255,255,.16);transition:transform .16s ease,opacity .25s ease,outline-color .14s ease,box-shadow .18s ease;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.quark-piece{position:absolute;width:32px;height:32px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.40);display:grid;place-items:center;color:#071018;font-weight:950;font-size:18px;line-height:1;cursor:pointer;z-index:5;box-shadow:0 0 13px rgba(255,255,255,.16);transition:transform .16s ease,opacity .25s ease,outline-color .14s ease,box-shadow .18s ease;-webkit-user-select:none;user-select:none;touch-action:none}
 .quark-piece span{transform:translateY(-1px)}
 .quark-u{background:radial-gradient(circle at 35% 28%,#fff,#7bf1ad 42%,#176345 78%);box-shadow:0 0 13px rgba(78,226,139,.68)}
 .quark-d{background:radial-gradient(circle at 35% 28%,#fff,#d59bff 42%,#482466 78%);box-shadow:0 0 13px rgba(190,111,245,.68);color:#12091a}
 .quark-piece.selected{outline:5px solid var(--selectGreen);outline-offset:1px;box-shadow:0 0 24px rgba(67,242,138,.48);z-index:9}
 .quark-piece.candidate{outline:3px solid var(--candidateGreen);outline-offset:1px;box-shadow:0 0 16px rgba(67,242,138,.28);z-index:8}
+.quark-piece.dragging{z-index:15;transform:translate(-50%,-50%) scale(1.16);outline:3px solid rgba(255,255,255,.72);box-shadow:0 0 0 5px rgba(255,255,255,.10),0 0 28px rgba(255,255,255,.34);transition:none}
+.quark-piece.drag-target{outline-color:#fff;box-shadow:0 0 0 3px rgba(67,242,138,.28),0 0 24px rgba(67,242,138,.72)}
 .quark-piece.invalid{animation:quarkInvalid .26s linear;box-shadow:0 0 0 3px rgba(255,136,120,.82),0 0 20px rgba(255,110,90,.38)}
 @keyframes quarkInvalid{25%{transform:translate(calc(-50% - 4px),-50%)}50%{transform:translate(calc(-50% + 4px),-50%)}75%{transform:translate(calc(-50% - 2px),-50%)}}
 
