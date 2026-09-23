@@ -33,7 +33,7 @@ try{
  await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION);
  await page.evaluate(()=>window.ARDUA_QUARKS.start());
  await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&document.querySelectorAll('.quark-piece').length===6);
- await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='0/2'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
+ await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='0% (0 de 2)'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
 
  const chrome=await page.evaluate(()=>{
   const formula=document.getElementById('formulaText'),progress=document.querySelector('.stage-progress'),bar=document.getElementById('stageProgress'),style=progress?getComputedStyle(progress):null;
@@ -42,14 +42,20 @@ try{
    symbol:formula?.querySelector('.recipe-symbol-line')?.textContent||'',
    progressVisible:!!progress&&!progress.hidden&&style?.visibility!=='hidden'&&style?.display!=='none',
    progressText:document.getElementById('stageProgressText')?.textContent||'',
-   progressWidth:bar?.style.width||''
+   progressWidth:bar?.style.width||'',
+   progressVisualWidth:bar?getComputedStyle(bar).width:'',
+   goal:document.getElementById('goalText')?.textContent||'',
+   title:document.getElementById('phaseTitle')?.textContent||''
   };
  });
  assert.equal(chrome.name,'2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron','Quarks: primeira linha da receita ausente');
  assert.equal(chrome.symbol,'u + u + d → p⁺ · u + d + d → n⁰','Quarks: segunda linha simbólica ausente');
  assert.equal(chrome.progressVisible,true,'Quarks: barra de progresso continua oculta');
- assert.equal(chrome.progressText,'0/2','Quarks: progresso inicial deveria ser 0/2');
- assert.equal(chrome.progressWidth,'0%','Quarks: barra inicial deveria estar em 0%');
+ assert.equal(chrome.progressText,'0% (0 de 2)','Quarks: progresso inicial deveria usar porcentagem + meta');
+ assert.equal(chrome.progressWidth,'0%','Quarks: valor lógico inicial deveria continuar em 0%');
+ assert.ok(parseFloat(chrome.progressVisualWidth)>=8,'Quarks: barra em 0% deveria manter preenchimento visual mínimo');
+ assert.equal(chrome.goal,'Forme Prótons e Nêutrons','Quarks: objetivo não deveria repetir a meta numérica');
+ assert.equal(chrome.title,'Forme Prótons e Nêutrons','Quarks: título não deveria repetir a meta numérica');
 
  if(await page.locator('#stellarIntro').evaluate(el=>el.classList.contains('show'))){
   await page.locator('#stellarStartBtn').click({force:true});
@@ -63,12 +69,12 @@ try{
  await page.locator('.phase-quick-close').click();
 
  await makeBaryonByDrag('.quark-piece.quark-d','.quark-piece.quark-u');
- await page.waitForFunction(()=>document.getElementById('goalText')?.textContent.includes('1/2'),undefined,{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='50% (1 de 2)',undefined,{timeout:3000});
  const halfway=await page.evaluate(()=>({text:document.getElementById('stageProgressText')?.textContent||'',width:document.getElementById('stageProgress')?.style.width||''}));
- assert.equal(halfway.text,'1/2','Quarks: progresso intermediário deveria ser 1/2');
+ assert.equal(halfway.text,'50% (1 de 2)','Quarks: progresso intermediário deveria usar porcentagem + meta');
  assert.equal(halfway.width,'50%','Quarks: barra intermediária deveria estar em 50%');
  await makeBaryonByDrag('.quark-piece.quark-u','.quark-piece.quark-d');
- await page.waitForFunction(()=>document.getElementById('goalText')?.textContent.includes('2/2'),undefined,{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='100% (2 de 2)',undefined,{timeout:3000});
  await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD.pending?.phaseId==='quarks'||document.documentElement.dataset.arduaCompletionState==='celebrating',undefined,{timeout:1200});
  await page.waitForFunction(()=>!document.getElementById('discoveryUnlockModal')?.classList.contains('show'),undefined,{timeout:1200});
 
@@ -109,7 +115,7 @@ try{
  await page.click('[data-victory-primary]');
  await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='primordial_d',undefined,{timeout:4000});
  assert.deepEqual(errors,[],`Quarks mobile completion: erros JS: ${errors.join(' | ')}`);
- console.log('Quarks mobile completion OK: 2/2 auto-enters P0 celebration, absorbs discoveries into P1.5, hides the obsolete round CTA and leaves one CONTINUAR action.');
+ console.log('Quarks mobile completion OK: shared 0–100% progress UI, counter-free title, automatic completion and one CONTINUAR action passed.');
 }finally{
  await context.close();await browser.close();
 }
