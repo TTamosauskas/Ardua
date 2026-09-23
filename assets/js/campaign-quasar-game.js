@@ -41,7 +41,7 @@ function updateProgress(){
  const ratio=Math.min(1,created/Q.target),pct=Math.round(ratio*100);showProgress();
  setText('goalText',complete?'Quasar ativo':`Crie ${Q.target} unidades de Gás em Acreção`);
  if(window.ARDUA_PROGRESS_UI?.render)window.ARDUA_PROGRESS_UI.render({percent:pct,current:created,total:Q.target,label:'ACREÇÃO',ready:complete,visible:true});
- else{setText('stageProgressLabel','ACREÇÃO');setText('stageProgressText',`${pct}% (${created} de ${Q.target})`);const bar=$('stageProgress');if(bar){bar.style.width=`${pct}%`;bar.dataset.current=String(created);bar.dataset.total=String(Q.target)}}
+ else{setText('stageProgressLabel',`${created} de ${Q.target}`);setText('stageProgressText',`${pct}%`);const bar=$('stageProgress');if(bar){bar.style.width=`${pct}%`;bar.dataset.current=String(created);bar.dataset.total=String(Q.target)}}
  if(layer)layer.style.setProperty('--quasar-power',String(ratio));
 }
 function setInfo(){
@@ -54,7 +54,7 @@ function resetChrome(){
  setText('branchLabel',Q.branch);setText('phaseTitle',Q.title);setText('phaseMeta','Acreção gravitacional · radiação extrema');
  setText('goalText',`Crie ${Q.target} unidades de Gás em Acreção`);renderRecipe();showProgress();
  if(window.ARDUA_PROGRESS_UI?.render)window.ARDUA_PROGRESS_UI.render({percent:0,current:0,total:Q.target,label:'ACREÇÃO',ready:false,visible:true});
- else{setText('stageProgressLabel','ACREÇÃO');setText('stageProgressText',`0% (0 de ${Q.target})`);const bar=$('stageProgress');if(bar){bar.style.width='0%';bar.dataset.current='0';bar.dataset.total=String(Q.target)}}setInfo();
+ else{setText('stageProgressLabel',`0 de ${Q.target}`);setText('stageProgressText','0%');const bar=$('stageProgress');if(bar){bar.style.width='0%';bar.dataset.current='0';bar.dataset.total=String(Q.target)}}setInfo();
  phaseEnd.innerHTML='ENCERRAR<br>QUASAR';phaseEnd.hidden=true;phaseEnd.style.display='none';
 }
 function positions(){
