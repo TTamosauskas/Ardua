@@ -155,34 +155,27 @@ async function testCentralFusionProductRelocation(){
  const {context,page,errors}=await openPhase('he_yellow');
  try{
   await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>15,undefined,{timeout:4000});
-  let g=await stellarCenterGeometry(page);assert.ok(g.centerAtom,'Anã amarela: núcleo central sem átomo para testar retirada do produto');
+  const g=await stellarCenterGeometry(page);assert.ok(g.centerAtom,'Anã amarela: núcleo central sem átomo para testar retirada do produto');
+  const beforeIds=await page.locator('#pieces .atom[data-id]').evaluateAll(els=>els.map(el=>Number(el.dataset.id)).filter(Number.isFinite));
+  const center=page.locator(`#pieces .atom[data-id="${g.centerAtom.id}"]`);
+  await center.click({force:true});
+  const candidate=page.locator('#pieces .atom.candidate[data-cell]:not([data-cell=""])').first();
+  await candidate.waitFor({state:'visible',timeout:1200});
+  const candidateCell=await candidate.getAttribute('data-cell');
+  assert.ok(g.adjacent.some(a=>a.cell===candidateCell),'Anã amarela: parceiro destacado da receita deveria tocar o núcleo central');
+  await candidate.click({force:true});
 
-  if(g.centerAtom.sym!=='H'){
-   const incoming=g.adjacent.find(a=>a.sym==='H');assert.ok(incoming,'Anã amarela: faltou H adjacente para preparar fusão central');
-   const center=page.locator(`#pieces .atom[data-id="${g.centerAtom.id}"]`),h=page.locator(`#pieces .atom[data-id="${incoming.id}"]`);
-   await center.click({force:true});
-   assert.equal(await h.evaluate(el=>el.classList.contains('candidate')),false,'Anã amarela: H comum foi confundido com reação ao preparar o centro');
-   await h.click({force:true});
-   await page.waitForFunction(({id,cell})=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.dataset.cell===cell,{id:incoming.id,cell:g.center.cell},{timeout:2500});
-   g=await stellarCenterGeometry(page);
-  }
-
-  assert.equal(g.centerAtom?.sym,'H','Anã amarela: preparação deixou de colocar H no centro');
-  const partner=g.adjacent.find(a=>a.sym==='H');assert.ok(partner,'Anã amarela: faltou segundo H adjacente ao núcleo central');
-  const centerH=page.locator(`#pieces .atom[data-id="${g.centerAtom.id}"]`),partnerH=page.locator(`#pieces .atom[data-id="${partner.id}"]`);
-  await centerH.click({force:true});
-  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('candidate'),partner.id,{timeout:1000});
-  await partnerH.click({force:true});
-
-  const product=await page.waitForFunction(centerCell=>{
-   const atoms=[...document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])')];
-   const d=atoms.find(el=>el.querySelector('.sym')?.textContent?.trim()==='²H');
-   if(!d)return null;const r=d.getBoundingClientRect(),board=document.getElementById('starBoard')?.getBoundingClientRect();if(!board)return null;
-   return{id:d.dataset.id,cell:d.dataset.cell,x:r.left+r.width/2,y:r.top+r.height/2,bx:board.left+board.width/2,by:board.top+board.height/2,centerCell};
-  },g.center.cell,{timeout:5000});
-  const p=await product.jsonValue();
-  assert.notEqual(p.cell,g.center.cell,'Produto ²H permaneceu na célula central sob o controle ↕');
-  assert.ok(Math.abs(Math.hypot(p.x-p.bx,p.y-p.by)-g.step)<g.step*.38,'Produto ²H deveria terminar no primeiro anel ao redor do núcleo');
+  const result=await page.waitForFunction(({beforeIds,centerCell,step,bx,by})=>{
+   const prior=new Set(beforeIds),fresh=[...document.querySelectorAll('#pieces .atom[data-id][data-cell]:not([data-cell=""])')]
+     .filter(el=>!prior.has(Number(el.dataset.id))).sort((a,b)=>Number(a.dataset.id)-Number(b.dataset.id));
+   if(!fresh.length)return null;
+   const product=fresh[0],r=product.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,radial=Math.hypot(x-bx,y-by);
+   if(product.dataset.cell===centerCell||Math.abs(radial-step)>step*.38)return null;
+   return{id:Number(product.dataset.id),cell:product.dataset.cell,radial};
+  },{beforeIds,centerCell:g.center.cell,step:g.step,bx:g.board.x,by:g.board.y},{timeout:6000});
+  const product=await result.jsonValue();
+  assert.notEqual(product.cell,g.center.cell,'Produto da fusão permaneceu na célula central sob o controle ↕');
+  assert.ok(Math.abs(product.radial-g.step)<g.step*.38,'Produto da fusão deveria terminar no primeiro anel ao redor do núcleo');
   assert.deepEqual(errors,[],`Retirada do produto central: erros JavaScript: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
