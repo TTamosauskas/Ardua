@@ -4009,7 +4009,7 @@ async function relocateNewbornCoreProduct(reactionProductIds=[]){
  const ringOne=(byRing[1]||[]).filter(cell=>activeSet().has(cell));if(!ringOne.length)return[];
  const destination=ringOne.find(cell=>state.board[cell]===null)??ringOne[0],occupantId=state.board[destination],occupant=occupantId?state.pieces.get(occupantId):null;
  const from=pos(coords[center]),to=pos(coords[destination]);
- state.board[center]=occupantId||null;state.board[destination]=piece.id;piece.cell=destination;
+ state.board[center]=occupantId||null;state.board[destination]=piece.id;piece.cell=destination;piece.coreRelocatedUntilRound=state.nuclearRound+1;
  if(occupant){occupant.cell=center;occupant.x=to.x;occupant.y=to.y}
  piece.x=from.x;piece.y=from.y;renderPieces();
  requestAnimationFrame(()=>{piece.x=to.x;piece.y=to.y;if(occupant){occupant.x=from.x;occupant.y=from.y}renderPieces()});
@@ -4109,12 +4109,15 @@ function preferredRing(sym,s=phase()){
  if(core<=1&&group===1)ideal=.28;
  return Math.max(0,Math.min(max,ideal))
 }
+function coreRelocationAutoProtected(p){
+ return !!p&&Number.isFinite(p.coreRelocatedUntilRound)&&p.coreRelocatedUntilRound>=state.nuclearRound
+}
 function stratifiedMoveTarget(p,active,s,movedIds){
  if(!p||p.free||p.cell===null||movedIds.has(p.id)||p.compacted)return null;
  const strength=stratificationStrength(s);if(strength<=0)return null;
  const fromRing=coords[p.cell].ring,ideal=preferredRing(p.sym,s),before=Math.abs(fromRing-ideal);
  if(before<.26)return null;
- const options=neigh[p.cell].filter(n=>active.has(n)&&state.board[n]===null).map(n=>({cell:n,dist:Math.abs(coords[n].ring-ideal)})).filter(x=>x.dist+1e-6<before);
+ const options=neigh[p.cell].filter(n=>active.has(n)&&state.board[n]===null&&!(coords[n].ring===0&&coreRelocationAutoProtected(p))).map(n=>({cell:n,dist:Math.abs(coords[n].ring-ideal)})).filter(x=>x.dist+1e-6<before);
  if(!options.length)return null;
  options.sort((a,b)=>a.dist-b.dist||Math.random()-.5);
  const improvement=before-options[0].dist,chance=Math.min(.92,strength*(.48+.18*improvement));
@@ -4217,8 +4220,19 @@ function ensureOpportunity(){
     const active=activeSet();
     for(const d of deuterium){const cell=(neigh[d.cell]||[]).find(n=>active.has(n)&&state.board[n]===null);if(cell!==undefined){const h=createPiece('H',cell,true);renderPieces();requestAnimationFrame(()=>{const q=pos(coords[cell]);h.x=q.x;h.y=q.y;renderPieces()});return true}}
     // Tabuleiro cheio: reposicione um H já existente junto ao D, preservando o reservatório finito.
-    const hydrogen=[...state.pieces.values()].find(p=>p.sym==='H');
-    if(hydrogen){for(const d of deuterium){const target=(neigh[d.cell]||[]).find(n=>active.has(n)&&state.board[n]!==null&&state.board[n]!==hydrogen.id);if(target!==undefined){const displaced=state.pieces.get(state.board[target]),old=hydrogen.cell;state.board[target]=hydrogen.id;hydrogen.cell=target;state.board[old]=displaced.id;displaced.cell=old;for(const p of [hydrogen,displaced]){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}renderPieces();return true}}}
+    // Produtos recém-retirados do núcleo ficam protegidos de reposicionamentos automáticos
+    // que os colocariam novamente sob o controle central durante a mesma rodada nuclear.
+    const hydrogen=[...state.pieces.values()].filter(p=>p.sym==='H');
+    for(const h of hydrogen)for(const d of deuterium){
+      const target=(neigh[d.cell]||[]).find(n=>{
+        if(!active.has(n)||state.board[n]===null||state.board[n]===h.id)return false;
+        const displaced=state.pieces.get(state.board[n]);
+        if(coords[n].ring===0&&coreRelocationAutoProtected(h))return false;
+        if(coords[h.cell].ring===0&&coreRelocationAutoProtected(displaced))return false;
+        return true
+      });
+      if(target!==undefined){const displaced=state.pieces.get(state.board[target]),old=h.cell;state.board[target]=h.id;h.cell=target;state.board[old]=displaced.id;displaced.cell=old;for(const p of [h,displaced]){const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y}renderPieces();return true}
+    }
     return false;
   }
   if(s.id==='he_red'){
