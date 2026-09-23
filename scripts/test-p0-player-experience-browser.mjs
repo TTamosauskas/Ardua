@@ -93,11 +93,11 @@ async function completeQuarks(page){
  await page.evaluate(()=>document.querySelector('.quark-piece.quark-d')?.click());
  await page.waitForFunction(()=>document.querySelectorAll('.quark-piece.candidate').length===2);
  await page.evaluate(()=>document.querySelector('.quark-piece.candidate')?.click());
- await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='50% (1 de 2)',undefined,{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='1 de 2'&&document.getElementById('stageProgressText')?.textContent==='50%',undefined,{timeout:3000});
  await page.evaluate(()=>document.querySelector('.quark-piece.quark-u')?.click());
  await page.waitForFunction(()=>document.querySelectorAll('.quark-piece.candidate').length===2);
  await page.evaluate(()=>document.querySelector('.quark-piece.candidate')?.click());
- await page.waitForFunction(()=>document.getElementById('phaseEndBtn')?.classList.contains('show')&&document.getElementById('stageProgressText')?.textContent==='100% (2 de 2)',undefined,{timeout:3000});
+ await page.waitForFunction(()=>document.getElementById('phaseEndBtn')?.classList.contains('show')&&document.getElementById('stageProgressLabel')?.textContent==='2 de 2'&&document.getElementById('stageProgressText')?.textContent==='100%',undefined,{timeout:3000});
 }
 
 async function testQuarks(){
@@ -143,7 +143,7 @@ async function testQuasar(){
   await page.evaluate(()=>{const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open')});
   for(let pair=0;pair<6;pair++){
    await page.evaluate(pair=>{const xs=[...document.querySelectorAll(`.quasar-gas[data-pair="${pair}"]`)];xs[0]?.click();xs[1]?.click()},pair);
-   await page.waitForFunction(target=>document.getElementById('stageProgressText')?.textContent===`${Math.round(target/6*100)}% (${target} de 6)`,pair+1,{timeout:2000});
+   await page.waitForFunction(target=>document.getElementById('stageProgressLabel')?.textContent===`${target} de 6`&&document.getElementById('stageProgressText')?.textContent===`${Math.round(target/6*100)}%`,pair+1,{timeout:2000});
   }
   await page.waitForFunction(()=>{const b=document.getElementById('phaseEndBtn');return b&&!b.hidden&&getComputedStyle(b).display!=='none'});
   const mapBefore=await page.evaluate(()=>document.getElementById('campaignMap')?.classList.contains('show')||false);assert.equal(mapBefore,false,`${label}: fixture iniciou com mapa visível`);
