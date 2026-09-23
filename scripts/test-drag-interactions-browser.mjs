@@ -36,9 +36,9 @@ async function testPrimordialParticleDrop(){
   const pb=await proton.boundingBox(),nb=await neutron.boundingBox();assert.ok(pb&&nb,'Deutério: partículas iniciais não possuem geometria');
   await page.mouse.move(pb.x+pb.width/2,pb.y+pb.height/2);
   await page.mouse.down();
-  await page.waitForTimeout(270);
-  await page.waitForFunction(()=>!!document.querySelector('.primordial-particle.proton.dragging'),undefined,{timeout:900});
   const nb2=await neutron.boundingBox();assert.ok(nb2,'Deutério: nêutron desapareceu antes do drop');
+  await page.mouse.move(pb.x+pb.width/2+10,pb.y+pb.height/2,{steps:2});
+  await page.waitForFunction(()=>!!document.querySelector('.primordial-particle.proton.dragging'),undefined,{timeout:900});
   await page.mouse.move(nb2.x+nb2.width/2,nb2.y+nb2.height/2,{steps:5});
   await page.waitForFunction(()=>!!document.querySelector('.primordial-particle.neutronfree.drop-target'),undefined,{timeout:1200});
   await page.mouse.up();
