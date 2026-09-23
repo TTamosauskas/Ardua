@@ -206,6 +206,46 @@ async function testStellarBoardFusionDragWithRotation(){
  }finally{await context.close()}
 }
 
+async function testQuasarDragAndChrome(){
+ const {context,page,errors}=await openPhase('black_hole');
+ try{
+  await page.waitForFunction(()=>window.ARDUA_QUASAR_GAME?.launch&&window.ARDUA_CAMPAIGN,undefined,{timeout:3000});
+  await page.evaluate(()=>{window.ARDUA_CAMPAIGN?.setActive?.('quasar');window.ARDUA_QUASAR_GAME.launch()});
+  await page.waitForFunction(()=>document.getElementById('starBoard')?.classList.contains('quasar-mode')&&document.querySelectorAll('.quasar-gas').length===12,undefined,{timeout:2500});
+  const chrome=await page.evaluate(()=>{
+   const f=document.getElementById('formulaText'),p=document.querySelector('.stage-progress'),style=p?getComputedStyle(p):null;
+   return{
+    name:f?.querySelector('.recipe-name-line')?.textContent||'',
+    symbol:f?.querySelector('.recipe-symbol-line')?.textContent||'',
+    progressVisible:!!p&&!p.hidden&&style?.visibility!=='hidden'&&style?.display!=='none',
+    progressText:document.getElementById('stageProgressText')?.textContent||'',
+    width:document.getElementById('stageProgress')?.style.width||''
+   };
+  });
+  assert.equal(chrome.name,'Gás orbital + Gás orbital → Gás em acreção + radiação','Quasar: primeira linha da receita ausente');
+  assert.equal(chrome.symbol,'m₁ + m₂ → mₐcc + hν','Quasar: segunda linha simbólica ausente');
+  assert.equal(chrome.progressVisible,true,'Quasar: barra de progresso oculta');
+  assert.equal(chrome.progressText,'0/6','Quasar: progresso inicial deveria ser 0/6');
+
+  const source=page.locator('.quasar-gas[data-gas-index="0"]'),target=page.locator('.quasar-gas[data-gas-index="1"]'),sb=await source.boundingBox(),tb=await target.boundingBox();
+  assert.ok(sb&&tb,'Quasar: parcelas iniciais sem geometria');
+  const sx=sb.x+sb.width/2,sy=sb.y+sb.height/2,tx=tb.x+tb.width/2,ty=tb.y+tb.height/2;
+  await page.mouse.move(sx,sy);await page.mouse.down();
+  await page.mouse.move(sx+(tx-sx)*.35,sy+(ty-sy)*.35,{steps:3});
+  await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.dragging'),undefined,{timeout:1000});
+  const tb2=await target.boundingBox();assert.ok(tb2,'Quasar: alvo desapareceu durante drag');
+  await page.mouse.move(tb2.x+tb2.width/2,tb2.y+tb2.height/2,{steps:5});
+  await page.waitForFunction(()=>!!document.querySelector('.quasar-gas.drag-target'),undefined,{timeout:1200});
+  await page.mouse.up();
+  await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='1/6',undefined,{timeout:2200});
+  const after=await page.evaluate(()=>({width:document.getElementById('stageProgress')?.style.width||'',dragging:document.querySelectorAll('.quasar-gas.dragging').length,target:document.querySelectorAll('.quasar-gas.drag-target').length}));
+  assert.equal(after.width,'17%','Quasar: progresso visual após uma acreção deveria ser 17%');
+  assert.equal(after.dragging,0,'Quasar: estado dragging permaneceu após pointerup');
+  assert.equal(after.target,0,'Quasar: destaque drag-target permaneceu após pointerup');
+  assert.deepEqual(errors,[],`Quasar drag: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
 try{
  await testPrimordialParticleDrop();
  await testStellarFormationDrag();
@@ -213,7 +253,8 @@ try{
  await testStellarBoardFusionDrag();
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
- console.log('Drag interactions OK: primordial reactions, stellar formation merges, stellar board movement and adjacent fusion work with rotation off and on.');
+ await testQuasarDragAndChrome();
+ console.log('Drag interactions OK: primordial reactions, stellar formation, stellar board and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
