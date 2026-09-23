@@ -1483,6 +1483,20 @@ function spawnFloatingParticle(kind,x=null,y=null){
  setTimeout(()=>{const q=state.primordialParticles.get(p.id);if(q){q.reacting=false;renderPrimordialParticles();startPrimordialDrift()}},420);return p
 }
 function ensurePrimordialParticleMix({p=0,e=0,n=0}={}){for(const [kind,min] of Object.entries({p,e,n}))while(countFloatingParticle(kind)<min)createPrimordialParticle(kind)}
+function baseMatterReserve(s=phase()){
+ if(!s||s.mode==='opening')return null;
+ if(s.mode==='primordialNuclear')return{p:2,n:2,e:0};
+ if(s.mode==='atomicRecombination'||s.mode==='primordialMolecule')return{p:2,n:2,e:2};
+ return null
+}
+function ensureBaseMatterReserve(s=phase()){
+ const reserve=baseMatterReserve(s);if(!reserve)return false;
+ const before={p:countFloatingParticle('p'),n:countFloatingParticle('n'),e:countFloatingParticle('e')};
+ ensurePrimordialParticleMix(reserve);
+ const changed=Object.entries(reserve).some(([kind,min])=>before[kind]<min);
+ if(changed){renderPrimordialParticles();startPrimordialDrift()}
+ return changed
+}
 function snapshotPrimordialParticles(){const size=starSize();return[...state.primordialParticles.values()].map(p=>{const timed=p.kind==='n'&&Number.isFinite(p.lifetimeRounds);return{kind:p.kind,x:p.x/size,y:p.y/size,lifetimeRounds:timed?p.lifetimeRounds:null,lifeLeft:timed?Math.max(1,p.lifetimeRounds-(state.nuclearRound-(p.bornRound??state.nuclearRound))):null}})}
 function restorePrimordialParticles(items=[]){const size=starSize();for(const item of items){const q=createPrimordialParticle(item.kind,Math.max(22,Math.min(size-22,item.x*size)),Math.max(22,Math.min(size-22,item.y*size)));if(q.kind==='n'&&!primordialNeutronsStable()&&item.lifeLeft!=null){q.unstable=true;q.lifetimeRounds=Math.max(3,Number(item.lifetimeRounds||0),Number(item.lifeLeft||0));q.bornRound=state.nuclearRound-(q.lifetimeRounds-Math.max(1,item.lifeLeft))}}}
 function snapshotFreePieces(){const size=starSize();return[...state.pieces.values()].filter(p=>p.free).map(p=>({sym:p.sym,x:p.x/size,y:p.y/size,matterState:p.matterState||'nucleus',boundElectrons:Number(p.boundElectrons||0),massNumber:p.massNumber??E[p.sym]?.mass??null,longRadioactive:!!p.longRadioactive}))}
@@ -1681,7 +1695,7 @@ function fillPrimordialStage(){
    // Cada fase molecular começa com o conjunto mínimo pedido. O restante precisa ser
    // reconstruído com as receitas nucleares e de recombinação já aprendidas.
    clearPrimordialParticles();state.primordialMolecules.clear();state.freeSelected=[];
-   const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:0};ensurePrimordialParticleMix(molecularFuel);
+   const molecularFuel=s.id==='first_atomic_bonds'?{p:9,e:9,n:6}:{p:6,e:6,n:2};ensurePrimordialParticleMix(molecularFuel);
    const atom=(sym,x=null,y=null)=>createFreePiece(sym,x,y,{matterState:'atom',boundElectrons:Number(E[sym]?.n||0),massNumber:primordialMassForSym(sym)});
    if(s.id==='first_atomic_bonds'){atom('H');atom('He')}
    else if(s.id==='first_nebulae'){const pt=freePoint(72),he=atom('He',pt.x-24,pt.y),hBond=atom('H',pt.x+24,pt.y);atom('H');createPrimordialMolecule('HeH+',he,hBond,{credit:false,silent:true})}
@@ -3836,6 +3850,7 @@ async function afterNuclearAction({advanceRound=false,forceBoardPulse=false,repl
  // Em um movimento manual, a peça recém-movida pode ser protegida daquele pulso
  // específico para que a resposta da estrela não desfaça imediatamente a escolha do jogador.
  if(advanceRound)await advanceNuclearRound();
+ ensureBaseMatterReserve(phase());
  if(forceBoardPulse||stellarStratificationActive(phase()))await gravityPulse({replenish,protectedPieceIds:protectedIds});
 }
 function stellarLayerGroup(sym){
@@ -3973,8 +3988,8 @@ function ensureNeutronMechanicOpportunity(s=phase()){
  if(empties.length<2)return false;for(const c of empties){const h=(neigh[c]||[]).find(x=>state.board[x]===null&&x!==c&&activeSet().has(x));if(h!==undefined){createPiece(g.source,c,true);createPiece('He',h,true);renderPieces();return true}}return false;
 }
 function ensureOpportunity(){
-  const s=phase();prepareCumulativeStellarAtomicMatter(s);ensureCumulativeParticleFuel(s);if(ensureNeutronMechanicOpportunity(s))return;
-  if(isPrimordial(s))return;
+  const s=phase();prepareCumulativeStellarAtomicMatter(s);ensureCumulativeParticleFuel(s);const baseMatterChanged=ensureBaseMatterReserve(s);if(ensureNeutronMechanicOpportunity(s))return true;
+  if(isPrimordial(s))return baseMatterChanged;
   if(s.mode==='reactionExplore')return ensureAtlasOpportunity(s);
   if(s.mode==='neutron'){
     if(s.chainRebuild){
