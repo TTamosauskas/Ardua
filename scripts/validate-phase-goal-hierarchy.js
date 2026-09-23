@@ -42,6 +42,6 @@ assert(names.includes('L.registerScientificNames?.(NAMES)'),'Nomes científicos 
 assert(names.includes("brown_formation:'Formação da Anã Marrom'"),'Mapa ainda usa Protoestrelas para a formação da Anã Marrom');
 assert(names.includes("coronal_jets:'Jatos Coronais'"),'Jatos Coronais não preserva a identidade aprovada');
 assert(names.includes("accretion:'Acreção extrema'"),'Acreção extrema não preserva a identidade aprovada');
-assert(quarks.includes("const GOAL='Forme Prótons e Nêutrons'")&&quarks.includes("setText('phaseTitle',goal)"),'Quarks não segue a mesma hierarquia de objetivo no título');
+assert(quarks.includes("const GOAL='Forme Prótons e Nêutrons'")&&quarks.includes("setText('phaseTitle',GOAL)")&&quarks.includes("setText('goalText',GOAL)"),'Quarks não segue a hierarquia sem contador no título');
 
 console.log('Phase goal hierarchy OK: compact one-line objective, contextual identity, recipe-only box, rebuilt menu/map naming and Quarks parity.');
