@@ -7,13 +7,13 @@ const browser=await chromium.launch({headless:true});
 function campaignState(activeId){return{version:14,introduced:true,activeId,completed:['bigbang'],generation:0,heritage:{level:0,seeds:[],sourceGeneration:0}}}
 function engineState(phaseId){return{phaseId,phaseIndex:0,version:'10.80',discovered:[],ignited:false,productLessons:[],rewardDiscoveries:[],rewardAchievements:[],signatureSeen:[]}}
 
-async function openPhase(activeId){
+async function openPhase(activeId,{rotation=false}={}){
  const context=await browser.newContext({viewport:{width:390,height:844}});
- await context.addInitScript(({campaign,engine})=>{
+ await context.addInitScript(({campaign,engine,rotation})=>{
   localStorage.setItem('arduaCampaignGraphV1',JSON.stringify(campaign));
   localStorage.setItem('stellarForgeV1013',JSON.stringify(engine));
-  localStorage.setItem('arduaRotationEnabledV2','0');
- },{campaign:campaignState(activeId),engine:engineState(activeId)});
+  localStorage.setItem('arduaRotationEnabledV2',rotation?'1':'0');
+ },{campaign:campaignState(activeId),engine:engineState(activeId),rotation});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
@@ -144,12 +144,76 @@ async function testStellarBoardFusionDrag(){
  }finally{await context.close()}
 }
 
+async function outerCellCenter(page){
+ return page.evaluate(()=>{
+  const board=document.getElementById('starBoard'),br=board.getBoundingClientRect(),cx=br.left+br.width/2,cy=br.top+br.height/2,cells=[...document.querySelectorAll('#cells .cell')];
+  const center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
+  return cells.map(el=>({cell:el.dataset.cell,...center(el)})).sort((a,b)=>Math.hypot(b.x-cx,b.y-cy)-Math.hypot(a.x-cx,a.y-cy))[0]||null
+ })
+}
+
+async function testStellarBoardMovementDragWithRotation(){
+ const {context,page,errors}=await openPhase('c',{rotation:true});
+ try{
+  await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>10,undefined,{timeout:4000});
+  await page.waitForTimeout(850);
+  const g=await stellarBoardGeometry(page);assert.ok(g,'Carbono + rotação: não foi encontrado átomo com casa vizinha vazia');
+  const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`);
+  await page.mouse.move(g.source.x,g.source.y);await page.mouse.down();
+  await page.mouse.move(g.source.x+(g.target.x-g.source.x)*.28,g.source.y+(g.target.y-g.source.y)*.28,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1200});
+  await page.waitForFunction(()=>window.ARDUA_ROTATION?.interactionActive?.()===true,undefined,{timeout:900});
+  const targetCell=page.locator(`#cells .cell[data-cell="${g.targetCell}"]`),frozenA=await targetCell.boundingBox();assert.ok(frozenA,'Carbono + rotação: alvo perdeu geometria durante drag');
+  await page.waitForTimeout(220);
+  const frozenB=await targetCell.boundingBox();assert.ok(frozenB,'Carbono + rotação: alvo perdeu geometria após pausa');
+  const ax=frozenA.x+frozenA.width/2,ay=frozenA.y+frozenA.height/2,bx=frozenB.x+frozenB.width/2,by=frozenB.y+frozenB.height/2;
+  assert.ok(Math.hypot(ax-bx,ay-by)<1.25,'Carbono + rotação: campo continuou girando durante drag ativo');
+  await page.mouse.move(bx,by,{steps:4});
+  await page.waitForFunction(cell=>document.querySelector(`#cells .cell[data-cell="${cell}"]`)?.classList.contains('stellar-drag-hover'),g.targetCell,{timeout:1200});
+  const dragged=await source.boundingBox();assert.ok(dragged,'Carbono + rotação: átomo arrastado perdeu geometria');
+  assert.ok(Math.hypot(dragged.x+dragged.width/2-bx,dragged.y+dragged.height/2-by)<2.5,'Carbono + rotação: átomo recebeu offset orbital durante o arraste');
+  await page.mouse.up();
+  await page.waitForFunction(({id,cell})=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.dataset.cell===cell,{id:g.sourceId,cell:g.targetCell},{timeout:2500});
+  await page.waitForFunction(()=>window.ARDUA_ROTATION?.interactionActive?.()===false,undefined,{timeout:900});
+  const orbitA=await outerCellCenter(page);assert.ok(orbitA,'Carbono + rotação: célula externa ausente');
+  await page.waitForTimeout(260);
+  const orbitB=await page.locator(`#cells .cell[data-cell="${orbitA.cell}"]`).boundingBox();assert.ok(orbitB,'Carbono + rotação: célula externa perdeu geometria');
+  assert.ok(Math.hypot(orbitA.x-(orbitB.x+orbitB.width/2),orbitA.y-(orbitB.y+orbitB.height/2))>1,'Carbono + rotação: campo não retomou a rotação após pointerup');
+  assert.deepEqual(errors,[],`Carbono movimento por drag com rotação: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
+async function testStellarBoardFusionDragWithRotation(){
+ const {context,page,errors}=await openPhase('c',{rotation:true});
+ try{
+  await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>10,undefined,{timeout:4000});
+  await page.evaluate(()=>{Math.random=()=>.999});
+  await page.waitForTimeout(850);
+  const g=await stellarBoardGeometry(page,{fusion:true});assert.ok(g,'Carbono + rotação: não foi encontrado par H + H adjacente para fusão');
+  const before=await page.locator('#pieces .atom .sym').evaluateAll(els=>els.filter(el=>el.textContent?.trim()==='²H').length);
+  await page.mouse.move(g.source.x,g.source.y);await page.mouse.down();
+  await page.mouse.move(g.source.x+(g.target.x-g.source.x)*.28,g.source.y+(g.target.y-g.source.y)*.28,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1200});
+  const target=page.locator(`#pieces .atom[data-id="${g.targetId}"]`),tb=await target.boundingBox();assert.ok(tb,'Carbono + rotação: reagente-alvo perdeu geometria');
+  const tx=tb.x+tb.width/2,ty=tb.y+tb.height/2;
+  await page.mouse.move(tx,ty,{steps:4});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-drop-target'),g.targetId,{timeout:1200});
+  const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`),sb=await source.boundingBox();assert.ok(sb,'Carbono + rotação: reagente arrastado perdeu geometria');
+  assert.ok(Math.hypot(sb.x+sb.width/2-tx,sb.y+sb.height/2-ty)<2.5,'Carbono + rotação: reagente arrastado ficou deslocado do ponteiro');
+  await page.mouse.up();
+  await page.waitForFunction(before=>[...document.querySelectorAll('#pieces .atom .sym')].filter(el=>el.textContent?.trim()==='²H').length>before,before,{timeout:6000});
+  assert.deepEqual(errors,[],`Carbono fusão por drag com rotação: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
 try{
  await testPrimordialParticleDrop();
  await testStellarFormationDrag();
  await testStellarBoardMovementDrag();
  await testStellarBoardFusionDrag();
- console.log('Drag interactions OK: primordial reactions, stellar formation merges, stellar board movement and adjacent fusion all work by pointer drag.');
+ await testStellarBoardMovementDragWithRotation();
+ await testStellarBoardFusionDragWithRotation();
+ console.log('Drag interactions OK: primordial reactions, stellar formation merges, stellar board movement and adjacent fusion work with rotation off and on.');
 }finally{
  await browser.close();
 }
