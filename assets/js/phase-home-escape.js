@@ -10,10 +10,22 @@ function cleanHomeParam(){
 }
 function configureQuickMap(){
  const mapBtn=$('phaseQuickMap');if(!mapBtn)return false;
- $('phaseQuickHome')?.remove();
- const label=mapBtn.querySelector('span');
- if(label){if(label.textContent!=='Início')label.textContent='Início'}
- else if(mapBtn.textContent!=='Início')mapBtn.textContent='Início';
+ const mapLabel=mapBtn.querySelector('span');
+ if(mapLabel&&mapLabel.textContent!=='Mapa')mapLabel.textContent='Mapa';
+ let home=$('phaseQuickHome');
+ if(!home){
+  home=document.createElement('button');home.type='button';home.id='phaseQuickHome';
+  home.innerHTML='<span>Início</span><small>Voltar ao início da campanha</small>';
+  mapBtn.before(home);
+ }else{
+  const label=home.querySelector('span');if(label&&label.textContent!=='Início')label.textContent='Início'
+ }
+ if(!home.dataset.arduaHomeBound){
+  home.dataset.arduaHomeBound='1';
+  home.addEventListener('click',()=>{
+   const url=new URL(window.location.href);url.searchParams.set(HOME_PARAM,'1');window.location.assign(url.href);
+  });
+ }
  return true;
 }
 function releaseSessionOpening(){
