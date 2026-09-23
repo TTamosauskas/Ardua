@@ -2491,17 +2491,17 @@ function stellarBoardDragTarget(d,x=d?.logicalX??d?.x,y=d?.logicalY??d?.y){
 function cancelStellarBoardDrag(){const d=state.boardDrag;if(!d)return;state.boardDrag=null;renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag')}
 function armStellarBoardDrag(id,el,ev){
  const p=state.pieces.get(id),s=phase();if(!stellarBoardDragSourceAvailable(p,s)||ev.pointerType==='mouse'&&ev.button!==0)return;
- cancelStellarBoardDrag();const pt=particlePointerPoint(ev);state.boardDrag={sourceId:id,sourceCell:p.cell,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,x:p.x,y:p.y,logicalX:p.x,logicalY:p.y,target:null};
+ cancelStellarBoardDrag();const pt=particlePointerPoint(ev);state.boardDrag={sourceId:id,sourceCell:p.cell,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,x:p.x,y:p.y,logicalX:p.x,logicalY:p.y,target:null,lastMoveTarget:null};
  try{el.setPointerCapture(ev.pointerId)}catch(e){}
 }
 function moveStellarBoardDrag(id,ev){
  const d=state.boardDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return;const p=state.pieces.get(id);if(!p||p.free||p.cell!==d.sourceCell)return cancelStellarBoardDrag();const pt=particlePointerPoint(ev);
  if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;
  if(!d.active){d.active=true;cancelCrushHold(id);state.selected=[];state.primordialSelected=null;objectiveMotifCancelSelection();window.ARDUA_ROTATION?.beginInteraction?.('stellar-board-drag');vibrate(5)}
- ev.preventDefault();ev.stopPropagation();const pad=Math.max(24,cellSize()*.46);d.x=Math.max(pad,Math.min(starSize()-pad,pt.x));d.y=Math.max(pad,Math.min(starSize()-pad,pt.y));const logical=stellarBoardLogicalPoint(d.x,d.y);d.logicalX=logical.x;d.logicalY=logical.y;d.target=stellarBoardDragTarget(d,d.logicalX,d.logicalY);renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.sync?.()
+ ev.preventDefault();ev.stopPropagation();const pad=Math.max(24,cellSize()*.46);d.x=Math.max(pad,Math.min(starSize()-pad,pt.x));d.y=Math.max(pad,Math.min(starSize()-pad,pt.y));const logical=stellarBoardLogicalPoint(d.x,d.y);d.logicalX=logical.x;d.logicalY=logical.y;d.target=stellarBoardDragTarget(d,d.logicalX,d.logicalY);if(d.target?.type==='move')d.lastMoveTarget=d.target;renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.sync?.()
 }
 function finishStellarBoardDrag(id,ev,cancel=false){
- const d=state.boardDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return false;const wasActive=d.active,target=!cancel&&wasActive?(d.target||stellarBoardDragTarget(d)):null,source=state.pieces.get(id);state.boardDrag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}
+ const d=state.boardDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return false;const wasActive=d.active,currentTarget=!cancel&&wasActive?(d.target||stellarBoardDragTarget(d)):null,target=currentTarget||(!cancel&&wasActive?d.lastMoveTarget:null),source=state.pieces.get(id);state.boardDrag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}
  if(!wasActive){updateMoveTargets();return false}
  ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;
  if(!source){render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true}
