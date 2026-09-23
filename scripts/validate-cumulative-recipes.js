@@ -57,7 +57,7 @@ const isotopeDisplayStart=s.indexOf('function pieceDisplaySymbol');
 const isotopeDisplayEnd=s.indexOf('function pieceSymbolScale',isotopeDisplayStart);
 const isotopeDisplay=s.slice(isotopeDisplayStart,isotopeDisplayEnd);
 if(isotopeDisplayStart<0||isotopeDisplayEnd<0||isotopeDisplay.includes("return q>0?`${p.sym}")||!isotopeDisplay.includes(':base}'))fail('Isótopos devem usar o símbolo científico também em estado atômico');
-if(!s.includes("if(r===FUSIONS.He)return'³He + ³He → ⁴He + 2 prótons';"))fail('Rótulo completo da reação pp-I deve explicitar ⁴He');
+if(!s.includes("if(r===FUSIONS.He)return'³He + ³He → ⁴He';"))fail('Rótulo visível da reação pp-I deve manter apenas o produto principal ⁴He');
 
 
 // Uma borda verde e uma receita reconhecida precisam compartilhar o mesmo executor.
