@@ -18,7 +18,7 @@ expect(chrome.includes("const NEXT_LABEL='Próxima fase'"),'final circular butto
 expect(chrome.includes("setText('phaseEndBtn',NEXT_LABEL)"),'Quarks must own the final button label even after native updates');
 expect(chrome.includes("'formulaText','phaseEndBtn'"),'final button text must be observed with the rest of the Quarks chrome');
 expect(chrome.includes("setText('branchLabel','QUARKS')"),'Quarks identity must remain as the small contextual label');
-expect(chrome.includes("setText('phaseTitle',GOAL)")&&chrome.includes("setText('goalText',GOAL)"),'visible phase title and objective must stay counter-free');
+expect(chrome.includes("canonicalMapTitle?.('quarks','Quarks')")&&chrome.includes("setText('goalText',GOAL)"),'Quarks phase title must reuse the map title while its objective stays separate');
 expect(chrome.includes("C.markCompleted?.('quarks')"),'successful Quarks completion must be persisted before returning to the map');
 expect(chrome.includes("end.classList.contains('show')"),'Quarks completion must only be persisted after the successful final state is visible');
 expect(chrome.includes("function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}"),'class ownership must be idempotent so its MutationObserver cannot feed itself');
