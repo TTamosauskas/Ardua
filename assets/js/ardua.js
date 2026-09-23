@@ -2430,11 +2430,30 @@ function movementMechanicUnlocked(s=phase()){
  return true;
 }
 function atomicMovementAllowed(s=phase()){return movementMechanicUnlocked(s)}
+function stellarBoardSwapAllowed(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'&&s.mode!=='movementTutorial'}
 function movableEmptyNeighbors(cell,s=phase()){
  if(!atomicMovementAllowed(s)||cell===null||cell===undefined)return[];
  const active=activeSet();return (neigh[cell]||[]).filter(n=>active.has(n)&&state.board[n]===null);
 }
-function canSelectAtomForMovement(p,s=phase()){return !!p&&!p.free&&p.cell!==null&&p.cell!==undefined&&movableEmptyNeighbors(p.cell,s).length>0}
+function stellarBoardAdjacentReactionCandidate(source,target,s=phase()){
+ if(!source||!target||source.free||target.free||source.cell===null||source.cell===undefined||target.cell===null||target.cell===undefined||source.id===target.id)return false;
+ if(!(neigh[source.cell]||[]).includes(target.cell))return false;
+ if(s.id==='he_red'&&source.sym==='HeU'&&target.sym==='HeU')return true;
+ if(s.mode==='reactionExplore'){const sp=atlasSpec(s);if(sp&&atlasPairMatches(sp,[source.sym,target.sym]))return true}
+ if(s.mode==='neutron'){const g=neutronGameplay(s);if(g.source&&((source.sym===g.source&&target.sym==='He')||(target.sym===g.source&&source.sym==='He')))return true}
+ return fusionSandboxAllowed(s)&&possibleRecipes([source.sym,target.sym]).length>0
+}
+function stellarBoardAdjacentSwapTarget(source,target,s=phase()){
+ if(!stellarBoardSwapAllowed(s)||!source||!target||source.free||target.free||source.cell===null||source.cell===undefined||target.cell===null||target.cell===undefined||source.id===target.id)return null;
+ if(!(neigh[source.cell]||[]).includes(target.cell))return null;
+ return stellarBoardAdjacentReactionCandidate(source,target,s)?null:target
+}
+function swappableOccupiedNeighbors(cell,s=phase()){
+ if(!stellarBoardSwapAllowed(s)||cell===null||cell===undefined)return[];
+ const sourceId=state.board[cell],source=sourceId?state.pieces.get(sourceId):null;if(!source)return[];
+ return (neigh[cell]||[]).filter(n=>{const id=state.board[n],target=id?state.pieces.get(id):null;return !!stellarBoardAdjacentSwapTarget(source,target,s)})
+}
+function canSelectAtomForMovement(p,s=phase()){return !!p&&!p.free&&p.cell!==null&&p.cell!==undefined&&(movableEmptyNeighbors(p.cell,s).length>0||swappableOccupiedNeighbors(p.cell,s).length>0)}
 function movementTargetCells(s=phase()){
  if(state.locked||state.phaseDone||state.selected.length!==1||!atomicMovementAllowed(s))return[];
  const source=state.selected[0],id=state.board[source],p=id?state.pieces.get(id):null;if(!p)return[];
@@ -2452,7 +2471,7 @@ function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
 }
 function stellarBoardDragSourceAvailable(p,s=phase()){
  if(!stellarBoardDragMechanicClear(s)||!p||p.free||p.cell===null||p.cell===undefined)return false;
- if(movableEmptyNeighbors(p.cell,s).length)return true;
+ if(movableEmptyNeighbors(p.cell,s).length||swappableOccupiedNeighbors(p.cell,s).length)return true;
  return (neigh[p.cell]||[]).some(cell=>{const id=state.board[cell],q=id?state.pieces.get(id):null;return !!stellarBoardAdjacentFusionTarget(p,q,s)})
 }
 function stellarBoardLogicalPoint(x,y){
@@ -2461,7 +2480,12 @@ function stellarBoardLogicalPoint(x,y){
 function stellarBoardDragTarget(d,x=d?.logicalX??d?.x,y=d?.logicalY??d?.y){
  if(!d?.active)return null;const s=phase(),source=state.pieces.get(d.sourceId);if(!source)return null;const threshold=Math.max(26,cellSize()*.72),options=[];
  for(const cell of movableEmptyNeighbors(d.sourceCell,s)){const q=pos(coords[cell]),dist=Math.hypot(x-q.x,y-q.y);if(dist<=threshold)options.push({type:'move',cell,dist})}
- for(const cell of neigh[d.sourceCell]||[]){const id=state.board[cell],target=id?state.pieces.get(id):null,r=stellarBoardAdjacentFusionTarget(source,target,s);if(!r)continue;const dist=Math.hypot(x-target.x,y-target.y);if(dist<=threshold)options.push({type:'fusion',pieceId:target.id,cell:target.cell,recipe:r,dist:dist-.5})}
+ for(const cell of neigh[d.sourceCell]||[]){
+  const id=state.board[cell],target=id?state.pieces.get(id):null;if(!target)continue;
+  const r=stellarBoardAdjacentFusionTarget(source,target,s),dist=Math.hypot(x-target.x,y-target.y);if(dist>threshold)continue;
+  if(r){options.push({type:'fusion',pieceId:target.id,cell:target.cell,recipe:r,dist:dist-.5});continue}
+  if(stellarBoardAdjacentSwapTarget(source,target,s))options.push({type:'swap',pieceId:target.id,cell:target.cell,dist})
+ }
  return options.sort((a,b)=>a.dist-b.dist)[0]||null
 }
 function cancelStellarBoardDrag(){const d=state.boardDrag;if(!d)return;state.boardDrag=null;renderPieces();updateMoveTargets();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag')}
@@ -2483,9 +2507,22 @@ function finishStellarBoardDrag(id,ev,cancel=false){
  if(!source){render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true}
  if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');setTimeout(()=>fuse(recipe),95);return true}}
  if(target?.type==='move'){state.selected=[source.cell];render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');moveSelectedAtom(target.cell);return true}
+ if(target?.type==='swap'){window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');swapBoardPieces(d.sourceCell,target.cell);return true}
  render();window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag');return true
 }
 function selectAtomForMovement(p){if(!canSelectAtomForMovement(p))return false;state.selected=[p.cell];state.primordialSelected=null;tone(300,.035,'sine',.018);render();return true}
+async function swapBoardPieces(sourceCell,targetCell){
+ if(state.locked||state.phaseDone)return false;const s=phase(),sourceId=state.board[sourceCell],targetId=state.board[targetCell],source=sourceId?state.pieces.get(sourceId):null,target=targetId?state.pieces.get(targetId):null;
+ if(!stellarBoardAdjacentSwapTarget(source,target,s))return false;
+ state.locked=true;const sourcePoint=pos(coords[sourceCell]),targetPoint=pos(coords[targetCell]);state.board[sourceCell]=targetId;state.board[targetCell]=sourceId;source.cell=targetCell;target.cell=sourceCell;state.selected=[];state.freeDrag=null;state.contextRecipeKey=null;objectiveMotifCancelSelection();
+ renderPieces();requestAnimationFrame(()=>{source.x=targetPoint.x;source.y=targetPoint.y;target.x=sourcePoint.x;target.y=sourcePoint.y;renderPieces()});tone(245,.06,'sine',.024);vibrate(5);dom.star.classList.add('pulse');
+ try{
+  await wait(300);
+  if(phase().id==='coulomb_intro')await advanceNuclearRound();
+  else await afterNuclearAction({advanceRound:true,replenish:false,protectedPieceIds:[sourceId,targetId]});
+ }finally{dom.star.classList.remove('pulse');state.locked=false}
+ ensureOpportunity();render();checkComplete();return true
+}
 async function moveSelectedAtom(targetCell){
  if(state.locked||state.phaseDone)return false;const targets=movementTargetCells();if(!targets.includes(targetCell))return false;
  const source=state.selected[0],id=state.board[source],p=id?state.pieces.get(id):null;if(!p)return false;
@@ -2690,8 +2727,8 @@ function renderPieces(){
   const betaRing=p.neutronBetaPending?'<span class="beta-progress-ring" aria-hidden="true"></span>':'';el.innerHTML=`<span class="sym">${shownSym}</span>${cap}${betaRing}`;el.dataset.cell=p.cell===null||p.cell===undefined?'':String(p.cell);
   const freeDrag=primordial&&state.freeDrag?.active?state.freeDrag:null,dragParticle=state.particleDrag?.active?state.primordialParticles.get(state.particleDrag.id):null,selectedPrimordialParticle=dragParticle||(state.primordialSelected!==null?state.primordialParticles.get(state.primordialSelected):null),dragSourcePiece=freeDrag&&!freeDrag.moleculeId?state.pieces.get(freeDrag.sourceId):null,selectedFree=dragSourcePiece||(state.freeSelected.length?state.pieces.get(state.freeSelected[0]):null),dragMolecule=freeDrag?.moleculeId?state.primordialMolecules.get(freeDrag.moleculeId):null,primordialParticleTarget=primordial&&p.free&&!p.moleculeId&&selectedPrimordialParticle&&(!!primordialMixedReaction(p.sym,selectedPrimordialParticle.kind)||(selectedPrimordialParticle.kind==='e'&&pieceCanBindElectron(p))),primordialPieceTarget=primordial&&p.free&&!p.moleculeId&&selectedFree&&selectedFree.id!==p.id&&(primordialPossiblePieceRecipes([selectedFree.sym,p.sym]).length>0||canCreatePrimordialHeH(selectedFree,p,s)),primordialMoleculeTarget=primordial&&primordialHeHMoleculeTarget(p,selectedFree,s),primordialMoleculeDragTarget=primordial&&dragMolecule?.type==='HeH+'&&s.id==='first_nebulae'&&primordialNeutralAtom(p,'H'),selected=primordial?state.freeSelected.includes(id):state.selected.includes(p.cell),neutronPartner=s.mode==='neutron'&&state.selectedNeutron!==null&&(neutronEligible(p,s)||universalNeutronCaptureEligible(p)),particleTarget=['spallation','neutrino','gamma'].includes(s.mode)&&state.selectedCosmic!==null&&particleTargets(s).includes(p.sym),stellarProtonTarget=!primordial&&selectedPrimordialParticle?.kind==='p'&&((stellarProtonRecipe(s)&&p.sym==='H')||(protonCaptureAvailable(s)&&!!protonCaptureRoute(p,s))),stellarElectronTarget=!primordial&&selectedPrimordialParticle?.kind==='e'&&(stellarIonizationEligible(p,s)||stellarRecombinationEligible(p,s)),blackHoleTarget=s.mode==='blackhole'&&state.blackHoleSelected&&!selected,decayReady=(s.mode==='decayGarden'&&p.decayTrack&&p.decayIndex<p.decayTrack.length-1)||(s.mode==='guidedDecay'&&!!guidedTransitionFor(p,s))||(s.id==='co'&&p.sym==='FeU'&&p.radioactiveReady);
   const partner=(!primordial&&candidates.has(p.cell))||primordialParticleTarget||primordialPieceTarget||primordialMoleculeTarget||primordialMoleculeDragTarget||neutronPartner||particleTarget||stellarProtonTarget||stellarElectronTarget||blackHoleTarget,freeDragging=!!freeDrag?.sourceIds?.includes(id),dropTarget=(state.particleDrag?.active&&state.particleDrag.target?.type==='piece'&&state.particleDrag.target.id===id)||!!freeDrag?.target?.pieceIds?.includes(id);
-  const boardDrag=state.boardDrag?.active?state.boardDrag:null,boardDragging=boardDrag?.sourceId===id,boardDropTarget=boardDrag?.target?.type==='fusion'&&boardDrag.target.pieceId===id,matterClass=p.matterState==='atom'?' atomic-piece':' nucleus-piece';
-  el.className='atom'+matterClass+(s.coronalJetTutorial?' coronal-uniform':'')+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.neutronBetaPending?' beta-waiting':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(freeDragging?' primordial-dragging':'')+(dropTarget?' drop-target':'')+(boardDragging?' stellar-board-dragging':'')+(boardDropTarget?' stellar-board-drop-target':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=(boardDragging?boardDrag.x:p.x)+'px';el.style.top=(boardDragging?boardDrag.y:p.y)+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
+  const boardDrag=state.boardDrag?.active?state.boardDrag:null,boardDragging=boardDrag?.sourceId===id,boardDropTarget=boardDrag?.target?.type==='fusion'&&boardDrag.target.pieceId===id,boardSwapTarget=boardDrag?.target?.type==='swap'&&boardDrag.target.pieceId===id,matterClass=p.matterState==='atom'?' atomic-piece':' nucleus-piece';
+  el.className='atom'+matterClass+(s.coronalJetTutorial?' coronal-uniform':'')+(p.sym==='Plus'?' proton-piece':'')+(selected?' selected':'')+(partner&&!selected?' candidate':'')+(decayReady?' decay-ready':'')+(pieceIsUnstable(p)?' unstable':'')+(p.neutronBetaPending?' beta-waiting':'')+(p.longRadioactive?' long-radioactive':'')+(p.radioactiveReady?' radioactive-proof':'')+(p.compacted?' compacted':'')+(p.atlasCompound?' atlas-compound':'')+(p.atlasRebound?' atlas-rebound':'')+(p.newborn?' newborn':'')+(p.convecting?' convecting':'')+(freeDragging?' primordial-dragging':'')+(dropTarget?' drop-target':'')+(boardDragging?' stellar-board-dragging':'')+(boardDropTarget?' stellar-board-drop-target':'')+(boardSwapTarget?' stellar-board-swap-target':'')+(state.convectionArmed&&!state.convectionConfirmPending&&!p.free?' convection-choice':'')+((state.convectionPathCells||[]).includes(p.cell)?' convection-path':'');el.style.left=(boardDragging?boardDrag.x:p.x)+'px';el.style.top=(boardDragging?boardDrag.y:p.y)+'px';if(primordial&&p.free){el.style.setProperty('--floatDelay',`${-((id%19)*.17)}s`)}else el.style.removeProperty('--floatDelay');existing.delete(id)
  });existing.forEach(el=>el.remove());
  dom.pieces.classList.toggle('selection-foreground',!!dom.pieces.querySelector('.atom.selected'))
 }
@@ -3561,7 +3598,10 @@ function handleFusionTap(p){
  const test=[...selectedSyms(),p.sym],ex=exactRecipe(test);
  if(ex){state.selected.push(cell);render();objectiveMotifArmSecond(ex,[...state.selected]);setTimeout(()=>fuse(ex),95);return true}
  if(!state.selected.some(x=>neigh[x].includes(cell))){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
- if(!possibleRecipes(test).length){if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false}
+ if(!possibleRecipes(test).length){
+  if(state.selected.length===1){const sourceCell=state.selected[0],sourceId=state.board[sourceCell],source=sourceId?state.pieces.get(sourceId):null;if(stellarBoardAdjacentSwapTarget(source,p,phase())){swapBoardPieces(sourceCell,cell);return true}}
+  if(state.selected.length===1&&canSelectAtomForMovement(p)){state.selected=[cell];objectiveMotifCancelSelection();if(!objectiveMotifArmFirst(p))tone(300,.035);render();return true}return false
+ }
  state.selected.push(cell);render();return true;
 }
 function cumulativeFusionTapAvailable(p,s=phase()){
