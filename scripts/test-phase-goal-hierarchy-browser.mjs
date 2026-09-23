@@ -5,7 +5,7 @@ const base=process.env.ARDUA_TEST_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
 const failures=[];
 
-async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null){
+async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,expectedFormation=null){
  const context=await browser.newContext({viewport:{width:360,height:800},deviceScaleFactor:1});
  await context.addInitScript(phaseId=>{
   const nativePhaseId=phaseId==='quarks'?'primordial_d':phaseId;
@@ -27,7 +27,8 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null){
   const ts=getComputedStyle(title),gs=getComputedStyle(goal),fs=getComputedStyle(formula);
   const nameLine=formula.querySelector('.recipe-name-line'),symbolLine=formula.querySelector('.recipe-symbol-line');
   const ns=nameLine?getComputedStyle(nameLine):null,ss=symbolLine?getComputedStyle(symbolLine):null;
-  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0};
+  const formationAtoms=[...document.querySelectorAll('.stellar-formation-layer .formation-atom')],formationFields=document.querySelectorAll('.stellar-formation-layer .formation-g-field').length;
+  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0,formationAtoms:formationAtoms.length,formationFields,formationAtomSize:formationAtoms[0]?parseFloat(getComputedStyle(formationAtoms[0]).width):0};
  });
  try{
   assert.equal(result.title,expectedTitle,`${id}: título inesperado`);
@@ -45,6 +46,11 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null){
    assert.equal(result.recipeSymbolSize,14,`${id}: linha simbólica deve usar 14px`);
    assert.ok(result.recipeSymbolWeight<=500,`${id}: linha simbólica não pode ficar em negrito`);
   }
+  if(expectedFormation){
+   assert.equal(result.formationAtoms,expectedFormation.atoms,`${id}: quantidade inicial de átomos da formação incorreta`);
+   assert.equal(result.formationFields,expectedFormation.groups,`${id}: quantidade inicial de grupos da formação incorreta`);
+   assert.ok(result.formationAtomSize<=expectedFormation.maxAtomSize,`${id}: átomos da formação continuam grandes demais (${result.formationAtomSize}px)`);
+  }
   assert.deepEqual(pageErrors,[],`${id}: erros JavaScript: ${pageErrors.join(' | ')}`);
  }catch(e){failures.push(e.message)}
  await context.close();
@@ -54,7 +60,7 @@ await openPhase('quarks','Forme Prótons e Nêutrons — 0/2','QUARKS');
 await openPhase('primordial_d','Forme Deutério — 0/4','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
 await openPhase('primordial_t','Forme Trítio — 0/4','');
 await openPhase('first_nebulae','Crie gás primordial — 0/4','PRIMEIRAS NEBULOSAS');
-await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO');
+await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
 await openPhase('he_orange','Forme Hélio-3 — 0/5','ANÃ LARANJA');
 await openPhase('c','Forme Carbono — 0/5','TRIPLO-ALFA');
 await openPhase('weak_s_cu','Forme Cobre — 0/4','PROCESSO-S FRACO');
