@@ -8,7 +8,7 @@ const forge=fs.readFileSync('assets/js/campaign-forge-names.js','utf8');
 const quarks=fs.readFileSync('assets/js/campaign-quarks-chrome.js','utf8');
 
 assert(index.includes('phase-goal-layout.css?v=20260911-phase-goals-1'),'CSS da nova hierarquia não está versionado no index');
-assert(index.includes('campaign-phase-labels.js?v=20260923-progress-ui-1'),'Módulo de títulos/objetivos não está versionado no index');
+assert(index.includes('campaign-phase-labels.js?v=20260923-map-title-1'),'Módulo de títulos/objetivos não está versionado no index');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-phase-names.js'),'Sistema de labels precisa carregar antes dos nomes científicos');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-forge-names.js'),'Sistema de labels precisa carregar antes dos nomes de formação');
 
@@ -33,6 +33,8 @@ assert(labels.includes("return`rp-process: ${el}"),'Mapa não preserva identidad
 assert(labels.includes("return`${el} · cadeia radioativa`"),'Mapa não preserva identidade das cadeias radioativas');
 assert(labels.includes("G.runtimeOrder?.[index]")&&labels.includes("button.dataset.phaseId=id"),'Menu reconstruído não recebe identificação canônica por índice');
 assert(labels.includes('ensureMapObserver()')&&labels.includes("node.id==='campaignMap'"),'Mapa criado depois do módulo não é observado');
+assert(labels.includes('function canonicalMapTitle(id,fallback=')&&labels.includes('const id=activeId(),next=canonicalMapTitle(id,title.textContent)'),'Cabeçalho da fase não usa o mesmo título canônico do mapa');
+assert(labels.includes('syncCollections();syncCurrent()'),'Mapa precisa ser normalizado antes de alimentar o título interno');
 assert(labels.includes('fitOneLine(title)'),'Cabeçalho não aplica ajuste de uma linha');
 assert(!labels.includes('return progress?`${base} — ${progress}`:base')&&!labels.includes('function firstProgress('),'Cabeçalho ainda reinsere contadores de progresso');
 
@@ -43,6 +45,6 @@ assert(names.includes('L.registerScientificNames?.(NAMES)'),'Nomes científicos 
 assert(names.includes("brown_formation:'Formação da Anã Marrom'"),'Mapa ainda usa Protoestrelas para a formação da Anã Marrom');
 assert(names.includes("coronal_jets:'Jatos Coronais'"),'Jatos Coronais não preserva a identidade aprovada');
 assert(names.includes("accretion:'Acreção extrema'"),'Acreção extrema não preserva a identidade aprovada');
-assert(quarks.includes("const GOAL='Forme Prótons e Nêutrons'")&&quarks.includes("setText('phaseTitle',GOAL)")&&quarks.includes("setText('goalText',GOAL)"),'Quarks não segue a hierarquia sem contador no título');
+assert(quarks.includes("const GOAL='Forme Prótons e Nêutrons'")&&quarks.includes("canonicalMapTitle?.('quarks','Quarks')")&&quarks.includes("setText('goalText',GOAL)"),'Quarks não usa o título do mapa mantendo o objetivo separado');
 
-console.log('Phase goal hierarchy OK: compact one-line objective, contextual identity, recipe-only box, rebuilt menu/map naming and Quarks parity.');
+console.log('Phase goal hierarchy OK: internal phase header reuses canonical map title, contextual identity and recipe/progress remain separate.');
