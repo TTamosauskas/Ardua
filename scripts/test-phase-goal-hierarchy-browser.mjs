@@ -29,10 +29,13 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
   const nameLine=formula.querySelector('.recipe-name-line'),symbolLine=formula.querySelector('.recipe-symbol-line');
   const ns=nameLine?getComputedStyle(nameLine):null,ss=symbolLine?getComputedStyle(symbolLine):null;
   const formationAtoms=[...document.querySelectorAll('.stellar-formation-layer .formation-atom')],formationFields=document.querySelectorAll('.stellar-formation-layer .formation-g-field').length;
-  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,progressText:document.getElementById('stageProgressText')?.textContent?.trim()||'',formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0,formationAtoms:formationAtoms.length,formationFields,formationAtomSize:formationAtoms[0]?parseFloat(getComputedStyle(formationAtoms[0]).width):0};
+  const activeId=window.ARDUA_QUARKS?.isActive?.()?'quarks':document.documentElement.dataset.arduaEnginePhase||window.ARDUA_CAMPAIGN?.getState?.().activeId||'';
+  const mapTitle=document.querySelector(`#campaignMap .phase-node[data-phase="${activeId}"] strong`)?.textContent?.trim()||window.ARDUA_PHASE_LABELS?.canonicalMapTitle?.(activeId,'')||'';
+  return{title:title.textContent.trim(),mapTitle,context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,progressText:document.getElementById('stageProgressText')?.textContent?.trim()||'',formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0,formationAtoms:formationAtoms.length,formationFields,formationAtomSize:formationAtoms[0]?parseFloat(getComputedStyle(formationAtoms[0]).width):0};
  });
  try{
   assert.equal(result.title,expectedTitle,`${id}: título inesperado`);
+  assert.equal(result.title,result.mapTitle,`${id}: título interno diverge do título canônico do mapa`);
   assert.equal(result.context,expectedContext,`${id}: contexto inesperado`);
   assert.equal(result.whiteSpace,'nowrap',`${id}: título pode quebrar linha`);
   assert.ok(result.scrollWidth<=result.clientWidth+1,`${id}: título estoura uma linha (${result.scrollWidth}>${result.clientWidth})`);
@@ -59,18 +62,18 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
  await context.close();
 }
 
-await openPhase('quarks','Forme Prótons e Nêutrons','QUARKS');
+await openPhase('quarks','Quarks','QUARKS');
 await openPhase('primordial_d','Forme Deutério','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
 await openPhase('primordial_t','Forme Trítio','');
-await openPhase('first_nebulae','Crie gás primordial','PRIMEIRAS NEBULOSAS');
-await openPhase('first_generation_formation','Reúna Hidrogênio','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
-await openPhase('he_orange','Forme Hélio-3','ANÃ LARANJA');
-await openPhase('c','Forme Carbono','TRIPLO-ALFA');
-await openPhase('weak_s_cu','Forme Cobre','PROCESSO-S FRACO');
-await openPhase('au','Forme Ouro','FREEZE-OUT DO PROCESSO-R');
-await openPhase('decay_pa','Forme Protactínio','CADEIA RADIOATIVA');
-await openPhase('white','Forme C e O','ANÃ BRANCA');
-await openPhase('black_hole','Atraia matéria','BURACO NEGRO');
+await openPhase('first_nebulae','Primeiras Nebulosas','PRIMEIRAS NEBULOSAS');
+await openPhase('first_generation_formation','Formação da Primeira Geração','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
+await openPhase('he_orange','Anã laranja','ANÃ LARANJA');
+await openPhase('c','Triplo-alfa: Carbono','TRIPLO-ALFA');
+await openPhase('weak_s_cu','Processo-s fraco: Cobre','PROCESSO-S FRACO');
+await openPhase('au','Processo-r: Ouro','FREEZE-OUT DO PROCESSO-R');
+await openPhase('decay_pa','Protactínio · cadeia radioativa','CADEIA RADIOATIVA');
+await openPhase('white','Anã branca','ANÃ BRANCA');
+await openPhase('black_hole','Buraco negro','BURACO NEGRO');
 
 const context=await browser.newContext({viewport:{width:390,height:844}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -116,4 +119,4 @@ await context.close();
 await browser.close();
 
 if(failures.length){console.error(failures.map((x,i)=>`${i+1}. ${x}`).join('\n'));process.exit(1)}
-console.log('Browser OK: Quarks real runtime + representative campaign phases use one-line objectives; recipe-only card and canonical map/menu labels pass on mobile viewports.');
+console.log('Browser OK: representative phases reuse the canonical map title inside gameplay; recipe/progress and map/menu labels remain consistent on mobile viewports.');
