@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN;
 const GOAL='Forme Prótons e Nêutrons';
 const RECIPE_NAME='quark + quark + quark → hádron';
-const RECIPE_SYMBOL='u + dd ou d + uu → (+) ou (n)';
+const RECIPE_SYMBOL='junte três particulas';
 const NEXT_LABEL='Próxima fase';
 const AUTO_COMPLETE_DELAY=260;
 let active=false,observer=null,completionArmed=false,completionTimer=0,endChrome=null;
