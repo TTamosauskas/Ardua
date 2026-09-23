@@ -879,7 +879,7 @@ function baseElementSym(sym){return({D:'H',T:'H',He3:'He',HeU:'He',Be7:'Be',Be8:
 function discoveredInfoRecipes(){
  const out=[],seen=new Set(),cutoff=state.phaseIndex;
  const knownByPhase=id=>{const i=phaseIndexById.get(id);return i!==undefined&&i<=cutoff};
- const add=(label,reactants=[])=>{label=primaryRecipeLabel(label);if(!label||seen.has(label))return;seen.add(label);out.push({label,reactants:new Set(reactants.filter(Boolean))})};
+ const add=(label,reactants=[])=>{label=catalogRecipeLabel(label);if(!label||seen.has(label))return;seen.add(label);out.push({label,reactants:new Set(reactants.filter(Boolean))})};
  // O painel é a memória curricular da fase atual: ao revisitar uma fase antiga,
  // receitas aprendidas depois dela ficam ocultas, mesmo que o save já tenha avançado.
  for(const r of PRIMORDIAL_NUCLEAR_REACTIONS)if(knownByPhase(r.unlock))add(r.label,[...(r.pieces||[]),...(r.particles||[])]);
@@ -3044,6 +3044,7 @@ function primaryRecipeLabel(label){
  const rhs=parts[1],markers=[' · ',' • '],cuts=markers.map(m=>rhs.indexOf(m)).filter(i=>i>=0),cut=cuts.length?Math.min(...cuts):rhs.length,core=rhs.slice(0,cut),suffix=rhs.slice(cut),primary=core.includes(' + ')?core.split(' + ')[0].trimEnd():core.trimEnd();
  return parts[0].trimEnd()+' → '+primary.trimStart()+suffix
 }
+function catalogRecipeLabel(label){return primaryRecipeLabel(label).replace(/3e⁻/g,'3(-)').replace(/2e⁻/g,'2(-)').replace(/e⁻/g,'(-)')}
 function recipeDisplayLines(label){
  const aliases=new Map(),add=(alias,name,symbol)=>{if(alias&&name&&symbol&&!aliases.has(alias))aliases.set(alias,{name,symbol})};
  for(const [sym,e] of Object.entries(E)){
