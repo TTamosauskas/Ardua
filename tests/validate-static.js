@@ -68,6 +68,12 @@ ok(engine.includes('function stellarFormationDragTarget(f,g)')&&engine.includes(
 ok(engine.includes("if(a.id===dragged||b.id===dragged)continue"),'separação suave não disputa controle com o grupo arrastado');
 ok(formationCss.includes('touch-action:none')&&formationCss.includes('.formation-g-field.drag-target')&&formationCss.includes('.formation-atom.dragging'),'drag gravitacional tem gesto móvel e feedback visual próprios');
 ok(fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.atom.drop-target')&&fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.atom.primordial-dragging'),'drag primordial destaca alvo e suspende a flutuação visual durante o gesto');
+ok(engine.includes('function stellarBoardDragTarget(d,x=d?.x,y=d?.y)')&&engine.includes("target?.type==='move'")&&engine.includes('moveSelectedAtom(target.cell)'),'tabuleiro estelar usa drag para movimento real em célula vizinha');
+ok(engine.includes('function stellarBoardAdjacentFusionTarget(source,target,s=phase())')&&engine.includes("target?.type==='fusion'")&&engine.includes('setTimeout(()=>fuse(recipe),95)'),'tabuleiro estelar usa drag para fusão adjacente sem criar rota paralela');
+ok(engine.includes("if(!(neigh[source.cell]||[]).includes(target.cell))return null"),'drag de fusão estelar exige reagentes adjacentes e não teletransporta matéria');
+ok(engine.includes("Math.hypot(pt.x-d.startX,pt.y-d.startY)<7"),'drag do tabuleiro preserva toque curto com limiar de movimento');
+ok(engine.includes("el.dataset.cell=p.cell===null||p.cell===undefined?'':String(p.cell)"),'átomos do tabuleiro expõem a célula atual para interação e testes');
+ok(fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.atom.stellar-board-dragging')&&fs.readFileSync(path.join(root,'assets/css/ardua.css'),'utf8').includes('.cell.stellar-drag-hover'),'tabuleiro estelar mostra origem arrastada e destino de movimento');
 
 ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
 ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
