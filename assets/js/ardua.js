@@ -2884,7 +2884,7 @@ function recipeDisplayLines(label){
  for(const [sym,e] of Object.entries(E)){
   if(!e?.name||sym==='Plus')continue;
   const symbol=infoSymbolFor(sym);
-  add(e.name,e.name,symbol);add(symbol,e.name,symbol);add(sym,e.name,symbol);
+  add(e.name,e.name,symbol);add(e.name.toLocaleLowerCase('pt-BR'),e.name,symbol);add(symbol,e.name,symbol);add(sym,e.name,symbol);
  }
  [
   ['Próton','Próton','(+)'],['próton','Próton','(+)'],['prótons','Prótons','(+)'],['p⁺','Próton','(+)'],['p','Próton','(+)'],['2p','2 Prótons','2(+)'],
@@ -2903,7 +2903,7 @@ function recipeDisplayLines(label){
  const esc=s=>s.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&'),slots=[];
  let marked=String(label||'');
  [...aliases.entries()].sort((a,b)=>b[0].length-a[0].length).forEach(([alias,pair])=>{
-  const re=new RegExp(`(^|[\\s+→/·,(])${esc(alias)}(?=$|[\\s+→/·,)])`,'gi');
+  const re=new RegExp(`(^|[\\s+→/·,(])${esc(alias)}(?=$|[\\s+→/·,)])`,'g');
   marked=marked.replace(re,(match,prefix)=>{const token=`\uE000${slots.length}\uE001`;slots.push(pair);return prefix+token})
  });
  const restore=kind=>marked.replace(/\uE000(\d+)\uE001/g,(_,i)=>slots[Number(i)]?.[kind]||'');
