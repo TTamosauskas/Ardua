@@ -69,7 +69,7 @@ function restoreInfoSnapshot(info){
 function updateProgress(){
  const total=made.proton+made.neutron,pct=Math.min(100,total*50);setText('goalText','Crie Prótons e Nêutrons');renderRecipe();showProgress();
  if(window.ARDUA_PROGRESS_UI?.render)window.ARDUA_PROGRESS_UI.render({percent:pct,current:total,total:2,label:'HÁDRONS',ready:total>=2,visible:true});
- else{setText('stageProgressLabel','HÁDRONS');setText('stageProgressText',`${pct}% (${total} de 2)`);const bar=$('stageProgress');if(bar){bar.style.width=`${pct}%`;bar.dataset.current=String(total);bar.dataset.total='2'}}
+ else{setText('stageProgressLabel',`${total} de 2`);setText('stageProgressText',`${pct}%`);const bar=$('stageProgress');if(bar){bar.style.width=`${pct}%`;bar.dataset.current=String(total);bar.dataset.total='2'}}
 }
 function quarkById(id){return SEED.find(q=>q.id===id)}
 function liveButton(id){const root=stage||$('starBoard');return root?.querySelector(`.quark-piece[data-quark-id="${id}"]`)||null}
