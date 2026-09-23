@@ -33,6 +33,7 @@ try{
  await page.waitForFunction(()=>window.ARDUA_QUARKS?.start&&window.ARDUA_VICTORY_REWARD&&window.ARDUA_PHASE_COMPLETION);
  await page.evaluate(()=>window.ARDUA_QUARKS.start());
  await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&document.querySelectorAll('.quark-piece').length===6);
+ await page.waitForFunction(()=>document.getElementById('stageProgressText')?.textContent==='0/2'&&document.getElementById('formulaText')?.querySelector('.recipe-symbol-line')?.textContent==='u + u + d → p⁺ · u + d + d → n⁰',undefined,{timeout:2500});
 
  const chrome=await page.evaluate(()=>{
   const formula=document.getElementById('formulaText'),progress=document.querySelector('.stage-progress'),bar=document.getElementById('stageProgress'),style=progress?getComputedStyle(progress):null;
