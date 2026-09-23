@@ -109,6 +109,33 @@ async function stellarBoardGeometry(page,{fusion=false}={}){
  },{fusion})
 }
 
+async function findStellarSwapPair(page){
+ const pairs=await page.evaluate(()=>{
+  const atoms=[...document.querySelectorAll('#pieces .atom[data-cell]')].filter(el=>el.dataset.cell!=='');
+  const cells=[...document.querySelectorAll('#cells .cell')],center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
+  const pts=cells.map(center);let step=Infinity;
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);if(d>1&&d<step)step=d}
+  const out=[];
+  for(let i=0;i<atoms.length;i++)for(let j=i+1;j<atoms.length;j++){
+   const a=center(atoms[i]),b=center(atoms[j]),d=Math.hypot(a.x-b.x,a.y-b.y);if(d>step*1.12)continue;
+   const sa=atoms[i].querySelector('.sym')?.textContent?.trim()||'',sb=atoms[j].querySelector('.sym')?.textContent?.trim()||'';
+   out.push({sourceId:atoms[i].dataset.id,targetId:atoms[j].dataset.id,sourceCell:atoms[i].dataset.cell,targetCell:atoms[j].dataset.cell,sourceSym:sa,targetSym:sb,diff:sa===sb?1:0,dist:d});
+  }
+  return out.sort((a,b)=>a.diff-b.diff||a.dist-b.dist).slice(0,60)
+ });
+ for(const pair of pairs){
+  const source=page.locator(`#pieces .atom[data-id="${pair.sourceId}"]`),target=page.locator(`#pieces .atom[data-id="${pair.targetId}"]`);
+  await source.click();await page.waitForTimeout(24);
+  const state=await page.evaluate(({sourceId,targetId})=>({
+   selected:document.querySelector(`#pieces .atom[data-id="${sourceId}"]`)?.classList.contains('selected')||false,
+   candidate:document.querySelector(`#pieces .atom[data-id="${targetId}"]`)?.classList.contains('candidate')||false
+  }),pair);
+  if(state.selected&&!state.candidate){await source.click();await page.waitForTimeout(20);return pair}
+  if(state.selected){await source.click();await page.waitForTimeout(20)}
+ }
+ return null
+}
+
 async function testStellarBoardMovementDrag(){
  const {context,page,errors}=await openPhase('c');
  try{
@@ -141,6 +168,57 @@ async function testStellarBoardFusionDrag(){
   await page.mouse.up();
   await page.waitForFunction(before=>[...document.querySelectorAll('#pieces .atom .sym')].filter(el=>el.textContent?.trim()==='²H').length>before,before,{timeout:6000});
   assert.deepEqual(errors,[],`Carbono fusão por drag: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
+async function testStellarBoardSwapByClick(){
+ const {context,page,errors}=await openPhase('c');
+ try{
+  await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>10,undefined,{timeout:4000});
+  const g=await findStellarSwapPair(page);assert.ok(g,'Carbono: não foi encontrado par adjacente comum para troca por clique');
+  const before=await page.evaluate(({sourceId,targetId})=>({
+   source:document.querySelector(`#pieces .atom[data-id="${sourceId}"] .sym`)?.textContent||'',
+   target:document.querySelector(`#pieces .atom[data-id="${targetId}"] .sym`)?.textContent||''
+  }),g);
+  const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`),target=page.locator(`#pieces .atom[data-id="${g.targetId}"]`);
+  await source.click();
+  assert.equal(await target.evaluate(el=>el.classList.contains('candidate')),false,'Carbono swap: núcleo comum recebeu destaque nuclear antes da troca');
+  await target.click();
+  await page.waitForFunction(({sourceId,targetId,sourceCell,targetCell})=>{
+   const a=document.querySelector(`#pieces .atom[data-id="${sourceId}"]`),b=document.querySelector(`#pieces .atom[data-id="${targetId}"]`);
+   return a?.dataset.cell===targetCell&&b?.dataset.cell===sourceCell
+  },g,{timeout:3000});
+  const after=await page.evaluate(({sourceId,targetId})=>({
+   source:document.querySelector(`#pieces .atom[data-id="${sourceId}"] .sym`)?.textContent||'',
+   target:document.querySelector(`#pieces .atom[data-id="${targetId}"] .sym`)?.textContent||'',
+   selected:document.querySelectorAll('#pieces .atom.selected').length
+  }),g);
+  assert.deepEqual({source:after.source,target:after.target},before,'Carbono swap: identidades dos núcleos mudaram durante a troca');
+  assert.equal(after.selected,0,'Carbono swap: seleção permaneceu armada após a troca');
+  assert.deepEqual(errors,[],`Carbono swap por clique: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
+async function testStellarBoardSwapByDrag(){
+ const {context,page,errors}=await openPhase('c');
+ try{
+  await page.waitForFunction(()=>document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])').length>10,undefined,{timeout:4000});
+  const g=await findStellarSwapPair(page);assert.ok(g,'Carbono: não foi encontrado par adjacente comum para troca por drag');
+  const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`),target=page.locator(`#pieces .atom[data-id="${g.targetId}"]`),sb=await source.boundingBox(),tb=await target.boundingBox();
+  assert.ok(sb&&tb,'Carbono swap drag: par perdeu geometria');
+  const sx=sb.x+sb.width/2,sy=sb.y+sb.height/2,tx=tb.x+tb.width/2,ty=tb.y+tb.height/2;
+  await page.mouse.move(sx,sy);await page.mouse.down();
+  await page.mouse.move(sx+(tx-sx)*.32,sy+(ty-sy)*.32,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1200});
+  await page.mouse.move(tx,ty,{steps:4});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-swap-target'),g.targetId,{timeout:1200});
+  assert.equal(await target.evaluate(el=>el.classList.contains('stellar-board-drop-target')),false,'Carbono swap drag: alvo comum foi confundido com reação');
+  await page.mouse.up();
+  await page.waitForFunction(({sourceId,targetId,sourceCell,targetCell})=>{
+   const a=document.querySelector(`#pieces .atom[data-id="${sourceId}"]`),b=document.querySelector(`#pieces .atom[data-id="${targetId}"]`);
+   return a?.dataset.cell===targetCell&&b?.dataset.cell===sourceCell
+  },g,{timeout:3000});
+  assert.deepEqual(errors,[],`Carbono swap por drag: erros JavaScript: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
 
@@ -253,10 +331,12 @@ try{
  await testStellarFormationDrag();
  await testStellarBoardMovementDrag();
  await testStellarBoardFusionDrag();
+ await testStellarBoardSwapByClick();
+ await testStellarBoardSwapByDrag();
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
  await testQuasarDragAndChrome();
- console.log('Drag interactions OK: primordial reactions, stellar formation, stellar board and Quasar direct manipulation all pass.');
+ console.log('Drag interactions OK: primordial reactions, stellar formation, stellar board movement/fusion/swap and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
