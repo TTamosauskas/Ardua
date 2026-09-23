@@ -3531,9 +3531,9 @@ function renderStageProgress({percent=0,current=null,total=null,label='',detail=
  const wrap=document.querySelector('.stage-progress'),bar=$('stageProgress'),text=$('stageProgressText'),labelEl=$('stageProgressLabel');if(!wrap||!bar||!text||!labelEl)return;
  const logical=Math.max(0,Math.min(100,Number(percent)||0)),shown=ready?100:Math.min(99,Math.floor(logical));
  const hasCount=Number.isFinite(Number(current))&&Number.isFinite(Number(total))&&Number(total)>0,metric=detail||(hasCount?`${Math.min(Math.max(0,Number(current)||0),Number(total))} de ${Number(total)}`:'');
- labelEl.textContent=label||'';text.textContent=metric?`${shown}% (${metric})`:`${shown}%`;
+ const leftText=metric||label||'';labelEl.textContent=leftText;text.textContent=`${shown}%`;
  bar.style.width=`${logical}%`;bar.dataset.current=hasCount?String(Math.max(0,Number(current)||0)):'';bar.dataset.total=hasCount?String(Number(total)):'';
- wrap.classList.toggle('ready',!!ready);wrap.style.visibility=visible?'visible':'hidden';wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax','100');wrap.setAttribute('aria-valuenow',String(shown));wrap.setAttribute('aria-valuetext',text.textContent)
+ wrap.classList.toggle('ready',!!ready);wrap.style.visibility=visible?'visible':'hidden';wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax','100');wrap.setAttribute('aria-valuenow',String(shown));wrap.setAttribute('aria-valuetext',leftText?`${leftText}, ${shown}%`:`${shown}%`)
 }
 window.ARDUA_PROGRESS_UI=Object.freeze({render:renderStageProgress});
 function updateHUD(){
