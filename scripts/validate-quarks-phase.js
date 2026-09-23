@@ -33,8 +33,8 @@ expect(game.includes("window.ARDUA_ROTATION?.beginInteraction?.('quarks-drag')")
 expect(game.includes('function quarkDropTarget(id,x,y)')&&game.includes("d.target=quarkDropTarget(id,pt.x,pt.y)"),'Quarks drag must resolve a compatible baryon drop target');
 expect(!game.includes('picked=new Set')&&!game.includes('candidateIds.every'),'Quarks recipe must not require a third click');
 expect(game.includes("setText('goalText','Crie Prótons e Nêutrons')")&&game.includes("window.ARDUA_PROGRESS_UI.render({percent:pct,current:total,total:2,label:'HÁDRONS'"),'Quarks must keep counters only in the shared progress bar');
-expect(game.includes("const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron'"),'objective recipe must explain both baryon combinations');
-expect(game.includes("const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰'"),'objective recipe must expose the symbolic second line');
+expect(game.includes("const RECIPE_NAME='quark + quark + quark → hádron'"),'objective recipe must use the compact hadron rule');
+expect(game.includes("const RECIPE_SYMBOL='u + dd ou d + uu → (+) ou (n)'"),'objective recipe must expose the compact proton/neutron alternatives');
 expect(game.includes('function renderRecipe()')&&game.includes('recipe-name-line')&&game.includes('recipe-symbol-line'),'Quarks must preserve the shared two-line recipe markup');
 expect(game.includes('function showProgress()')&&game.includes("progress.style.visibility='visible'"),'Quarks must explicitly own a visible progress bar');
 expect(game.includes("end.textContent='Proxima fase'"),'final central button must say exactly Proxima fase');
