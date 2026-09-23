@@ -46,6 +46,7 @@ node --check scripts/test-quarks-completion-mobile-browser.mjs
 node --check scripts/test-p2-mobile-foundation-browser.mjs
 node --check scripts/test-p2-feedback-language-browser.mjs
 node --check scripts/test-p2-reaction-discovery-juice-browser.mjs
+node --check scripts/test-drag-interactions-browser.mjs
 node scripts/test-phase-goal-hierarchy-browser.mjs
 node scripts/test-p0-player-experience-browser.mjs
 node scripts/test-p1-victory-next-browser.mjs
@@ -55,3 +56,4 @@ node scripts/test-quarks-completion-mobile-browser.mjs
 node scripts/test-p2-mobile-foundation-browser.mjs
 node scripts/test-p2-feedback-language-browser.mjs
 node scripts/test-p2-reaction-discovery-juice-browser.mjs
+node scripts/test-drag-interactions-browser.mjs
