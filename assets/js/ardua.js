@@ -2444,9 +2444,9 @@ function updateMoveTargets(){
  const targets=new Set(movementTargetCells()),d=state.boardDrag?.active?state.boardDrag:null,dragMoves=d?new Set(movableEmptyNeighbors(d.sourceCell,phase())):new Set(),hover=d?.target?.type==='move'?d.target.cell:null;
  dom.cells.querySelectorAll('.cell').forEach(el=>{const cell=+el.dataset.cell,move=targets.has(cell)||dragMoves.has(cell);el.classList.toggle('move-target',move);el.classList.toggle('stellar-drag-hover',hover===cell)})
 }
-function stellarBoardDragMechanicClear(s=phase()){return atomicMovementAllowed(s)&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
+function stellarBoardDragMechanicClear(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'&&!state.locked&&!state.phaseDone&&!state.fusionInProgress&&!state.convectionArmed&&state.selectedNeutron===null&&state.selectedCosmic===null&&state.primordialSelected===null&&!state.blackHoleSelected}
 function stellarBoardAdjacentFusionTarget(source,target,s=phase()){
- if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s))return null;
+ if(!source||!target||source.free||target.free||source.cell===null||target.cell===null||source.id===target.id||!fusionSandboxAllowed(s)||['reactionExplore','rpProcess'].includes(s.mode))return null;
  if(!(neigh[source.cell]||[]).includes(target.cell))return null;
  return exactRecipe([source.sym,target.sym])||null
 }
@@ -2478,7 +2478,7 @@ function finishStellarBoardDrag(id,ev,cancel=false){
  if(!wasActive){updateMoveTargets();return false}
  ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;
  if(!source){render();return true}
- if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];render();objectiveMotifArmSecond(recipe,[...state.selected]);setTimeout(()=>fuse(recipe),95);return true}}
+ if(target?.type==='fusion'){const other=state.pieces.get(target.pieceId),recipe=stellarBoardAdjacentFusionTarget(source,other,phase());if(recipe){state.selected=[source.cell,other.cell];objectiveMotifArmFirst(source,{sound:false});objectiveMotifArmSecond(recipe,[...state.selected]);render();setTimeout(()=>fuse(recipe),95);return true}}
  if(target?.type==='move'){state.selected=[source.cell];render();moveSelectedAtom(target.cell);return true}
  render();return true
 }
