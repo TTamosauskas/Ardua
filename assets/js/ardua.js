@@ -1744,6 +1744,7 @@ function matterLineageKey(lineage=[]){return normalizeMatterLineage(lineage).joi
 function objectiveLineageIsFresh(s,lineage){if(!s?.uniqueMatterObjective)return true;const key=matterLineageKey(lineage);return !!key&&!state.objectiveLineages.has(key)}
 function creditObjectiveLineage(s,lineage){if(!s?.uniqueMatterObjective)return true;const key=matterLineageKey(lineage);if(!key||state.objectiveLineages.has(key))return false;state.objectiveLineages.add(key);return true}
 function createPiece(sym,cell,fromOutside=false,opts={}){
+ if(convectionCoreCellReserved(cell,phase())){const alternate=convectionCoreVacancyDestination(phase());if(alternate!==null)cell=alternate}
  const autoAtom=!opts.matterState&&!isPrimordial()&&stellarAtomicChemistryAllowed(phase())&&stellarIonizationKnowledge(phase())&&cell!==null&&cell!==undefined&&coords[cell]?.ring===phaseRadius()&&!!E[sym]?.n;
  const explicitElectrons=Object.prototype.hasOwnProperty.call(opts,'boundElectrons'),id=state.nextId++,p0=fromOutside?outside(cell):pos(coords[cell]),piece={id,sym,cell,x:p0.x,y:p0.y,captures:0,matterState:opts.matterState||(autoAtom?'atom':'nucleus'),boundElectrons:explicitElectrons?Number(opts.boundElectrons||0):(autoAtom?Number(E[sym]?.n||0):0),massNumber:opts.massNumber??E[sym]?.mass??null,longRadioactive:!!opts.longRadioactive,lineage:normalizeMatterLineage(opts.lineage?.length?opts.lineage:freshMatterLineage())};
  armIntrinsicInstability(piece);state.pieces.set(id,piece);state.board[cell]=id;return piece
