@@ -52,7 +52,7 @@ function applyQuarksChrome(){
  setClass(document.body,'prebang',false);
  setClass(document.body,'bigbang-phase',false);
  setText('branchLabel','QUARKS');
- setText('phaseTitle',GOAL);
+ setText('phaseTitle',window.ARDUA_PHASE_LABELS?.canonicalMapTitle?.('quarks','Quarks')||'Quarks');
  setText('goalText',GOAL);
  renderRecipe();ensureProgressVisible();
  setText('phaseEndBtn',NEXT_LABEL);
