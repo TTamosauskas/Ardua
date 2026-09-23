@@ -12,8 +12,8 @@ function configureQuickMap(){
  const mapBtn=$('phaseQuickMap');if(!mapBtn)return false;
  $('phaseQuickHome')?.remove();
  const label=mapBtn.querySelector('span');
- if(label)label.textContent='Início';
- else mapBtn.textContent='Início';
+ if(label){if(label.textContent!=='Início')label.textContent='Início'}
+ else if(mapBtn.textContent!=='Início')mapBtn.textContent='Início';
  return true;
 }
 function releaseSessionOpening(){
