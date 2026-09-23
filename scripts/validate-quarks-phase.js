@@ -32,7 +32,7 @@ expect(game.includes('function armQuarkDrag(id,el,ev)')&&game.includes('function
 expect(game.includes("window.ARDUA_ROTATION?.beginInteraction?.('quarks-drag')")&&game.includes("window.ARDUA_ROTATION?.endInteraction?.('quarks-drag')"),'Quarks drag must suspend and release motion interaction state');
 expect(game.includes('function quarkDropTarget(id,x,y)')&&game.includes("d.target=quarkDropTarget(id,pt.x,pt.y)"),'Quarks drag must resolve a compatible baryon drop target');
 expect(!game.includes('picked=new Set')&&!game.includes('candidateIds.every'),'Quarks recipe must not require a third click');
-expect(game.includes("Crie Prótons e Nêutrons — ${total}/2"),'objective counter must be 0/2 through 2/2');
+expect(game.includes("setText('goalText','Crie Prótons e Nêutrons')")&&game.includes("window.ARDUA_PROGRESS_UI.render({percent:pct,current:total,total:2,label:'HÁDRONS'"),'Quarks must keep counters only in the shared progress bar');
 expect(game.includes("const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron'"),'objective recipe must explain both baryon combinations');
 expect(game.includes("const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰'"),'objective recipe must expose the symbolic second line');
 expect(game.includes('function renderRecipe()')&&game.includes('recipe-name-line')&&game.includes('recipe-symbol-line'),'Quarks must preserve the shared two-line recipe markup');
