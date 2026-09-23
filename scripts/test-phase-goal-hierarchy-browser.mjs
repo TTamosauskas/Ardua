@@ -63,8 +63,9 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
 }
 
 await openPhase('quarks','Quarks','QUARKS');
-await openPhase('primordial_d','Forme Deutério','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
-await openPhase('primordial_t','Forme Trítio','');
+await openPhase('primordial_d','Forme Deutério','',{name:'Próton + Nêutron → Deutério',symbols:'(+) + (n) → ²H'});
+await openPhase('primordial_t','Forme Trítio','',{name:'Deutério + Nêutron → Trítio',symbols:'²H + (n) → ³H'});
+await openPhase('atomic_h','Forme átomos de Hidrogênio','',{name:'Próton + Elétron → Hidrogênio',symbols:'(+) + (-) → H'});
 await openPhase('first_nebulae','Primeiras Nebulosas','PRIMEIRAS NEBULOSAS');
 await openPhase('first_generation_formation','Primeira Geração Estelar','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
 await openPhase('he_orange','Anã laranja','ANÃ LARANJA');
