@@ -94,7 +94,13 @@ ok(css.includes('.chain-callout')&&css.includes('.reward-progress-aura')&&css.in
 ok(css.includes('@media(prefers-reduced-motion:reduce)'),'efeitos respeitam preferência de redução de movimento');
 ok(engine.includes('function objectiveProgress(s=phase())')&&engine.includes('const done=objectiveSatisfied(s);if(done)return 1'),'barra possui progresso científico próprio e só libera 100% com objetivo satisfeito');
 ok(engine.includes('const objective=objectiveProgress(s)')&&engine.includes('return Math.min(objective,flow)*100'),'PROGRESSO usa o menor avanço entre objetivo científico e flow');
-ok(engine.includes("state.readyToAdvance?100:Math.min(99,Math.floor(p))"),'texto da barra não arredonda uma fase incompleta para 100%');
+ok(engine.includes('function renderStageProgress({percent=0,current=null,total=null')&&engine.includes('shown=ready?100:Math.min(99,Math.floor(logical))'),'texto da barra mantém porcentagem real e reserva 100% para conclusão');
+ok(engine.includes("window.ARDUA_PROGRESS_UI=Object.freeze({render:renderStageProgress})")&&engine.includes('function stageProgressMetric(s=phase()'),'motor expõe renderer único de progresso para fases nativas e customizadas');
+ok(engine.includes("if(s.coronalJetTutorial)return'JATOS CORONAIS'")&&engine.includes("if(s.mode==='convection')return'CONVECÇÃO';return''"),'rótulo genérico PROGRESSO foi removido sem perder nomes semânticos de fase');
+ok(engine.includes('text.textContent=metric?')&&engine.includes("metric=detail||(hasCount?"),'barra combina porcentagem e meta em uma única leitura');
+ok(css.includes('#stageProgressText{color:var(--text);font-size:11px;font-weight:650')&&css.includes('min-width:8px'),'barra usa texto legível e preenchimento visual mínimo');
+const objectiveBlock=engine.slice(engine.indexOf('function updateObjective(){'),engine.indexOf('function applyVisual(){'));
+ok(!objectiveBlock.includes('/${s.target}')&&!objectiveBlock.includes(' — ${made}/'),'objetivos visíveis deixam contadores fracionários exclusivamente na barra');
 ok(engine.includes("fragilePhase.uniqueMatterObjective=true")&&engine.includes('objectiveLineages:new Set()'),'fase de Be-8 usa objetivo por linhagem de matéria');
 ok(engine.includes('function mergeMatterLineages')&&engine.includes('function creditObjectiveLineage'),'proveniência de matéria é herdável e creditada por linhagem');
 ok(engine.includes("createPiece('He',origin,false,{lineage})")&&engine.includes("createPiece('He',secondCell,false,{lineage})"),'decaimento de Be-8 devolve Hélios com a mesma proveniência');
