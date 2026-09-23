@@ -2887,8 +2887,8 @@ function recipeDisplayLines(label){
   add(e.name,e.name,symbol);add(e.name.toLocaleLowerCase('pt-BR'),e.name,symbol);add(symbol,e.name,symbol);add(sym,e.name,symbol);
  }
  [
-  ['Próton','Próton','(+)'],['próton','Próton','(+)'],['prótons','Prótons','(+)'],['p⁺','Próton','(+)'],['p','Próton','(+)'],['2p','2 Prótons','2(+)'],
-  ['Nêutron','Nêutron','(n)'],['nêutron','Nêutron','(n)'],['nêutrons','Nêutrons','(n)'],['n','Nêutron','(n)'],
+  ['2 Prótons','2 Prótons','2(+)'],['2 prótons','2 Prótons','2(+)'],['Próton','Próton','(+)'],['próton','Próton','(+)'],['prótons','Prótons','(+)'],['p⁺','Próton','(+)'],['p','Próton','(+)'],['2p','2 Prótons','2(+)'],
+  ['2 Nêutrons','2 Nêutrons','2(n)'],['2 nêutrons','2 Nêutrons','2(n)'],['Nêutron','Nêutron','(n)'],['nêutron','Nêutron','(n)'],['nêutrons','Nêutrons','(n)'],['n','Nêutron','(n)'],
   ['Elétron','Elétron','e⁻'],['elétron','Elétron','e⁻'],['elétrons','Elétrons','e⁻'],['e⁻','Elétron','e⁻'],['2e⁻','2 Elétrons','2e⁻'],['3e⁻','3 Elétrons','3e⁻'],
   ['Pósitron','Pósitron','e⁺'],['pósitron','Pósitron','e⁺'],['pósitrons','Pósitrons','e⁺'],['e⁺','Pósitron','e⁺'],
   ['Neutrino','Neutrino','νₑ'],['neutrino','Neutrino','νₑ'],['neutrinos','Neutrinos','νₑ'],['ν','Neutrino','νₑ'],['νₑ','Neutrino','νₑ'],
