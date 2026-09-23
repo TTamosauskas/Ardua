@@ -75,8 +75,11 @@ function buildLayer(){
  pts.forEach(([x,y],i)=>{
   const b=document.createElement('button');b.type='button';b.className='quasar-gas';b.dataset.gasIndex=String(i);b.dataset.pair=String(Math.floor(i/2));
   b.style.left=`${x}%`;b.style.top=`${y}%`;b.setAttribute('aria-label',`Gás orbital ${i+1}`);b.innerHTML='<span></span>';
-  b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('pointermove',ev=>moveGasDrag(b,ev));b.addEventListener('pointerup',ev=>finishGasDrag(b,ev,false));b.addEventListener('pointercancel',ev=>finishGasDrag(b,ev,true));b.addEventListener('click',onGasClick);field.appendChild(b);
+  b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('click',onGasClick);field.appendChild(b);
  });
+ layer.addEventListener('pointermove',ev=>{if(drag)moveGasDrag(drag.source,ev)},{capture:true,passive:false});
+ layer.addEventListener('pointerup',ev=>{if(drag)finishGasDrag(drag.source,ev,false)},true);
+ layer.addEventListener('pointercancel',ev=>{if(drag)finishGasDrag(drag.source,ev,true)},true);
  board.appendChild(layer);
 }
 function invalidPair(a,b){
