@@ -41,6 +41,8 @@ ok(html.includes('assets/css/ardua.css')&&html.includes('assets/js/ardua.js'),'i
 ok(engine.includes("['Próton','Próton (+)']")&&engine.includes("['n','Nêutron (n)']")&&engine.includes("['γ','Fóton gama (γ)']"),'receitas exibem nome e símbolo para partículas');
 ok(engine.includes("const symbol=infoSymbolFor(sym),shown=\`\${e.name} (\${symbol})\`"),'receitas exibem nome e símbolo para elementos e isótopos');
 ok(engine.includes("sub:headerRecipeLine(modalPrimaryLine(s))"),'modal de abertura usa o mesmo formato nome + símbolo do HUD');
+ok(engine.includes('async function relocateNewbornCoreProduct()')&&engine.includes('const center=(byRing[0]||[])[0]')&&engine.includes('const ringOne=(byRing[1]||[])'),'produto recém-formado no núcleo central é deslocado para a primeira camada');
+ok(engine.includes('const relocated=await relocateNewbornCoreProduct()')&&engine.includes('protectedPieceIds:protectedIds'),'produto deslocado do núcleo fica protegido do pulso gravitacional da mesma reação');
 
 ok(engine.includes('const RewardDirector=Object.freeze')&&engine.includes('const DiscoverySystem=Object.freeze')&&engine.includes('const AdaptiveAudio=Object.freeze'),'diretor de recompensas, descobertas e áudio adaptativo são globais');
 ok(engine.includes("state.rewardDiscoveries")&&engine.includes("rewardAchievements")&&engine.includes("signatureSeen"),'Atlas e marcos audiovisuais persistem no save');
