@@ -29,7 +29,7 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
   const nameLine=formula.querySelector('.recipe-name-line'),symbolLine=formula.querySelector('.recipe-symbol-line');
   const ns=nameLine?getComputedStyle(nameLine):null,ss=symbolLine?getComputedStyle(symbolLine):null;
   const formationAtoms=[...document.querySelectorAll('.stellar-formation-layer .formation-atom')],formationFields=document.querySelectorAll('.stellar-formation-layer .formation-g-field').length;
-  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0,formationAtoms:formationAtoms.length,formationFields,formationAtomSize:formationAtoms[0]?parseFloat(getComputedStyle(formationAtoms[0]).width):0};
+  return{title:title.textContent.trim(),context:context.hidden?'':context.textContent.trim(),whiteSpace:ts.whiteSpace,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,goalDisplay:gs.display,progressText:document.getElementById('stageProgressText')?.textContent?.trim()||'',formulaText:formula.textContent.trim(),formulaWeight:Number(fs.fontWeight)||0,formulaSize:parseFloat(fs.fontSize),recipeName:nameLine?.textContent?.trim()||'',recipeSymbols:symbolLine?.textContent?.trim()||'',recipeNameSize:ns?parseFloat(ns.fontSize):0,recipeSymbolSize:ss?parseFloat(ss.fontSize):0,recipeSymbolWeight:ss?(Number(ss.fontWeight)||0):0,formationAtoms:formationAtoms.length,formationFields,formationAtomSize:formationAtoms[0]?parseFloat(getComputedStyle(formationAtoms[0]).width):0};
  });
  try{
   assert.equal(result.title,expectedTitle,`${id}: título inesperado`);
@@ -37,6 +37,8 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
   assert.equal(result.whiteSpace,'nowrap',`${id}: título pode quebrar linha`);
   assert.ok(result.scrollWidth<=result.clientWidth+1,`${id}: título estoura uma linha (${result.scrollWidth}>${result.clientWidth})`);
   assert.equal(result.goalDisplay,'none',`${id}: objetivo antigo continua na caixa inferior`);
+  assert.equal(/\b\d+\/\d+\b/.test(result.title),false,`${id}: contador ainda aparece no título`);
+  if(id!=='bigbang')assert.ok(result.progressText.includes('%'),`${id}: barra deixou de exibir porcentagem`);
   assert.ok(result.formulaText.length>0,`${id}: receita/instrução ficou vazia`);
   assert.ok(result.formulaWeight>=900,`${id}: receita/instrução não herdou o peso do objetivo`);
   assert.ok(result.formulaSize>=12,`${id}: receita/instrução ficou pequena demais`);
@@ -57,18 +59,18 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
  await context.close();
 }
 
-await openPhase('quarks','Forme Prótons e Nêutrons — 0/2','QUARKS');
-await openPhase('primordial_d','Forme Deutério — 0/4','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
-await openPhase('primordial_t','Forme Trítio — 0/4','');
-await openPhase('first_nebulae','Crie gás primordial — 0/4','PRIMEIRAS NEBULOSAS');
-await openPhase('first_generation_formation','Reúna Hidrogênio — 2/36','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
-await openPhase('he_orange','Forme Hélio-3 — 0/5','ANÃ LARANJA');
-await openPhase('c','Forme Carbono — 0/5','TRIPLO-ALFA');
-await openPhase('weak_s_cu','Forme Cobre — 0/4','PROCESSO-S FRACO');
-await openPhase('au','Forme Ouro — 0/2','FREEZE-OUT DO PROCESSO-R');
-await openPhase('decay_pa','Forme Protactínio — 0/2','CADEIA RADIOATIVA');
-await openPhase('white','Forme C e O — C 0/3 · O 0/3','ANÃ BRANCA');
-await openPhase('black_hole','Atraia matéria — 0/6','BURACO NEGRO');
+await openPhase('quarks','Forme Prótons e Nêutrons','QUARKS');
+await openPhase('primordial_d','Forme Deutério','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
+await openPhase('primordial_t','Forme Trítio','');
+await openPhase('first_nebulae','Crie gás primordial','PRIMEIRAS NEBULOSAS');
+await openPhase('first_generation_formation','Reúna Hidrogênio','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
+await openPhase('he_orange','Forme Hélio-3','ANÃ LARANJA');
+await openPhase('c','Forme Carbono','TRIPLO-ALFA');
+await openPhase('weak_s_cu','Forme Cobre','PROCESSO-S FRACO');
+await openPhase('au','Forme Ouro','FREEZE-OUT DO PROCESSO-R');
+await openPhase('decay_pa','Forme Protactínio','CADEIA RADIOATIVA');
+await openPhase('white','Forme C e O','ANÃ BRANCA');
+await openPhase('black_hole','Atraia matéria','BURACO NEGRO');
 
 const context=await browser.newContext({viewport:{width:390,height:844}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
