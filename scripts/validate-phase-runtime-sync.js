@@ -19,7 +19,7 @@ assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Rec
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
 assert(index.includes('ardua.js?v=20260923-convection-core-atlas-drag-1'),'Engine sem cache bust da reserva central da Convecção e drag direto do Atlas');
-assert(index.includes('campaign-phase-labels.js?v=20260923-progress-ui-1'),'Labels sem cache bust da correção de progresso');
+assert(index.includes('campaign-phase-labels.js?v=20260923-map-title-1'),'Labels sem cache bust da unificação dos títulos com o mapa');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-e2e-1'),'Runtime sync sem cache bust do hardening E2E');
 assert(index.includes('campaign-phase-completion.js?v=20260923-progress-ui-2'),'Contrato de conclusão sem cache bust da barra de progresso compartilhada');
 console.log('Phase runtime sync validation passed: engine phase is authoritative except while Quarks/Quasar own the screen, completion is separated, and recipe guidance follows rebuildable objective precursors.');
