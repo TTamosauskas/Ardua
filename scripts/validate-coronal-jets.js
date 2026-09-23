@@ -15,7 +15,8 @@ need(engine,"id:'coronal_jets'",'Fase Jatos Coronais ausente do motor');
 need(engine,"title:'Jatos Coronais'",'Título da fase Jatos Coronais ausente');
 need(engine,"coronalJetTutorial:true",'Flag pedagógica dos Jatos Coronais ausente');
 need(engine,"target:2",'Jatos Coronais deve exigir duas ejeções');
-need(engine,'Ejete matéria pelo campo magnético — ${state.coronalJetCount||0}/${s.target}','Objetivo 0/2 dos Jatos Coronais ausente');
+need(engine,"if(s.coronalJetTutorial){$('goalText').textContent='Ejete matéria pelo campo magnético'",'Objetivo dos Jatos Coronais deve ficar sem contador no título');
+need(engine,"if(s.coronalJetTutorial)return count(state.coronalJetCount||0,s.target)",'Meta 0/2 dos Jatos Coronais deve migrar para a barra');
 need(engine,"PRODUCT_LESSONS",'Sistema de tooltip científico ausente');
 need(engine,"coronalJet:{title:'JATOS CORONAIS'",'Tooltip de Jatos Coronais ausente');
 need(engine,"await teachProductOnce('coronalJet'",'Primeiro Jato Coronal não passa pelo tooltip/Continuar');
@@ -91,4 +92,4 @@ need(sources,'assets/images/phenomena/solar-flare.jpg','Imagem anexada não est�
 need(sources,'Erupções solares são explosões repentinas na superfície do Sol causadas por mudanças no seu campo magnético.','Texto solicitado para Erupções Solares ausente');
 if(!fs.existsSync('assets/images/phenomena/solar-flare.jpg'))fail('Imagem local de Erupções Solares ausente');
 
-console.log('Coronal jets OK: química cumulativa, ejeção superficial antes da Convecção, tutorial 0/2, rota e descobertas validados.');
+console.log('Coronal jets OK: química cumulativa, ejeção superficial antes da Convecção, meta na barra, rota e descobertas validados.');
