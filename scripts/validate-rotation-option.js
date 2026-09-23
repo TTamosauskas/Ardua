@@ -42,7 +42,7 @@ if(rotation.includes('MutationObserver'))throw new Error('Regressão: controlado
 if(rotation.includes('let enabled=false'))throw new Error('Regressão: rotação deve estar ligada por padrão; a tela inicial é excluída por contexto');
 if(!rotation.includes('if(!phaseGameplayVisible()){resetFieldOffsets();last=now;return}'))throw new Error('Regressão: rotação não deve atuar no mapa/página inicial');
 if(!rotation.includes("window.ARDUA_ROTATION=Object.freeze({enabled:()=>enabled,setEnabled,toggle,key:KEY,beginInteraction,endInteraction,toLogicalPoint,sync:syncNow,interactionActive})"))throw new Error('API de rotação precisa expor suspensão de interação e conversão visual→lógica');
-if(!index.includes('<script src="assets/js/rotation-polish.js"></script>'))throw new Error('rotation-polish.js não está carregado no index');
+if(!index.includes('<script src="assets/js/rotation-polish.js?v=20260923-rotation-drag-1"></script>'))throw new Error('rotation-polish.js não está carregado no index com a revisão atual');
 if(index.indexOf('assets/js/rotation-polish.js')>index.indexOf('assets/js/ardua.js'))throw new Error('rotation-polish.js deve carregar antes do motor');
 if(!engine.includes("if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt"))throw new Error('Formação estelar não respeita a opção de rotação');
 for(const token of [
