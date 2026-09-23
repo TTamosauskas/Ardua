@@ -66,7 +66,7 @@ await openPhase('quarks','Quarks','QUARKS');
 await openPhase('primordial_d','Forme Deutério','',{name:'Próton + Nêutron → Deutério + Fóton gama',symbols:'(+) + (n) → ²H + γ'});
 await openPhase('primordial_t','Forme Trítio','');
 await openPhase('first_nebulae','Primeiras Nebulosas','PRIMEIRAS NEBULOSAS');
-await openPhase('first_generation_formation','Formação da Primeira Geração','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
+await openPhase('first_generation_formation','Primeira Geração Estelar','PRIMEIRA GERAÇÃO',null,{atoms:8,groups:4,maxAtomSize:32});
 await openPhase('he_orange','Anã laranja','ANÃ LARANJA');
 await openPhase('c','Triplo-alfa: Carbono','TRIPLO-ALFA');
 await openPhase('weak_s_cu','Processo-s fraco: Cobre','PROCESSO-S FRACO');
