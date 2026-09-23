@@ -176,9 +176,10 @@ async function testStellarBoardMovementDragWithRotation(){
   await page.waitForFunction(({id,cell})=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.dataset.cell===cell,{id:g.sourceId,cell:g.targetCell},{timeout:2500});
   await page.waitForFunction(()=>window.ARDUA_ROTATION?.interactionActive?.()===false,undefined,{timeout:900});
   const orbitA=await outerCellCenter(page);assert.ok(orbitA,'Carbono + rotação: célula externa ausente');
-  await page.waitForTimeout(260);
-  const orbitB=await page.locator(`#cells .cell[data-cell="${orbitA.cell}"]`).boundingBox();assert.ok(orbitB,'Carbono + rotação: célula externa perdeu geometria');
-  assert.ok(Math.hypot(orbitA.x-(orbitB.x+orbitB.width/2),orbitA.y-(orbitB.y+orbitB.height/2))>1,'Carbono + rotação: campo não retomou a rotação após pointerup');
+  await page.waitForFunction(({cell,x,y})=>{
+   const el=document.querySelector(`#cells .cell[data-cell="${cell}"]`);if(!el)return false;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+   return Math.hypot(x-cx,y-cy)>1
+  },{cell:orbitA.cell,x:orbitA.x,y:orbitA.y},{timeout:1400});
   assert.deepEqual(errors,[],`Carbono movimento por drag com rotação: erros JavaScript: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
