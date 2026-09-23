@@ -77,19 +77,36 @@ function buildLayer(){
   b.style.left=`${x}%`;b.style.top=`${y}%`;b.setAttribute('aria-label',`Gás orbital ${i+1}`);b.innerHTML='<span></span>';
   b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('click',onGasClick);layer.appendChild(b);
  });
+ layer.addEventListener('pointerdown',onQuasarLayerPointerDown);
+ layer.addEventListener('click',onQuasarLayerClick);
  board.appendChild(layer);
 }
 function invalidPair(a,b){
  b.classList.add('invalid');setText('phaseMeta','Escolha duas parcelas em órbitas vizinhas');
  setTimeout(()=>{b.classList.remove('invalid');if(!complete)setText('phaseMeta','Acreção gravitacional · radiação extrema')},520);
 }
-function onGasClick(e){
- e.preventDefault();e.stopPropagation();if(complete||performance.now()<suppressClickUntil)return;
- const b=e.currentTarget;if(b.classList.contains('spent')||b.classList.contains('reacting'))return;
+function activateGasControl(b){
+ if(!b||complete||performance.now()<suppressClickUntil||b.classList.contains('spent')||b.classList.contains('reacting'))return;
  if(!selected){selected=b;b.classList.add('selected');return}
  if(selected===b){b.classList.remove('selected');selected=null;return}
  if(selected.dataset.pair!==b.dataset.pair){invalidPair(selected,b);return}
  const a=selected;selected=null;a.classList.remove('selected');react(a,b);
+}
+function onGasClick(e){e.preventDefault();e.stopPropagation();activateGasControl(e.currentTarget)}
+function quasarGasAtPoint(clientX,clientY){
+ let best=null,bestDist=Infinity;
+ for(const b of layer?.querySelectorAll('.quasar-gas')||[]){
+  if(b.classList.contains('spent')||b.classList.contains('reacting'))continue;
+  const r=b.getBoundingClientRect(),d=Math.hypot(clientX-(r.left+r.width/2),clientY-(r.top+r.height/2)),limit=Math.max(24,r.width*.9);
+  if(d<=limit&&d<bestDist){best=b;bestDist=d}
+ }
+ return best
+}
+function onQuasarLayerPointerDown(e){
+ if(e.target?.closest?.('.quasar-gas'))return;const b=quasarGasAtPoint(e.clientX,e.clientY);if(!b)return;e.preventDefault();armGasDrag(b,e)
+}
+function onQuasarLayerClick(e){
+ if(e.target?.closest?.('.quasar-gas'))return;const b=quasarGasAtPoint(e.clientX,e.clientY);if(!b)return;e.preventDefault();e.stopPropagation();activateGasControl(b)
 }
 function gasPointerPoint(ev){const field=layer?.querySelector('.quasar-gas-field'),r=field?.getBoundingClientRect();if(!r)return null;return{x:Math.max(0,Math.min(r.width,ev.clientX-r.left)),y:Math.max(0,Math.min(r.height,ev.clientY-r.top)),width:r.width,height:r.height}}
 function gasDragTarget(source,ev){const target=layer?.querySelector(`.quasar-gas[data-pair="${source.dataset.pair}"]:not([data-gas-index="${source.dataset.gasIndex}"])`);if(!target||target.classList.contains('spent')||target.classList.contains('reacting'))return null;const r=target.getBoundingClientRect(),dist=Math.hypot(ev.clientX-(r.left+r.width/2),ev.clientY-(r.top+r.height/2));return dist<=Math.max(44,r.width*1.6)?target:null}
