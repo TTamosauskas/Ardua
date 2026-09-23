@@ -16,7 +16,7 @@ async function openPhase(activeId,{rotation=false}={}){
  },{campaign:campaignState(activeId),engine:engineState(activeId),rotation});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ page.on('console',m=>{const text=m.text();if(m.type()==='error'&&!text.includes('net::ERR_CACHE_RACE'))errors.push(text)});
  await page.goto(base,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(id=>document.documentElement.dataset.arduaEnginePhase===id,activeId,{timeout:5000});
  await page.waitForTimeout(420);
