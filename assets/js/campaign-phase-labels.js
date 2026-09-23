@@ -160,9 +160,14 @@ function fitOneLine(el){
  if(!el)return;el.style.removeProperty('font-size');const max=17,min=10.5;if(!el.clientWidth)return;
  let size=max;el.style.fontSize=size+'px';while(size>min&&el.scrollWidth>el.clientWidth+.5){size-=.5;el.style.fontSize=size+'px'}
 }
+function canonicalMapTitle(id,fallback=''){
+ const strong=document.querySelector(`#campaignMap .phase-node[data-phase="${id}"] strong`);
+ const source=strong?originalText(strong):(window.ARDUA_PHASE_NAMES?.[id]||fallback||id);
+ return mapName(id,source);
+}
 function syncCurrent(){
  const title=$('phaseTitle'),identity=$('branchLabel'),goal=$('goalText');if(!title||!identity||!goal)return;
- const id=activeId(),next=compactGoal(goal.textContent,id),context=contextFor(id);
+ const id=activeId(),next=canonicalMapTitle(id,title.textContent),context=contextFor(id);
  if(next&&title.textContent!==next)title.textContent=next;
  if(identity.textContent!==context)identity.textContent=context;
  identity.hidden=!context;document.body.classList.add('phase-goal-hierarchy');fitOneLine(title);
@@ -176,12 +181,12 @@ function ensureMapObserver(){
  mapObserver?.disconnect();observedMap=next||null;mapObserver=null;
  if(observedMap){mapObserver=new MutationObserver(schedule);mapObserver.observe(observedMap,{subtree:true,childList:true,characterData:true})}
 }
-function sync(){if(applying)return;applying=true;try{ensureMapObserver();syncCurrent();syncCollections()}finally{applying=false}}
+function sync(){if(applying)return;applying=true;try{ensureMapObserver();syncCollections();syncCurrent()}finally{applying=false}}
 function schedule(){if(syncFrame)return;syncFrame=requestAnimationFrame(()=>{syncFrame=0;sync()})}
 function registerScientificNames(names={}){scientificNames={...scientificNames,...names};schedule()}
 function registerForgeNames(names={}){forgeNames={...names};schedule()}
 
-const api=Object.freeze({sync,schedule,compactGoal,contextFor,mapName,menuName,registerScientificNames,registerForgeNames});
+const api=Object.freeze({sync,schedule,compactGoal,contextFor,mapName,menuName,canonicalMapTitle,registerScientificNames,registerForgeNames});
 window.ARDUA_PHASE_LABELS=api;
 const app=document.querySelector('.app');if(app)new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true});
 const menu=$('phaseMenu');if(menu)new MutationObserver(schedule).observe(menu,{subtree:true,childList:true,characterData:true});
