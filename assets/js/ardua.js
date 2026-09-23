@@ -4333,17 +4333,32 @@ function removeStellarFormation(){const f=state.stellarFormation;if(f?.raf)cance
 function stellarFormationElementLabel(sym){return E[sym]?.symbol||sym}
 function stellarFormationMakeField(f,g){const d=document.createElement('div');d.className='formation-g-field'+(g.incoming?' formation-incoming':'');d.dataset.group=String(g.id);f.fields.appendChild(d);g.fieldEl=d;return d}
 function stellarFormationUpdateHud(){updateHUD()}
+function stellarFormationGroupDraggable(g){return !!g&&!g.incoming&&g.members.length<=12}
+function stellarFormationPointerPoint(ev){const r=dom.star.getBoundingClientRect(),scale=starSize()/Math.max(1,r.width);return{x:(ev.clientX-r.left)*scale,y:(ev.clientY-r.top)*scale}}
+function stellarFormationDragTarget(f,g){if(!f||!g)return null;return[...f.groups.values()].filter(q=>q.id!==g.id&&!q.incoming&&stellarFormationOverlap(g,q)).sort((a,b)=>Math.hypot(g.x-a.x,g.y-a.y)-Math.hypot(g.x-b.x,g.y-b.y))[0]||null}
+function armStellarFormationDrag(atomId,el,ev){
+ const f=state.stellarFormation,a=f?.atoms.get(atomId),g=a?f?.groups.get(a.groupId):null;if(!f||!a||!g||!stellarFormationGroupDraggable(g)||state.locked||state.phaseDone||f.stabilizing||f.complete||ev.pointerType==='mouse'&&ev.button!==0)return;
+ const pt=stellarFormationPointerPoint(ev);f.drag={atomId,groupId:g.id,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,offsetX:g.x-pt.x,offsetY:g.y-pt.y,targetId:null};try{el.setPointerCapture(ev.pointerId)}catch(e){}
+}
+function moveStellarFormationDrag(atomId,ev){
+ const f=state.stellarFormation,d=f?.drag;if(!f||!d||d.atomId!==atomId||d.pointerId!==ev.pointerId)return;const g=f.groups.get(d.groupId);if(!g)return;const pt=stellarFormationPointerPoint(ev);if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;if(!d.active){d.active=true;f.selectedGroup=null;g.vx=0;g.vy=0;vibrate(5)}
+ ev.preventDefault();ev.stopPropagation();const center=starSize()/2,r=Math.min(center-10,stellarFormationFieldRadius(g)),maxDist=Math.max(0,center-r-7),rawX=pt.x+d.offsetX,rawY=pt.y+d.offsetY,dx=rawX-center,dy=rawY-center,dist=Math.hypot(dx,dy);if(dist>maxDist&&dist>0){g.x=center+dx/dist*maxDist;g.y=center+dy/dist*maxDist}else{g.x=rawX;g.y=rawY}const target=stellarFormationDragTarget(f,g);d.targetId=target?.id||null;stellarFormationRefreshCompatibility(f)
+}
+function finishStellarFormationDrag(atomId,ev,cancel=false){
+ const f=state.stellarFormation,d=f?.drag;if(!f||!d||d.atomId!==atomId||d.pointerId!==ev.pointerId)return false;const g=f.groups.get(d.groupId),wasActive=d.active,target=!cancel&&g&&d.targetId?f.groups.get(d.targetId):null;f.drag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}if(!wasActive){stellarFormationRefreshCompatibility(f);return false}
+ ev.preventDefault();ev.stopPropagation();const a=f.atoms.get(atomId);if(a)a.suppressTapUntil=performance.now()+520;if(!g)return true;if(target&&stellarFormationOverlap(g,target)){stellarFormationMerge(g,target);return true}g.vx=(Math.random()-.5)*.018;g.vy=(Math.random()-.5)*.018;stellarFormationRefreshCompatibility(f);return true
+}
 function stellarFormationRefreshCompatibility(f){
- if(!f)return;const selected=f.groups.get(f.selectedGroup),compatible=new Set();
- if(selected&&!selected.incoming){const candidates=[...f.groups.values()].filter(g=>g.id!==selected.id&&!g.incoming&&stellarFormationOverlap(selected,g)).sort((a,b)=>Math.hypot(selected.x-a.x,selected.y-a.y)-Math.hypot(selected.x-b.x,selected.y-b.y));if(candidates[0])compatible.add(candidates[0].id)}
- for(const g of f.groups.values()){const pair=g.members.length===2;g.fieldEl?.classList.toggle('formation-pair',pair);g.fieldEl?.classList.toggle('formation-cluster',!pair);g.fieldEl?.classList.toggle('selected',g.id===f.selectedGroup);g.fieldEl?.classList.toggle('compatible',compatible.has(g.id));g.fieldEl?.classList.toggle('formation-incoming',!!g.incoming)}
- for(const a of f.atoms.values()){const el=a.el,g=f.groups.get(a.groupId),pair=g?.members.length===2;el?.classList.toggle('formation-pair',!!pair);el?.classList.toggle('formation-cluster',!pair);el?.classList.toggle('selected',a.groupId===f.selectedGroup);el?.classList.toggle('compatible',compatible.has(a.groupId));el?.classList.toggle('formation-incoming',!!g?.incoming)}
+ if(!f)return;const dragged=f.drag?.active?f.groups.get(f.drag.groupId):null,selected=dragged||f.groups.get(f.selectedGroup),compatible=new Set(),dragTarget=f.drag?.active?f.drag.targetId:null;
+ if(dragTarget)compatible.add(dragTarget);else if(selected&&!selected.incoming){const candidates=[...f.groups.values()].filter(g=>g.id!==selected.id&&!g.incoming&&stellarFormationOverlap(selected,g)).sort((a,b)=>Math.hypot(selected.x-a.x,selected.y-a.y)-Math.hypot(selected.x-b.x,selected.y-b.y));if(candidates[0])compatible.add(candidates[0].id)}
+ for(const g of f.groups.values()){const pair=g.members.length===2,dragging=!!dragged&&g.id===dragged.id,target=dragTarget===g.id;g.fieldEl?.classList.toggle('formation-pair',pair);g.fieldEl?.classList.toggle('formation-cluster',!pair);g.fieldEl?.classList.toggle('selected',g.id===f.selectedGroup);g.fieldEl?.classList.toggle('compatible',compatible.has(g.id));g.fieldEl?.classList.toggle('formation-incoming',!!g.incoming);g.fieldEl?.classList.toggle('dragging',dragging);g.fieldEl?.classList.toggle('drag-target',target);g.fieldEl?.classList.toggle('drag-anchored',!stellarFormationGroupDraggable(g)&&!g.incoming)}
+ for(const a of f.atoms.values()){const el=a.el,g=f.groups.get(a.groupId),pair=g?.members.length===2,dragging=!!dragged&&a.groupId===dragged.id,target=dragTarget===a.groupId;el?.classList.toggle('formation-pair',!!pair);el?.classList.toggle('formation-cluster',!pair);el?.classList.toggle('selected',a.groupId===f.selectedGroup);el?.classList.toggle('compatible',compatible.has(a.groupId));el?.classList.toggle('formation-incoming',!!g?.incoming);el?.classList.toggle('dragging',dragging);el?.classList.toggle('drag-target',target);el?.classList.toggle('drag-anchored',!!g&&!stellarFormationGroupDraggable(g)&&!g.incoming)}
 }
 function stellarFormationCurrentLocal(a,g,now){const target=a.toLocal||{x:0,y:0};if(!g.reorgStart||!a.fromLocal)return target;const t=Math.max(0,Math.min(1,(now-g.reorgStart)/520)),e=1-Math.pow(1-t,3);if(t>=1){a.fromLocal=null;return target}return{x:a.fromLocal.x+(target.x-a.fromLocal.x)*e,y:a.fromLocal.y+(target.y-a.fromLocal.y)*e}}
 function stellarFormationSoftSeparate(f,dt){
- const groups=[...f.groups.values()].filter(g=>!g.incoming);
+ const dragged=f.drag?.active?f.drag.groupId:null,groups=[...f.groups.values()].filter(g=>!g.incoming);
  for(let i=0;i<groups.length;i++)for(let j=i+1;j<groups.length;j++){
-  const a=groups[i],b=groups[j],dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||.001,minDist=(stellarFormationVisualRadius(a,f.spec)+stellarFormationVisualRadius(b,f.spec))*.62;
+  const a=groups[i],b=groups[j];if(a.id===dragged||b.id===dragged)continue;const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||.001,minDist=(stellarFormationVisualRadius(a,f.spec)+stellarFormationVisualRadius(b,f.spec))*.62;
   if(dist>=minDist)continue;
   const nx=dx/dist,ny=dy/dist,overlap=minDist-dist,step=Math.min(1.8,overlap*.18)*Math.min(1.8,dt/16),mass=a.members.length+b.members.length,wa=b.members.length/mass,wb=a.members.length/mass;
   a.x-=nx*step*wa;a.y-=ny*step*wa;b.x+=nx*step*wb;b.y+=ny*step*wb;
@@ -4354,7 +4369,8 @@ function stellarFormationRenderFrame(f,now){
  if(!f||phase().mode!=='stellarFormation')return;
  const size=starSize(),center=size/2,dt=Math.min(34,Math.max(8,now-(f.lastTime||now)));f.lastTime=now;
  for(const g of f.groups.values()){
-  if(!f.complete&&!f.stabilizing){
+  const dragging=f.drag?.active&&f.drag.groupId===g.id;
+  if(!dragging&&!f.complete&&!f.stabilizing){
    const cap=g.incoming?.058:Math.max(.014,.05/Math.pow(g.members.length,.22)),speed=Math.hypot(g.vx,g.vy)||1;
    if(speed>cap){g.vx=g.vx/speed*cap;g.vy=g.vy/speed*cap}
    g.x+=g.vx*dt;g.y+=g.vy*dt;if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt;
@@ -4366,7 +4382,7 @@ function stellarFormationRenderFrame(f,now){
     g.x=center+nx*maxDist;g.y=center+ny*maxDist;
     if(radial>0){g.vx-=1.85*radial*nx;g.vy-=1.85*radial*ny}
    }
-  }else{
+  }else if(!dragging){
    g.x+=(center-g.x)*.075;g.y+=(center-g.y)*.075;g.angle*=.88;if(Math.abs(g.angle)<.0005)g.angle=0;
   }
  }
@@ -4379,7 +4395,7 @@ function stellarFormationRenderFrame(f,now){
  f.raf=requestAnimationFrame(t=>stellarFormationRenderFrame(f,t));
 }
 function stellarFormationBlocked(g){if(!g?.fieldEl)return;g.fieldEl.classList.remove('blocked');void g.fieldEl.offsetWidth;g.fieldEl.classList.add('blocked');setTimeout(()=>g.fieldEl?.classList.remove('blocked'),380)}
-function stellarFormationSelectAtom(atomId){const f=state.stellarFormation,a=f?.atoms.get(atomId);if(!f||!a||state.locked||state.phaseDone||f.stabilizing||f.complete)return;const gid=a.groupId,g=f.groups.get(gid);if(!g||g.incoming)return;setInfoSelection({type:'preview',sym:a.sym},true);if(!f.selectedGroup){f.selectedGroup=gid;tone(310,.055,'sine',.025);stellarFormationRefreshCompatibility(f);stellarFormationUpdateHud(f);return}if(f.selectedGroup===gid){f.selectedGroup=null;tone(240,.045,'sine',.018);stellarFormationRefreshCompatibility(f);stellarFormationUpdateHud(f);return}const first=f.groups.get(f.selectedGroup);if(!first){f.selectedGroup=gid;stellarFormationRefreshCompatibility(f);return}if(!stellarFormationOverlap(first,g)){stellarFormationBlocked(g);tone(145,.07,'sine',.018);return}stellarFormationMerge(first,g)}
+function stellarFormationSelectAtom(atomId){const f=state.stellarFormation,a=f?.atoms.get(atomId);if(!f||!a||performance.now()<(a.suppressTapUntil||0)||state.locked||state.phaseDone||f.stabilizing||f.complete)return;const gid=a.groupId,g=f.groups.get(gid);if(!g||g.incoming)return;setInfoSelection({type:'preview',sym:a.sym},true);if(!f.selectedGroup){f.selectedGroup=gid;tone(310,.055,'sine',.025);stellarFormationRefreshCompatibility(f);stellarFormationUpdateHud(f);return}if(f.selectedGroup===gid){f.selectedGroup=null;tone(240,.045,'sine',.018);stellarFormationRefreshCompatibility(f);stellarFormationUpdateHud(f);return}const first=f.groups.get(f.selectedGroup);if(!first){f.selectedGroup=gid;stellarFormationRefreshCompatibility(f);return}if(!stellarFormationOverlap(first,g)){stellarFormationBlocked(g);tone(145,.07,'sine',.018);return}stellarFormationMerge(first,g)}
 function stellarFormationAutoComplete(f,g){
  if(!f||f.complete||f.stabilizing||g.members.length!==f.spec.visibleTotal)return;
  if(f.inflowTimer){clearTimeout(f.inflowTimer);f.inflowTimer=null}
@@ -4399,7 +4415,7 @@ function stellarFormationSpawnPair(f,{incoming=false}={}){
  if(!f||f.spawnedPairs>=f.spec.pairCount)return null;
  const gid=f.nextGroupId++,existing=[...f.groups.values()].map(g=>({x:g.x,y:g.y})),pt=incoming?stellarFormationEntryPoint(f):stellarFormationRandomPoint(existing,f.size,f.spec),driftAngle=Math.random()*Math.PI*2,drift=.018+Math.random()*.025,angle=Math.random()*Math.PI*2,local=stellarFormationSeedLayout(2,f.spec),velocity=incoming?pt:{vx:Math.cos(driftAngle)*drift,vy:Math.sin(driftAngle)*drift},g={id:gid,members:[],x:pt.x,y:pt.y,vx:velocity.vx,vy:velocity.vy,angle,omega:(gid%2?1:-1)*(.00022+Math.random()*.00018),reorgStart:0,fieldEl:null,incoming};
  const ca=Math.cos(angle),sa=Math.sin(angle);
- local.forEach(offset=>{const id=f.nextAtomId++,x=pt.x+offset.x*ca-offset.y*sa,y=pt.y+offset.x*sa+offset.y*ca,atom={id,sym:'H',groupId:gid,x,y,toLocal:{...offset},fromLocal:null,el:null},el=document.createElement('button');el.type='button';el.className='formation-atom formation-pair'+(incoming?' formation-incoming':'');el.dataset.formationAtom=String(id);el.style.background=elementStyle('H');el.textContent=stellarFormationElementLabel('H');el.setAttribute('aria-label',incoming?'Hidrogênio chegando do meio interestelar':'Hidrogênio em dupla H₂');el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();stellarFormationSelectAtom(id)});atom.el=el;f.atomsLayer.appendChild(el);f.atoms.set(id,atom);g.members.push(id)});
+ local.forEach(offset=>{const id=f.nextAtomId++,x=pt.x+offset.x*ca-offset.y*sa,y=pt.y+offset.x*sa+offset.y*ca,atom={id,sym:'H',groupId:gid,x,y,toLocal:{...offset},fromLocal:null,el:null},el=document.createElement('button');el.type='button';el.className='formation-atom formation-pair'+(incoming?' formation-incoming':'');el.dataset.formationAtom=String(id);el.style.background=elementStyle('H');el.textContent=stellarFormationElementLabel('H');el.setAttribute('aria-label',incoming?'Hidrogênio chegando do meio interestelar':'Hidrogênio em dupla H₂');el.addEventListener('pointerdown',ev=>armStellarFormationDrag(id,el,ev));el.addEventListener('pointermove',ev=>moveStellarFormationDrag(id,ev));el.addEventListener('pointerup',ev=>finishStellarFormationDrag(id,ev,false));el.addEventListener('pointercancel',ev=>finishStellarFormationDrag(id,ev,true));el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();stellarFormationSelectAtom(id)});atom.el=el;f.atomsLayer.appendChild(el);f.atoms.set(id,atom);g.members.push(id)});
  f.groups.set(g.id,g);stellarFormationMakeField(f,g);f.spawnedPairs++;stellarFormationRefreshCompatibility(f);return g
 }
 function stellarFormationScheduleSupply(f,delay=620){
@@ -4431,9 +4447,9 @@ function startStellarFormationStage(){
  removeStellarFormation();
  const spec=stellarFormationSpec(),size=starSize(),layer=document.createElement('div'),fields=document.createElement('div'),atomsLayer=document.createElement('div');
  layer.className='stellar-formation-layer';layer.setAttribute('aria-label',`${spec.pairCount} duplas de Hidrogênio chegando gradualmente e formando um hexágono com ${stellarFormationLayerDescription(spec)}`);layer.style.setProperty('--formationAtomSize',stellarFormationAtomSize(spec)+'px');fields.className='formation-fields';atomsLayer.className='formation-atoms';layer.append(fields,atomsLayer);dom.star.appendChild(layer);dom.star.classList.add('stellar-formation-mode');
- const f={layer,fields,atomsLayer,atoms:new Map(),groups:new Map(),selectedGroup:null,nextGroupId:1,nextAtomId:1,spawnedPairs:0,inflowTimer:null,raf:0,lastTime:performance.now(),compatibilityAt:0,stabilizing:false,complete:false,size,spec};state.stellarFormation=f;
+ const f={layer,fields,atomsLayer,atoms:new Map(),groups:new Map(),selectedGroup:null,drag:null,nextGroupId:1,nextAtomId:1,spawnedPairs:0,inflowTimer:null,raf:0,lastTime:performance.now(),compatibilityAt:0,stabilizing:false,complete:false,size,spec};state.stellarFormation=f;
  for(let i=0;i<spec.initialGroups;i++)stellarFormationSpawnPair(f,{incoming:false});
- stellarFormationUpdateHud(f);stellarFormationRefreshCompatibility(f);f.raf=requestAnimationFrame(t=>stellarFormationRenderFrame(f,t));
+ stellarFormationUpdateHud(f);stellarFormationRefreshCompatibility(f);f.raf=requestAnimationFrame(t=>stellarFormationRenderFrame(f,t));if(phase().id==='first_generation_formation')setTimeout(()=>{if(state.stellarFormation===f&&!state.phaseDone)toast('Arraste um grupo até outro — ou toque nos dois.')},650);
 }
 function resizeStellarFormation(){const f=state.stellarFormation;if(!f)return;const next=starSize(),ratio=next/Math.max(1,f.size||next);for(const g of f.groups.values()){g.x*=ratio;g.y*=ratio}f.size=next;f.layer?.style.setProperty('--formationAtomSize',stellarFormationAtomSize(f.spec)+'px');f.lastTime=performance.now()}
 async function stellarFormationAdvance(){const f=state.stellarFormation;if(!f?.complete)return;const group=[...f.groups.values()][0];if(!group)return;group.x=starSize()/2;group.y=starSize()/2;group.angle=0;if(f.raf)cancelAnimationFrame(f.raf);const memberAtoms=group.members.map(id=>f.atoms.get(id)).filter(Boolean),cells=stellarFormationCells(f.spec);clearBoard();drawCells();memberAtoms.forEach((a,i)=>{const cell=cells[i],piece=createPiece(a.sym,cell,false,{matterState:'atom',boundElectrons:Number(E[a.sym]?.n||0),massNumber:a.sym==='D'?2:a.sym==='Li'?7:null});piece.x=a.x;piece.y=a.y});state.stellarFormationSnapshot=memberAtoms.map((a,i)=>({formationId:a.id,sym:a.sym,cell:cells[i]}));renderPieces();dom.star.classList.add('formation-materializing','formation-birth-flash');requestAnimationFrame(()=>{state.pieces.forEach(p=>{const q=pos(coords[p.cell]);p.x=q.x;p.y=q.y});renderPieces()});await wait(760);f.layer.remove();state.stellarFormation=null;dom.star.classList.remove('stellar-formation-mode','formation-materializing','formation-stabilized');setTimeout(()=>dom.star.classList.remove('formation-birth-flash'),320);state.locked=false;render()}
