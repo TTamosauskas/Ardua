@@ -19,11 +19,12 @@ async function openPhase(activeId){
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto(base,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(id=>document.documentElement.dataset.arduaEnginePhase===id,activeId,{timeout:5000});
- const intro=page.locator('#stellarIntro.show');
- if(await intro.count()){
+ await page.waitForTimeout(420);
+ if(await page.locator('#stellarIntro').evaluate(el=>el.classList.contains('show'))){
   await page.locator('#stellarStartBtn').click();
   await page.waitForFunction(()=>!document.getElementById('stellarIntro')?.classList.contains('show'),undefined,{timeout:2500});
  }
+ await page.evaluate(()=>{const map=document.getElementById('campaignMap');map?.classList.remove('show');map?.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open')});
  return{context,page,errors};
 }
 
@@ -36,6 +37,7 @@ async function testPrimordialParticleDrop(){
   await page.mouse.move(pb.x+pb.width/2,pb.y+pb.height/2);
   await page.mouse.down();
   await page.waitForTimeout(270);
+  await page.waitForFunction(()=>!!document.querySelector('.primordial-particle.proton.dragging'),undefined,{timeout:900});
   const nb2=await neutron.boundingBox();assert.ok(nb2,'Deutério: nêutron desapareceu antes do drop');
   await page.mouse.move(nb2.x+nb2.width/2,nb2.y+nb2.height/2,{steps:5});
   await page.waitForFunction(()=>!!document.querySelector('.primordial-particle.neutronfree.drop-target'),undefined,{timeout:1200});
