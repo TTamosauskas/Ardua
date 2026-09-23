@@ -67,10 +67,9 @@ function restoreInfoSnapshot(info){
  const title=panel?.querySelector('.info-recipes-title');if(title)title.textContent=info.recipesTitle;if(recipes)recipes.innerHTML=info.recipesHTML;
 }
 function updateProgress(){
- const total=made.proton+made.neutron;
- setText('goalText',`Crie Prótons e Nêutrons — ${total}/2`);renderRecipe();showProgress();
- setText('stageProgressLabel','HÁDRONS');setText('stageProgressText',`${total}/2`);
- const bar=$('stageProgress');if(bar)bar.style.width=`${Math.min(100,total*50)}%`;
+ const total=made.proton+made.neutron,pct=Math.min(100,total*50);setText('goalText','Crie Prótons e Nêutrons');renderRecipe();showProgress();
+ if(window.ARDUA_PROGRESS_UI?.render)window.ARDUA_PROGRESS_UI.render({percent:pct,current:total,total:2,label:'HÁDRONS',ready:total>=2,visible:true});
+ else{setText('stageProgressLabel','HÁDRONS');setText('stageProgressText',`${pct}% (${total} de 2)`);const bar=$('stageProgress');if(bar){bar.style.width=`${pct}%`;bar.dataset.current=String(total);bar.dataset.total='2'}}
 }
 function quarkById(id){return SEED.find(q=>q.id===id)}
 function liveButton(id){const root=stage||$('starBoard');return root?.querySelector(`.quark-piece[data-quark-id="${id}"]`)||null}
