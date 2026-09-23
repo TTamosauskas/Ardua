@@ -2433,7 +2433,7 @@ function atomicMovementAllowed(s=phase()){return movementMechanicUnlocked(s)}
 function stellarBoardSwapAllowed(s=phase()){return atomicMovementAllowed(s)&&s.mode!=='whiteCompact'&&s.mode!=='movementTutorial'}
 function movableEmptyNeighbors(cell,s=phase()){
  if(!atomicMovementAllowed(s)||cell===null||cell===undefined)return[];
- const active=activeSet();return (neigh[cell]||[]).filter(n=>active.has(n)&&state.board[n]===null);
+ const active=activeSet();return (neigh[cell]||[]).filter(n=>active.has(n)&&state.board[n]===null&&!convectionCoreCellReserved(n,s));
 }
 function stellarBoardAdjacentReactionCandidate(source,target,s=phase()){
  if(!source||!target||source.free||target.free||source.cell===null||source.cell===undefined||target.cell===null||target.cell===undefined||source.id===target.id)return false;
@@ -2541,6 +2541,24 @@ function convectionMechanicUnlocked(s=phase()){
  if(['spallation','neutrino','gamma','guidedDecay','decayGarden','explosive','neutronize','collapseFinal'].includes(s.mode)||isPostMode(s))return false;
  return true;
 }
+function convectionCoreCell(){return (byRing[0]||[])[0]}
+function convectionCoreReserved(s=phase()){return convectionMechanicUnlocked(s)&&Number(state.convectionCharge||0)>0&&!state.phaseDone}
+function convectionCoreCellReserved(cell,s=phase()){const center=convectionCoreCell();return center!==undefined&&cell===center&&convectionCoreReserved(s)}
+function convectionCoreVacancyDestination(s=phase()){
+ const center=convectionCoreCell();if(center===undefined)return null;
+ const open=activeCells().filter(cell=>cell!==center&&state.board[cell]===null);
+ if(!open.length)return null;
+ open.sort((a,b)=>(coords[a]?.ring??99)-(coords[b]?.ring??99)||Math.hypot(coords[a]?.q||0,coords[a]?.r||0)-Math.hypot(coords[b]?.q||0,coords[b]?.r||0));
+ return open[0]
+}
+function enforceConvectionCoreVacancy(s=phase()){
+ if(!convectionCoreReserved(s))return null;const center=convectionCoreCell();if(center===undefined)return null;
+ const id=state.board[center],piece=id?state.pieces.get(id):null;if(!piece||piece.free)return null;
+ const destination=convectionCoreVacancyDestination(s);if(destination===null)return null;
+ state.board[center]=null;state.board[destination]=id;piece.cell=destination;const q=pos(coords[destination]);piece.x=q.x;piece.y=q.y;
+ state.selected=(state.selected||[]).map(cell=>cell===center?destination:cell);
+ return{id,from:center,to:destination}
+}
 function convectionChargePhaseAllows(s=phase(),fx={}){
  if(fx?.kind==='convection')return false;
  if(s.mode==='convection')return fx?.kind==='nuclear';
@@ -2587,8 +2605,9 @@ function ensureConvectionControl(){
  b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();toggleConvectionArmed()});dom.star.appendChild(b);ensureConvectionConfirmationListener();return b;
 }
 function renderConvectionControl(){
- const b=ensureConvectionControl(),available=convectionMechanicUnlocked(),charged=Number(state.convectionCharge||0)>0,armed=!!state.convectionArmed,pending=!!state.convectionConfirmPending,show=available&&charged&&!state.phaseDone;
- const centerCell=(byRing[0]||[])[0],centerId=centerCell===undefined?null:state.board[centerCell],centerPiece=centerId?state.pieces.get(centerId):null,anchor=centerPiece&&!centerPiece.free?{x:centerPiece.x,y:centerPiece.y}:(centerCell===undefined?null:pos(coords[centerCell]));
+ const b=ensureConvectionControl(),available=convectionMechanicUnlocked(),charged=Number(state.convectionCharge||0)>0,armed=!!state.convectionArmed,pending=!!state.convectionConfirmPending,show=available&&charged&&!state.phaseDone,evacuated=show?enforceConvectionCoreVacancy():null;
+ if(evacuated)renderPieces();
+ const centerCell=convectionCoreCell(),anchor=centerCell===undefined?null:pos(coords[centerCell]);
  if(anchor){b.style.left=anchor.x+'px';b.style.top=anchor.y+'px'}
  b.classList.toggle('show',show);b.classList.toggle('charged',show);b.classList.toggle('armed',armed);b.classList.toggle('pending',pending);b.disabled=!show||state.locked||pending;b.setAttribute('aria-pressed',armed?'true':'false');
  dom.star.classList.toggle('convection-core-charged',show);dom.star.classList.toggle('convection-confirm-pending',pending);
@@ -2659,7 +2678,7 @@ async function maybeEjectCoronalJet(path,s=phase()){
  state.coronalJetRunning=false;renderPrimordialParticles();return true
 }
 async function performConvection(path){
- const s=phase();if(state.locked||state.phaseDone||Number(state.convectionCharge||0)<1)return false;let occupied=path.filter(cell=>state.board[cell]);if(occupied.length<2)return false;
+ const s=phase();if(state.locked||state.phaseDone||Number(state.convectionCharge||0)<1)return false;if(!path.some(cell=>state.board[cell]))return false;
  const firstConvection=!state.productLessons.has('convection');
  state.locked=true;state.convectionCharge=0;state.convectionArmed=false;state.convectionConfirmPending=false;state.convectionPathCells=[...path];state.selected=[];state.contextRecipeKey=null;objectiveMotifCancelSelection();renderConvectionControl();
  let completed=false;
@@ -2667,10 +2686,12 @@ async function performConvection(path){
   // Jatos Coronais é uma consequência opcional da Convecção: ejeta primeiro o íon
   // que já ocupa a extremidade superficial e só então reorganiza o restante da linha.
   await maybeEjectCoronalJet(path,s);
-  occupied=path.filter(cell=>state.board[cell]);
   releaseConvectionGamma(path);
-  const ids=occupied.map(cell=>state.board[cell]),reversed=[...ids].reverse(),moves=[];occupied.forEach(cell=>state.board[cell]=null);
-  occupied.forEach((cell,i)=>{const id=reversed[i],p=id?state.pieces.get(id):null;if(!p)return;const from=p.cell;state.board[cell]=id;p.cell=cell;p.convecting=true;if(from!==cell)moves.push({id,from,to:cell})});
+  // A carga reserva o núcleo como vazio. Ao consumir a carga, o ↕ some e a própria
+  // convecção pode voltar a ocupar o centro. Invertemos a linha completa, incluindo
+  // a vaga central, para que essa liberação aconteça como parte do transporte.
+  const ids=path.map(cell=>state.board[cell]||null),reversed=[...ids].reverse(),moves=[];path.forEach(cell=>state.board[cell]=null);
+  path.forEach((cell,i)=>{const id=reversed[i],p=id?state.pieces.get(id):null;if(!p)return;const from=p.cell;state.board[cell]=id;p.cell=cell;p.convecting=true;if(from!==cell)moves.push({id,from,to:cell})});
   dom.star.classList.add('convection-active');renderPieces();[330,415,520,660].forEach((f,i)=>setTimeout(()=>tone(f,.11,'sine',.018+i*.004),i*85));vibrate([8,16,8]);
   requestAnimationFrame(()=>{for(const m of moves){const p=state.pieces.get(m.id);if(p){const q=pos(coords[m.to]);p.x=q.x;p.y=q.y}}renderPieces()});
   moves.forEach((m,i)=>setTimeout(()=>emitConvectionEnergyPulse(path,i,moves.length),110+i*55));await wait(720);
@@ -2706,6 +2727,7 @@ function pieceSymbolScale(p,shownSym){
  return .35;
 }
 function renderPieces(){
+ enforceConvectionCoreVacancy();
  const primordial=isPrimordial(),candidates=new Set(primordial?[]:candidateCells()),existing=new Map([...dom.pieces.querySelectorAll('.atom')].map(el=>[+el.dataset.id,el]));
  state.pieces.forEach((p,id)=>{
   let el=existing.get(id);
@@ -4117,7 +4139,7 @@ function stratifiedMoveTarget(p,active,s,movedIds){
  const strength=stratificationStrength(s);if(strength<=0)return null;
  const fromRing=coords[p.cell].ring,ideal=preferredRing(p.sym,s),before=Math.abs(fromRing-ideal);
  if(before<.26)return null;
- const options=neigh[p.cell].filter(n=>active.has(n)&&state.board[n]===null&&!(coords[n].ring===0&&coreRelocationAutoProtected(p))).map(n=>({cell:n,dist:Math.abs(coords[n].ring-ideal)})).filter(x=>x.dist+1e-6<before);
+ const options=neigh[p.cell].filter(n=>active.has(n)&&state.board[n]===null&&!convectionCoreCellReserved(n,s)&&!(coords[n].ring===0&&coreRelocationAutoProtected(p))).map(n=>({cell:n,dist:Math.abs(coords[n].ring-ideal)})).filter(x=>x.dist+1e-6<before);
  if(!options.length)return null;
  options.sort((a,b)=>a.dist-b.dist||Math.random()-.5);
  const improvement=before-options[0].dist,chance=Math.min(.92,strength*(.48+.18*improvement));
@@ -4132,7 +4154,7 @@ async function gravityPulse({replenish=true,protectedPieceIds=[]}={}){
      let t=null;
      if(strength>0)t=stratifiedMoveTarget(p,active,s,movedIds);
      else{
-       const inward=neigh[p.cell].filter(n=>active.has(n)&&coords[n].ring<coords[p.cell].ring&&state.board[n]===null);
+       const inward=neigh[p.cell].filter(n=>active.has(n)&&coords[n].ring<coords[p.cell].ring&&state.board[n]===null&&!convectionCoreCellReserved(n,s));
        if(inward.length){inward.sort((a,b)=>coords[a].ring-coords[b].ring);t=inward[0]}
      }
      if(t!==null&&t!==undefined){state.board[p.cell]=null;state.board[t]=p.id;p.cell=t;const q=pos(coords[t]);p.x=q.x;p.y=q.y;moved=true;if(strength>0){movedIds.add(p.id);stratifiedMoved=true}}
@@ -4141,7 +4163,7 @@ async function gravityPulse({replenish=true,protectedPieceIds=[]}={}){
  }
  if(strength>0&&stratifiedMoved)await wait(Math.max(70,(s.gravityDelay||90)*.8));
  if(replenish){
-   let empties=activeCells().filter(i=>state.board[i]===null).sort((a,b)=>coords[b].ring-coords[a].ring);
+   let empties=activeCells().filter(i=>state.board[i]===null&&!convectionCoreCellReserved(i,s)).sort((a,b)=>coords[b].ring-coords[a].ring);
    if(s.mode==='whiteCompact')empties=empties.filter(i=>coords[i].ring===phaseRadius(s));
    const wanted=Math.max(0,Math.min(desiredFill()-state.pieces.size,empties.length));
    for(let i=0;i<wanted;i++)createPiece(replenishmentSymbol(),empties[i],true);renderPieces();await wait(45);
