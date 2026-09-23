@@ -2893,10 +2893,10 @@ function recipeDisplayLines(label){
   ['Pósitron','Pósitron','e⁺'],['pósitron','Pósitron','e⁺'],['pósitrons','Pósitrons','e⁺'],['e⁺','Pósitron','e⁺'],
   ['Neutrino','Neutrino','νₑ'],['neutrino','Neutrino','νₑ'],['neutrinos','Neutrinos','νₑ'],['ν','Neutrino','νₑ'],['νₑ','Neutrino','νₑ'],
   ['Antineutrino','Antineutrino','ν̄ₑ'],['antineutrino','Antineutrino','ν̄ₑ'],['ν̄ₑ','Antineutrino','ν̄ₑ'],
-  ['Fóton gama','Fóton gama','γ'],['Fóton (γ)','Fóton gama','γ'],['fóton gama','Fóton gama','γ'],['γ','Fóton gama','γ'],
-  ['Raio cósmico','Raio cósmico','RC'],['RC','Raio cósmico','RC'],
-  ['Decaimento beta menos','Decaimento beta menos','β−'],['β−','Decaimento beta menos','β−'],
-  ['Decaimento beta mais','Decaimento beta mais','β+'],['β+','Decaimento beta mais','β+'],
+  ['Fóton gama','Fóton gama','γ'],['Fóton (γ)','Fóton gama','γ'],['fóton gama','Fóton gama','γ'],['fóton (γ)','Fóton gama','γ'],['γ','Fóton gama','γ'],
+  ['Raio cósmico','Raio cósmico','RC'],['raio cósmico','Raio cósmico','RC'],['RC','Raio cósmico','RC'],
+  ['Decaimento beta menos','Decaimento beta menos','β−'],['decaimento beta menos','Decaimento beta menos','β−'],['β−','Decaimento beta menos','β−'],
+  ['Decaimento beta mais','Decaimento beta mais','β+'],['decaimento beta mais','Decaimento beta mais','β+'],['β+','Decaimento beta mais','β+'],
   ['⁴He²⁺','Hélio-4 ionizado','⁴He²⁺'],['⁷Li³⁺','Lítio-7 ionizado','⁷Li³⁺'],
   ['He instável','Hélio instável','He*'],['Fe instável','Ferro instável','Fe*']
  ].forEach(([alias,name,symbol])=>aliases.set(alias,{name,symbol}));
