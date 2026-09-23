@@ -54,7 +54,7 @@ if(JSON.stringify(owners.sort())!==JSON.stringify(expected.sort()))throw new Err
 
 if(!engine.includes("bindReliableTap($('phaseEndBtn'),endPhaseAction)"))throw new Error('Botão final não usa tap confiável');
 if(!css.includes('.center-action.stage-end{z-index:2147483647!important;pointer-events:auto!important;'))throw new Error('Botão final perdeu z-index absoluto');
-const version='20260912-p2-2-1',engineVersion='20260923-drag-interactions-1';
+const version='20260912-p2-2-1',engineVersion='20260923-drag-interactions-2';
 for(const asset of ['recipe-sound-profile.js','audio-polish.js','recipe-audio-sync.js','campaign-quarks.js'])if(!index.includes('assets/js/'+asset+'?v='+version))throw new Error('Cache-busting musical ausente: '+asset);
 if(!index.includes('assets/js/ardua.js?v='+engineVersion))throw new Error('Cache-busting atual do engine ausente');
 const profilePos=index.indexOf('recipe-sound-profile.js'),polishPos=index.indexOf('audio-polish.js'),enginePos=index.indexOf('ardua.js');
