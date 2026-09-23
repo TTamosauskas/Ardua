@@ -59,6 +59,7 @@ ok(engine.includes('for(let i=0;i<spec.initialGroups;i++)stellarFormationSpawnPa
 ok(formationCss.includes('.formation-atom::before')&&formationCss.includes('inset:-7px'),'átomos menores preservam uma área clicável confortável');
 ok(formationCss.includes('.formation-atom.formation-incoming')&&formationCss.includes('.formation-g-field.formation-incoming'),'matéria em entrada possui estado visual próprio');
 ok(engine.includes('function primordialParticleDropTarget(p)')&&engine.includes('executePrimordialParticleDrop(p,target)'),'partículas primordiais podem reagir ao serem soltas sobre parceiro compatível');
+ok(engine.includes("startX:pt.x,startY:pt.y")&&engine.includes("Math.hypot(pt.x-d.startX,pt.y-d.startY)>=7"),'partículas primordiais ativam arraste imediatamente após movimento intencional');
 ok(engine.includes("target.mode==='bindElectron'")&&engine.includes("target.mode==='recombineH'"),'drag primordial cobre recombinação H e captura eletrônica em íons');
 ok(engine.includes('function primordialFreeDragTarget(d)')&&engine.includes("target.mode==='heh'")&&engine.includes("target.mode==='h+heh'"),'núcleos, átomos e moléculas primordiais possuem drag reativo próprio');
 ok(engine.includes("Math.hypot(pt.x-d.startX,pt.y-d.startY)<7"),'arraste primordial preserva clique com limiar de movimento');
