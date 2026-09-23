@@ -8,7 +8,7 @@ const forge=fs.readFileSync('assets/js/campaign-forge-names.js','utf8');
 const quarks=fs.readFileSync('assets/js/campaign-quarks-chrome.js','utf8');
 
 assert(index.includes('phase-goal-layout.css?v=20260911-phase-goals-1'),'CSS da nova hierarquia não está versionado no index');
-assert(index.includes('campaign-phase-labels.js?v=20260911-scatter-appreciation-1'),'Módulo de títulos/objetivos não está versionado no index');
+assert(index.includes('campaign-phase-labels.js?v=20260923-progress-ui-1'),'Módulo de títulos/objetivos não está versionado no index');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-phase-names.js'),'Sistema de labels precisa carregar antes dos nomes científicos');
 assert(index.indexOf('campaign-phase-labels.js')<index.indexOf('campaign-forge-names.js'),'Sistema de labels precisa carregar antes dos nomes de formação');
 
@@ -34,6 +34,7 @@ assert(labels.includes("return`${el} · cadeia radioativa`"),'Mapa não preserva
 assert(labels.includes("G.runtimeOrder?.[index]")&&labels.includes("button.dataset.phaseId=id"),'Menu reconstruído não recebe identificação canônica por índice');
 assert(labels.includes('ensureMapObserver()')&&labels.includes("node.id==='campaignMap'"),'Mapa criado depois do módulo não é observado');
 assert(labels.includes('fitOneLine(title)'),'Cabeçalho não aplica ajuste de uma linha');
+assert(!labels.includes('return progress?`${base} — ${progress}`:base')&&!labels.includes('function firstProgress('),'Cabeçalho ainda reinsere contadores de progresso');
 
 assert(forge.includes('forge[id]=`Forme ${elementName}`'),'Primeira formação ainda não usa “Forme”');
 assert(!forge.includes('forge[id]=`Forjar ${elementName}`'),'“Forjar” ainda está ativo na nomenclatura de formação');
