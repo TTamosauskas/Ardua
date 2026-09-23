@@ -50,6 +50,10 @@ try{
  assert.equal(chrome.progressText,'0/2','Quarks: progresso inicial deveria ser 0/2');
  assert.equal(chrome.progressWidth,'0%','Quarks: barra inicial deveria estar em 0%');
 
+ if(await page.locator('#stellarIntro').evaluate(el=>el.classList.contains('show'))){
+  await page.locator('#stellarStartBtn').click({force:true});
+  await page.waitForFunction(()=>!document.getElementById('stellarIntro')?.classList.contains('show'),undefined,{timeout:2500});
+ }
  await page.locator('#menuOpenBtn').click();
  await page.waitForFunction(()=>document.getElementById('phaseQuickMenu')?.classList.contains('show'));
  const rotation=await page.locator('#phaseQuickRotation').evaluate(el=>({text:el.querySelector('span')?.textContent||'',visible:getComputedStyle(el).display!=='none'}));
