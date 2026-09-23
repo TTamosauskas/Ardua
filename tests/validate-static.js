@@ -97,8 +97,8 @@ ok(engine.includes('const objective=objectiveProgress(s)')&&engine.includes('ret
 ok(engine.includes('function renderStageProgress({percent=0,current=null,total=null')&&engine.includes('shown=ready?100:Math.min(99,Math.floor(logical))'),'texto da barra mantém porcentagem real e reserva 100% para conclusão');
 ok(engine.includes("window.ARDUA_PROGRESS_UI=Object.freeze({render:renderStageProgress})")&&engine.includes('function stageProgressMetric(s=phase()'),'motor expõe renderer único de progresso para fases nativas e customizadas');
 ok(engine.includes("if(s.coronalJetTutorial)return'JATOS CORONAIS'")&&engine.includes("if(s.mode==='convection')return'CONVECÇÃO';return''"),'rótulo genérico PROGRESSO foi removido sem perder nomes semânticos de fase');
-ok(engine.includes('text.textContent=metric?')&&engine.includes("metric=detail||(hasCount?"),'barra combina porcentagem e meta em uma única leitura');
-ok(css.includes('#stageProgressText{color:var(--text);font-size:11px;font-weight:650')&&css.includes('min-width:8px'),'barra usa texto legível e preenchimento visual mínimo');
+ok(engine.includes("const leftText=metric||label||''")&&engine.includes("labelEl.textContent=leftText;text.textContent=`${shown}%`"),'barra divide meta à esquerda e porcentagem à direita');
+ok(css.includes('#stageProgressLabel{color:var(--text);font-size:11px;font-weight:650')&&css.includes('#stageProgressText{color:var(--text);font-size:11px;font-weight:650')&&css.includes('min-width:8px'),'barra usa tipografia equilibrada e preenchimento visual mínimo');
 const objectiveBlock=engine.slice(engine.indexOf('function updateObjective(){'),engine.indexOf('function applyVisual(){'));
 ok(!objectiveBlock.includes('/${s.target}')&&!objectiveBlock.includes(' — ${made}/'),'objetivos visíveis deixam contadores fracionários exclusivamente na barra');
 ok(engine.includes("fragilePhase.uniqueMatterObjective=true")&&engine.includes('objectiveLineages:new Set()'),'fase de Be-8 usa objetivo por linhagem de matéria');
