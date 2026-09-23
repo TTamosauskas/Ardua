@@ -17,6 +17,9 @@
 .formation-g-field.blocked{animation:formation-field-block .36s ease}
 @keyframes formation-field-block{50%{border-color:rgba(255,133,133,.72);box-shadow:0 0 20px rgba(255,104,104,.18)}}
 .formation-atom{position:absolute;width:var(--formationAtomSize,36px);height:var(--formationAtomSize,36px);margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;color:#07080b;font:950 calc(var(--formationAtomSize,36px)*.56)/1 Inter,system-ui,sans-serif;letter-spacing:-.045em;box-shadow:inset 0 0 18px rgba(255,255,255,.18),0 0 0 5px rgba(126,202,255,.07),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:width .55s ease,height .55s ease,box-shadow .16s ease,filter .16s ease,opacity .45s ease;z-index:2}
+.formation-atom::before{content:"";position:absolute;inset:-7px;border-radius:50%}
+.formation-atom.formation-incoming{pointer-events:none;opacity:.72;filter:saturate(.82) brightness(.96)}
+.formation-g-field.formation-incoming{opacity:.34;border-style:dashed}
 .formation-atom.formation-cluster{z-index:2}
 .formation-atom.formation-pair{z-index:9}
 .formation-atom.selected{outline:5px solid #43f28a;outline-offset:1px;box-shadow:0 0 24px rgba(67,242,138,.48),inset 0 0 18px rgba(255,255,255,.18),0 0 20px rgba(126,202,255,.18),0 7px 15px rgba(0,0,0,.22)}
