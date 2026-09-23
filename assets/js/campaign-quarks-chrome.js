@@ -3,12 +3,22 @@
 'use strict';
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN;
 const GOAL='Forme Prótons e Nêutrons';
-const FORMULA='3 quarks → 1 próton ou nêutron';
+const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron';
+const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰';
 const NEXT_LABEL='Próxima fase';
 const AUTO_COMPLETE_DELAY=260;
 let active=false,observer=null,completionArmed=false,completionTimer=0,endChrome=null;
 
 function setText(id,value){const el=$(id);if(el&&el.textContent!==value)el.textContent=value}
+function renderRecipe(){
+ const el=$('formulaText');if(!el)return;const name=el.querySelector('.recipe-name-line'),symbol=el.querySelector('.recipe-symbol-line');
+ if(name?.textContent===RECIPE_NAME&&symbol?.textContent===RECIPE_SYMBOL)return;
+ el.innerHTML=`<span class="recipe-name-line">${RECIPE_NAME}</span><span class="recipe-symbol-line">${RECIPE_SYMBOL}</span>`;
+}
+function ensureProgressVisible(){
+ const progress=$('stageProgress')?.closest('.stage-progress');if(!progress)return;
+ if(progress.hidden)progress.hidden=false;if(progress.style.visibility!=='visible')progress.style.visibility='visible';if(progress.style.display==='none')progress.style.display='';if(progress.getAttribute('aria-hidden')==='true')progress.removeAttribute('aria-hidden');
+}
 function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
 function goalWithProgress(){const progress=$('goalText')?.textContent?.match(/\b\d+\/2\b/)?.[0]||'0/2';return`${GOAL} — ${progress}`}
 function objectiveComplete(){return /\b2\s*\/\s*2\b/.test($('goalText')?.textContent||'')}
@@ -46,7 +56,7 @@ function applyQuarksChrome(){
  setText('branchLabel','QUARKS');
  setText('phaseTitle',goal);
  setText('goalText',goal);
- setText('formulaText',FORMULA);
+ renderRecipe();ensureProgressVisible();
  setText('phaseEndBtn',NEXT_LABEL);
  armAutomaticCompletion();
 }
@@ -60,6 +70,7 @@ function startOwnership(){
   if(id==='phaseEndBtn'){options.attributes=true;options.attributeFilter=['class']}
   observer.observe(el,options);
  }
+ const progress=$('stageProgress')?.closest('.stage-progress');if(progress)observer.observe(progress,{attributes:true,attributeFilter:['style','hidden','aria-hidden']});
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 }
 function stopOwnership(){
