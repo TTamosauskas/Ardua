@@ -21,5 +21,5 @@ assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())')
 assert(index.includes('ardua.js?v=20260923-progress-ui-2'),'Engine sem cache bust da troca estelar adjacente');
 assert(index.includes('campaign-phase-labels.js?v=20260923-progress-ui-1'),'Labels sem cache bust da correção de progresso');
 assert(index.includes('campaign-runtime-sync.js?v=20260911-p0-e2e-1'),'Runtime sync sem cache bust do hardening E2E');
-assert(index.includes('campaign-phase-completion.js?v=20260911-p0-e2e-1'),'Contrato de conclusão sem cache bust do hardening E2E');
+assert(index.includes('campaign-phase-completion.js?v=20260923-progress-ui-2'),'Contrato de conclusão sem cache bust da barra de progresso compartilhada');
 console.log('Phase runtime sync validation passed: engine phase is authoritative except while Quarks/Quasar own the screen, completion is separated, and recipe guidance follows rebuildable objective precursors.');
