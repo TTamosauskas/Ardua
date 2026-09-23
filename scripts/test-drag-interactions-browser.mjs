@@ -198,6 +198,35 @@ async function testCentralFusionProductRelocation(){
  }finally{await context.close()}
 }
 
+async function atlasReactionGeometry(page){
+ return page.evaluate(()=>{
+  const atoms=[...document.querySelectorAll('#pieces .atom[data-cell]:not([data-cell=""])')],center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
+  const hs=atoms.filter(el=>el.querySelector('.sym')?.textContent?.trim()==='H'),bes=atoms.filter(el=>el.querySelector('.sym')?.textContent?.trim()==='Be');
+  let best=null;
+  for(const h of hs)for(const be of bes){const a=center(h),b=center(be),d=Math.hypot(a.x-b.x,a.y-b.y);if(!best||d<best.dist)best={sourceId:h.dataset.id,targetId:be.dataset.id,sourceCell:h.dataset.cell,targetCell:be.dataset.cell,source:a,target:b,dist:d}}
+  return best
+ })
+}
+
+async function testAtlasFusionDragWithoutPreclick(){
+ const {context,page,errors}=await openPhase('phase_atlas_h_be');
+ try{
+  await page.waitForFunction(()=>[...document.querySelectorAll('#pieces .atom .sym')].some(el=>el.textContent?.trim()==='Be'),undefined,{timeout:4000});
+  const g=await atlasReactionGeometry(page);assert.ok(g,'Atlas H + Be: par inicial não encontrado');
+  const source=page.locator(`#pieces .atom[data-id="${g.sourceId}"]`);
+  await page.mouse.move(g.source.x,g.source.y);await page.mouse.down();
+  await page.mouse.move((g.source.x+g.target.x)/2,(g.source.y+g.target.y)/2,{steps:3});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-dragging'),g.sourceId,{timeout:1200});
+  await page.mouse.move(g.target.x,g.target.y,{steps:4});
+  await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('stellar-board-drop-target'),g.targetId,{timeout:1200});
+  await page.mouse.up();
+  await page.waitForFunction(()=>document.getElementById('eventTooltip')?.classList.contains('show'),undefined,{timeout:2500});
+  assert.equal(await page.locator(`#pieces .atom[data-id="${g.sourceId}"]`).evaluate(el=>el.classList.contains('selected')),true,'Atlas H + Be: drag direto não entrou no fluxo da reação');
+  await page.locator('#eventTooltipBtn').click({force:true});
+  assert.deepEqual(errors,[],`Atlas H + Be drag direto: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
 async function testStellarBoardMovementDrag(){
  const {context,page,errors}=await openPhase('c');
  try{
@@ -401,6 +430,7 @@ try{
  await testCentralFusionProductRelocation();
  await testPrimordialParticleDrop();
  await testStellarFormationDrag();
+ await testAtlasFusionDragWithoutPreclick();
  await testStellarBoardMovementDrag();
  await testStellarBoardFusionDrag();
  await testStellarBoardSwapByClick();
@@ -408,7 +438,7 @@ try{
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
  await testQuasarDragAndChrome();
- console.log('Drag interactions OK: primordial reactions, stellar formation, persistent stellar movement targets, fusion/swap and Quasar direct manipulation all pass.');
+ console.log('Drag interactions OK: primordial reactions, direct Atlas fusion drag, stellar formation, persistent movement targets, fusion/swap and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
