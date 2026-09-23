@@ -3,12 +3,14 @@
 'use strict';
 const $=id=>document.getElementById(id),SAVE_KEY='stellarForgeV1013';
 const AUDIO_PROFILE=window.ARDUA_RECIPE_SOUND_PROFILE||Object.freeze({noteMainGain:.074,noteStrongGain:.086,harmonicRatio:.30,chordMainGain:.040,chordHarmGain:.014,finalAccentGain:.022,noteDuration:.24,strongDuration:.28,harmonicDurationRatio:.82,chordDuration:.52,chordHarmDuration:.42,finalAccentDuration:.56});
+const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron';
+const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰';
 const C=window.ARDUA_CAMPAIGN;if(!C)return;
 
 window.ARDUA_PHASE_NAMES=Object.freeze({...(window.ARDUA_PHASE_NAMES||{}),quarks:'Quarks'});
 window.ARDUA_PHASE_TIMELINE=Object.freeze({...(window.ARDUA_PHASE_TIMELINE||{}),quarks:'Primeiros microssegundos depois do Big Bang'});
 if(!document.querySelector('link[data-ardua-quarks-style]')){
- const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('assets/css/campaign-quarks.css',document.baseURI).href;link.dataset.arduaQuarksStyle='1';document.head.appendChild(link);
+ const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('assets/css/campaign-quarks.css?v=20260923-custom-drag-1',document.baseURI).href;link.dataset.arduaQuarksStyle='1';document.head.appendChild(link);
 }
 
 const DISCOVERIES=['particle:quark','phenomenon:strongNuclearForce','particle:proton','particle:neutron'];
@@ -17,7 +19,7 @@ const SEED=Object.freeze([
  {id:'u2',type:'u',x:76,y:65},{id:'d2',type:'d',x:50,y:82},
  {id:'u3',type:'u',x:24,y:65},{id:'d3',type:'d',x:24,y:35}
 ]);
-let active=false,stage=null,anchorId='',candidateIds=[],made={proton:0,neutron:0},snapshot=null,returnActiveId='',reactionLocked=false;
+let active=false,stage=null,anchorId='',candidateIds=[],made={proton:0,neutron:0},snapshot=null,returnActiveId='',reactionLocked=false,drag=null,suppressClickUntil=0;
 let motionFrameId=0,lastMotionTime=0,sfxContext=null;
 const motion=new Map();
 
@@ -33,13 +35,23 @@ function captureInfoSnapshot(){
  return{tileClass:tile?.className||'',z:textState('infoZ'),symbol:textState('infoSymbol'),name:textState('infoName'),mass:textState('infoMass'),context:textState('infoContext'),fact:textState('infoFact'),recipesTitle:panel.querySelector('.info-recipes-title')?.textContent||'',recipesHTML:$('infoRecipes')?.innerHTML||''};
 }
 function captureSnapshot(){
- const end=$('phaseEndBtn'),board=$('starBoard');return{
-  branchLabel:textState('branchLabel'),phaseTitle:textState('phaseTitle'),goalText:textState('goalText'),formulaText:textState('formulaText'),
+ const end=$('phaseEndBtn'),board=$('starBoard'),formula=$('formulaText'),progress=$('stageProgress')?.closest('.stage-progress');return{
+  branchLabel:textState('branchLabel'),phaseTitle:textState('phaseTitle'),goalText:textState('goalText'),formulaHTML:formula?.innerHTML||'',
   stageProgressLabel:textState('stageProgressLabel'),stageProgressText:textState('stageProgressText'),stageProgressWidth:$('stageProgress')?.style.width||'',
+  progressVisibility:progress?.style.visibility||'',progressDisplay:progress?.style.display||'',progressHidden:!!progress?.hidden,progressHadAriaHidden:!!progress?.hasAttribute('aria-hidden'),progressAriaHidden:progress?.getAttribute('aria-hidden')||'',
   endText:end?.textContent||'',endShow:!!end?.classList.contains('show'),boardPrimordial:!!board?.classList.contains('primordial-mode'),info:captureInfoSnapshot()
  }
 }
 function setText(id,value){const el=$(id);if(el!=null&&value!=null&&el.textContent!==value)el.textContent=value}
+function renderRecipe(){
+ const el=$('formulaText');if(!el)return;const name=el.querySelector('.recipe-name-line'),symbol=el.querySelector('.recipe-symbol-line');
+ if(name?.textContent===RECIPE_NAME&&symbol?.textContent===RECIPE_SYMBOL)return;
+ el.innerHTML=`<span class="recipe-name-line">${RECIPE_NAME}</span><span class="recipe-symbol-line">${RECIPE_SYMBOL}</span>`;
+}
+function showProgress(){
+ const progress=$('stageProgress')?.closest('.stage-progress');if(!progress)return;
+ if(progress.hidden)progress.hidden=false;if(progress.style.visibility!=='visible')progress.style.visibility='visible';if(progress.style.display==='none')progress.style.display='';if(progress.getAttribute('aria-hidden')==='true')progress.removeAttribute('aria-hidden');
+}
 function renderQuarksInfo(){
  const panel=$('infoPanel'),tile=$('infoTile'),recipes=$('infoRecipes');if(!panel)return;
  if(tile)tile.className='info-tile particle quarks-info-tile';
@@ -56,8 +68,7 @@ function restoreInfoSnapshot(info){
 }
 function updateProgress(){
  const total=made.proton+made.neutron;
- setText('goalText',`Crie Prótons e Nêutrons — ${total}/2`);
- setText('formulaText','3 quarks → 1 próton ou nêutron');
+ setText('goalText',`Crie Prótons e Nêutrons — ${total}/2`);renderRecipe();showProgress();
  setText('stageProgressLabel','HÁDRONS');setText('stageProgressText',`${total}/2`);
  const bar=$('stageProgress');if(bar)bar.style.width=`${Math.min(100,total*50)}%`;
 }
@@ -72,7 +83,7 @@ function stopMotion(){if(motionFrameId){cancelAnimationFrame(motionFrameId);moti
 function startMotion(){if(!active||motionFrameId)return;lastMotionTime=performance.now();motionFrameId=requestAnimationFrame(moveParticles)}
 function moveParticles(now){
  motionFrameId=0;if(!active||!stage)return;const dt=Math.min(42,Math.max(0,now-lastMotionTime||16));lastMotionTime=now;
- if(rotationMotionEnabled()){
+ if(rotationMotionEnabled()&&!drag?.active){
   const w=stage.clientWidth||$('starBoard')?.clientWidth||500,h=stage.clientHeight||$('starBoard')?.clientHeight||500,pad=24;
   for(const [id,m] of [...motion]){
    if(!m.el?.isConnected){motion.delete(id);continue}
@@ -89,7 +100,7 @@ function moveParticles(now){
 }
 function resetSelection(){
  anchorId='';candidateIds=[];
- stage?.querySelectorAll('.quark-piece').forEach(el=>el.classList.remove('selected','candidate','invalid'));
+ stage?.querySelectorAll('.quark-piece').forEach(el=>el.classList.remove('selected','candidate','invalid','drag-target'));
 }
 function baryonKind(ids){
  const types=ids.map(id=>quarkById(id)?.type).filter(Boolean),u=types.filter(x=>x==='u').length,d=types.filter(x=>x==='d').length;
@@ -144,25 +155,55 @@ async function fuse(){
  await wait(230);if(!active)return;buttons.forEach(b=>{b.classList.remove('aligning');b.classList.add('converging');const m=motion.get(b.dataset.quarkId);if(m){m.x=cx;m.y=cy}b.style.left=`${cx}px`;b.style.top=`${cy}px`});playChord(root);try{navigator.vibrate?.([5,8,5])}catch(_e){}
  await wait(360);if(!active)return;for(const id of ids){motion.delete(id);liveButton(id)?.remove()}made[kind]++;spawnUnionBurst(cx,cy);spawnBaryon(kind,cx,cy);retireRecipeFocus(focus);playFinalAccent(root);updateProgress();completeIfReady();reactionLocked=false;
 }
+function quarkPointerPoint(ev){
+ const r=stage?.getBoundingClientRect();if(!r)return{x:0,y:0};const pad=18;return{x:Math.max(pad,Math.min(r.width-pad,ev.clientX-r.left)),y:Math.max(pad,Math.min(r.height-pad,ev.clientY-r.top))}
+}
+function quarkDropTarget(id,x,y){
+ if(!stage)return null;const others=SEED.filter(q=>q.id!==id&&liveButton(q.id)),threshold=Math.max(42,Math.min(64,(stage.clientWidth||390)*.145));let best=null;
+ for(const partner of others){const pp=currentPoint(partner.id),dist=Math.hypot(x-pp.x,y-pp.y);if(dist>threshold)continue;
+  const third=others.filter(q=>q.id!==partner.id&&baryonKind([id,partner.id,q.id])).sort((a,b)=>distance(pp,currentPoint(a.id))-distance(pp,currentPoint(b.id)))[0];
+  if(!third)continue;if(!best||dist<best.dist)best={ids:[partner.id,third.id],kind:baryonKind([id,partner.id,third.id]),dist};
+ }
+ return best
+}
+function syncDragTarget(target){
+ const ids=new Set(target?.ids||[]);stage?.querySelectorAll('.quark-piece').forEach(el=>{if(el.dataset.quarkId===drag?.id)return;el.classList.toggle('candidate',ids.has(el.dataset.quarkId));el.classList.toggle('drag-target',ids.has(el.dataset.quarkId))})
+}
+function armQuarkDrag(id,el,ev){
+ if(reactionLocked||!active||ev.pointerType==='mouse'&&ev.button!==0)return;const m=motion.get(id),pt=quarkPointerPoint(ev);if(!m)return;
+ drag={id,el,pointerId:ev.pointerId,active:false,startX:pt.x,startY:pt.y,originX:m.x,originY:m.y,target:null};try{el.setPointerCapture(ev.pointerId)}catch(_e){}
+}
+function moveQuarkDrag(id,ev){
+ const d=drag;if(!d||d.id!==id||d.pointerId!==ev.pointerId||reactionLocked)return;const m=motion.get(id);if(!m)return;const pt=quarkPointerPoint(ev);
+ if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;
+ if(!d.active){d.active=true;resetSelection();d.el.classList.add('dragging');window.ARDUA_ROTATION?.beginInteraction?.('quarks-drag');try{navigator.vibrate?.(5)}catch(_e){}}
+ ev.preventDefault();ev.stopPropagation();m.x=pt.x;m.y=pt.y;m.el.style.left=`${pt.x.toFixed(2)}px`;m.el.style.top=`${pt.y.toFixed(2)}px`;d.target=quarkDropTarget(id,pt.x,pt.y);syncDragTarget(d.target)
+}
+function finishQuarkDrag(id,ev,cancel=false){
+ const d=drag;if(!d||d.id!==id||d.pointerId!==ev.pointerId)return false;const m=motion.get(id),wasActive=d.active,target=!cancel?d.target:null;drag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(_e){}
+ if(!wasActive)return false;ev.preventDefault();ev.stopPropagation();suppressClickUntil=performance.now()+520;d.el.classList.remove('dragging');window.ARDUA_ROTATION?.endInteraction?.('quarks-drag');
+ if(cancel&&m){m.x=d.originX;m.y=d.originY;m.el.style.left=`${m.x}px`;m.el.style.top=`${m.y}px`}
+ resetSelection();if(target){anchorId=id;candidateIds=[...target.ids];d.el.classList.add('selected');candidateIds.forEach(q=>liveButton(q)?.classList.add('candidate','drag-target'));fuse();return true}return true
+}
 function onQuarkClick(e){
- const button=e.target.closest('.quark-piece');if(!button||!stage?.contains(button)||reactionLocked)return;const id=button.dataset.quarkId;
+ const button=e.target.closest('.quark-piece');if(!button||!stage?.contains(button)||reactionLocked||performance.now()<suppressClickUntil)return;const id=button.dataset.quarkId;
  if(!anchorId){selectAnchor(id);return}if(id===anchorId){resetSelection();return}if(candidateIds.includes(id)){fuse();return}selectAnchor(id);
 }
 function buildStage(){
  const board=$('starBoard');if(!board)return null;const host=document.createElement('div');host.className='quarks-stage';host.setAttribute('aria-label','Área livre de combinação de quarks');
- for(const q of SEED){const b=document.createElement('button');b.type='button';b.className=`quark-piece quark-${q.type}`;b.dataset.quarkId=q.id;b.dataset.quarkType=q.type;b.style.left=`${q.x}%`;b.style.top=`${q.y}%`;b.setAttribute('aria-label',`Quark ${q.type}`);b.innerHTML=`<span>${q.type}</span>`;host.appendChild(b)}
+ for(const q of SEED){const b=document.createElement('button');b.type='button';b.className=`quark-piece quark-${q.type}`;b.dataset.quarkId=q.id;b.dataset.quarkType=q.type;b.style.left=`${q.x}%`;b.style.top=`${q.y}%`;b.setAttribute('aria-label',`Quark ${q.type}`);b.innerHTML=`<span>${q.type}</span>`;b.addEventListener('pointerdown',ev=>armQuarkDrag(q.id,b,ev));b.addEventListener('pointermove',ev=>moveQuarkDrag(q.id,ev));b.addEventListener('pointerup',ev=>finishQuarkDrag(q.id,ev,false));b.addEventListener('pointercancel',ev=>finishQuarkDrag(q.id,ev,true));host.appendChild(b)}
  host.addEventListener('click',onQuarkClick);board.appendChild(host);const w=host.clientWidth||board.clientWidth||500,h=host.clientHeight||board.clientHeight||500;for(const q of SEED){const b=liveButton(q.id);if(b)addMotion(q.id,b,w*q.x/100,h*q.y/100)}return host;
 }
 function hideMap(){const map=$('campaignMap');if(!map)return;map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open')}
 function start(){
- if(active)return;active=true;returnActiveId=C.getState?.().activeId||'';snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];reactionLocked=false;motion.clear();
+ if(active)return;active=true;returnActiveId=C.getState?.().activeId||'';snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];reactionLocked=false;drag=null;suppressClickUntil=0;motion.clear();
  C.setActive?.('quarks');hideMap();document.body.classList.add('quarks-phase-active');const board=$('starBoard');board?.classList.add('primordial-mode','quarks-free-mode');
  setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');updateProgress();renderQuarksInfo();const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.textContent='Proxima fase'}
  stage=buildStage();startMotion();window.dispatchEvent(new CustomEvent('ardua:quarks-phase-start'));
 }
 function cleanup(){
- if(!active)return;active=false;reactionLocked=false;stopMotion();motion.clear();document.body.classList.remove('quarks-phase-active');stage?.remove();stage=null;resetSelection();const board=$('starBoard');board?.classList.remove('quarks-free-mode');
- if(snapshot){if(!snapshot.boardPrimordial)board?.classList.remove('primordial-mode');setText('branchLabel',snapshot.branchLabel);setText('phaseTitle',snapshot.phaseTitle);setText('goalText',snapshot.goalText);setText('formulaText',snapshot.formulaText);setText('stageProgressLabel',snapshot.stageProgressLabel);setText('stageProgressText',snapshot.stageProgressText);const bar=$('stageProgress');if(bar)bar.style.width=snapshot.stageProgressWidth;const end=$('phaseEndBtn');if(end){end.textContent=snapshot.endText;end.classList.toggle('show',snapshot.endShow)}restoreInfoSnapshot(snapshot.info)}
+ if(!active)return;active=false;reactionLocked=false;if(drag?.active)window.ARDUA_ROTATION?.endInteraction?.('quarks-drag');drag=null;stopMotion();motion.clear();document.body.classList.remove('quarks-phase-active');stage?.remove();stage=null;resetSelection();const board=$('starBoard');board?.classList.remove('quarks-free-mode');
+ if(snapshot){if(!snapshot.boardPrimordial)board?.classList.remove('primordial-mode');setText('branchLabel',snapshot.branchLabel);setText('phaseTitle',snapshot.phaseTitle);setText('goalText',snapshot.goalText);const formula=$('formulaText');if(formula)formula.innerHTML=snapshot.formulaHTML;setText('stageProgressLabel',snapshot.stageProgressLabel);setText('stageProgressText',snapshot.stageProgressText);const bar=$('stageProgress');if(bar)bar.style.width=snapshot.stageProgressWidth;const progress=bar?.closest('.stage-progress');if(progress){progress.style.visibility=snapshot.progressVisibility;progress.style.display=snapshot.progressDisplay;progress.hidden=snapshot.progressHidden;if(snapshot.progressHadAriaHidden)progress.setAttribute('aria-hidden',snapshot.progressAriaHidden||'true');else progress.removeAttribute('aria-hidden')}const end=$('phaseEndBtn');if(end){end.textContent=snapshot.endText;end.classList.toggle('show',snapshot.endShow)}restoreInfoSnapshot(snapshot.info)}
  snapshot=null;window.dispatchEvent(new CustomEvent('ardua:quarks-phase-stop'));
 }
 function restoreMapActive(next){if(!next)return;C.setActive?.(next);window.dispatchEvent(new CustomEvent('ardua:campaign-progress',{detail:{id:next,state:C.getState?.(),source:'quarks-complete'}}))}
