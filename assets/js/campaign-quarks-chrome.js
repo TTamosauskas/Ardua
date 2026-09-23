@@ -3,8 +3,8 @@
 'use strict';
 const $=id=>document.getElementById(id),C=window.ARDUA_CAMPAIGN;
 const GOAL='Forme Prótons e Nêutrons';
-const RECIPE_NAME='2 quarks up + 1 down → Próton · 1 up + 2 down → Nêutron';
-const RECIPE_SYMBOL='u + u + d → p⁺ · u + d + d → n⁰';
+const RECIPE_NAME='quark + quark + quark → hádron';
+const RECIPE_SYMBOL='u + dd ou d + uu → (+) ou (n)';
 const NEXT_LABEL='Próxima fase';
 const AUTO_COMPLETE_DELAY=260;
 let active=false,observer=null,completionArmed=false,completionTimer=0,endChrome=null;
