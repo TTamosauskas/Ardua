@@ -21,7 +21,7 @@ async function openPhase(id,expectedTitle,expectedContext,expectedRecipe=null,ex
   await page.evaluate(()=>window.ARDUA_QUARKS.start());
   await page.waitForFunction(()=>window.ARDUA_QUARKS.isActive()&&window.ARDUA_CAMPAIGN.getState().activeId==='quarks');
  }
- await page.waitForFunction(expected=>document.getElementById('phaseTitle')?.textContent?.trim()===expected,expectedTitle,{timeout:4000});
+ await page.waitForFunction(({title,context})=>{const phaseTitle=document.getElementById('phaseTitle')?.textContent?.trim()||'',branch=document.getElementById('branchLabel'),branchText=branch?.hidden?'':(branch?.textContent?.trim()||'');return phaseTitle===title&&branchText===context},{title:expectedTitle,context:expectedContext},{timeout:4000});
  const result=await page.evaluate(()=>{
   const title=document.getElementById('phaseTitle'),context=document.getElementById('branchLabel'),goal=document.getElementById('goalText'),formula=document.getElementById('formulaText');
   const ts=getComputedStyle(title),gs=getComputedStyle(goal),fs=getComputedStyle(formula);
