@@ -26,16 +26,34 @@ const requiredRotation=[
   'const ratio=Math.min(1,r/startLimit)',
   "document.querySelectorAll('#pieces .atom,#cells .cell')",
   'setTimeout(()=>{attachMenusDeferred();if(enabled)startFrame()},0)',
-  'cancelAnimationFrame(raf)'
+  'cancelAnimationFrame(raf)',
+  'const interactions=new Set()',
+  "function beginInteraction(key='interaction')",
+  "function endInteraction(key='interaction')",
+  'function interactionActive()',
+  'function toLogicalPoint(x,y)',
+  'hexOrbitPoint(x,y,geometryFor(board),-angle)',
+  "atom.classList.contains('stellar-board-dragging')",
+  "atom.style.removeProperty('translate')",
+  'if(!interactionActive())angle=(angle+dt*SPEED)%(Math.PI*2)'
 ];
 for(const token of requiredRotation){if(!rotation.includes(token))throw new Error(`Contrato de rotação ausente: ${token}`)}
 if(rotation.includes('MutationObserver'))throw new Error('Regressão: controlador de rotação não pode observar o body durante o bootstrap');
 if(rotation.includes('let enabled=false'))throw new Error('Regressão: rotação deve estar ligada por padrão; a tela inicial é excluída por contexto');
 if(!rotation.includes('if(!phaseGameplayVisible()){resetFieldOffsets();last=now;return}'))throw new Error('Regressão: rotação não deve atuar no mapa/página inicial');
-if(rotation.includes('freezeRotation')||rotation.includes('pauseRotationForMovement'))throw new Error('Regressão: a rotação não deve congelar durante a escolha de movimento');
+if(!rotation.includes("window.ARDUA_ROTATION=Object.freeze({enabled:()=>enabled,setEnabled,toggle,key:KEY,beginInteraction,endInteraction,toLogicalPoint,sync:syncNow,interactionActive})"))throw new Error('API de rotação precisa expor suspensão de interação e conversão visual→lógica');
 if(!index.includes('<script src="assets/js/rotation-polish.js"></script>'))throw new Error('rotation-polish.js não está carregado no index');
 if(index.indexOf('assets/js/rotation-polish.js')>index.indexOf('assets/js/ardua.js'))throw new Error('rotation-polish.js deve carregar antes do motor');
 if(!engine.includes("if(window.ARDUA_ROTATION?.enabled?.()!==false)g.angle+=g.omega*dt"))throw new Error('Formação estelar não respeita a opção de rotação');
+for(const token of [
+  'function stellarBoardLogicalPoint(x,y)',
+  "window.ARDUA_ROTATION?.toLogicalPoint?.(x,y)",
+  "window.ARDUA_ROTATION?.beginInteraction?.('stellar-board-drag')",
+  "window.ARDUA_ROTATION?.endInteraction?.('stellar-board-drag')",
+  'd.logicalX=logical.x;d.logicalY=logical.y',
+  'stellarBoardDragTarget(d,d.logicalX,d.logicalY)',
+  'window.ARDUA_ROTATION?.sync?.()'
+])if(!engine.includes(token))throw new Error(`Contrato drag + rotação ausente: ${token}`);
 
 const primordialMotion=[
   'function rotationMotionEnabled(){return window.ARDUA_ROTATION?.enabled?.()!==false}',
