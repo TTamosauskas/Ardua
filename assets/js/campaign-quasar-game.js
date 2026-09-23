@@ -75,7 +75,7 @@ function buildLayer(){
  pts.forEach(([x,y],i)=>{
   const b=document.createElement('button');b.type='button';b.className='quasar-gas';b.dataset.gasIndex=String(i);b.dataset.pair=String(Math.floor(i/2));
   b.style.left=`${x}%`;b.style.top=`${y}%`;b.setAttribute('aria-label',`Gás orbital ${i+1}`);b.innerHTML='<span></span>';
-  b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('click',onGasClick);field.appendChild(b);
+  b.addEventListener('pointerdown',ev=>armGasDrag(b,ev));b.addEventListener('click',onGasClick);layer.appendChild(b);
  });
  board.appendChild(layer);
 }
