@@ -1477,13 +1477,14 @@ function executePrimordialParticleDrop(p,target){
 function cancelParticleDrag(){const d=state.particleDrag;if(!d)return;if(d.holdTimer)clearTimeout(d.holdTimer);const p=state.primordialParticles.get(d.id);if(p){p.dragging=false;if(!p.throwing){renderPrimordialParticles();renderPieces()}}state.particleDrag=null}
 function armParticleDrag(id,el,ev){
  const p=state.primordialParticles.get(id);if(!particleCanBeThrown(p)||state.locked||state.phaseDone||ev.pointerType==='mouse'&&ev.button!==0)return;
- cancelParticleDrag();const pt=particlePointerPoint(ev),now=performance.now(),d={id,pointerId:ev.pointerId,el,active:false,lastX:pt.x,lastY:pt.y,lastT:now,vx:0,vy:0,target:null,holdTimer:null};state.particleDrag=d;
+ cancelParticleDrag();const pt=particlePointerPoint(ev),now=performance.now(),d={id,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,lastX:pt.x,lastY:pt.y,lastT:now,vx:0,vy:0,target:null,holdTimer:null};state.particleDrag=d;
  try{el.setPointerCapture(ev.pointerId)}catch(e){}
- d.holdTimer=setTimeout(()=>{const cur=state.particleDrag,q=state.primordialParticles.get(id);if(!cur||cur!==d||!particleCanBeThrown(q))return;cur.active=true;q.dragging=true;q.throwing=false;q.throwVx=0;q.throwVy=0;if(state.primordialSelected===id)state.primordialSelected=null;cur.target=primordialParticleDropTarget(q);vibrate(8);renderPrimordialParticles();renderPieces()},230)
+ d.holdTimer=setTimeout(()=>{const cur=state.particleDrag,q=state.primordialParticles.get(id);if(!cur||cur!==d||cur.active||!particleCanBeThrown(q))return;cur.active=true;q.dragging=true;q.throwing=false;q.throwVx=0;q.throwVy=0;if(state.primordialSelected===id)state.primordialSelected=null;cur.target=primordialParticleDropTarget(q);vibrate(8);renderPrimordialParticles();renderPieces()},230)
 }
 function moveParticleDrag(id,ev){
- const d=state.particleDrag;if(!d||d.id!==id||d.pointerId!==ev.pointerId)return;const pt=particlePointerPoint(ev),now=performance.now();
- if(d.active){ev.preventDefault();const p=state.primordialParticles.get(id);if(!p)return cancelParticleDrag();const dt=Math.max(8,now-d.lastT),vx=(pt.x-d.lastX)/dt,vy=(pt.y-d.lastY)/dt;d.vx=d.vx*.45+vx*.55;d.vy=d.vy*.45+vy*.55;p.x=pt.x;p.y=pt.y;d.target=primordialParticleDropTarget(p);renderPrimordialParticles();renderPieces()}
+ const d=state.particleDrag;if(!d||d.id!==id||d.pointerId!==ev.pointerId)return;const pt=particlePointerPoint(ev),now=performance.now(),p=state.primordialParticles.get(id);if(!p)return cancelParticleDrag();
+ if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)>=7){if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null}d.active=true;p.dragging=true;p.throwing=false;p.throwVx=0;p.throwVy=0;if(state.primordialSelected===id)state.primordialSelected=null;vibrate(5)}
+ if(d.active){ev.preventDefault();ev.stopPropagation();const dt=Math.max(8,now-d.lastT),vx=(pt.x-d.lastX)/dt,vy=(pt.y-d.lastY)/dt;d.vx=d.vx*.45+vx*.55;d.vy=d.vy*.45+vy*.55;p.x=pt.x;p.y=pt.y;d.target=primordialParticleDropTarget(p);renderPrimordialParticles();renderPieces()}
  d.lastX=pt.x;d.lastY=pt.y;d.lastT=now
 }
 function animateParticleThrow(id,vx,vy){
