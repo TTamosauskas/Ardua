@@ -2879,35 +2879,38 @@ function symbolicFusionLabel(r){
  if(r.freeNuclei?.length)base+=' + '+r.freeNuclei.map(infoSymbolFor).join(' + ');
  return r.emissions?.includes('gamma')?base+' + γ':base;
 }
-function headerRecipeLine(label){
- const aliases=new Map(),add=(alias,shown)=>{if(alias&&shown&&!aliases.has(alias))aliases.set(alias,shown)};
+function recipeDisplayLines(label){
+ const aliases=new Map(),add=(alias,name,symbol)=>{if(alias&&name&&symbol&&!aliases.has(alias))aliases.set(alias,{name,symbol})};
  for(const [sym,e] of Object.entries(E)){
   if(!e?.name||sym==='Plus')continue;
-  const symbol=infoSymbolFor(sym),shown=`${e.name} (${symbol})`;
-  add(e.name,shown);add(symbol,shown);add(sym,shown);
+  const symbol=infoSymbolFor(sym);
+  add(e.name,e.name,symbol);add(symbol,e.name,symbol);add(sym,e.name,symbol);
  }
  [
-  ['Próton','Próton (+)'],['próton','Próton (+)'],['prótons','Prótons (+)'],['p⁺','Próton (+)'],['p','Próton (+)'],['2p','2 Prótons (+)'],
-  ['Nêutron','Nêutron (n)'],['nêutron','Nêutron (n)'],['nêutrons','Nêutrons (n)'],['n','Nêutron (n)'],
-  ['Elétron','Elétron (e⁻)'],['elétron','Elétron (e⁻)'],['elétrons','Elétrons (e⁻)'],['e⁻','Elétron (e⁻)'],['2e⁻','2 Elétrons (e⁻)'],['3e⁻','3 Elétrons (e⁻)'],
-  ['Pósitron','Pósitron (e⁺)'],['pósitron','Pósitron (e⁺)'],['pósitrons','Pósitrons (e⁺)'],['e⁺','Pósitron (e⁺)'],
-  ['Neutrino','Neutrino (νₑ)'],['neutrino','Neutrino (νₑ)'],['neutrinos','Neutrinos (νₑ)'],['ν','Neutrino (νₑ)'],['νₑ','Neutrino (νₑ)'],
-  ['Antineutrino','Antineutrino (ν̄ₑ)'],['antineutrino','Antineutrino (ν̄ₑ)'],['ν̄ₑ','Antineutrino (ν̄ₑ)'],
-  ['Fóton gama','Fóton gama (γ)'],['Fóton (γ)','Fóton gama (γ)'],['fóton gama','Fóton gama (γ)'],['γ','Fóton gama (γ)'],
-  ['Raio cósmico','Raio cósmico (RC)'],['RC','Raio cósmico (RC)'],
-  ['Decaimento beta menos','Decaimento beta menos (β−)'],['β−','Decaimento beta menos (β−)'],
-  ['Decaimento beta mais','Decaimento beta mais (β+)'],['β+','Decaimento beta mais (β+)'],
-  ['⁴He²⁺','Hélio-4 ionizado (⁴He²⁺)'],['⁷Li³⁺','Lítio-7 ionizado (⁷Li³⁺)'],
-  ['He instável','Hélio instável (He*)'],['Fe instável','Ferro instável (Fe*)']
- ].forEach(([alias,shown])=>aliases.set(alias,shown));
+  ['Próton','Próton','(+)'],['próton','Próton','(+)'],['prótons','Prótons','(+)'],['p⁺','Próton','(+)'],['p','Próton','(+)'],['2p','2 Prótons','2(+)'],
+  ['Nêutron','Nêutron','(n)'],['nêutron','Nêutron','(n)'],['nêutrons','Nêutrons','(n)'],['n','Nêutron','(n)'],
+  ['Elétron','Elétron','e⁻'],['elétron','Elétron','e⁻'],['elétrons','Elétrons','e⁻'],['e⁻','Elétron','e⁻'],['2e⁻','2 Elétrons','2e⁻'],['3e⁻','3 Elétrons','3e⁻'],
+  ['Pósitron','Pósitron','e⁺'],['pósitron','Pósitron','e⁺'],['pósitrons','Pósitrons','e⁺'],['e⁺','Pósitron','e⁺'],
+  ['Neutrino','Neutrino','νₑ'],['neutrino','Neutrino','νₑ'],['neutrinos','Neutrinos','νₑ'],['ν','Neutrino','νₑ'],['νₑ','Neutrino','νₑ'],
+  ['Antineutrino','Antineutrino','ν̄ₑ'],['antineutrino','Antineutrino','ν̄ₑ'],['ν̄ₑ','Antineutrino','ν̄ₑ'],
+  ['Fóton gama','Fóton gama','γ'],['Fóton (γ)','Fóton gama','γ'],['fóton gama','Fóton gama','γ'],['γ','Fóton gama','γ'],
+  ['Raio cósmico','Raio cósmico','RC'],['RC','Raio cósmico','RC'],
+  ['Decaimento beta menos','Decaimento beta menos','β−'],['β−','Decaimento beta menos','β−'],
+  ['Decaimento beta mais','Decaimento beta mais','β+'],['β+','Decaimento beta mais','β+'],
+  ['⁴He²⁺','Hélio-4 ionizado','⁴He²⁺'],['⁷Li³⁺','Lítio-7 ionizado','⁷Li³⁺'],
+  ['He instável','Hélio instável','He*'],['Fe instável','Ferro instável','Fe*']
+ ].forEach(([alias,name,symbol])=>aliases.set(alias,{name,symbol}));
  const esc=s=>s.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&'),slots=[];
- let out=String(label||'');
- [...aliases.entries()].sort((a,b)=>b[0].length-a[0].length).forEach(([alias,shown])=>{
+ let marked=String(label||'');
+ [...aliases.entries()].sort((a,b)=>b[0].length-a[0].length).forEach(([alias,pair])=>{
   const re=new RegExp(`(^|[\\s+→/·,(])${esc(alias)}(?=$|[\\s+→/·,)])`,'gi');
-  out=out.replace(re,(match,prefix)=>{const token=`\uE000${slots.length}\uE001`;slots.push(shown);return prefix+token})
+  marked=marked.replace(re,(match,prefix)=>{const token=`\uE000${slots.length}\uE001`;slots.push(pair);return prefix+token})
  });
- return out.replace(/\uE000(\d+)\uE001/g,(_,i)=>slots[Number(i)]||'');
+ const restore=kind=>marked.replace(/\uE000(\d+)\uE001/g,(_,i)=>slots[Number(i)]?.[kind]||'');
+ return{name:restore('name'),symbol:restore('symbol')};
 }
+function headerRecipeLine(label){return recipeDisplayLines(label).name}
+function recipeSymbolLine(label){return recipeDisplayLines(label).symbol}
 function formulaHTML(label,boldSyms=null){
   const syms=[...new Set((Array.isArray(boldSyms)?boldSyms:[boldSyms]).filter(Boolean))];let out=label;
   for(const sym of syms){const name=E[sym]?.name;if(!name)continue;const plain=out.replace(/<[^>]*>/g,'');if(!plain.includes(name))continue;const i=out.indexOf(name);if(i>=0)out=out.slice(0,i)+`<strong>${name}</strong>`+out.slice(i+name.length)}
@@ -2929,7 +2932,7 @@ function contextualFormula(label,boldSyms=null){
  if(formulaContainsSym(label,piece.sym))return{label,boldSyms:bold};
  const recipe=contextualRecipeForSelectedPiece(piece);return recipe?{label:topFusionLabel(recipe),boldSyms:bold}:{label,boldSyms:bold}
 }
-function setFormula(label,boldSyms=null){const ctx=contextualFormula(label,boldSyms),tag=scienceScopeLabel(),shown=headerRecipeLine(ctx.label);$('formulaText').innerHTML=formulaHTML(shown,ctx.boldSyms)+(tag?'<small class="science-tag">'+tag+'</small>':'')}
+function setFormula(label,boldSyms=null){const ctx=contextualFormula(label,boldSyms),tag=scienceScopeLabel(),lines=recipeDisplayLines(ctx.label),hasReaction=String(ctx.label||'').includes('→'),top=formulaHTML(lines.name,ctx.boldSyms),symbols=hasReaction?`<span class="recipe-symbol-line">${lines.symbol}</span>`:'';$('formulaText').innerHTML=`<span class="recipe-name-line">${top}</span>${symbols}`+(tag?'<small class="science-tag">'+tag+'</small>':'')}
 function flashRecipeTwice(){const el=$('formulaText');if(!el)return;el.classList.remove('recipe-intro-flash');void el.offsetWidth;el.classList.add('recipe-intro-flash');setTimeout(()=>el.classList.remove('recipe-intro-flash'),1500)}
 async function tapExplosiveTarget(id){
  const s=phase(),p=state.pieces.get(id);if(s.mode!=='explosive'||state.locked||state.phaseDone||!p)return;
