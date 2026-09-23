@@ -2,6 +2,7 @@ const fs=require('fs');
 const engine=fs.readFileSync('assets/js/ardua.js','utf8');
 function fail(msg){throw new Error(msg)}
 function need(hay,token,msg){if(!hay.includes(token))fail(msg||`Ausente: ${token}`)}
+for(const token of ['function convectionCoreReserved(s=phase())','function convectionCoreCellReserved(cell,s=phase())','function enforceConvectionCoreVacancy(s=phase())',"enforceConvectionCoreVacancy();","!convectionCoreCellReserved(n,s)"])need(engine,token,'Reserva do núcleo durante ⇕ ausente: '+token);
 const start=engine.indexOf('async function performConvection(path){');
 const end=engine.indexOf('function handleConvectionTap(p){',start);
 if(start<0||end<0)fail('Rotina de Convecção não encontrada');
@@ -10,6 +11,7 @@ need(block,"Number(state.convectionCharge||0)<1",'Convecção não valida a carg
 need(block,'await maybeEjectCoronalJet(path,s);','Jato Coronal não é avaliado antes da Convecção');
 need(block,'const ids=path.map(cell=>state.board[cell]||null)','A linha completa, incluindo a vaga central, deve participar da Convecção');
 need(block,'releaseConvectionGamma(path);','Efeito gamma da Convecção recebe argumento incorreto');
+need(block,'ids=path.map(cell=>state.board[cell]||null)','Convecção precisa incluir a vaga central reservada ao liberar o ⇕');
 need(block,'reversed=[...ids].reverse()','A linha convectiva precisa ser invertida');
 if(block.includes('dest=occupied.map')||block.includes('occupied.map(cell=>state.board[cell])'))fail('Convecção voltou a ignorar a vaga central reservada');
 need(block,"await teachProductOnce('convection'",'Tooltip original da primeira Convecção não foi preservado');
