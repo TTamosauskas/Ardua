@@ -3573,7 +3573,7 @@ function updateHUD(){
  const s=phase();
  dom.singularity.classList.toggle('show',s.mode==='opening'&&!state.bigBangStarted);
  $('branchLabel').textContent='';$('phaseTitle').textContent=s.title;$('phaseMeta').textContent='';
- const formationSpec=s.mode==='stellarFormation'?stellarFormationSpec(s):null,formationLargest=s.mode==='stellarFormation'&&state.stellarFormation?Math.max(0,...[...state.stellarFormation.groups.values()].map(g=>g.members.length)):0;
+ const formationSpec=s.mode==='stellarFormation'?stellarFormationSpec(s):null,formationLargest=s.mode==='stellarFormation'?(state.stellarFormationCompleted?(formationSpec?.total||0):(state.stellarFormation?Math.max(0,...[...state.stellarFormation.groups.values()].map(g=>g.members.length)):0)):0;
  const p=s.mode==='stellarFormation'?Math.min(100,formationLargest/formationSpec.total*100):s.mode==='stellarIonization'?Math.min(100,state.stellarIonizations/Math.max(1,s.target)*100):s.mode==='stellarRecombination'?Math.min(100,state.stellarRecombinations/Math.max(1,s.target)*100):s.coronalJetTutorial?Math.min(100,(state.coronalJetCount||0)/Math.max(1,s.target)*100):currentProgress(),metric=stageProgressMetric(s,{formationSpec,formationLargest});
  renderStageProgress({percent:p,current:metric.current,total:metric.total,detail:metric.detail,label:stageProgressLabel(s),ready:state.readyToAdvance,visible:s.mode!=='opening'});
  const stellarDustEnd=!isPrimordial(s)&&s.mode!=='stellarFormation'&&s.mode!=='campaignMilestone'&&s.endEvent!=='supernova'&&s.endEvent!=='finale';let endText='PRÓXIMA<br>FASE';if(s.endEvent==='supernova')endText='EXPLODIR<br>SUPERNOVA';else if(stellarDustEnd)endText='ESPALHAR<br>POEIRA ESTELAR';$('phaseEndBtn').innerHTML=endText;updateObjective();applyVisual();applyRewardProgressVisuals();renderInfoPanel()
@@ -4752,7 +4752,7 @@ async function finishCampaign(){
 async function endPhaseAction(){
  const s=phase();if(!state.readyToAdvance||state.phaseDone)return;
  try{window.ARDUA_RECIPE_AUDIO_SYNC?.playVictoryFanfare?.()}catch(_e){}
- state.phaseDone=true;state.locked=true;$('phaseEndBtn').classList.remove('show');stopPrimordialDrift();cancelParticleDrag();stopAccretionFeed();stopCosmicRaySystem();stopNeutronSystem();
+ state.phaseDone=true;state.locked=true;setPhaseCompletionPresentation(false);dom.star.classList.remove('critical');$('phaseEndBtn').classList.remove('show');stopPrimordialDrift();cancelParticleDrag();stopAccretionFeed();stopCosmicRaySystem();stopNeutronSystem();
  if(phase()!==s)return;
  if(isPrimordial(s))return advancePrimordial();if(s.endEvent==='plasmaTransition')return advanceStellarAtomicPhase();if(s.mode==='stellarFormation'||s.endEvent==='stellarBirth')return advancePhase();if(s.endEvent==='finale')return finishCampaign();if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()
 }
