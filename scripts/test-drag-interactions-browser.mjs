@@ -54,13 +54,15 @@ async function testPrimordialElementToParticleDrop(){
   await page.waitForFunction(()=>document.querySelector('#pieces .atom[data-id]')&&document.querySelector('.primordial-particle.electron:not(.reacting)'),undefined,{timeout:4000});
   const sourceId=await page.evaluate(()=>[...document.querySelectorAll('#pieces .atom[data-id]')].find(el=>(el.querySelector('.sym')?.textContent||'').includes('He'))?.dataset.id||'');
   assert.ok(sourceId,'Hélio atômico: núcleo de Hélio inicial ausente');
-  const source=page.locator(`#pieces .atom[data-id="${sourceId}"]`),electron=page.locator('.primordial-particle.electron:not(.reacting)').first();
+  const source=page.locator(`#pieces .atom[data-id="${sourceId}"]`);
   const sb=await source.boundingBox();assert.ok(sb,'Hélio atômico: núcleo sem geometria para drag inverso');
-  const electronId=await electron.getAttribute('data-id');
   await page.mouse.move(sb.x+sb.width/2,sb.y+sb.height/2);await page.mouse.down();
   await page.mouse.move(sb.x+sb.width/2+12,sb.y+sb.height/2,{steps:2});
   await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('primordial-dragging'),sourceId,{timeout:1600});
-  const eb=await electron.boundingBox();assert.ok(eb,'Hélio atômico: elétron desapareceu durante o drag inverso');
+  const movingElectron=page.locator('.primordial-particle.electron:not(.reacting)').first(),electronId=await movingElectron.getAttribute('data-id');
+  assert.ok(electronId,'Hélio atômico: elétron-alvo perdeu identidade durante o drag inverso');
+  const electron=page.locator(`.primordial-particle.electron[data-id="${electronId}"]:not(.reacting)`);
+  const eb=await electron.boundingBox();assert.ok(eb,'Hélio atômico: elétron-alvo desapareceu durante o drag inverso');
   const targetX=eb.x+eb.width/2,targetY=eb.y+eb.height/2;
   await page.mouse.move(targetX,targetY,{steps:8});
   try{
@@ -69,7 +71,7 @@ async function testPrimordialElementToParticleDrop(){
    const debug=await page.evaluate(({sourceId,electronId,targetX,targetY})=>{
     const source=document.querySelector(`#pieces .atom[data-id="${sourceId}"]`),electron=document.querySelector(`.primordial-particle[data-id="${electronId}"]`);
     const rect=el=>{const r=el?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height,cx:r.left+r.width/2,cy:r.top+r.height/2}:null};
-    return{source:rect(source),electron:rect(electron),sourceClass:source?.className||'',electronClass:electron?.className||'',dropIds:[...document.querySelectorAll('.primordial-particle.drop-target')].map(el=>el.dataset.id),candidateIds:[...document.querySelectorAll('.primordial-particle.candidate')].map(el=>el.dataset.id),underPointer:document.elementsFromPoint(targetX,targetY).slice(0,8).map(el=>({tag:el.tagName,id:el.id,cls:el.className,dataId:el.dataset?.id||''}))};
+    return{electronId,source:rect(source),electron:rect(electron),sourceClass:source?.className||'',electronClass:electron?.className||'',dropIds:[...document.querySelectorAll('.primordial-particle.drop-target')].map(el=>el.dataset.id),candidateIds:[...document.querySelectorAll('.primordial-particle.candidate')].map(el=>el.dataset.id),underPointer:document.elementsFromPoint(targetX,targetY).slice(0,8).map(el=>({tag:el.tagName,id:el.id,cls:el.className,dataId:el.dataset?.id||''}))};
    },{sourceId,electronId,targetX,targetY});
    throw new Error(`Hélio drag inverso sem alvo visual: ${JSON.stringify(debug)}`,{cause:err});
   }
