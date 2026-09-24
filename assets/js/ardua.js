@@ -2172,7 +2172,7 @@ function protonCaptureAvailable(s=phase()){
  return s.mode==='protonCapture'||s.mode==='rpProcess'||state.protonCaptureUnlocked||(intro!==undefined&&state.phaseIndex>=intro);
 }
 function ensureProtonCaptureFuel(min=2){
- if(!protonCaptureAvailable())return;while(countFloatingParticle('p')<min)spawnFloatingParticle('p');renderPrimordialParticles();
+ if(!protonCaptureAvailable())return;while(countFloatingParticle('p')<min)spawnFloatingParticle('p',null,null,true);renderPrimordialParticles();
 }
 function protonCaptureRoute(targetOrSym,s=phase()){
  const target=typeof targetOrSym==='string'?{sym:targetOrSym,massNumber:null}:targetOrSym;if(!target)return null;
@@ -4274,7 +4274,7 @@ function ensureOpportunity(){
     return false;
   }
   if(s.id==='he_red'){
-    const c=boardSymbolCounts();if((c.HeU||0)>=2)return true;if((c.H||0)===0){const cell=activeCells().find(i=>state.board[i]===null);if(cell!==undefined)createPiece('H',cell,true)}while(countFloatingParticle('p')<2)spawnFloatingParticle('p');render();return true
+    const c=boardSymbolCounts();if((c.HeU||0)>=2)return true;if((c.H||0)===0){const cell=activeCells().find(i=>state.board[i]===null);if(cell!==undefined)createPiece('H',cell,true)}while(countFloatingParticle('p')<2)spawnFloatingParticle('p',null,null,true);render();return true
   }
   if(s.id==='coulomb_intro'){
     // Nesta lição a movimentação já está disponível: nunca crie uma oportunidade artificial.
