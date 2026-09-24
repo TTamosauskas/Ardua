@@ -51,7 +51,7 @@ async function testPrimordialParticleDrop(){
 async function testPrimordialElementToParticleDrop(){
  const {context,page,errors}=await openPhase('atomic_he');
  try{
-  await page.waitForFunction(()=>document.querySelector('#pieces .atom[data-id]')&&document.querySelector('.primordial-particle.electron:not(.reacting)'),undefined,{timeout:4000});
+  await page.waitForFunction(()=>document.querySelector('#pieces .atom[data-id]')&&document.querySelector('.primordial-particle.electron[data-id]:not(.reacting)'),undefined,{timeout:4000});
   const sourceId=await page.evaluate(()=>[...document.querySelectorAll('#pieces .atom[data-id]')].find(el=>(el.querySelector('.sym')?.textContent||'').includes('He'))?.dataset.id||'');
   assert.ok(sourceId,'Hélio atômico: núcleo de Hélio inicial ausente');
   const source=page.locator(`#pieces .atom[data-id="${sourceId}"]`);
@@ -59,7 +59,7 @@ async function testPrimordialElementToParticleDrop(){
   await page.mouse.move(sb.x+sb.width/2,sb.y+sb.height/2);await page.mouse.down();
   await page.mouse.move(sb.x+sb.width/2+12,sb.y+sb.height/2,{steps:2});
   await page.waitForFunction(id=>document.querySelector(`#pieces .atom[data-id="${id}"]`)?.classList.contains('primordial-dragging'),sourceId,{timeout:1600});
-  const movingElectron=page.locator('.primordial-particle.electron:not(.reacting)').first(),electronId=await movingElectron.getAttribute('data-id');
+  const movingElectron=page.locator('.primordial-particle.electron[data-id]:not(.reacting)').first(),electronId=await movingElectron.getAttribute('data-id');
   assert.ok(electronId,'Hélio atômico: elétron-alvo perdeu identidade durante o drag inverso');
   const electron=page.locator(`.primordial-particle.electron[data-id="${electronId}"]:not(.reacting)`);
   const eb=await electron.boundingBox();assert.ok(eb,'Hélio atômico: elétron-alvo desapareceu durante o drag inverso');
