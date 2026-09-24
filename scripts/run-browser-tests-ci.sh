@@ -11,6 +11,8 @@ cleanup(){
 }
 trap cleanup EXIT
 
+node --check assets/js/ardua.js
+node scripts/validate-phase-completion-contract.js
 node scripts/validate-victory-reward-flow.js
 node scripts/validate-feedback-language.js
 node scripts/validate-reaction-discovery-juice.js
