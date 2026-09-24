@@ -2951,7 +2951,7 @@ function executePrimordialFreeDrop(d,target){
  return false
 }
 function cancelPrimordialFreeDrag(){
- const d=state.freeDrag;if(!d)return;state.freeDrag=null;if(d.moleculeId){const m=state.primordialMolecules.get(d.moleculeId);if(m)m.dragging=false}renderPieces();syncPrimordialMoleculeVisuals()
+ const d=state.freeDrag;if(!d)return;state.freeDrag=null;if(d.moleculeId){const m=state.primordialMolecules.get(d.moleculeId);if(m)m.dragging=false}renderPieces();renderPrimordialParticles();syncPrimordialMoleculeVisuals()
 }
 function armPrimordialFreeDrag(id,el,ev){
  const s=phase(),piece=state.pieces.get(id);if(!piece?.free||!isPrimordial(s)||s.mode==='opening'||state.locked||state.phaseDone||ev.pointerType==='mouse'&&ev.button!==0)return;const molecule=primordialMoleculeForPiece(piece);if(molecule?.locked)return;cancelPrimordialFreeDrag();const pt=particlePointerPoint(ev),origin=molecule||piece,d={sourceId:id,sourceIds:molecule?[...molecule.members]:[id],moleculeId:molecule?.id||null,pointerId:ev.pointerId,el,active:false,startX:pt.x,startY:pt.y,offsetX:origin.x-pt.x,offsetY:origin.y-pt.y,target:null};state.freeDrag=d;try{el.setPointerCapture(ev.pointerId)}catch(e){}
@@ -2960,11 +2960,11 @@ function movePrimordialFreeDrag(id,ev){
  const d=state.freeDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return;const pt=particlePointerPoint(ev);if(!d.active&&Math.hypot(pt.x-d.startX,pt.y-d.startY)<7)return;if(!d.active){d.active=true;state.freeSelected=[];state.primordialSelected=null;if(d.moleculeId){const m=state.primordialMolecules.get(d.moleculeId);if(m)m.dragging=true}vibrate(5)}
  ev.preventDefault();ev.stopPropagation();const pad=d.moleculeId?62:32,x=Math.max(pad,Math.min(starSize()-pad,pt.x+d.offsetX)),y=Math.max(pad,Math.min(starSize()-pad,pt.y+d.offsetY));
  if(d.moleculeId){const m=state.primordialMolecules.get(d.moleculeId);if(!m)return cancelPrimordialFreeDrag();m.x=x;m.y=y;positionPrimordialMolecule(m)}else{const p=state.pieces.get(d.sourceId);if(!p)return cancelPrimordialFreeDrag();p.x=x;p.y=y}
- d.target=primordialFreeDragTarget(d);renderPieces();syncPrimordialMoleculeVisuals()
+ d.target=primordialFreeDragTarget(d);renderPieces();renderPrimordialParticles();syncPrimordialMoleculeVisuals()
 }
 function finishPrimordialFreeDrag(id,ev,cancel=false){
  const d=state.freeDrag;if(!d||d.sourceId!==id||d.pointerId!==ev.pointerId)return false;const wasActive=d.active,target=!cancel&&wasActive?(d.target||primordialFreeDragTarget(d)):null;state.freeDrag=null;try{d.el.releasePointerCapture(ev.pointerId)}catch(e){}if(d.moleculeId){const m=state.primordialMolecules.get(d.moleculeId);if(m)m.dragging=false}
- if(!wasActive)return false;ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;if(target&&executePrimordialFreeDrop(d,target)){renderPieces();syncPrimordialMoleculeVisuals();return true}renderPieces();syncPrimordialMoleculeVisuals();startPrimordialMoleculeDrift();return true
+ if(!wasActive)return false;ev.preventDefault();ev.stopPropagation();state.suppressTapId=id;state.suppressTapUntil=performance.now()+520;if(target&&executePrimordialFreeDrop(d,target)){renderPieces();renderPrimordialParticles();syncPrimordialMoleculeVisuals();return true}renderPieces();renderPrimordialParticles();syncPrimordialMoleculeVisuals();startPrimordialMoleculeDrift();return true
 }
 function tapFreeAtom(id){
  const p=state.pieces.get(id);if(!p||!p.free||state.locked||state.phaseDone)return;const s=phase();
