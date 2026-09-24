@@ -31,8 +31,8 @@ async function openPhase(activeId,{rotation=false}={}){
 async function testPrimordialParticleDrop(){
  const {context,page,errors}=await openPhase('primordial_d');
  try{
-  await page.waitForFunction(()=>document.querySelector('.primordial-particle.proton')&&document.querySelector('.primordial-particle.neutronfree'),undefined,{timeout:3000});
-  const proton=page.locator('.primordial-particle.proton').first(),neutron=page.locator('.primordial-particle.neutronfree').first();
+  await page.waitForFunction(()=>document.querySelector('.primordial-particle.proton:not(.reacting)')&&document.querySelector('.primordial-particle.neutronfree:not(.reacting)'),undefined,{timeout:3000});
+  const proton=page.locator('.primordial-particle.proton:not(.reacting)').first(),neutron=page.locator('.primordial-particle.neutronfree:not(.reacting)').first();
   const pb=await proton.boundingBox(),nb=await neutron.boundingBox();assert.ok(pb&&nb,'Deutério: partículas iniciais não possuem geometria');
   await page.mouse.move(pb.x+pb.width/2,pb.y+pb.height/2);
   await page.mouse.down();
@@ -44,6 +44,24 @@ async function testPrimordialParticleDrop(){
   await page.mouse.up();
   await page.waitForFunction(()=>[...document.querySelectorAll('#pieces .atom .sym')].some(el=>el.textContent?.trim()==='²H'),undefined,{timeout:5000});
   assert.deepEqual(errors,[],`Deutério drag: erros JavaScript: ${errors.join(' | ')}`);
+ }finally{await context.close()}
+}
+
+
+async function testPrimordialElementToParticleDrop(){
+ const {context,page,errors}=await openPhase('atomic_he');
+ try{
+  await page.waitForFunction(()=>document.querySelector('#pieces .atom[data-id]')&&document.querySelector('.primordial-particle.electron:not(.reacting)'),undefined,{timeout:4000});
+  const source=page.locator('#pieces .atom[data-id]').filter({has:page.locator('.sym')}).first(),electron=page.locator('.primordial-particle.electron:not(.reacting)').first();
+  const sb=await source.boundingBox(),eb=await electron.boundingBox();assert.ok(sb&&eb,'Hélio atômico: núcleo/elétron sem geometria para drag inverso');
+  const electronId=await electron.getAttribute('data-id');
+  await page.mouse.move(sb.x+sb.width/2,sb.y+sb.height/2);await page.mouse.down();
+  await page.mouse.move(sb.x+sb.width/2+12,sb.y+sb.height/2,{steps:2});
+  await page.mouse.move(eb.x+eb.width/2,eb.y+eb.height/2,{steps:6});
+  await page.waitForFunction(id=>document.querySelector(`.primordial-particle[data-id="${id}"]`)?.classList.contains('drop-target'),electronId,{timeout:1600});
+  await page.mouse.up();
+  await page.waitForFunction(id=>!document.querySelector(`.primordial-particle[data-id="${id}"]`),electronId,{timeout:3500});
+  assert.deepEqual(errors,[],`Hélio drag inverso: erros JavaScript: ${errors.join(' | ')}`);
  }finally{await context.close()}
 }
 
@@ -448,6 +466,7 @@ async function testQuasarDragAndChrome(){
 try{
  await testCentralFusionProductRelocation();
  await testPrimordialParticleDrop();
+ await testPrimordialElementToParticleDrop();
  await testStellarFormationDrag();
  await testAtlasFusionDragWithoutPreclick();
  await testWhiteCompactFusionDrag();
@@ -458,7 +477,7 @@ try{
  await testStellarBoardMovementDragWithRotation();
  await testStellarBoardFusionDragWithRotation();
  await testQuasarDragAndChrome();
- console.log('Drag interactions OK: primordial reactions, Brown Dwarf/White Dwarf/Atlas fusion drag, stellar formation, persistent movement targets, fusion/swap and Quasar direct manipulation all pass.');
+ console.log('Drag interactions OK: primordial particle and reverse element→particle reactions, Brown Dwarf/White Dwarf/Atlas fusion drag, stellar formation, persistent movement targets, fusion/swap and Quasar direct manipulation all pass.');
 }finally{
  await browser.close();
 }
