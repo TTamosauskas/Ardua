@@ -3571,7 +3571,9 @@ function renderStageProgress({percent=0,current=null,total=null,label='',detail=
 }
 window.ARDUA_PROGRESS_UI=Object.freeze({render:renderStageProgress});
 function phaseEndButtonLabel(s=phase()){const raw=String(s?.endLabel||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();if(s?.endEvent==='supernova')return'EXPLODIR<br>SUPERNOVA';if(raw.includes('ESPALHAR')&&raw.includes('POEIRA'))return'ESPALHAR<br>POEIRA ESTELAR';return'PRÓXIMA<br>FASE'}
+function customGameplayOwnsHud(){if(window.ARDUA_QUARKS?.isActive?.())return true;const qid=window.ARDUA_QUASAR?.id,cid=window.ARDUA_CAMPAIGN?.getState?.().activeId;return !!qid&&cid===qid&&!!document.querySelector('#starBoard.quasar-mode .quasar-layer')}
 function updateHUD(){
+ if(customGameplayOwnsHud())return;
  const s=phase();
  dom.singularity.classList.toggle('show',s.mode==='opening'&&!state.bigBangStarted);
  $('branchLabel').textContent='';$('phaseTitle').textContent=s.title;$('phaseMeta').textContent='';
