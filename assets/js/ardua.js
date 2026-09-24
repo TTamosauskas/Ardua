@@ -1630,7 +1630,7 @@ function fillStellarAtomicStage(s=phase()){
  const transfer=state.stellarAtomicTransfer?.to===s.id?state.stellarAtomicTransfer:null;state.stellarAtomicTransfer=null;
  if(transfer)restoreStellarAtomicTransfer(transfer);
  if(s.id==='solar_wind'){
-  clearBoard();clearPrimordialParticles();drawCells();fillYellowAtomicPopulation(STELLAR_CONTINUITY_POPULATION);createPrimordialParticle('e');for(let i=0;i<3;i++)createPrimordialParticle('n');
+  clearBoard();clearPrimordialParticles();drawCells();fillYellowAtomicPopulation(STELLAR_CONTINUITY_POPULATION);spawnFloatingParticle('e',null,null,true);for(let i=0;i<3;i++)spawnFloatingParticle('n',null,null,true);
  }else if(s.id==='stellar_ionization'){
   ensurePrimordialParticleMix({p:1,e:1,n:1});fillYellowAtomicPopulation(STELLAR_CONTINUITY_POPULATION,['H','He','Li']);
  }else if(s.id==='stellar_recombination'){
@@ -2160,7 +2160,7 @@ if(s.id==='brown'){
   remaining=remaining.slice(historyCount).sort(()=>Math.random()-.5);
   const starterCount=reserved.size;const amount=Math.max(0,desiredFill()-starterCount-historyCount),chosen=remaining.slice(0,amount);
   chosen.forEach((cell,i)=>createPiece(incomingSymbol(true),cell,i<Math.min(22,chosen.length)));
-  if(s.id==='he_red'){const n=2;for(let i=0;i<n;i++)createPrimordialParticle('p');startPrimordialDrift()}
+  if(s.id==='he_red'){const n=2;for(let i=0;i<n;i++)spawnFloatingParticle('p',null,null,true);startPrimordialDrift()}
   if(protonCaptureAvailable(s)){ensureProtonCaptureFuel(2);startPrimordialDrift()}
   renderPieces();renderPrimordialParticles();requestAnimationFrame(()=>{state.pieces.forEach(p=>{const t=pos(coords[p.cell]);p.x=t.x;p.y=t.y});renderPieces()});setTimeout(ensureOpportunity,420)
 }
