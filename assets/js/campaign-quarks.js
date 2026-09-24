@@ -196,7 +196,7 @@ function buildStage(){
 function hideMap(){const map=$('campaignMap');if(!map)return;map.classList.remove('show');map.setAttribute('aria-hidden','true');document.body.classList.remove('campaign-map-open')}
 function start(){
  if(active)return;active=true;returnActiveId=C.getState?.().activeId||'';snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];reactionLocked=false;drag=null;suppressClickUntil=0;motion.clear();
- C.setActive?.('quarks');hideMap();document.body.classList.add('quarks-phase-active');const board=$('starBoard');board?.classList.add('primordial-mode','quarks-free-mode');
+ C.setActive?.('quarks');hideMap();$('stellarIntro')?.classList.remove('show');document.body.classList.add('quarks-phase-active');const board=$('starBoard');board?.classList.add('primordial-mode','quarks-free-mode');
  setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');$('starBoard')?.classList.remove('phase-ready');updateProgress();renderQuarksInfo();const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.innerHTML='PRÓXIMA<br>FASE'}
  stage=buildStage();startMotion();window.dispatchEvent(new CustomEvent('ardua:quarks-phase-start'));
 }
