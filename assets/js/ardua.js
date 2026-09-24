@@ -4949,6 +4949,9 @@ function bindPhaseStart(el){
  el.addEventListener('click',activate,true);
  if(!window.PointerEvent)el.addEventListener('touchstart',activate,{capture:true,passive:false});
 }
+document.addEventListener('pointermove',ev=>{const d=state.freeDrag;if(d&&d.pointerId===ev.pointerId)movePrimordialFreeDrag(d.sourceId,ev)},true);
+document.addEventListener('pointerup',ev=>{const d=state.freeDrag;if(d&&d.pointerId===ev.pointerId)finishPrimordialFreeDrag(d.sourceId,ev,false)},true);
+document.addEventListener('pointercancel',ev=>{const d=state.freeDrag;if(d&&d.pointerId===ev.pointerId)finishPrimordialFreeDrag(d.sourceId,ev,true)},true);
 bindReliableTap($('phaseEndBtn'),endPhaseAction);bindReliableTap($('eventTooltipBtn'),closeEventTooltip);bindReliableTap($('ambientContinueBtn'),rewardDirectorDismiss);dom.singularity.addEventListener('click',launchBigBang);dom.remnantCore.addEventListener('contextmenu',ev=>ev.preventDefault());dom.remnantCore.addEventListener('selectstart',ev=>ev.preventDefault());dom.remnantCore.addEventListener('pointerdown',beginCoreHold);dom.remnantCore.addEventListener('pointerup',cancelCoreHold);dom.remnantCore.addEventListener('pointercancel',cancelCoreHold);if(!window.PointerEvent){dom.remnantCore.addEventListener('touchstart',ev=>{ev.preventDefault();beginCoreHold(ev)},{passive:false});dom.remnantCore.addEventListener('touchend',ev=>{ev.preventDefault();cancelCoreHold()},{passive:false});dom.remnantCore.addEventListener('touchcancel',cancelCoreHold,{passive:false})}bindPhaseStart($('stellarStartBtn'));$('menuOpenBtn').addEventListener('click',()=>{renderMenu();$('menuModal').classList.add('show')});$('closeMenu').addEventListener('click',()=>$('menuModal').classList.remove('show'));
 window.addEventListener('ardua:rotation-change',ev=>{
  const moving=ev.detail?.enabled!==false;
