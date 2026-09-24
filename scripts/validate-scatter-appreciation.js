@@ -13,5 +13,5 @@ assert(!engine.includes('await wait(supernova?1050:900);advancePhase()'),'Tempo 
 assert(engine.includes("if(raw.includes('ESPALHAR')&&raw.includes('POEIRA'))return'ESPALHAR<br>POEIRA ESTELAR'"),'Exceção explícita do botão Espalhar Poeira Estelar ausente');
 assert(engine.includes("if(s.endEvent==='postTransition')return compactAdvance();return scatterStage()"),'Fases estelares comuns perderam o fluxo de dispersão');
 assert(engine.includes("const s=phase(),supernova=s.endEvent==='supernova'"),'Supernova não usa o mesmo fluxo de dispersão');
-assert(index.includes('ardua.js?v=20260924-phase-completion-1'),'Engine sem cache bust atual da pausa de apreciação');
+assert(index.includes('ardua.js?v=20260924-reverse-drag-1'),'Engine sem cache bust atual da pausa de apreciação');
 console.log('Stellar dispersal appreciation OK: dust and supernova wait for the longest motion plus a viewing pause before campaign return.');
