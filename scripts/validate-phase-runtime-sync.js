@@ -18,7 +18,7 @@ assert(runtime.includes('if(customPhaseOwnsScreen()||!(G.runtimeOrder||[]).inclu
 assert(engine.includes('const addObjectiveDependency=(r,seen=new Set())=>'),'Receitas não incluem fechamento de precursores do objetivo');
 assert(engine.includes('phaseFusionRecipes(current).forEach(r=>addObjectiveDependency(r))'),'Objetivo atual não injeta sua árvore de precursores');
 assert(engine.includes('r&&hasRecipeIngredients(r,guidanceBoardSymbolCounts())'),'Receita final ainda pode ser exibida sem reagentes disponíveis');
-assert(index.includes('ardua.js?v=20260923-fusion-drag-parity-1'),'Engine sem cache bust da paridade de fusão por arraste');
+assert(index.includes('ardua.js?v=20260924-phase-completion-1'),'Engine sem cache bust da paridade de fusão por arraste');
 assert(engine.includes('function primaryRecipeLabel(label)')&&engine.includes("core.includes(' + ')?core.split(' + ')[0]") ,'Receitas visíveis ainda podem expor subprodutos secundários');
 assert(engine.includes("['e⁻','Elétron','(-)']")&&engine.includes("['2e⁻','2 Elétrons','2(-)']"),'Elétrons das receitas não usam a notação (-)');
 assert(engine.includes('label=catalogRecipeLabel(label)'),'Catálogo de receitas não compartilha a normalização visual');
