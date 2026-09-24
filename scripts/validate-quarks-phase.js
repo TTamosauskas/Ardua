@@ -37,7 +37,7 @@ expect(game.includes("const RECIPE_NAME='quark + quark + quark → hádron'"),'o
 expect(game.includes("const RECIPE_SYMBOL='junte três particulas'"),'objective recipe must expose the simple three-particle instruction');
 expect(game.includes('function renderRecipe()')&&game.includes('recipe-name-line')&&game.includes('recipe-symbol-line'),'Quarks must preserve the shared two-line recipe markup');
 expect(game.includes('function showProgress()')&&game.includes("progress.style.visibility='visible'"),'Quarks must explicitly own a visible progress bar');
-expect(game.includes("end.textContent='Proxima fase'"),'final central button must say exactly Proxima fase');
+expect(game.includes("end.innerHTML='PRÓXIMA<br>FASE'"),'final central button must say exactly PRÓXIMA FASE');
 expect(game.includes("primordial-particle ${isProton?'proton':'neutronfree'} quarks-baryon"),'formed baryons must reuse the native free proton/neutron visual classes from primordial gameplay');
 expect(game.includes("returnActiveId=C.getState?.().activeId||''"),'Quarks must remember the campaign phase that owned the map before launch');
 expect(game.includes("const next=returnActiveId&&returnActiveId!=='quarks'?returnActiveId:'primordial_d'"),'first completion must hand the current map state to deuterium while revisits return to their previous campaign position');
