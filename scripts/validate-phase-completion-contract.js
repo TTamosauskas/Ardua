@@ -4,6 +4,8 @@ const completion=fs.readFileSync('assets/js/campaign-phase-completion.js','utf8'
 const runtime=fs.readFileSync('assets/js/campaign-runtime-sync.js','utf8');
 const quasar=fs.readFileSync('assets/js/campaign-quasar-game.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
+const engine=fs.readFileSync('assets/js/ardua.js','utf8');
+const css=fs.readFileSync('assets/css/ardua.css','utf8');
 const delay=Number(completion.match(/OBJECTIVE_END_FALLBACK_DELAY=(\d+)/)?.[1]||0);
 if(delay<=720)fail('Completion fallback must yield to the native 720 ms arming path');
 for(const token of ["window.ARDUA_PHASE_COMPLETION=Object.freeze",'function registerAdapter(id,adapter)',"emit('celebrating'","emit('committing'","emit('completed'","new CustomEvent('ardua:phase-completion-state'","registerAdapter('quarks'","registerAdapter('quasar'","registerAdapter('objective-fallback'",'function scatterQuarksFinale()','function scatterQuasarFinale()','function scatterStellarFallback()','playVictoryFanfare()','replayButton(button)',"if(busy){e.preventDefault();e.stopImmediatePropagation();return}","stage.classList.add('quasar-finale-exit')"])if(!completion.includes(token))fail('Completion contract missing: '+token);
@@ -13,4 +15,12 @@ if(!quasar.includes("phaseEnd.addEventListener('click',e=>")||!quasar.includes('
 if(runtime.includes('OBJECTIVE_END_FALLBACK_DELAY')||runtime.includes('scatterQuarksFinale')||runtime.includes('scatterQuasarFinale')||runtime.includes('fallbackStellarScatter'))fail('Completion behavior leaked back into runtime identity sync');
 const completionPos=index.indexOf('assets/js/campaign-phase-completion.js'),runtimePos=index.indexOf('assets/js/campaign-runtime-sync.js');
 if(completionPos<0||runtimePos<0||completionPos>runtimePos)fail('Completion contract must load before runtime sync');
+if(!engine.includes("if(state.readyToAdvance){$('goalText').textContent='Fase concluída com sucesso';setFormula('');return}"))fail('Native completion must replace the recipe box with the success message immediately');
+if(!engine.includes("dom.star.classList.add('phase-ready')")||!css.includes('.star-board.phase-ready .phase-complete-dimmer'))fail('Native completion must darken and gate the playfield when the end button appears');
+if(!engine.includes("function phaseEndButtonLabel")||!engine.includes("return'PRÓXIMA<br>FASE'")||!engine.includes("return'EXPLODIR<br>SUPERNOVA'")||!engine.includes("return'ESPALHAR<br>POEIRA ESTELAR'"))fail('Native end-button copy policy changed');
+if(!engine.includes("s.mode==='atomicRecombination'")||!engine.includes("p.matterState==='atom'&&pieceCharge(p)===0"))fail('Atomic recombination goals must count neutral atoms rather than bare nuclei');
+if(!engine.includes('function primordialIncomingPoint()')||!engine.includes("spawnFloatingParticle(kind,null,null,true)"))fail('Recipe-enabling primordial particles must enter from outside the field');
+if(!engine.includes("target.type==='particle'")||!engine.includes("target.mode==='bindElectron'"))fail('Primordial free elements must support reverse drag onto compatible particles');
+if(!engine.includes("setTimeout(()=>{if(state.stellarFormation===f)stellarFormationAdvance()},180)")||!engine.includes("state.stellarFormationComplete=true"))fail('Stellar formation must materialize automatically before phase completion');
+if(!index.includes('class="phase-complete-dimmer"'))fail('Completion dimmer layer missing from the board');
 console.log('Universal phase completion contract OK: native phases, Quarks, Quasar, repeated-click guard and objective fallback share one orchestration layer.');

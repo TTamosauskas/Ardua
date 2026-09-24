@@ -142,7 +142,7 @@ function spawnBaryon(kind,x,y){
  addMotion(`baryon-${kind}`,el,x,y);requestAnimationFrame(()=>el.classList.add('formed'));return el;
 }
 function completeIfReady(){
- if(made.proton!==1||made.neutron!==1)return;grantDiscoveries();const end=$('phaseEndBtn');if(end){end.textContent='Proxima fase';end.classList.add('show');end.removeAttribute('hidden')}stage?.classList.add('complete');
+ if(made.proton!==1||made.neutron!==1)return;grantDiscoveries();setText('goalText','Fase concluída com sucesso');const formula=$('formulaText');if(formula)formula.textContent='';const board=$('starBoard');board?.classList.add('phase-ready');const end=$('phaseEndBtn');if(end){end.innerHTML='PRÓXIMA<br>FASE';end.classList.add('show');end.removeAttribute('hidden')}stage?.classList.add('complete');
 }
 async function fuse(){
  if(reactionLocked||!anchorId||candidateIds.length!==2)return;const ids=[anchorId,...candidateIds],kind=baryonKind(ids);if(!kind)return;
@@ -197,11 +197,11 @@ function hideMap(){const map=$('campaignMap');if(!map)return;map.classList.remov
 function start(){
  if(active)return;active=true;returnActiveId=C.getState?.().activeId||'';snapshot=captureSnapshot();made={proton:0,neutron:0};anchorId='';candidateIds=[];reactionLocked=false;drag=null;suppressClickUntil=0;motion.clear();
  C.setActive?.('quarks');hideMap();document.body.classList.add('quarks-phase-active');const board=$('starBoard');board?.classList.add('primordial-mode','quarks-free-mode');
- setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');updateProgress();renderQuarksInfo();const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.textContent='Proxima fase'}
+ setText('branchLabel','Universo primordial');setText('phaseTitle','Quarks');$('starBoard')?.classList.remove('phase-ready');updateProgress();renderQuarksInfo();const end=$('phaseEndBtn');if(end){end.classList.remove('show');end.innerHTML='PRÓXIMA<br>FASE'}
  stage=buildStage();startMotion();window.dispatchEvent(new CustomEvent('ardua:quarks-phase-start'));
 }
 function cleanup(){
- if(!active)return;active=false;reactionLocked=false;if(drag?.active)window.ARDUA_ROTATION?.endInteraction?.('quarks-drag');drag=null;stopMotion();motion.clear();document.body.classList.remove('quarks-phase-active');stage?.remove();stage=null;resetSelection();const board=$('starBoard');board?.classList.remove('quarks-free-mode');
+ if(!active)return;active=false;reactionLocked=false;if(drag?.active)window.ARDUA_ROTATION?.endInteraction?.('quarks-drag');drag=null;stopMotion();motion.clear();document.body.classList.remove('quarks-phase-active');stage?.remove();stage=null;resetSelection();const board=$('starBoard');board?.classList.remove('quarks-free-mode','phase-ready');
  if(snapshot){if(!snapshot.boardPrimordial)board?.classList.remove('primordial-mode');setText('branchLabel',snapshot.branchLabel);setText('phaseTitle',snapshot.phaseTitle);setText('goalText',snapshot.goalText);const formula=$('formulaText');if(formula)formula.innerHTML=snapshot.formulaHTML;setText('stageProgressLabel',snapshot.stageProgressLabel);setText('stageProgressText',snapshot.stageProgressText);const bar=$('stageProgress');if(bar)bar.style.width=snapshot.stageProgressWidth;const progress=bar?.closest('.stage-progress');if(progress){progress.style.visibility=snapshot.progressVisibility;progress.style.display=snapshot.progressDisplay;progress.hidden=snapshot.progressHidden;if(snapshot.progressHadAriaHidden)progress.setAttribute('aria-hidden',snapshot.progressAriaHidden||'true');else progress.removeAttribute('aria-hidden')}const end=$('phaseEndBtn');if(end){end.textContent=snapshot.endText;end.classList.toggle('show',snapshot.endShow)}restoreInfoSnapshot(snapshot.info)}
  snapshot=null;window.dispatchEvent(new CustomEvent('ardua:quarks-phase-stop'));
 }

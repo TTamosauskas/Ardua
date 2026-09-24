@@ -55,7 +55,7 @@ function resetChrome(){
  setText('goalText',`Crie ${Q.target} unidades de Gás em Acreção`);renderRecipe();showProgress();
  if(window.ARDUA_PROGRESS_UI?.render)window.ARDUA_PROGRESS_UI.render({percent:0,current:0,total:Q.target,label:'ACREÇÃO',ready:false,visible:true});
  else{setText('stageProgressLabel',`0 de ${Q.target}`);setText('stageProgressText','0%');const bar=$('stageProgress');if(bar){bar.style.width='0%';bar.dataset.current='0';bar.dataset.total=String(Q.target)}}setInfo();
- phaseEnd.innerHTML='ENCERRAR<br>QUASAR';phaseEnd.hidden=true;phaseEnd.style.display='none';
+ board.classList.remove('phase-ready');phaseEnd.innerHTML='PRÓXIMA<br>FASE';phaseEnd.hidden=true;phaseEnd.style.display='none';
 }
 function positions(){
  return [
@@ -140,11 +140,11 @@ function react(a,b){
  setTimeout(()=>flash.remove(),760);
 }
 function finish(){
- complete=true;layer?.classList.add('complete');renderRecipe('Acreção gravitacional → radiação extrema','mₐcc → hν');setText('phaseMeta','QUASAR ATIVO · núcleo galáctico luminoso');
- updateProgress();phaseEnd.hidden=false;phaseEnd.style.display='';
+ complete=true;layer?.classList.add('complete');setText('goalText','Fase concluída com sucesso');const formula=$('formulaText');if(formula)formula.textContent='';setText('phaseMeta','QUASAR ATIVO · núcleo galáctico luminoso');
+ updateProgress();setText('goalText','Fase concluída com sucesso');if(formula)formula.textContent='';board.classList.add('phase-ready');phaseEnd.innerHTML='PRÓXIMA<br>FASE';phaseEnd.hidden=false;phaseEnd.style.display='';
 }
 function cleanup(){
- board.classList.remove('quasar-mode');if(drag?.active)window.ARDUA_ROTATION?.endInteraction?.('quasar-drag');drag=null;layer?.remove();layer=null;selected=null;launching=false;
+ board.classList.remove('quasar-mode','phase-ready');if(drag?.active)window.ARDUA_ROTATION?.endInteraction?.('quasar-drag');drag=null;layer?.remove();layer=null;selected=null;launching=false;
  phaseEnd.hidden=false;phaseEnd.style.display='';
 }
 function launch(){
