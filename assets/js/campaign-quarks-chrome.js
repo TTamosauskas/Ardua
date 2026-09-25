@@ -21,6 +21,11 @@ function ensureProgressVisible(){
 }
 function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
 function objectiveComplete(){const bar=$('stageProgress'),current=Number(bar?.dataset.current||0),total=Number(bar?.dataset.total||0);return total>0&&current>=total}
+function syncDiscoveryGate(hold){
+ const modal=$('discoveryUnlockModal');if(!modal)return;
+ if(hold){modal.dataset.quarksFinalGate='1';modal.style.opacity='0';modal.style.visibility='hidden';modal.style.pointerEvents='none';return}
+ if(modal.dataset.quarksFinalGate==='1'){delete modal.dataset.quarksFinalGate;modal.style.opacity='';modal.style.visibility='';modal.style.pointerEvents=''}
+}
 function applyQuarksChrome(){
  if(!active)return;
  const complete=objectiveComplete();
@@ -34,6 +39,7 @@ function applyQuarksChrome(){
  if(!complete)renderRecipe();
  ensureProgressVisible();
  setText('phaseEndBtn',NEXT_LABEL);
+ syncDiscoveryGate(complete&&!!$('phaseEndBtn')?.classList.contains('show'));
 }
 function startOwnership(){
  active=true;applyQuarksChrome();
@@ -47,10 +53,11 @@ function startOwnership(){
  }
  const progress=$('stageProgress')?.closest('.stage-progress');if(progress)observer.observe(progress,{attributes:true,attributeFilter:['style','hidden','aria-hidden']});
  const bar=$('stageProgress');if(bar)observer.observe(bar,{attributes:true,attributeFilter:['style','data-current','data-total']});
+ const discovery=$('discoveryUnlockModal');if(discovery)observer.observe(discovery,{attributes:true,attributeFilter:['class']});
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 }
 function stopOwnership(){
- active=false;observer?.disconnect();observer=null;
+ active=false;observer?.disconnect();observer=null;syncDiscoveryGate(false);
  setClass(document.documentElement,'quarks-phase-root',false);
  setClass(document.body,'quarks-phase-active',false);
 }
