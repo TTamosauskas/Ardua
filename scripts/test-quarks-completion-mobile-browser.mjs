@@ -92,7 +92,7 @@ try{
    endText:end?.textContent?.replace(/\s+/g,' ').trim()||'',
    endPlayerVisible:!!end?.classList.contains('show')&&style?.visibility!=='hidden'&&style?.display!=='none'&&Number(style?.opacity||1)>0,
    endAriaHidden:end?.getAttribute('aria-hidden'),
-   modalVisible:!!modal?.classList.contains('show'),
+   modalVisible:!!modal?.classList.contains('show')&&getComputedStyle(modal).visibility!=='hidden'&&Number(getComputedStyle(modal).opacity||1)>0,
    rewardVisible:!!reward?.classList.contains('show'),
    pending:window.ARDUA_VICTORY_REWARD.pending?.phaseId||''
   };
