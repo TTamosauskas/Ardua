@@ -68,7 +68,10 @@ document.addEventListener('click',e=>{
  const target=e.target instanceof Element?e.target:null,end=target?.closest('#phaseEndBtn');
  if(!end||!active||!end.classList.contains('show'))return;
  const st=C?.getState?.()||{};
- if(!(st.completed||[]).includes('quarks'))C.markCompleted?.('quarks');
+ if(!(st.completed||[]).includes('quarks'))queueMicrotask(()=>{
+  const latest=C?.getState?.()||{};
+  if(!(latest.completed||[]).includes('quarks'))C.markCompleted?.('quarks');
+ });
 },true);
 
 window.addEventListener('ardua:quarks-phase-start',startOwnership);
