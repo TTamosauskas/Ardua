@@ -78,22 +78,34 @@ try{
  assert.equal(halfway.width,'50%','Quarks: barra intermediária deveria estar em 50%');
  await makeBaryonByDrag('.quark-piece.quark-u','.quark-piece.quark-d');
  await page.waitForFunction(()=>document.getElementById('stageProgressLabel')?.textContent==='2 de 2'&&document.getElementById('stageProgressText')?.textContent==='100%',undefined,{timeout:3000});
- await page.waitForFunction(()=>window.ARDUA_VICTORY_REWARD.pending?.phaseId==='quarks'||document.documentElement.dataset.arduaCompletionState==='celebrating',undefined,{timeout:1200});
- await page.waitForFunction(()=>!document.getElementById('discoveryUnlockModal')?.classList.contains('show'),undefined,{timeout:1200});
+ await page.waitForFunction(()=>{
+  const end=document.getElementById('phaseEndBtn'),style=end?getComputedStyle(end):null;
+  return document.getElementById('goalText')?.textContent==='Fase concluída com sucesso'
+   &&!!end?.classList.contains('show')
+   &&style?.visibility!=='hidden'&&style?.display!=='none'&&Number(style?.opacity||1)>0;
+ },undefined,{timeout:3000});
 
- const handoff=await page.evaluate(()=>{
-  const end=document.getElementById('phaseEndBtn'),style=end?getComputedStyle(end):null,modal=document.getElementById('discoveryUnlockModal');
+ const gate=await page.evaluate(()=>{
+  const end=document.getElementById('phaseEndBtn'),style=end?getComputedStyle(end):null,modal=document.getElementById('discoveryUnlockModal'),reward=document.getElementById('campaignVictoryReward');
   return{
+   goal:document.getElementById('goalText')?.textContent||'',
+   endText:end?.textContent?.replace(/\s+/g,' ').trim()||'',
    endPlayerVisible:!!end?.classList.contains('show')&&style?.visibility!=='hidden'&&style?.display!=='none'&&Number(style?.opacity||1)>0,
    endAriaHidden:end?.getAttribute('aria-hidden'),
-   modalVisible:!!modal?.classList.contains('show'),
-   pending:window.ARDUA_VICTORY_REWARD.pending?.phaseId||'',
-   state:document.documentElement.dataset.arduaCompletionState||''
+   modalVisible:!!modal?.classList.contains('show')&&getComputedStyle(modal).visibility!=='hidden'&&Number(getComputedStyle(modal).opacity||1)>0,
+   rewardVisible:!!reward?.classList.contains('show'),
+   pending:window.ARDUA_VICTORY_REWARD.pending?.phaseId||''
   };
  });
- assert.equal(handoff.endPlayerVisible,false,'Quarks: o botão redondo “Próxima fase” voltou a competir com a conclusão');
- assert.equal(handoff.modalVisible,false,'Quarks: modal de descoberta ficou sobreposto ao handoff de vitória');
+ assert.equal(gate.goal,'Fase concluída com sucesso','Quarks: objetivo final deve confirmar a conclusão');
+ assert.equal(gate.endText,'Próxima fase','Quarks: botão final deve dizer Próxima fase');
+ assert.equal(gate.endPlayerVisible,true,'Quarks: botão redondo Próxima fase deve ficar visível até o toque do jogador');
+ assert.notEqual(gate.endAriaHidden,'true','Quarks: botão final não pode ser ocultado da acessibilidade');
+ assert.equal(gate.modalVisible,false,'Quarks: modal de descoberta não deve substituir o botão final');
+ assert.equal(gate.rewardVisible,false,'Quarks: recompensa não deve abrir antes do toque em Próxima fase');
+ assert.equal(gate.pending,'','Quarks: conclusão não deve ser armada automaticamente antes do toque');
 
+ await page.click('#phaseEndBtn');
  await page.waitForFunction(()=>document.getElementById('campaignVictoryReward')?.classList.contains('show'),undefined,{timeout:6500});
  const reward=await page.evaluate(()=>({
   headline:document.querySelector('[data-victory-result]')?.textContent||'',
@@ -118,7 +130,7 @@ try{
  await page.click('[data-victory-primary]');
  await page.waitForFunction(()=>!document.getElementById('campaignVictoryReward')?.classList.contains('show')&&window.ARDUA_CAMPAIGN.getState().activeId==='primordial_d',undefined,{timeout:4000});
  assert.deepEqual(errors,[],`Quarks mobile completion: erros JS: ${errors.join(' | ')}`);
- console.log('Quarks mobile completion OK: shared 0–100% progress UI, counter-free title, automatic completion and one CONTINUAR action passed.');
+ console.log('Quarks mobile completion OK: shared 0–100% progress UI, counter-free title, explicit Próxima fase gate and one CONTINUAR action passed.');
 }finally{
  await context.close();await browser.close();
 }

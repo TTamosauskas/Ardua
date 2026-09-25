@@ -8,6 +8,12 @@ const SPECIAL_NAMES=Object.freeze({D:'Deutério',T:'Trítio',He3:'Hélio-3',HeU:
 const TITLE_OVERRIDES=Object.freeze({'phenomenon:coronalJet':'Ejeção de Massa Coronal'});
 const STRUCTURAL_ELEMENT_MODES=new Set(['opening','campaignMilestone']);
 const queue=[],queued=new Set();let current=null,renderFrame=0;
+function quarksFinalGateWaiting(){
+ if(!window.ARDUA_QUARKS?.isActive?.())return false;
+ const bar=$('stageProgress'),currentValue=Number(bar?.dataset.current||0),total=Number(bar?.dataset.total||0);
+ const reward=window.ARDUA_VICTORY_REWARD;
+ return total>0&&currentValue>=total&&!(reward?.pending||reward?.active);
+}
 function parse(raw,fallback={}){try{return raw?JSON.parse(raw):fallback}catch(_e){return fallback}}
 function saveData(){return parse(localStorage.getItem(SAVE_KEY),{})}
 function currentDiscoveryKeys(){const data=saveData(),keys=new Set(data.rewardDiscoveries||[]);for(const sym of data.discovered||[])keys.add(`element:${sym}`);return keys}
@@ -35,7 +41,7 @@ if(!inbox||inbox.version!==1){inbox={version:1,known:[...historicalKnown()],unre
 let known=new Set(inbox.known||[]),unread=new Set(inbox.unread||[]);
 function persist(){inbox={version:1,known:[...known],unread:[...unread]};localStorage.setItem(INBOX_KEY,JSON.stringify(inbox))}
 function ensureModal(){let host=$('discoveryUnlockModal');if(host)return host;host=document.createElement('div');host.id='discoveryUnlockModal';host.className='discovery-unlock-modal';host.setAttribute('aria-hidden','true');host.innerHTML='<section class="discovery-unlock-card" role="dialog" aria-modal="true" aria-labelledby="discoveryUnlockTitle"><strong id="discoveryUnlockTitle"></strong><p>Confira suas descobertas no menu.</p><button type="button" id="discoveryUnlockContinue">CONTINUAR</button></section>';document.body.appendChild(host);$('discoveryUnlockContinue')?.addEventListener('click',dismissModal);return host}
-function showNext(){if(current||!queue.length)return;current=queue.shift();queued.delete(current);const host=ensureModal();$('discoveryUnlockTitle').textContent=modalTitle(current);host.classList.add('show');host.setAttribute('aria-hidden','false');requestAnimationFrame(()=>$('discoveryUnlockContinue')?.focus())}
+function showNext(){if(current||!queue.length||quarksFinalGateWaiting())return;current=queue.shift();queued.delete(current);const host=ensureModal();$('discoveryUnlockTitle').textContent=modalTitle(current);host.classList.add('show');host.setAttribute('aria-hidden','false');requestAnimationFrame(()=>$('discoveryUnlockContinue')?.focus())}
 function dismissModal(){const host=ensureModal();host.classList.remove('show');host.setAttribute('aria-hidden','true');current=null;setTimeout(showNext,90)}
 function enqueue(rawKey){if(current===rawKey||queued.has(rawKey))return;queued.add(rawKey);queue.push(rawKey);showNext()}
 function scheduleRender(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;renderIndicators()})}
@@ -147,7 +153,8 @@ const ambient=$('ambientBanner');
 function clearLegacyReward(){if(!ambient?.classList.contains('show'))return;if(ambient.classList.contains('discovery')||ambient.classList.contains('completion'))queueMicrotask(()=>$('ambientContinueBtn')?.click())}
 if(ambient)new MutationObserver(clearLegacyReward).observe(ambient,{attributes:true,attributeFilter:['class']});
 window.addEventListener('storage',e=>{if(e.key===SAVE_KEY)checkSavedDiscoveries(false);if(e.key===INBOX_KEY){const next=parse(e.newValue,null);if(next?.version===1){known=new Set(next.known||[]);unread=new Set(next.unread||[]);scheduleRender()}}});
-window.addEventListener('ardua:campaign-progress',()=>{checkSavedDiscoveries(true);syncDiscoveryAtlasOwnership();scheduleRender()});
+window.addEventListener('ardua:campaign-progress',()=>{checkSavedDiscoveries(true);showNext();syncDiscoveryAtlasOwnership();scheduleRender()});
+window.addEventListener('ardua:phase-completion-intent',e=>{if(e.detail?.phaseId==='quarks')queueMicrotask(showNext)});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ensureModal().classList.contains('show')){e.preventDefault();dismissModal()}});
 checkSavedDiscoveries(false);ensureModal();scheduleRender();clearLegacyReward();
 })();

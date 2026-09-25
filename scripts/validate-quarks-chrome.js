@@ -15,6 +15,10 @@ expect(chrome.includes("const RECIPE_SYMBOL='junte três particulas'"),'visible 
 expect(chrome.includes('function renderRecipe()')&&chrome.includes('recipe-name-line')&&chrome.includes('recipe-symbol-line'),'Quarks chrome must preserve two-line recipe markup');
 expect(chrome.includes('function ensureProgressVisible()')&&chrome.includes("progress.style.visibility='visible'"),'Quarks chrome must keep progress visible even over an opening-phase engine state');
 expect(chrome.includes("const NEXT_LABEL='Próxima fase'"),'final circular button must say Próxima fase');
+expect(chrome.includes("const COMPLETE_GOAL='Fase concluída com sucesso'"),'completed Quarks must expose the canonical success message');
+expect(chrome.includes("setText('goalText',complete?COMPLETE_GOAL:GOAL)"),'Quarks chrome must preserve the success message after reaching 100%');
+expect(!chrome.includes('end.click()')&&!chrome.includes('AUTO_COMPLETE_DELAY')&&!chrome.includes("source:'quarks-objective-complete'"),'Quarks completion must wait for the player to press Próxima fase');
+expect(chrome.includes('function syncDiscoveryGate(hold)')&&chrome.includes("modal.dataset.quarksFinalGate='1'")&&chrome.includes("observer.observe(discovery,{attributes:true,attributeFilter:['class']})"),'Quarks final gate must suppress discovery popups until the player presses Próxima fase');
 expect(chrome.includes("setText('phaseEndBtn',NEXT_LABEL)"),'Quarks must own the final button label even after native updates');
 expect(chrome.includes("'formulaText','phaseEndBtn'"),'final button text must be observed with the rest of the Quarks chrome');
 expect(chrome.includes("setText('branchLabel','QUARKS')"),'Quarks identity must remain as the small contextual label');
