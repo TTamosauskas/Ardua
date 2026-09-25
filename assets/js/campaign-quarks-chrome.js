@@ -6,8 +6,8 @@ const GOAL='Forme Prótons e Nêutrons';
 const RECIPE_NAME='quark + quark + quark → hádron';
 const RECIPE_SYMBOL='junte três particulas';
 const NEXT_LABEL='Próxima fase';
-const AUTO_COMPLETE_DELAY=260;
-let active=false,observer=null,completionArmed=false,completionTimer=0,endChrome=null;
+const COMPLETE_GOAL='Fase concluída com sucesso';
+let active=false,observer=null;
 
 function setText(id,value){const el=$(id);if(el&&el.textContent!==value)el.textContent=value}
 function renderRecipe(){
@@ -21,45 +21,22 @@ function ensureProgressVisible(){
 }
 function setClass(el,name,enabled){if(el&&el.classList.contains(name)!==enabled)el.classList.toggle(name,enabled)}
 function objectiveComplete(){const bar=$('stageProgress'),current=Number(bar?.dataset.current||0),total=Number(bar?.dataset.total||0);return total>0&&current>=total}
-function restoreCompletionChrome(){
- clearTimeout(completionTimer);completionTimer=0;completionArmed=false;
- const end=$('phaseEndBtn');
- if(end&&endChrome){
-  end.style.visibility=endChrome.visibility;end.style.pointerEvents=endChrome.pointerEvents;
-  if(endChrome.hadAriaHidden)end.setAttribute('aria-hidden',endChrome.ariaHidden||'true');else end.removeAttribute('aria-hidden');
- }
- endChrome=null;$('discoveryUnlockModal')?.classList.remove('quarks-completion-handoff');
-}
-function armAutomaticCompletion(){
- const end=$('phaseEndBtn');if(!active||completionArmed||!end?.classList.contains('show')||!objectiveComplete())return;
- completionArmed=true;endChrome={visibility:end.style.visibility,pointerEvents:end.style.pointerEvents,hadAriaHidden:end.hasAttribute('aria-hidden'),ariaHidden:end.getAttribute('aria-hidden')};
- /* The legacy round button stays as an internal completion hook for the P0 contract,
-    but it must never become a second player-facing CTA beside discovery/reward UI. */
- end.style.visibility='hidden';end.style.pointerEvents='none';end.setAttribute('aria-hidden','true');
- const reward=window.ARDUA_VICTORY_REWARD;
- if(!(reward?.pending||reward?.active))window.dispatchEvent(new CustomEvent('ardua:phase-completion-intent',{detail:{phaseId:'quarks',source:'quarks-objective-complete',at:performance.now()}}));
- /* Quarks grants its discoveries just before the old button is shown. Nudging the modal
-    after the completion intent lets P1 absorb the already-open first discovery before paint. */
- const modal=$('discoveryUnlockModal');if(modal?.classList.contains('show'))modal.classList.add('quarks-completion-handoff');
- completionTimer=setTimeout(()=>{
-  completionTimer=0;if(active&&end.isConnected&&end.classList.contains('show'))end.click();
- },AUTO_COMPLETE_DELAY);
-}
 function applyQuarksChrome(){
  if(!active)return;
+ const complete=objectiveComplete();
  setClass(document.documentElement,'quarks-phase-root',true);
  setClass(document.body,'quarks-phase-active',true);
  setClass(document.body,'prebang',false);
  setClass(document.body,'bigbang-phase',false);
  setText('branchLabel','QUARKS');
  setText('phaseTitle',window.ARDUA_PHASE_LABELS?.canonicalMapTitle?.('quarks','Quarks')||'Quarks');
- setText('goalText',GOAL);
- renderRecipe();ensureProgressVisible();
+ setText('goalText',complete?COMPLETE_GOAL:GOAL);
+ if(!complete)renderRecipe();
+ ensureProgressVisible();
  setText('phaseEndBtn',NEXT_LABEL);
- armAutomaticCompletion();
 }
 function startOwnership(){
- restoreCompletionChrome();active=true;applyQuarksChrome();
+ active=true;applyQuarksChrome();
  if(observer)return;
  observer=new MutationObserver(applyQuarksChrome);
  for(const id of ['branchLabel','phaseTitle','goalText','formulaText','phaseEndBtn']){
@@ -73,7 +50,7 @@ function startOwnership(){
  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 }
 function stopOwnership(){
- restoreCompletionChrome();active=false;observer?.disconnect();observer=null;
+ active=false;observer?.disconnect();observer=null;
  setClass(document.documentElement,'quarks-phase-root',false);
  setClass(document.body,'quarks-phase-active',false);
 }
