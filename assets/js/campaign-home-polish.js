@@ -6,6 +6,8 @@ const map=$('campaignMap'),head=map?.querySelector('.campaign-head'),actions=hea
 if(!C||!G||!map||!head||!actions)return;
 const SOUND_KEY='arduaSoundtrackEnabledV1';
 const STATE_CLASSES=['locked','revealed','available','completed','current'];
+const isNativeApp=window.Capacitor?.isNativePlatform?.()===true;
+const androidDownloadItem=isNativeApp?'':`<a id="campaignHomeAndroidDownload" href="https://github.com/TTamosauskas/Ardua/releases/latest/download/Ardua.apk" aria-label="Baixar Ardua para Android"><span>Baixar para Android</span><small>APK oficial · versão mais recente</small></a>`;
 
 /* Keep legacy controls alive as behavior bridges while the surface shows one hamburger. */
 let trigger=$('campaignHomeMenuBtn');
@@ -24,6 +26,7 @@ if(!menu){
    <button type="button" id="campaignHomeDiscoveries"><span>Descobertas</span><small>Elementos e fenômenos</small></button>
    <button type="button" id="campaignHomeReturn"><span>Voltar à fase</span><small>Retorna à atividade em andamento</small></button>
    <button type="button" id="campaignHomeSound"><span></span><small>Controla somente a trilha sonora</small></button>
+   ${androidDownloadItem}
   </div>
  </section>`;
  map.appendChild(menu);
