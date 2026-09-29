@@ -56,13 +56,13 @@
 .campaign-home-menu-card>header strong{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#fff}
 .campaign-home-menu-close{width:34px;height:34px;border:1px solid rgba(255,255,255,.13);border-radius:11px;background:rgba(255,255,255,.055);color:#fff;font-size:23px;line-height:1;cursor:pointer}
 .campaign-home-menu-actions{display:grid;gap:7px}
-.campaign-home-menu-actions>button{
-  width:100%;min-height:48px;border:1px solid rgba(255,255,255,.12);border-radius:15px;padding:12px 13px;
-  background:rgba(255,255,255,.045);color:#fff;text-align:left;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;
+.campaign-home-menu-actions>button,.campaign-home-menu-actions>a{
+  width:100%;min-height:48px;border:1px solid rgba(255,255,255,.12);border-radius:15px;padding:12px 13px;box-sizing:border-box;display:block;
+  background:rgba(255,255,255,.045);color:#fff;text-align:left;text-decoration:none;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;
 }
 #campaignHomeReturn{display:none!important}
-.campaign-home-menu-actions>button:hover,.campaign-home-menu-actions>button:focus-visible{background:rgba(255,255,255,.085);border-color:rgba(138,216,255,.42);outline:none}
-.campaign-home-menu-actions>button:active{transform:scale(.988)}
+.campaign-home-menu-actions>button:hover,.campaign-home-menu-actions>button:focus-visible,.campaign-home-menu-actions>a:hover,.campaign-home-menu-actions>a:focus-visible{background:rgba(255,255,255,.085);border-color:rgba(138,216,255,.42);outline:none}
+.campaign-home-menu-actions>button:active,.campaign-home-menu-actions>a:active{transform:scale(.988)}
 .campaign-home-menu-actions>button:disabled{opacity:.35;cursor:default}
 .campaign-home-menu-actions span{display:block;font-size:14px;font-weight:900}
 .campaign-home-menu-actions small{display:none!important}
@@ -76,4 +76,4 @@
   .campaign-map .campaign-head{padding-inline:13px!important}
   .campaign-home-menu-trigger{width:48px;height:48px;min-height:48px}
 }
-@media(prefers-reduced-motion:reduce){.campaign-home-menu-actions>button{transition:none}}
+@media(prefers-reduced-motion:reduce){.campaign-home-menu-actions>button,.campaign-home-menu-actions>a{transition:none}}
